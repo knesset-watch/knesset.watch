@@ -41,7 +41,10 @@ yarn-error.log*
 next-env.d.ts
 .env*.local
 
-# SQLite temp files (knesset.db itself IS committed to git — only these are ignored)
+# SQLite databases
+# knesset.db IS committed (35MB, under GitHub 100MB limit)
+# protocols.db is excluded — 1.3GB, exceeds GitHub's hard 100MB file size limit
+protocols.db
 knesset.db-journal
 knesset.db-wal
 knesset.db-shm
