@@ -1,6 +1,0 @@
-{{ object.title }}
-{{ object.summary }}
-{{ object.full_text }}
-{% for t in object.tags %}
-  {{ t.name }}
-{% endfor %}
