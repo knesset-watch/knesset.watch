@@ -1,0 +1,22 @@
+{% extends "planet/base.html" %}
+{% load i18n pagination_tags planet_tags %}
+
+{% block extratitle %}{% trans 'Posts' %}{% endblock %}
+{% block description %}{% trans 'Posts published by MKs' %} - {% trans 'Open Knesset - Opening the Knesset to the public' %}{% endblock %}
+{% block content %}
+
+<p>
+{% trans "Below is a list of MKs blog posts as recieved from the their blogs." %}
+</p>
+
+<div style="padding-top:1em;">
+    {% autopaginate posts 10 %}
+    {% for post in posts %}
+        <div class="item post clearfix">
+            {% post_full_details post %}
+        </div>
+    {% endfor %}
+    {% paginate %}
+</div>
+{% endblock %}
+

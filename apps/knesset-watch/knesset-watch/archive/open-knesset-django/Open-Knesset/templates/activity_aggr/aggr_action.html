@@ -1,0 +1,9 @@
+{% load i18n %}
+{% trans aggr_action.verb %}
+{% for target in aggr_action.targets.keys %}
+{% with target.get_absolute_url as url %}
+    {% if url %}
+        <a href="{{ target.get_absolute_url }}">{{ target }}</a>
+    {% else %}{{ target }}{% endif %}{% if not forloop.last %}, {% endif %}  
+{% endwith %}
+{% endfor %}

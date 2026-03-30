@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: var(--font-source-serif), ui-serif, Georgia, serif;
+  --font-frank-ruhl: var(--font-frank-ruhl), serif;
+}
+
+@layer base {
+  body {
+    @apply bg-white text-black antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    @apply tracking-tighter lowercase font-black;
+  }
+
+  input, button {
+    @apply focus:outline-none transition-all duration-300;
+  }
+}
+
+/* Minimal DB Custom Utilities */
+@layer components {
+  .btn-primary {
+    @apply bg-black text-white text-[10px] font-black uppercase tracking-[0.2em] py-4 px-8 hover:bg-black/80;
+  }
+
+  .card-minimal {
+    @apply border border-black/5 rounded-sm overflow-hidden transition-all duration-500 hover:border-black/20 hover:shadow-xl;
+  }
+
+  .text-xs-caps {
+    @apply text-[8px] uppercase tracking-widest opacity-30;
+  }
+}

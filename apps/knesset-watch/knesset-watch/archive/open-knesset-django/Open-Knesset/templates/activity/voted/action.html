@@ -1,0 +1,20 @@
+{% load i18n %}
+    <li>
+      <p class="item-action">
+      {% if action.description == 'No Vote' %}
+          {{  action.actor.is_female|yesno:_("Present and didn't vote (Female),Present and didn't vote (Male)") }}
+      {% else %}
+          {{ action.actor.is_female|yesno:_("Voted (Female),Voted (Male)") }} {% trans action.description %}
+      {% endif %}
+      </p>
+      <p class="item-title">
+{% with action.target as vote %}
+    {% if vote %}
+        <a href="{{ vote.get_absolute_url }}">{{ vote.title }}</a>
+    {% else %}
+        {{ action.target }}
+    {% endif %}
+    </p>
+{% endwith %}
+      <p class="item-context">{{ action.timestamp|timesince }}</p>
+    </li>

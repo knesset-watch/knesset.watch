@@ -1,0 +1,14 @@
+OKnesset Widget
+===============
+
+The widget allows any website to embed content from OKnesset. Currently, information about MKs can be displayed.
+Checkout the file docs/mks_widget_sample.html for a usage example.
+
+The main inteface is through a call to generateMkFrameSet with the following params:
+
+* classHook: required - the css class of the elments that contain the members' names or ids
+* style: optional - a dictionary of style keys and values, currently only width is supported
+* okURL: optional - for development, specifies the URL of the oknesset server
+* TODO: targetId: unspecified, MKs information frmaes will be displayed in a pop up
+ if specified the frames will be displayed inside the elment with targetId
+

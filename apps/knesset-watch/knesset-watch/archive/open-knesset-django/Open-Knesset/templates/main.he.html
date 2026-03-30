@@ -1,0 +1,86 @@
+{% extends "site_base.html" %}
+{% block extrahead %} <link rel="alternate" type="application/rss+xml" title="RSS" href="{% url main-actions-feed %}" /> {% endblock %}
+{% load i18n i18ninclude search %}
+{% block description %}{% trans 'Open Knesset - Opening the Knesset to the public' %}. {% trans 'Non partisan, non commercial site that brings you relevant, detailed and accurate information about the knesset' %}{% endblock %}
+{% block extratitle %}{% trans 'Home' %}{% endblock %}
+{% block nav-main-page %} class="selected" {% endblock %}
+{% block divcontent %}
+<div class="row" style="margin-top:20px;">
+    <div class="cards span4">
+        <div class="card card-list text-center" style="padding:12px 0">
+            <div class="spacer">
+                <p>
+                    לקראת הבחירות פיתחנו כמה כלים יעודיים שיעזרו לכם לבחור בצורה חכמה. הכנסו לטאב <a href="{% url candidate-list-list %}">"בחירות 2013"</a>, או <a href="http://bchirometer.oknesset.org/" target="_blank">לבחירומטר - כלי פשוט לדירוג המפלגות שפועלות בכנסת, לפי השקפותיך</a>.
+                </p>
+                <a href="http://bchirometer.oknesset.org/" target="_blank">
+                    <img src="/static/img/bchirometer.jpg" alt="בחירומטר">
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="cards span4">
+        <div class="card card-list text-center" style="padding:12px 0">
+            <div class="spacer">
+                <a href="https://www.headstart.co.il/project.aspx?id=784" target="_blank">
+                    <img src="/static/img/movie_poster.jpg" alt="הסרט של הבחירות">
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="span4">
+        <div class="alert"><a href="{% url help %}">מה אפשר לעשות באתר?</a></div>
+        <aside class="sidebar sidebar-agendas">
+            <h2>אודותינו</h2>
+            <ul>
+                <li class="agenda-mini clearfix"> 
+                    <p>
+                        האתר מאפשר לכל אזרח להשתתף באורח פעיל יותר בפעילות הכנסת.  אנו
+                        סורקים את אתר הכנסת ומקורות מידע רשמיים ובאמצעות אלגוריתמים
+                        חישוביים וצוות עורכים מסור, מסדרים ומארגנים את המידע לנוחות המשתמש.
+                        האתר עדיין בפיתוח, ואנו מתנצלים מראש על באגים ושגיאות בנתונים.
+                    </p>
+                    <a class="btn btn-more" href="/about/">קראו עוד אודות כנסת פתוחה</a>
+                </li>
+                <li>
+                    <p>
+                        <a href="http://www.hasadna.org.il/"><img src="/static/img/hasadna-logo.png" style="width:50px; float:left"></a>
+                        כנסת פתוחה מפותח על ידי עמותת
+                        <a href="http://www.hasadna.org.il/">הסדנא לידע ציבורי</a>.
+                        אנחנו זקוקים לעזרתכם להפיץ את האתר:
+                    </p>
+                    <!-- AddToAny BEGIN -->
+                    <p class="a2a_kit a2a_default_style" style="width:200px; margin:0 auto;">
+                        <a class="a2a_dd" href="http://www.addtoany.com/share_save">שיתוף</a>
+                        <span class="a2a_divider"></span>
+                        <a class="a2a_button_email"></a>
+                        <a class="a2a_button_facebook"></a>
+                        <a class="a2a_button_twitter"></a>
+                        <a class="a2a_button_google_plus"></a>
+                        <a class="a2a_button_delicious"></a>
+                        <a class="a2a_button_digg"></a>
+                        <script type="text/javascript">
+                        var a2a_config = a2a_config || {};
+                        a2a_config.locale = "he";
+                        </script>
+                        <script type="text/javascript" src="http://static.addtoany.com/menu/page.js"></script>
+                    </p>
+                    <!-- AddToAny END -->
+                </li>
+            </ul>
+        </aside>
+    </div>
+</div>
+
+    <!--
+    <div id="main-help" class="display_note_outer">
+        <p>תרומות כספיות יכולות לעזור לנו מאוד להמשיך בפיתוח האתר, והן גם עוזרות לנו בכך שהן מראות שהציבור איתנו.</p>
+        <form method="post" action="https://www.paypal.com/cgi-bin/webscr">
+            <input type="hidden" value="_s-xclick" name="cmd">
+            <input type="hidden" value="K7X4FWYPBR7H4" name="hosted_button_id">
+            <input type="image" border="0" alt="PayPal - הדרך הקלה והבטוחה לשלם באופן מקוון!" name="submit" src="https://www.paypalobjects.com/WEBSCR-640-20110306-1/he_IL/IL/i/btn/btn_donateCC_LG.gif">
+            <img width="1" height="1" border="0" src="https://www.paypalobjects.com/WEBSCR-640-20110306-1/he_IL/i/scr/pixel.gif" alt="">
+        </form>
+    </div>
+    -->
+
+{% endblock %}

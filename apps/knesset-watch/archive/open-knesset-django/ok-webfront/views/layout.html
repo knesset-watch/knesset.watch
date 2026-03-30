@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{extratitle}} | {{#_}}Open Knesset{{/_}}</title>
+
+  <meta charset="UTF-8" />
+  <meta name="Authors" content="Hasadna" />
+  <meta name="License" content="CC-by-sa-3.0 Attribution-ShareAlike 3.0" />
+  <meta http-equiv="Content-Language" content="{{LANGUAGE_CODE}}" />
+  <meta NAME="ROBOTS" content="NOINDEX, NOFOLLOW" />
+
+  <base href="/" />
+  <link href="css/jquery.jgrowl.css" rel="stylesheet" type="text/css" media="screen" />
+  <link href="css/bootstrap-rtl.css?v=1" rel="stylesheet" type="text/css" media="screen" />
+  <link href="css/common.css?v=1" rel="stylesheet" type="text/css" media="screen" />
+  <link rel="shortcut icon" href="img/favicon.png" />
+  <link rel="gettext" type="application/x-po" href="/locale/he/LC_MESSAGES/mustache.po" />
+  <style>
+    body { padding-top:86px;}
+  </style>
+  {{extrahead}}
+</head>
+<body>
+
+  {{#DEBUG}}
+  <div class="alert-info">
+    <a href="http://oknesset.org/">http://oknesset.org/</a>
+  </div>
+  {{/DEBUG}}
+  <div class="navbar navbar-fixed-top"><div class="navbar-inner">
+    <div class="container-fluid">
+      <a class="brand" style="margin:5px; background:white; width:80px; padding:3px;" href="{{main_url}}">
+        <img src ="/img/oknesset-logo-small.png" alt="{{#_}}Open Knesset{{/_}}"/>
+      </a>
+      <div id="search" class="pull-right navbar-search">{{search_form}}</div>
+
+      <ul class="nav pull-right">
+        {{#user}}
+        <li><a href="#profile">{{#_}}Logged in as{{/_}} {{name}}</a></li>
+        <li><a href="#edit_profile">{{#_}}Edit Profile{{/_}}</a></li>
+        <li><a href="#logout">{{#_}}Logout{{/_}}</a></li>
+        {{/user}}
+        {{^user}}
+        <li><a href="#login">{{#_}}login{{/_}}</a></li>
+        {{/user}}
+      </ul>
+
+      <ul class="nav">
+        <li id="laws_link"><a href="#legislation">{{#_}}Legislation{{/_}}</a></li>
+        <li id="mks_link"><a href="#members">{{#_}}Members{{/_}}</a></li>
+      </ul>
+    </div></div>
+  </div>
+
+  <div id="main" class="container-fluid">
+    {{{ body }}}
+  </div>
+
+  <div class="container-fluid">
+    <div class="footer">
+      <p><a href="{{about_url}}">{{#_}}Some rights reserved.{{/_}}</a></p>
+    </div>
+  </div>
+
+  <script src="js/jquery.min.js"></script>
+  <script src="js/Gettext.js"></script>
+
+</body>
+</html>

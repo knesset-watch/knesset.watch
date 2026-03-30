@@ -1,0 +1,7 @@
+{% load i18n %}
+<span class="body">
+    <h3>
+	    <a href="{{ post.url }}" title="{% trans 'read post' %} {{ post.title|safe }}">
+            {{ post.title|striptags|safe }}
+        </a>
+</span>

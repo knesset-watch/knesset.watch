@@ -1,0 +1,18 @@
+{% extends "planet/base.html" %}
+{% load i18n pagination_tags  %}
+
+{% block extratitle %}{% trans "Tags cloud" %}{% endblock %}
+{% block description %}{% trans 'Tags cloud for posts published by MKs' %} - {% trans 'Open Knesset - Opening the Knesset to the public' %}{% endblock %}
+
+{% block content %}
+<div class="tags cloud">
+    {% autopaginate tags_cloud 200 %}
+    {% for tag in tags_cloud %}
+        <a href="{% url tag_detail tag.name %}" class="level{{ tag.font_size }}">{{ tag }}</a>
+    {% endfor %}
+    {% paginate %}
+</div>
+{% endblock %}
+
+{% block right_column %}
+{% endblock %}

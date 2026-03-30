@@ -1,0 +1,7 @@
+{% if add_li %}<li>{% endif %}
+    <p class="item-title">
+        <a href="{{ o.get_absolute_url }}">{{ o.topics|truncatewords:20|safe }}</a>
+    </p>
+    <p class="item-context">{{ o.date_string }}</p>
+{% if add_li %}</li>{% endif %}
+

@@ -1,0 +1,18 @@
+{% extends "site_base.html" %}
+{% load lookup i18n tagging_tags laws_tags bills_tags common_visual_elements links_tags comments user_tags hitcount_tags committees_tags %}
+{% block extratitle %}{{ title }}{% endblock %}
+{% block keywords %}{{ title }}{% endblock %}
+{% block description %}{{ title }} - {% trans 'Open Knesset - Opening the Knesset to the public' %}{% endblock %}
+{% block nav-agendas %}class="active"{% endblock %}
+{% block subnav %}
+    <a class="button" href="{% url agenda-detail object.agenda.id %}">{% trans "Agenda" %} {{ object.agenda }}</a>
+{% endblock %}
+{% block divcontent %}
+    <div class="item normal">
+        {% bill_list_item object.bill %}
+        <span class="reasoning">
+            {{ object.reasoning|urlizetrunc:"30" }}
+        </span>
+    </div>
+    {% include 'comments/object_comment_list.html' %}
+{% endblock %} {# divcontent #}

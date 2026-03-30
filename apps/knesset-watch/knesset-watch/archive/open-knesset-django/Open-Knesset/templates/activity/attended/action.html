@@ -1,0 +1,16 @@
+{% load i18n %}
+    <li>
+      <p class="item-action">
+          {{action.actor.is_female|yesno:_("Attended (Femail),Attended (Male)")}}
+      </p>
+      <p class="item-title">
+{% with action.target as meeting %}
+    {% if meeting %}
+        <a href="{{ meeting.get_absolute_url }}">{{ meeting }}</a>
+    {% else %}
+        {{ action.target }}
+    {% endif %}
+{% endwith %}
+    </p>
+    <p class="item-context">{{ action.timestamp|timesince }}</p>
+    </li>
