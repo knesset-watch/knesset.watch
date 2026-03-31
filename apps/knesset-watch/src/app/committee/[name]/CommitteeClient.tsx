@@ -93,18 +93,22 @@ export default function CommitteeClient({
 
         {/* Stats row */}
         <div className="flex gap-6 mb-8 mt-4">
-          <div className="flex flex-col">
-            <span className="text-[9px] font-black uppercase text-gray-400 mb-1">הצעות חוק</span>
-            <span className="text-3xl font-black">{data.billCount}</span>
-          </div>
-          <div className="flex flex-col border-r border-black/8 pr-6">
-            <span className="text-[9px] font-black uppercase text-gray-400 mb-1">עברו</span>
-            <span className="text-3xl font-black text-teal-600">{data.passedCount}</span>
-          </div>
-          <div className="flex flex-col border-r border-black/8 pr-6">
-            <span className="text-[9px] font-black uppercase text-gray-400 mb-1">יחס</span>
-            <span className="text-3xl font-black">{ratio}%</span>
-          </div>
+          {data.billCount > 0 && (
+            <>
+              <div className="flex flex-col">
+                <span className="text-[9px] font-black uppercase text-gray-400 mb-1">הצעות חוק</span>
+                <span className="text-3xl font-black">{data.billCount}</span>
+              </div>
+              <div className="flex flex-col border-r border-black/8 pr-6">
+                <span className="text-[9px] font-black uppercase text-gray-400 mb-1">עברו</span>
+                <span className="text-3xl font-black text-teal-600">{data.passedCount}</span>
+              </div>
+              <div className="flex flex-col border-r border-black/8 pr-6">
+                <span className="text-[9px] font-black uppercase text-gray-400 mb-1">יחס</span>
+                <span className="text-3xl font-black">{ratio}%</span>
+              </div>
+            </>
+          )}
           {data.sessionCount > 0 && (
             <div className="flex flex-col border-r border-black/8 pr-6">
               <span className="text-[9px] font-black uppercase text-gray-400 mb-1">ישיבות</span>
