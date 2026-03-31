@@ -3,6 +3,9 @@
  *
  * Used in production (Vercel) where there is no local knesset.db.
  * Falls back gracefully when TURSO_URL is not set (local dev uses knesset-db.ts instead).
+ * Covers: committee, committee_session, committee_attendance, session_guest,
+ *   session_staff, session_agenda_item, session_vote, session_speaker_turn,
+ *   mk_person, bill, session_bill, faction.
  *
  * Only covers tables migrated to Turso:
  *   committee, committee_session, committee_attendance, session_guest,
