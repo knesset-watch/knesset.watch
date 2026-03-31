@@ -633,6 +633,7 @@ export interface CommitteeBill {
 
 export interface CommitteeDetail {
   name: string;
+  committeeId: number | null;
   billCount: number;
   passedCount: number;
   sessionCount: number;
@@ -644,30 +645,54 @@ export function getCommitteeDetail(name: string): CommitteeDetail | null {
   const db = getDb();
   if (!db) return null;
 
+  // First look up the committee in the committee table — prefer the one with sessions
+  const committeeRow = db.prepare(`
+    SELECT c.id FROM committee c
+    LEFT JOIN (SELECT committee_id, COUNT(*) as cnt FROM committee_session GROUP BY committee_id) s ON s.committee_id = c.id
+    WHERE c.name = ?
+    ORDER BY COALESCE(s.cnt, 0) DESC, c.id DESC
+    LIMIT 1
+  `).get(name) as { id: number } | undefined;
+
+  // Fall back to bill lookup for legacy compatibility
+  const committeeIdFromBill = committeeRow ? null : (db.prepare(`
+    SELECT DISTINCT committee_id FROM bill WHERE committee_name = ? AND committee_id != -1 LIMIT 1
+  `).get(name) as { committee_id: number } | undefined)?.committee_id ?? null;
+
+  const resolvedCommitteeId = committeeRow?.id ?? committeeIdFromBill;
+
+  const sessionCount = resolvedCommitteeId
+    ? (db.prepare(`SELECT COUNT(*) as cnt FROM committee_session WHERE committee_id = ?`).get(resolvedCommitteeId) as { cnt: number }).cnt
+    : 0;
+
   const billStats = db.prepare(`
     SELECT COUNT(*) as total, SUM(is_passed) as passed
     FROM bill WHERE committee_name = ?
   `).get(name) as { total: number; passed: number } | undefined;
-  if (!billStats || billStats.total === 0) return null;
 
-  // Get committee_id for session count lookup
-  const committeeIdRow = db.prepare(`
-    SELECT DISTINCT committee_id FROM bill WHERE committee_name = ? AND committee_id != -1 LIMIT 1
-  `).get(name) as { committee_id: number } | undefined;
+  // Return null only if we have no data at all
+  if (!resolvedCommitteeId && (!billStats || billStats.total === 0)) return null;
 
-  const sessionCount = committeeIdRow
-    ? (db.prepare(`SELECT COUNT(*) as cnt FROM committee_session WHERE committee_id = ?`).get(committeeIdRow.committee_id) as { cnt: number }).cnt
-    : 0;
-
-  const memberRows = db.prepare(`
-    SELECT pos.duty_desc, mp.person_id as id, mp.first_name || ' ' || mp.last_name as name,
-           mp.slug, mp.is_coalition as isCoalition
-    FROM mk_position pos
-    JOIN mk_person mp ON mp.person_id = pos.mk_id
-    WHERE pos.is_current = 1 AND pos.committee = ? AND mp.is_current = 1
-    GROUP BY mp.person_id
-    ORDER BY mp.last_name
-  `).all(name) as Array<{ duty_desc: string | null; id: number; name: string; slug: string | null; isCoalition: number | null }>;
+  // Prefer committee_id lookup (exact match); fall back to name string
+  const memberRows = resolvedCommitteeId
+    ? db.prepare(`
+        SELECT pos.duty_desc, mp.person_id as id, mp.first_name || ' ' || mp.last_name as name,
+               mp.slug, mp.is_coalition as isCoalition
+        FROM mk_position pos
+        JOIN mk_person mp ON mp.person_id = pos.mk_id
+        WHERE pos.is_current = 1 AND pos.committee_id = ? AND mp.is_current = 1
+        GROUP BY mp.person_id
+        ORDER BY mp.last_name
+      `).all(resolvedCommitteeId) as Array<{ duty_desc: string | null; id: number; name: string; slug: string | null; isCoalition: number | null }>
+    : db.prepare(`
+        SELECT pos.duty_desc, mp.person_id as id, mp.first_name || ' ' || mp.last_name as name,
+               mp.slug, mp.is_coalition as isCoalition
+        FROM mk_position pos
+        JOIN mk_person mp ON mp.person_id = pos.mk_id
+        WHERE pos.is_current = 1 AND pos.committee = ? AND mp.is_current = 1
+        GROUP BY mp.person_id
+        ORDER BY mp.last_name
+      `).all(name) as Array<{ duty_desc: string | null; id: number; name: string; slug: string | null; isCoalition: number | null }>;
 
   const billRows = db.prepare(`
     SELECT b.id, b.title, b.subtype, b.is_passed, b.summary, b.doc_url,
@@ -700,8 +725,9 @@ export function getCommitteeDetail(name: string): CommitteeDetail | null {
 
   return {
     name,
-    billCount: billStats.total,
-    passedCount: billStats.passed ?? 0,
+    committeeId: resolvedCommitteeId,
+    billCount: billStats?.total ?? 0,
+    passedCount: billStats?.passed ?? 0,
     sessionCount,
     members: memberRows.map(r => ({
       id: r.id,
@@ -853,4 +879,324 @@ export function getBills(opts: GetBillsOptions): { bills: BillRow[]; total: numb
   }
 
   return { bills, total };
+}
+
+// ── Committee Sessions & Session Detail ────────────────────────────────────────
+
+export interface SessionSummary {
+  id: number;
+  date: string;
+  title: string | null;
+  protocolNumber: number | null;
+  startTime: string | null;
+  endTime: string | null;
+  attendeeCount: number;
+  agendaCount: number;
+  voteCount: number;
+}
+
+export function getCommitteeSessions(committeeId: number, limit = 100): SessionSummary[] {
+  const db = getDb();
+  if (!db) return [];
+
+  return (db.prepare(`
+    SELECT
+      cs.id, cs.date, cs.title, cs.protocol_number, cs.start_time, cs.end_time,
+      (SELECT COUNT(*) FROM committee_attendance WHERE session_id = cs.id) +
+       (SELECT COUNT(*)/2 FROM session_guest WHERE session_id = cs.id AND (role IS NULL OR role != 'unresolved_mk')) as attendee_count,
+      (SELECT COUNT(*) FROM session_agenda_item WHERE session_id = cs.id) as agenda_count,
+      (SELECT COUNT(*) FROM session_vote WHERE session_id = cs.id) as vote_count
+    FROM committee_session cs
+    WHERE cs.committee_id = ?
+    ORDER BY cs.date DESC
+    LIMIT ?
+  `).all(committeeId, limit) as Array<{
+    id: number; date: string; title: string | null; protocol_number: number | null;
+    start_time: string | null; end_time: string | null;
+    attendee_count: number; agenda_count: number; vote_count: number;
+  }>).map(r => ({
+    id: r.id,
+    date: r.date,
+    title: r.title,
+    protocolNumber: r.protocol_number,
+    startTime: r.start_time,
+    endTime: r.end_time,
+    attendeeCount: r.attendee_count,
+    agendaCount: r.agenda_count,
+    voteCount: r.vote_count,
+  }));
+}
+
+export interface AttendingMember {
+  mkId: number;
+  name: string;
+  slug: string | null;
+  factionName: string | null;
+  isCoalition: boolean | null;
+  role: string;
+}
+
+export interface SessionGuest {
+  name: string;
+  role: string | null;
+  organization: string | null;
+  method: string | null;
+}
+
+export interface SessionAgendaItem {
+  itemNumber: number;
+  title: string;
+}
+
+export interface SessionVote {
+  voteNumber: number;
+  subject: string | null;
+  result: string | null;
+  forCount: number;
+  againstCount: number;
+  abstainCount: number;
+  passed: boolean | null; // null = outcome unknown
+}
+
+export interface SessionBillLink {
+  billId: number;
+  title: string | null;
+}
+
+export interface SessionDetail {
+  id: number;
+  committeeId: number;
+  committeeName: string | null;
+  date: string;
+  title: string | null;
+  protocolNumber: number | null;
+  startTime: string | null;
+  endTime: string | null;
+  members: AttendingMember[];
+  guests: SessionGuest[];
+  staff: Array<{ role: string; name: string }>;
+  agenda: SessionAgendaItem[];
+  votes: SessionVote[];
+  bills: SessionBillLink[];
+  documents: Array<{
+    id: number;
+    name: string;
+    url: string;
+    type: 'protocol' | 'background' | 'other';
+    appDesc: string | null;
+  }>;
+}
+
+export function getSessionDetail(sessionId: number): SessionDetail | null {
+  const db = getDb();
+  if (!db) return null;
+
+  const session = db.prepare(`
+    SELECT cs.id, cs.committee_id, cs.committee_name,
+           cs.date, cs.title, cs.protocol_number, cs.start_time, cs.end_time
+    FROM committee_session cs
+    WHERE cs.id = ?
+  `).get(sessionId) as {
+    id: number; committee_id: number; committee_name: string | null;
+    date: string; title: string | null; protocol_number: number | null;
+    start_time: string | null; end_time: string | null;
+  } | undefined;
+
+  if (!session) return null;
+
+  const members = (db.prepare(`
+    SELECT ca.mk_id, mp.first_name || ' ' || mp.last_name as name, mp.slug,
+           mp.faction_name, mp.is_coalition, ca.role
+    FROM committee_attendance ca
+    JOIN mk_person mp ON mp.person_id = ca.mk_id
+    WHERE ca.session_id = ?
+    ORDER BY ca.role, mp.last_name
+  `).all(sessionId) as Array<{
+    mk_id: number; name: string; slug: string | null;
+    faction_name: string | null; is_coalition: number | null; role: string;
+  }>).map(r => ({
+    mkId: r.mk_id,
+    name: r.name,
+    slug: r.slug,
+    factionName: r.faction_name,
+    isCoalition: r.is_coalition === null ? null : r.is_coalition === 1,
+    role: r.role,
+  }));
+
+  // The Knesset API stores guests as alternating rows: name row, then title/description row.
+  // The description is stored in the `name` column of the next row (role/organization are NULL).
+  // ORDER BY id preserves insertion order so we can pair consecutive rows correctly.
+  const rawGuestRows = db.prepare(`
+    SELECT name, role, organization, attendance_method
+    FROM session_guest
+    WHERE session_id = ? AND (role IS NULL OR role != 'unresolved_mk')
+    ORDER BY rowid
+  `).all(sessionId) as Array<{
+    name: string; role: string | null; organization: string | null; attendance_method: string | null;
+  }>;
+
+  const guests: Array<{ name: string; role: string | null; organization: string | null; method: string | null }> = [];
+  for (let i = 0; i < rawGuestRows.length; i++) {
+    const row = rawGuestRows[i];
+    // A "description row" has no role/org AND its name looks like a title (contains comma or
+    // starts with known title prefixes). Attach it to the previous person.
+    const looksLikeTitle = !row.role && !row.organization &&
+      (row.name.includes(',') || /^(עו"ד|עו״ד|ד"ר|ד״ר|פרופ|רס"ן|מנכ"ל|מנכ״ל|סמנכ"ל|סמנכ״ל|מזכ"ל|מזכ״ל|יו"ר|יו״ר|מ"מ|רכז|שותף|שותפה|חבר |חברת |יועמ"ש|יועמ״ש|מנהל|מנהלת|ראש |נשיא|סגן |נציג|רפרט|כלכלן|כלכלנית|חוקר|חוקרת|שדלן|שדלנית|דובר |דוברת|עורך|עורכת|Privacy|Cyber)/.test(row.name));
+    if (looksLikeTitle && guests.length > 0 && guests[guests.length - 1].role === null) {
+      guests[guests.length - 1].role = row.name;
+    } else {
+      guests.push({ name: row.name, role: row.role ?? null, organization: row.organization ?? null, method: row.attendance_method ?? null });
+    }
+  }
+
+  const agenda = (db.prepare(`
+    SELECT item_number, title FROM session_agenda_item WHERE session_id = ? ORDER BY item_number
+  `).all(sessionId) as Array<{ item_number: number; title: string }>).map(r => ({
+    itemNumber: r.item_number,
+    title: r.title,
+  }));
+
+  const votes = (db.prepare(`
+    SELECT vote_number, subject, result, for_count, against_count, abstain_count, passed
+    FROM session_vote WHERE session_id = ? ORDER BY vote_number
+  `).all(sessionId) as Array<{
+    vote_number: number; subject: string | null; result: string | null;
+    for_count: number; against_count: number; abstain_count: number; passed: number;
+  }>).map(r => ({
+    voteNumber: r.vote_number,
+    subject: r.subject,
+    result: r.result,
+    forCount: r.for_count,
+    againstCount: r.against_count,
+    abstainCount: r.abstain_count,
+    passed: r.passed === null ? null : r.passed === 1,
+  }));
+
+  const bills = (db.prepare(`
+    SELECT sb.bill_id, b.title
+    FROM session_bill sb
+    LEFT JOIN bill b ON b.id = sb.bill_id
+    WHERE sb.session_id = ?
+  `).all(sessionId) as Array<{ bill_id: number; title: string | null }>).map(r => ({
+    billId: r.bill_id,
+    title: r.title,
+  }));
+
+  const staff = (db.prepare(`
+    SELECT role, name_text FROM session_staff WHERE session_id = ? ORDER BY id
+  `).all(sessionId) as Array<{ role: string; name_text: string }>).map(r => ({
+    role: r.role,
+    name: r.name_text,
+  }));
+
+  const documents = (db.prepare(`
+    SELECT id, document_name, file_path, group_type_id, application_desc
+    FROM session_document
+    WHERE session_id = ? AND file_path IS NOT NULL AND file_path != ''
+    ORDER BY group_type_id
+  `).all(sessionId) as Array<{
+    id: number; document_name: string; file_path: string;
+    group_type_id: number | null; application_desc: string | null;
+  }>).map(d => ({
+    id: d.id,
+    name: d.document_name,
+    url: d.file_path,
+    type: (d.group_type_id === 23 ? 'protocol' : d.group_type_id === 87 ? 'background' : 'other') as 'protocol' | 'background' | 'other',
+    appDesc: d.application_desc,
+  }));
+
+  return {
+    id: session.id,
+    committeeId: session.committee_id,
+    committeeName: session.committee_name,
+    date: session.date,
+    title: session.title,
+    protocolNumber: session.protocol_number,
+    startTime: session.start_time,
+    endTime: session.end_time,
+    members,
+    guests,
+    staff,
+    agenda,
+    votes,
+    bills,
+    documents,
+  };
+}
+
+export interface SpeakerTurn {
+  turnNumber: number;
+  mkId: number | null;
+  rawName: string | null;
+  factionName: string | null;
+  slug: string | null;
+  speakerRole: string | null;
+  text: string;
+}
+
+export function getSessionSpeakerTurns(sessionId: number, mkId?: number): SpeakerTurn[] {
+  const db = getDb();
+  if (!db) return [];
+
+  const sql = mkId
+    ? `SELECT st.turn_number, st.mk_id, st.raw_name, st.faction_name, mp.slug, st.speaker_role, st.text
+       FROM session_speaker_turn st
+       LEFT JOIN mk_person mp ON mp.person_id = st.mk_id
+       WHERE st.session_id = ? AND st.mk_id = ?
+       ORDER BY st.turn_number`
+    : `SELECT st.turn_number, st.mk_id, st.raw_name, st.faction_name, mp.slug, st.speaker_role, st.text
+       FROM session_speaker_turn st
+       LEFT JOIN mk_person mp ON mp.person_id = st.mk_id
+       WHERE st.session_id = ?
+       ORDER BY st.turn_number`;
+
+  const params = mkId ? [sessionId, mkId] : [sessionId];
+
+  return (db.prepare(sql).all(...params) as Array<{
+    turn_number: number; mk_id: number | null; raw_name: string | null;
+    faction_name: string | null; slug: string | null; speaker_role: string | null; text: string;
+  }>).map(r => ({
+    turnNumber: r.turn_number,
+    mkId: r.mk_id,
+    rawName: r.raw_name,
+    factionName: r.faction_name,
+    slug: r.slug,
+    speakerRole: r.speaker_role,
+    text: r.text,
+  }));
+}
+
+export interface CommitteeActivity {
+  committeeId: number;
+  name: string;
+  sessionCount: number;
+  lastSessionDate: string | null;
+}
+
+export function getAllCommitteeActivity(): CommitteeActivity[] {
+  const db = getDb();
+  if (!db) return [];
+
+  // Group by name to deduplicate committees that appear in multiple Knessets.
+  // Pick the committee_id with the most sessions (the most active / current one).
+  return (db.prepare(`
+    SELECT c.id as committee_id, c.name,
+           COUNT(cs.id) as session_count,
+           MAX(cs.date) as last_session_date
+    FROM committee c
+    JOIN committee_session cs ON cs.committee_id = c.id
+    GROUP BY c.id
+    HAVING session_count > 0
+    ORDER BY session_count DESC
+  `).all() as Array<{
+    committee_id: number; name: string; session_count: number; last_session_date: string | null;
+  }>)
+  // Deduplicate by name: SQL orders by session_count DESC so first occurrence is always the winner
+  .reduce((acc, r) => {
+    if (!acc.find(a => a.name === r.name)) {
+      acc.push({ committeeId: r.committee_id, name: r.name, sessionCount: r.session_count, lastSessionDate: r.last_session_date });
+    }
+    return acc;
+  }, [] as CommitteeActivity[])
+  .sort((a, b) => (b.lastSessionDate ?? '').localeCompare(a.lastSessionDate ?? ''));
 }

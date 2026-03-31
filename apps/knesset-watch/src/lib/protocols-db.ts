@@ -1,26 +1,63 @@
 // src/lib/protocols-db.ts
-// Data access layer for protocols — uses Turso (libSQL) for hosted SQLite.
+// Data access layer for protocol search and RAG.
+//
+// Search strategy:
+//   1. Embed the query with OpenAI text-embedding-3-small
+//   2. Vector ANN search on committee_session.embedding in Turso
+//   3. Return session-level results (rag_card as snippet)
+//
+// Context retrieval for /ask:
+//   Uses session_speaker_turn rows as "chunks" (filtered to turns already
+//   migrated to Turso, i.e. LENGTH(text) > 200).
 
 import { createClient, type Client } from '@libsql/client/http';
 
-let _client: Client | null = null;
+const DIMS = 768;
 
-function getClient(): Client {
-  if (!_client) {
-    _client = createClient({
-      url: process.env.TURSO_URL!,
+// ── Clients (singletons) ──────────────────────────────────────────────────────
+
+let _turso: Client | null = null;
+
+function getTurso(): Client | null {
+  if (!process.env.TURSO_URL) return null;
+  if (!_turso) {
+    _turso = createClient({
+      url: process.env.TURSO_URL,
       authToken: process.env.TURSO_TOKEN,
     });
   }
-  return _client;
+  return _turso;
 }
 
 export function protocolsDbAvailable(): boolean {
   return !!(process.env.TURSO_URL);
 }
 
+// ── Embed a query string via Jina AI ─────────────────────────────────────────
+
+async function embedQuery(text: string): Promise<number[] | null> {
+  if (!process.env.JINA_API_KEY) return null;
+  const res = await fetch('https://api.jina.ai/v1/embeddings', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.JINA_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: 'jina-embeddings-v3',
+      input: [text],
+      dimensions: DIMS,
+    }),
+  });
+  if (!res.ok) return null;
+  const data = await res.json() as { data: Array<{ embedding: number[] }> };
+  return data.data[0]?.embedding ?? null;
+}
+
+// ── Search ────────────────────────────────────────────────────────────────────
+
 export interface ProtocolSearchResult {
-  chunkId: number;
+  chunkId: number;       // = sessionId (session-level results now)
   sessionId: number;
   committeeId: number;
   committeeName: string;
@@ -41,97 +78,89 @@ export async function searchProtocols(
   committee: string | null,
   page: number,
 ): Promise<ProtocolSearchResponse> {
-  if (!process.env.TURSO_URL) return { results: [], total: 0, page };
+  const client = getTurso();
+  if (!client || !query.trim()) return { results: [], total: 0, page };
 
-  const client = getClient();
   const pageSize = 20;
   const offset = (page - 1) * pageSize;
 
-  // Escape special FTS5 characters
-  const safeQuery = query.replace(/["*^()?!:]/g, ' ').trim();
-  if (!safeQuery) return { results: [], total: 0, page };
+  // Embed the query for vector search
+  const embedding = await embedQuery(query);
 
-  if (committee) {
-    const countRes = await client.execute({
-      sql: `SELECT COUNT(*) as cnt
-            FROM protocol_chunk_fts
-            JOIN protocol_chunk pc ON pc.id = protocol_chunk_fts.rowid
-            WHERE protocol_chunk_fts MATCH ? AND pc.committee_name = ?`,
-      args: [safeQuery, committee],
-    });
-    const total = Number(countRes.rows[0]['cnt'] ?? 0);
-
-    const rowsRes = await client.execute({
-      sql: `SELECT
-              pc.id as chunkId,
-              pc.session_id as sessionId,
-              sp.committee_id as committeeId,
-              pc.committee_name as committeeName,
-              pc.date,
-              sp.title,
-              pc.speaker,
-              snippet(protocol_chunk_fts, 0, '<mark>', '</mark>', '...', 20) as snippet
-            FROM protocol_chunk_fts
-            JOIN protocol_chunk pc ON pc.id = protocol_chunk_fts.rowid
-            JOIN session_protocol sp ON sp.session_id = pc.session_id
-            WHERE protocol_chunk_fts MATCH ? AND pc.committee_name = ?
-            ORDER BY rank
-            LIMIT ? OFFSET ?`,
-      args: [safeQuery, committee, pageSize, offset],
+  if (embedding) {
+    // Vector search path — semantically find matching sessions
+    const vecRes = await client.execute({
+      sql: `
+        SELECT cs.id, cs.committee_id, cs.committee_name, cs.date, cs.title, cs.rag_card,
+               vector_distance_cos(embedding, vector(?, 'float32')) as distance
+        FROM committee_session cs
+        WHERE cs.embedding IS NOT NULL
+          ${committee ? 'AND cs.committee_name = ?' : ''}
+        ORDER BY distance ASC
+        LIMIT ? OFFSET ?
+      `,
+      args: committee
+        ? [JSON.stringify(embedding), committee, pageSize, offset]
+        : [JSON.stringify(embedding), pageSize, offset],
     });
 
-    const results = rowsRes.rows.map(row => ({
-      chunkId: Number(row['chunkId']),
-      sessionId: Number(row['sessionId']),
-      committeeId: Number(row['committeeId']),
-      committeeName: String(row['committeeName'] ?? ''),
-      date: String(row['date'] ?? ''),
-      title: row['title'] != null ? String(row['title']) : null,
-      speaker: row['speaker'] != null ? String(row['speaker']) : null,
-      snippet: String(row['snippet'] ?? ''),
+    const results: ProtocolSearchResult[] = vecRes.rows.map(r => ({
+      chunkId: Number(r['id']),
+      sessionId: Number(r['id']),
+      committeeId: Number(r['committee_id'] ?? 0),
+      committeeName: String(r['committee_name'] ?? ''),
+      date: String(r['date'] ?? ''),
+      title: r['title'] != null ? String(r['title']) : null,
+      speaker: null,
+      snippet: String(r['rag_card'] ?? '').slice(0, 300),
     }));
+
+    // Approximate total — vector search doesn't give exact counts cheaply
+    const totalRes = await client.execute({
+      sql: `SELECT COUNT(*) as cnt FROM committee_session WHERE embedding IS NOT NULL
+            ${committee ? 'AND committee_name = ?' : ''}`,
+      args: committee ? [committee] : [],
+    });
+    const total = Math.min(Number(totalRes.rows[0]['cnt'] ?? 0), 200);
 
     return { results, total, page };
   }
 
+  // Fallback: simple LIKE search on rag_card (no embedding available)
+  const term = `%${query}%`;
+  const whereClause = committee
+    ? 'WHERE rag_card LIKE ? AND committee_name = ?'
+    : 'WHERE rag_card LIKE ?';
+  const args = committee ? [term, committee] : [term];
+
   const countRes = await client.execute({
-    sql: `SELECT COUNT(*) as cnt FROM protocol_chunk_fts WHERE protocol_chunk_fts MATCH ?`,
-    args: [safeQuery],
+    sql: `SELECT COUNT(*) as cnt FROM committee_session ${whereClause}`,
+    args,
   });
   const total = Number(countRes.rows[0]['cnt'] ?? 0);
 
   const rowsRes = await client.execute({
-    sql: `SELECT
-            pc.id as chunkId,
-            pc.session_id as sessionId,
-            sp.committee_id as committeeId,
-            pc.committee_name as committeeName,
-            pc.date,
-            sp.title,
-            pc.speaker,
-            snippet(protocol_chunk_fts, 0, '<mark>', '</mark>', '...', 20) as snippet
-          FROM protocol_chunk_fts
-          JOIN protocol_chunk pc ON pc.id = protocol_chunk_fts.rowid
-          JOIN session_protocol sp ON sp.session_id = pc.session_id
-          WHERE protocol_chunk_fts MATCH ?
-          ORDER BY rank
-          LIMIT ? OFFSET ?`,
-    args: [safeQuery, pageSize, offset],
+    sql: `SELECT id, committee_id, committee_name, date, title, rag_card
+          FROM committee_session ${whereClause}
+          ORDER BY date DESC LIMIT ? OFFSET ?`,
+    args: [...args, pageSize, offset],
   });
 
-  const results = rowsRes.rows.map(row => ({
-    chunkId: Number(row['chunkId']),
-    sessionId: Number(row['sessionId']),
-    committeeId: Number(row['committeeId']),
-    committeeName: String(row['committeeName'] ?? ''),
-    date: String(row['date'] ?? ''),
-    title: row['title'] != null ? String(row['title']) : null,
-    speaker: row['speaker'] != null ? String(row['speaker']) : null,
-    snippet: String(row['snippet'] ?? ''),
+  const results: ProtocolSearchResult[] = rowsRes.rows.map(r => ({
+    chunkId: Number(r['id']),
+    sessionId: Number(r['id']),
+    committeeId: Number(r['committee_id'] ?? 0),
+    committeeName: String(r['committee_name'] ?? ''),
+    date: String(r['date'] ?? ''),
+    title: r['title'] != null ? String(r['title']) : null,
+    speaker: null,
+    snippet: String(r['rag_card'] ?? '').slice(0, 300),
   }));
 
   return { results, total, page };
 }
+
+// ── Session + turns for RAG context ──────────────────────────────────────────
 
 export interface ProtocolSession {
   sessionId: number;
@@ -152,42 +181,40 @@ export interface ProtocolChunk {
 export async function getProtocolSession(
   sessionId: number,
 ): Promise<{ session: ProtocolSession; chunks: ProtocolChunk[] } | null> {
-  if (!process.env.TURSO_URL) return null;
+  const client = getTurso();
+  if (!client) return null;
 
-  const client = getClient();
-
-  const sessionRes = await client.execute({
-    sql: `SELECT session_id as sessionId, committee_id as committeeId,
-                 committee_name as committeeName, date, title,
-                 doc_url as docUrl, chunk_count as chunkCount
-          FROM session_protocol WHERE session_id = ?`,
-    args: [sessionId],
-  });
+  const [sessionRes, turnsRes] = await Promise.all([
+    client.execute({
+      sql: `SELECT id, committee_id, committee_name, date, title, protocol_url
+            FROM committee_session WHERE id = ?`,
+      args: [sessionId],
+    }),
+    client.execute({
+      sql: `SELECT turn_number, text, raw_name
+            FROM session_speaker_turn WHERE session_id = ?
+            ORDER BY turn_number ASC`,
+      args: [sessionId],
+    }),
+  ]);
 
   if (sessionRes.rows.length === 0) return null;
 
-  const r = sessionRes.rows[0];
+  const sr = sessionRes.rows[0];
   const session: ProtocolSession = {
-    sessionId: Number(r['sessionId']),
-    committeeId: Number(r['committeeId']),
-    committeeName: r['committeeName'] != null ? String(r['committeeName']) : null,
-    date: String(r['date'] ?? ''),
-    title: r['title'] != null ? String(r['title']) : null,
-    docUrl: r['docUrl'] != null ? String(r['docUrl']) : null,
-    chunkCount: Number(r['chunkCount'] ?? 0),
+    sessionId: Number(sr['id']),
+    committeeId: Number(sr['committee_id'] ?? 0),
+    committeeName: sr['committee_name'] != null ? String(sr['committee_name']) : null,
+    date: String(sr['date'] ?? ''),
+    title: sr['title'] != null ? String(sr['title']) : null,
+    docUrl: sr['protocol_url'] != null ? String(sr['protocol_url']) : null,
+    chunkCount: turnsRes.rows.length,
   };
 
-  const chunksRes = await client.execute({
-    sql: `SELECT chunk_index as chunkIndex, text, speaker
-          FROM protocol_chunk WHERE session_id = ?
-          ORDER BY chunk_index ASC`,
-    args: [sessionId],
-  });
-
-  const chunks: ProtocolChunk[] = chunksRes.rows.map(row => ({
-    chunkIndex: Number(row['chunkIndex']),
-    text: String(row['text'] ?? ''),
-    speaker: row['speaker'] != null ? String(row['speaker']) : null,
+  const chunks: ProtocolChunk[] = turnsRes.rows.map((r, i) => ({
+    chunkIndex: i,
+    text: String(r['text'] ?? ''),
+    speaker: r['raw_name'] != null ? String(r['raw_name']) : null,
   }));
 
   return { session, chunks };
@@ -203,34 +230,36 @@ export interface CommitteeProtocolSession {
 export async function getCommitteeProtocolSessions(
   committeeName: string,
 ): Promise<CommitteeProtocolSession[]> {
-  if (!process.env.TURSO_URL) return [];
-
-  const client = getClient();
+  const client = getTurso();
+  if (!client) return [];
 
   const res = await client.execute({
-    sql: `SELECT session_id as sessionId, date, title, chunk_count as chunkCount
-          FROM session_protocol WHERE committee_name = ?
-          ORDER BY date DESC`,
+    sql: `SELECT cs.id as sessionId, cs.date, cs.title,
+                 COUNT(sst.id) as chunkCount
+          FROM committee_session cs
+          LEFT JOIN session_speaker_turn sst ON sst.session_id = cs.id
+          WHERE cs.committee_name = ?
+          GROUP BY cs.id
+          ORDER BY cs.date DESC`,
     args: [committeeName],
   });
 
-  return res.rows.map(row => ({
-    sessionId: Number(row['sessionId']),
-    date: String(row['date'] ?? ''),
-    title: row['title'] != null ? String(row['title']) : null,
-    chunkCount: Number(row['chunkCount'] ?? 0),
+  return res.rows.map(r => ({
+    sessionId: Number(r['sessionId']),
+    date: String(r['date'] ?? ''),
+    title: r['title'] != null ? String(r['title']) : null,
+    chunkCount: Number(r['chunkCount'] ?? 0),
   }));
 }
 
 export async function getProtocolCommitteeNames(): Promise<string[]> {
-  if (!process.env.TURSO_URL) return [];
-
-  const client = getClient();
+  const client = getTurso();
+  if (!client) return [];
 
   const res = await client.execute(
-    `SELECT DISTINCT committee_name FROM session_protocol
+    `SELECT DISTINCT committee_name FROM committee_session
      WHERE committee_name IS NOT NULL ORDER BY committee_name ASC`,
   );
 
-  return res.rows.map(row => String(row['committee_name'] ?? '')).filter(Boolean);
+  return res.rows.map(r => String(r['committee_name'] ?? '')).filter(Boolean);
 }
