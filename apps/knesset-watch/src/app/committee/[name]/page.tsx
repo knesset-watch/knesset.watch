@@ -1,7 +1,7 @@
 import { checkServerAuth } from '@/lib/ui/auth-utils';
 import { redirect, notFound } from 'next/navigation';
 import { getCommitteeDetail } from '@/lib/knesset-db';
-import { getCommitteeProtocolSessions } from '@/lib/protocols-db';
+import { tursoAvailable, getTursoCommitteeDetail } from '@/lib/turso-db';
 import CommitteeClient from './CommitteeClient';
 
 interface Props {
@@ -15,10 +15,10 @@ export default async function CommitteePage({ params }: Props) {
   const { name: rawName } = await params;
   const name = decodeURIComponent(rawName);
 
-  const data = getCommitteeDetail(name);
+  const data = tursoAvailable()
+    ? await getTursoCommitteeDetail(name)
+    : getCommitteeDetail(name);
   if (!data) notFound();
 
-  const protocolSessions = await getCommitteeProtocolSessions(name);
-
-  return <CommitteeClient data={data} protocolSessions={protocolSessions} />;
+  return <CommitteeClient data={data} />;
 }

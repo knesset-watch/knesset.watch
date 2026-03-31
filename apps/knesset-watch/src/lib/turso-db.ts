@@ -14,7 +14,7 @@ import { createClient, type Client } from '@libsql/client';
 import type {
   SessionDetail, SessionSummary, CommitteeActivity,
   AttendingMember, SessionGuest, SessionAgendaItem, SessionVote,
-  SessionBillLink, SpeakerTurn,
+  SessionBillLink, SpeakerTurn, CommitteeDetail,
 } from './knesset-db';
 
 // ── Singleton client ──────────────────────────────────────────────────────────
@@ -269,6 +269,57 @@ export async function getTursoSessionSpeakerTurns(
     speakerRole: s(r.speaker_role),
     text: s(r.text)!,
   }));
+}
+
+// ── Committee detail ──────────────────────────────────────────────────────────
+
+export async function getTursoCommitteeDetail(name: string): Promise<CommitteeDetail | null> {
+  const client = getTursoClient();
+  if (!client) return null;
+
+  const committeeRes = await client.execute({
+    sql: `SELECT id FROM committee WHERE name = ? ORDER BY id DESC LIMIT 1`,
+    args: [name],
+  });
+  const committeeId = committeeRes.rows.length > 0 ? n(committeeRes.rows[0].id) : null;
+  if (!committeeId) return null;
+
+  const [sessionRes, billRes, billRows] = await Promise.all([
+    client.execute({
+      sql: `SELECT COUNT(*) as cnt FROM committee_session WHERE committee_id = ?`,
+      args: [committeeId],
+    }),
+    client.execute({
+      sql: `SELECT COUNT(*) as total, SUM(is_passed) as passed FROM bill WHERE committee_name = ?`,
+      args: [name],
+    }),
+    client.execute({
+      sql: `SELECT id, title, subtype, is_passed, summary, doc_url, micro_agenda, macro_agenda, init_date
+            FROM bill WHERE committee_name = ? ORDER BY is_passed DESC, id DESC`,
+      args: [name],
+    }),
+  ]);
+
+  return {
+    name,
+    committeeId,
+    billCount: n(billRes.rows[0]?.total) ?? 0,
+    passedCount: n(billRes.rows[0]?.passed) ?? 0,
+    sessionCount: n(sessionRes.rows[0]?.cnt) ?? 0,
+    members: [], // mk_position not migrated to Turso
+    bills: billRows.rows.map(r => ({
+      billId: n(r.id)!,
+      title: s(r.title)!,
+      subtype: s(r.subtype) ?? '',
+      isPassed: Number(r.is_passed) === 1,
+      summary: s(r.summary),
+      docUrl: s(r.doc_url),
+      microAgenda: s(r.micro_agenda),
+      macroAgenda: s(r.macro_agenda),
+      initDate: s(r.init_date),
+      initiators: [],
+    })),
+  };
 }
 
 // ── Vector search (RAG) ───────────────────────────────────────────────────────
