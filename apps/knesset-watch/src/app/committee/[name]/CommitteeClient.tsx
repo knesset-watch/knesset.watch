@@ -291,9 +291,15 @@ export default function CommitteeClient({
                         <span className="text-xs font-bold text-gray-700">{date}</span>
                         {s.title && <p className="text-sm font-bold mt-0.5">{s.title}</p>}
                       </div>
-                      <span className="text-gray-400 text-sm">
-                        {isLoading ? '...' : isExpanded ? '▲' : '▼'}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <Link href={`/session/${s.sessionId}`} onClick={e => e.stopPropagation()}
+                          className="text-[10px] font-black text-gray-400 hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">
+                          פתח
+                        </Link>
+                        <span className="text-gray-400 text-sm">
+                          {isLoading ? '...' : isExpanded ? '▲' : '▼'}
+                        </span>
+                      </div>
                     </div>
                     {isExpanded && protocol && (
                       <div className="border-t border-black/5 px-4 py-3 max-h-[60vh] overflow-y-auto bg-white">

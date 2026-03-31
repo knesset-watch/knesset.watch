@@ -770,7 +770,7 @@ export default function KnessetWatchPage() {
             <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest px-4">חקירה</span>
             <button onClick={() => setGroupBy('rebels')} className={`w-full text-right px-4 py-2 text-sm font-black rounded-lg transition-colors ${groupBy === 'rebels' ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'}`}>מדד המורדים</button>
             <button onClick={() => setGroupBy('alliances')} className={`w-full text-right px-4 py-2 text-sm font-black rounded-lg transition-colors ${groupBy === 'alliances' ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'}`}>רשת קשרים</button>
-            <button onClick={() => setGroupBy('committee')} className={`w-full text-right px-4 py-2 text-sm font-black rounded-lg transition-colors ${groupBy === 'committee' ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'}`}>יעילות ועדות</button>
+            <button onClick={() => setGroupBy('committee')} className={`w-full text-right px-4 py-2 text-sm font-black rounded-lg transition-colors ${groupBy === 'committee' ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'}`}>ועדות</button>
           </div>
 
           <div className="space-y-1">
