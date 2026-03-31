@@ -96,7 +96,10 @@ export async function getTursoAllCommitteeActivity(): Promise<CommitteeActivity[
   const res = await client.execute(`
     SELECT c.id as committee_id, c.name,
            COUNT(cs.id) as session_count,
-           MAX(cs.date) as last_session_date
+           MAX(cs.date) as last_session_date,
+           (SELECT MAX(cs2.date) FROM committee_session cs2
+            WHERE cs2.committee_id = c.id
+            AND EXISTS (SELECT 1 FROM session_speaker_turn sst WHERE sst.session_id = cs2.id)) as last_protocol_date
     FROM committee c
     JOIN committee_session cs ON cs.committee_id = c.id
     GROUP BY c.id
@@ -113,6 +116,7 @@ export async function getTursoAllCommitteeActivity(): Promise<CommitteeActivity[
           name,
           sessionCount: n(r.session_count) ?? 0,
           lastSessionDate: s(r.last_session_date),
+          lastProtocolDate: s(r.last_protocol_date),
         });
       }
       return acc;

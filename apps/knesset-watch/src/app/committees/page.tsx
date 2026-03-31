@@ -42,16 +42,28 @@ export default async function CommitteesPage() {
                   <span className="text-[9px] font-black uppercase text-gray-400 mb-0.5">ישיבות</span>
                   <span className="text-xl font-black">{c.sessionCount.toLocaleString('he-IL')}</span>
                 </div>
-                {c.lastSessionDate && (
-                  <div className="flex flex-col items-end">
-                    <span className="text-[9px] font-black uppercase text-gray-400 mb-0.5">אחרונה</span>
-                    <span className="text-xs font-bold text-gray-500">
-                      {new Date(c.lastSessionDate).toLocaleDateString('he-IL', {
-                        year: 'numeric', month: 'short', day: 'numeric',
-                      })}
-                    </span>
-                  </div>
-                )}
+                <div className="flex flex-col items-end gap-1">
+                  {c.lastProtocolDate && (
+                    <div className="flex flex-col items-end">
+                      <span className="text-[9px] font-black uppercase text-teal-600 mb-0.5">דיון אחרון</span>
+                      <span className="text-xs font-bold text-teal-700">
+                        {new Date(c.lastProtocolDate).toLocaleDateString('he-IL', {
+                          year: 'numeric', month: 'short', day: 'numeric',
+                        })}
+                      </span>
+                    </div>
+                  )}
+                  {!c.lastProtocolDate && c.lastSessionDate && (
+                    <div className="flex flex-col items-end">
+                      <span className="text-[9px] font-black uppercase text-gray-400 mb-0.5">אחרונה</span>
+                      <span className="text-xs font-bold text-gray-500">
+                        {new Date(c.lastSessionDate).toLocaleDateString('he-IL', {
+                          year: 'numeric', month: 'short', day: 'numeric',
+                        })}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             </Link>
           ))}

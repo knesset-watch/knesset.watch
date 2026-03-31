@@ -1171,6 +1171,7 @@ export interface CommitteeActivity {
   name: string;
   sessionCount: number;
   lastSessionDate: string | null;
+  lastProtocolDate: string | null;
 }
 
 export function getAllCommitteeActivity(): CommitteeActivity[] {
@@ -1194,7 +1195,7 @@ export function getAllCommitteeActivity(): CommitteeActivity[] {
   // Deduplicate by name: SQL orders by session_count DESC so first occurrence is always the winner
   .reduce((acc, r) => {
     if (!acc.find(a => a.name === r.name)) {
-      acc.push({ committeeId: r.committee_id, name: r.name, sessionCount: r.session_count, lastSessionDate: r.last_session_date });
+      acc.push({ committeeId: r.committee_id, name: r.name, sessionCount: r.session_count, lastSessionDate: r.last_session_date, lastProtocolDate: null });
     }
     return acc;
   }, [] as CommitteeActivity[])

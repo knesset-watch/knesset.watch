@@ -31,7 +31,9 @@ export default function CommitteeClient({
   const [search, setSearch] = useState('');
   const [showPassedOnly, setShowPassedOnly] = useState(false);
   const [expandedBills, setExpandedBills] = useState<Set<number>>(new Set());
-  const [activeTab, setActiveTab] = useState<'bills' | 'protocols'>('bills');
+  const [activeTab, setActiveTab] = useState<'bills' | 'protocols'>(
+    protocolSessions.length > 0 ? 'protocols' : 'bills'
+  );
   const [protocolSearch, setProtocolSearch] = useState('');
   const [expandedProtocols, setExpandedProtocols] = useState<Map<number, FullProtocol>>(new Map());
   const [loadingProtocols, setLoadingProtocols] = useState<Set<number>>(new Set());
@@ -155,6 +157,43 @@ export default function CommitteeClient({
                     </Link>
                   ))}
                 </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Recent discussions */}
+        {protocolSessions.length > 0 && (
+          <div className="mb-6">
+            <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-2">דיונים אחרונים</div>
+            <div className="flex flex-col gap-1.5">
+              {protocolSessions.slice(0, 3).map(s => {
+                const date = new Date(s.date).toLocaleDateString('he-IL', {
+                  year: 'numeric', month: 'short', day: 'numeric',
+                });
+                return (
+                  <Link
+                    key={s.sessionId}
+                    href={`/session/${s.sessionId}`}
+                    className="flex items-center justify-between rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors px-4 py-3 group"
+                  >
+                    <div>
+                      <span className="text-xs font-bold text-gray-500">{date}</span>
+                      {s.title && <p className="text-sm font-bold mt-0.5 text-gray-900 group-hover:text-black">{s.title}</p>}
+                    </div>
+                    <span className="text-[10px] font-black text-gray-400 group-hover:text-black border border-gray-200 group-hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors shrink-0 mr-2">
+                      פתח ←
+                    </span>
+                  </Link>
+                );
+              })}
+              {protocolSessions.length > 3 && (
+                <button
+                  onClick={() => setActiveTab('protocols')}
+                  className="text-xs font-black text-gray-400 hover:text-black text-right px-4 py-2 transition-colors"
+                >
+                  + {protocolSessions.length - 3} דיונים נוספים ▾
+                </button>
               )}
             </div>
           </div>
@@ -289,6 +328,9 @@ export default function CommitteeClient({
                     >
                       <div>
                         <span className="text-xs font-bold text-gray-700">{date}</span>
+                        {s.chunkCount > 0 && (
+                          <span className="text-[10px] text-gray-400 font-medium mr-2">{s.chunkCount} קטעים</span>
+                        )}
                         {s.title && <p className="text-sm font-bold mt-0.5">{s.title}</p>}
                       </div>
                       <div className="flex items-center gap-2">
