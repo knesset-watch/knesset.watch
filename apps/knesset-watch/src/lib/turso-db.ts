@@ -342,7 +342,7 @@ export async function tursoVectorSearch(
   const res = await client.execute({
     sql: `
       SELECT id, committee_name, date, title, rag_card,
-             vector_distance_cos(embedding, vector(?, 'float32')) as distance
+             vector_distance_cos(embedding, vector32(?)) as distance
       FROM committee_session
       WHERE embedding IS NOT NULL
       ORDER BY distance ASC

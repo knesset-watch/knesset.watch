@@ -92,7 +92,7 @@ export async function searchProtocols(
     const vecRes = await client.execute({
       sql: `
         SELECT cs.id, cs.committee_id, cs.committee_name, cs.date, cs.title, cs.rag_card,
-               vector_distance_cos(embedding, vector(?, 'float32')) as distance
+               vector_distance_cos(embedding, vector32(?)) as distance
         FROM committee_session cs
         WHERE cs.embedding IS NOT NULL
           ${committee ? 'AND cs.committee_name = ?' : ''}
