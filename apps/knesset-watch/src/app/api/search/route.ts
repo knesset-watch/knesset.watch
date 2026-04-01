@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
         id: String(b.id),
         title: b.title,
         subtitle: b.status_desc ?? (b.is_passed ? 'עבר' : 'בטיפול'),
-        url: `/bills`,  // no individual bill page yet
+        url: `/bill/${b.id}`,
       });
     }
 

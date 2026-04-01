@@ -128,7 +128,7 @@ export default function BillsClient() {
                   </span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm font-bold leading-snug text-gray-900">{b.title}</p>
+                      <Link href={`/bill/${b.id}`} className="text-sm font-bold leading-snug text-gray-900 hover:text-teal-700 transition-colors">{b.title}</Link>
                       <div className="flex items-center gap-1 shrink-0">
                         {b.doc_url && (
                           <a href={b.doc_url} target="_blank" rel="noopener noreferrer"

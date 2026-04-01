@@ -881,6 +881,29 @@ export function getBills(opts: GetBillsOptions): { bills: BillRow[]; total: numb
   return { bills, total };
 }
 
+export function getBillById(id: number): BillRow | null {
+  const db = getDb();
+  if (!db) return null;
+
+  const bill = db.prepare(`
+    SELECT b.id, b.title, b.subtype, b.is_passed, b.status_desc,
+           b.committee_name, b.summary, b.doc_url, b.micro_agenda, b.macro_agenda,
+           b.publication_date, b.init_date
+    FROM bill b WHERE b.id = ?
+  `).get(id) as BillRow | undefined;
+
+  if (!bill) return null;
+
+  bill.initiators = db.prepare(`
+    SELECT p.person_id, p.first_name, p.last_name, p.slug
+    FROM bill_initiator i
+    JOIN mk_person p ON p.person_id = i.mk_id
+    WHERE i.bill_id = ?
+  `).all(id) as BillRow['initiators'];
+
+  return bill;
+}
+
 // ── Committee Sessions & Session Detail ────────────────────────────────────────
 
 export interface SessionSummary {
