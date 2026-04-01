@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
@@ -148,9 +149,11 @@ export default function ProtocolsClient({ committees }: Props) {
   return (
     <div className="min-h-screen bg-white" dir="rtl">
       <div className="max-w-4xl mx-auto px-6 py-8">
-        <button onClick={() => router.back()} className="text-sm font-black text-gray-400 hover:text-black transition-colors mb-6">
-          → חזרה
-        </button>
+        <nav className="flex items-center gap-1 text-sm text-gray-400 mb-6">
+          <Link href="/" className="font-black hover:text-black transition-colors">ראשי</Link>
+          <span className="mx-1">›</span>
+          <span className="text-black font-black">פרוטוקולים</span>
+        </nav>
 
         <h1 className="text-3xl font-black mb-6">פרוטוקולים</h1>
 
@@ -177,7 +180,15 @@ export default function ProtocolsClient({ committees }: Props) {
           </div>
 
           {askError && (
-            <p className="mt-3 text-xs text-red-600 font-bold">{askError}</p>
+            <div className="mt-3 flex items-center gap-3">
+              <p className="text-xs text-red-600 font-bold flex-1">{askError}</p>
+              <button
+                onClick={handleAsk}
+                className="text-xs font-black px-3 py-1.5 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 transition-colors shrink-0"
+              >
+                נסה שוב
+              </button>
+            </div>
           )}
 
           {askAnswer !== null && (

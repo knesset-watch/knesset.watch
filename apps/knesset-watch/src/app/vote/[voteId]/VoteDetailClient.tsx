@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { MkResult } from '@/lib/vote-cache';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
@@ -92,14 +93,15 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
     <div className="min-h-screen bg-white" dir="rtl">
       <div className="max-w-4xl mx-auto px-4 py-8">
 
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-1 text-sm text-gray-400 mb-4">
+          <Link href="/" className="font-black hover:text-black transition-colors">ראשי</Link>
+          <span className="mx-1">›</span>
+          <span className="text-black font-black">{title || `הצבעה ${voteId}`}</span>
+        </nav>
+
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
-          <button
-            onClick={handleBack}
-            className="text-sm font-black px-3 py-1.5 rounded border border-black/10 hover:bg-gray-50 transition-colors"
-          >
-            → חזרה
-          </button>
           <div className="flex-1 min-w-0">
             {loading ? (
               <div className="h-6 bg-gray-100 rounded animate-pulse w-64" />

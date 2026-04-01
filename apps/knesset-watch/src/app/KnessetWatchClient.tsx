@@ -877,6 +877,11 @@ export default function KnessetWatchPage() {
              groupBy === 'timeline' ? "מתי החלה החקיקה המשמעותית של הכנסת ה-25?" :
              "שקיפות נתוני הכנסת בזמן אמת."}
           </p>
+          {groupBy === 'mk' && (
+            <p className="mt-3 text-sm text-gray-500 font-serif max-w-lg">
+              כנסת ווטש עוקבת אחר הצבעות, דיוני ועדות ופרוטוקולים של הכנסת ה-25 — כדי שתוכלו לבדוק כיצד חברי הכנסת שלכם מצביעים ומה נאמר מאחורי דלתות הוועדות.
+            </p>
+          )}
 
           {/* ── Controls ── */}
           <div className="mt-10 flex flex-col md:flex-row items-start gap-8 flex-wrap">

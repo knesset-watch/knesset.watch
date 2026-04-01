@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import type { SessionDetail, SpeakerTurn } from '@/lib/knesset-db';
 
 // Strip "היו"ר " / "יו"ר " / "מ"מ יו"ר " prefix from speaker names and return a role override
@@ -45,7 +44,6 @@ export default function SessionClient({
   session: SessionDetail;
   turns: SpeakerTurn[];
 }) {
-  const router = useRouter();
   const [speakerFilter, setSpeakerFilter] = useState<string | null>(null);
 
   const displayDate = new Date(session.date).toLocaleDateString('he-IL', {
@@ -111,30 +109,25 @@ export default function SessionClient({
   return (
     <div className="min-h-screen bg-white" dir="rtl">
       <div className="max-w-4xl mx-auto px-6 py-8">
-        {/* Back */}
-        <button
-          onClick={() => router.back()}
-          className="text-sm font-black text-gray-400 hover:text-black transition-colors mb-6"
-        >
-          → חזרה
-        </button>
-
         {/* Breadcrumb */}
-        <div className="text-xs text-gray-400 mb-2">
+        <nav className="flex items-center gap-1 text-sm text-gray-400 mb-4 flex-wrap">
+          <Link href="/" className="font-black hover:text-black transition-colors">ראשי</Link>
+          <span className="mx-1">›</span>
+          <Link href="/committees" className="font-black hover:text-black transition-colors">ועדות</Link>
           {session.committeeName && (
             <>
+              <span className="mx-1">›</span>
               <Link
                 href={`/committee/${encodeURIComponent(session.committeeName)}`}
-                className="font-bold hover:text-black transition-colors"
+                className="font-black hover:text-black transition-colors"
               >
                 {session.committeeName}
               </Link>
-              <span className="mx-2">·</span>
             </>
           )}
-          <span>{displayDate}</span>
-          {session.protocolNumber && <span className="mx-2">· ישיבה {session.protocolNumber}</span>}
-        </div>
+          <span className="mx-1">›</span>
+          <span className="text-black font-black">{displayDate}{session.protocolNumber ? ` · ישיבה ${session.protocolNumber}` : ''}</span>
+        </nav>
 
         {/* Title */}
         {headingTitle && (

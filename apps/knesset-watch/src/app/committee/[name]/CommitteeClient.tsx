@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { CommitteeDetail } from '@/lib/knesset-db';
 import type { CommitteeProtocolSession } from '@/lib/protocols-db';
@@ -26,7 +25,6 @@ export default function CommitteeClient({
   data: CommitteeDetail;
   protocolSessions: CommitteeProtocolSession[];
 }) {
-  const router = useRouter();
   const ratio = data.billCount > 0 ? Math.round((data.passedCount / data.billCount) * 100) : 0;
   const [search, setSearch] = useState('');
   const [showPassedOnly, setShowPassedOnly] = useState(false);
@@ -83,10 +81,14 @@ export default function CommitteeClient({
   return (
     <div className="min-h-screen bg-white" dir="rtl">
       <div className="max-w-4xl mx-auto px-6 py-8">
-        {/* Back */}
-        <button onClick={() => router.back()} className="text-sm font-black text-gray-400 hover:text-black transition-colors mb-6">
-          → חזרה
-        </button>
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-1 text-sm text-gray-400 mb-6">
+          <Link href="/" className="font-black hover:text-black transition-colors">ראשי</Link>
+          <span className="mx-1">›</span>
+          <Link href="/committees" className="font-black hover:text-black transition-colors">ועדות</Link>
+          <span className="mx-1">›</span>
+          <span className="text-black font-black truncate max-w-xs">{data.name}</span>
+        </nav>
 
         {/* Header */}
         <h1 className="text-3xl font-black leading-tight mb-2">{data.name}</h1>
