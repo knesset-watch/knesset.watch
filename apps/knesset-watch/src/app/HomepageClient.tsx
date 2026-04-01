@@ -81,13 +81,13 @@ export default function HomepageClient() {
       </div>
 
       {/* Stats row */}
-      {stats && (
+      {stats && stats.mks !== undefined && (
         <div className="max-w-3xl mx-auto px-6 mb-14">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
               { label: 'ח"כים', value: stats.mks, href: '/mks' },
               { label: 'ועדות', value: stats.committees, href: '/committees' },
-              { label: 'ישיבות עם פרוטוקול', value: stats.sessions.toLocaleString(), href: '/protocols' },
+              { label: 'ישיבות ועדה', value: stats.sessions.toLocaleString(), href: '/protocols' },
               { label: 'חוקים שעברו', value: stats.billsPassed.toLocaleString(), href: '/bills?passedOnly=true' },
             ].map(s => (
               <Link key={s.label} href={s.href}

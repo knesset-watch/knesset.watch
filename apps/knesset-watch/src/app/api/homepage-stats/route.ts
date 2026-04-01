@@ -16,7 +16,7 @@ export async function GET() {
       SELECT
         (SELECT COUNT(*) FROM mk_person WHERE is_current = 1) as mks,
         (SELECT COUNT(DISTINCT committee_name) FROM committee_session WHERE committee_name IS NOT NULL) as committees,
-        (SELECT COUNT(*) FROM committee_session WHERE protocol_text IS NOT NULL AND length(protocol_text) > 10) as sessions,
+        (SELECT COUNT(*) FROM committee_session) as sessions,
         (SELECT COUNT(*) FROM bill WHERE is_passed = 1) as billsPassed
     `).get() as { mks: number; committees: number; sessions: number; billsPassed: number };
 
