@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Source_Serif_4, Frank_Ruhl_Libre } from "next/font/google";
 import "./globals.css";
+import SiteHeader from "@/components/SiteHeader";
 
 const sourceSerif = Source_Serif_4({
   variable: "--font-source-serif",
@@ -25,6 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${sourceSerif.variable} ${frankRuhl.variable} font-serif antialiased bg-white`}>
+        <SiteHeader />
         {children}
       </body>
     </html>

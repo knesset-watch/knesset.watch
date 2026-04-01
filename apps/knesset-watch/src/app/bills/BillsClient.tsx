@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
@@ -24,7 +23,6 @@ interface Bill {
 }
 
 export default function BillsClient() {
-  const router = useRouter();
   const [bills, setBills] = useState<Bill[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -76,9 +74,11 @@ export default function BillsClient() {
   return (
     <div className="min-h-screen bg-white" dir="rtl">
       <div className="max-w-4xl mx-auto px-6 py-8">
-        <button onClick={() => router.back()} className="text-sm font-black text-gray-400 hover:text-black transition-colors mb-6">
-          → חזרה
-        </button>
+        <nav className="flex items-center gap-1 text-sm text-gray-400 mb-6">
+          <Link href="/" className="font-black hover:text-black transition-colors">ראשי</Link>
+          <span className="mx-1">›</span>
+          <span className="text-black font-black">ספר החוקים</span>
+        </nav>
 
         <h1 className="text-4xl font-black mb-1">ספר החוקים</h1>
         <p className="text-sm text-gray-500 mb-6">כל הצעות החוק של הכנסת ה-25</p>

@@ -1,22 +1,22 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { MinisterInfo } from '@/lib/knesset-db';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
 export default function MinistersClient({ ministers }: { ministers: MinisterInfo[] }) {
-  const router = useRouter();
   const fullMinisters = ministers.filter(m => !m.ministerRole.startsWith('סגן') && !m.ministerRole.startsWith('סגנית'));
   const deputies = ministers.filter(m => m.ministerRole.startsWith('סגן') || m.ministerRole.startsWith('סגנית'));
 
   return (
     <div className="min-h-screen bg-white" dir="rtl">
       <div className="max-w-4xl mx-auto px-6 py-8">
-        <button onClick={() => router.back()} className="text-sm font-black text-gray-400 hover:text-black transition-colors mb-6">
-          → חזרה
-        </button>
+        <nav className="flex items-center gap-1 text-sm text-gray-400 mb-6">
+          <Link href="/" className="font-black hover:text-black transition-colors">ראשי</Link>
+          <span className="mx-1">›</span>
+          <span className="text-black font-black">שרים</span>
+        </nav>
 
         <h1 className="text-4xl font-black mb-1">שרים</h1>
         <p className="text-sm text-gray-500 mb-8">חברי כנסת המכהנים גם כשרים בממשלה</p>
