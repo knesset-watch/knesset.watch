@@ -56,31 +56,64 @@ export async function GET(request: Request) {
     `).get(mkId) as { cnt: number };
 
     // Committee activity — which committees this MK participated in
-    const committeeActivity = (db.prepare(`
-      SELECT c.name as committee_name, COUNT(*) as session_count
-      FROM committee_attendance ca
-      JOIN committee_session cs ON cs.id = ca.session_id
-      JOIN committee c ON c.id = cs.committee_id
-      WHERE ca.mk_id = ?
-      GROUP BY c.id
-      ORDER BY session_count DESC
-      LIMIT 12
-    `).all(mkId) as Array<{ committee_name: string; session_count: number }>).map(row => {
-      const recentSessions = db.prepare(`
-        SELECT cs.id, cs.date, cs.title
-        FROM committee_attendance ca
-        JOIN committee_session cs ON cs.id = ca.session_id
-        JOIN committee c ON c.id = cs.committee_id
-        WHERE ca.mk_id = ? AND c.name = ?
-        ORDER BY cs.date DESC
-        LIMIT 3
-      `).all(mkId, row.committee_name) as Array<{ id: number; date: string; title: string | null }>;
-      return {
-        committeeName: row.committee_name,
-        sessionCount: row.session_count,
-        recentSessions,
-      };
-    });
+    let committeeActivity: Array<{ committeeName: string; sessionCount: number; recentSessions: Array<{ id: number; date: string; title: string | null }> }> = [];
+    try {
+      let activityRows: Array<{ committee_name: string; session_count: number }>;
+      try {
+        // Newer schema: committee table exists
+        activityRows = db.prepare(`
+          SELECT c.name as committee_name, COUNT(*) as session_count
+          FROM committee_attendance ca
+          JOIN committee_session cs ON cs.id = ca.session_id
+          JOIN committee c ON c.id = cs.committee_id
+          WHERE ca.mk_id = ?
+          GROUP BY c.id
+          ORDER BY session_count DESC
+          LIMIT 12
+        `).all(mkId) as Array<{ committee_name: string; session_count: number }>;
+      } catch {
+        // Older schema: use committee_name column on committee_session directly
+        activityRows = db.prepare(`
+          SELECT cs.committee_name, COUNT(*) as session_count
+          FROM committee_attendance ca
+          JOIN committee_session cs ON cs.id = ca.session_id
+          WHERE ca.mk_id = ? AND cs.committee_name IS NOT NULL
+          GROUP BY cs.committee_name
+          ORDER BY session_count DESC
+          LIMIT 12
+        `).all(mkId) as Array<{ committee_name: string; session_count: number }>;
+      }
+      committeeActivity = activityRows.map(row => {
+        let recentSessions: Array<{ id: number; date: string; title: string | null }> = [];
+        try {
+          try {
+            recentSessions = db.prepare(`
+              SELECT cs.id, cs.date, cs.title
+              FROM committee_attendance ca
+              JOIN committee_session cs ON cs.id = ca.session_id
+              JOIN committee c ON c.id = cs.committee_id
+              WHERE ca.mk_id = ? AND c.name = ?
+              ORDER BY cs.date DESC
+              LIMIT 3
+            `).all(mkId, row.committee_name) as Array<{ id: number; date: string; title: string | null }>;
+          } catch {
+            recentSessions = db.prepare(`
+              SELECT cs.id, cs.date, cs.title
+              FROM committee_attendance ca
+              JOIN committee_session cs ON cs.id = ca.session_id
+              WHERE ca.mk_id = ? AND cs.committee_name = ?
+              ORDER BY cs.date DESC
+              LIMIT 3
+            `).all(mkId, row.committee_name) as Array<{ id: number; date: string; title: string | null }>;
+          }
+        } catch { /* skip recent sessions on error */ }
+        return {
+          committeeName: row.committee_name,
+          sessionCount: row.session_count,
+          recentSessions,
+        };
+      });
+    } catch { /* committeeActivity stays [] */ }
 
     // List of specific rebelled votes
     const rebelledVotes = db.prepare(`
