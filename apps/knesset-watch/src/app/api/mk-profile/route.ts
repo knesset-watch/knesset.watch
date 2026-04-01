@@ -57,11 +57,12 @@ export async function GET(request: Request) {
 
     // Committee activity — which committees this MK participated in
     const committeeActivity = (db.prepare(`
-      SELECT cs.committee_name, COUNT(*) as session_count
+      SELECT c.name as committee_name, COUNT(*) as session_count
       FROM committee_attendance ca
       JOIN committee_session cs ON cs.id = ca.session_id
-      WHERE ca.mk_id = ? AND cs.committee_name IS NOT NULL
-      GROUP BY cs.committee_name
+      JOIN committee c ON c.id = cs.committee_id
+      WHERE ca.mk_id = ?
+      GROUP BY c.id
       ORDER BY session_count DESC
       LIMIT 12
     `).all(mkId) as Array<{ committee_name: string; session_count: number }>).map(row => {
@@ -69,7 +70,8 @@ export async function GET(request: Request) {
         SELECT cs.id, cs.date, cs.title
         FROM committee_attendance ca
         JOIN committee_session cs ON cs.id = ca.session_id
-        WHERE ca.mk_id = ? AND cs.committee_name = ?
+        JOIN committee c ON c.id = cs.committee_id
+        WHERE ca.mk_id = ? AND c.name = ?
         ORDER BY cs.date DESC
         LIMIT 3
       `).all(mkId, row.committee_name) as Array<{ id: number; date: string; title: string | null }>;

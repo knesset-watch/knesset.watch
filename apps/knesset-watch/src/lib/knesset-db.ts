@@ -1017,9 +1017,10 @@ export function getSessionDetail(sessionId: number): SessionDetail | null {
   if (!db) return null;
 
   const session = db.prepare(`
-    SELECT cs.id, cs.committee_id, cs.committee_name,
+    SELECT cs.id, cs.committee_id, c.name as committee_name,
            cs.date, cs.title, cs.protocol_number, cs.start_time, cs.end_time
     FROM committee_session cs
+    LEFT JOIN committee c ON c.id = cs.committee_id
     WHERE cs.id = ?
   `).get(sessionId) as {
     id: number; committee_id: number; committee_name: string | null;
