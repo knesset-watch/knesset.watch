@@ -2,13 +2,12 @@
 // Data access layer for protocol search and RAG.
 //
 // Search strategy:
-//   1. Embed the query with OpenAI text-embedding-3-small
+//   1. Embed the query once with Jina AI (jina-embeddings-v3, 768 dims)
 //   2. Vector ANN search on committee_session.embedding in Turso
 //   3. Return session-level results (rag_card as snippet)
 //
 // Context retrieval for /ask:
-//   Uses session_speaker_turn rows as "chunks" (filtered to turns already
-//   migrated to Turso, i.e. LENGTH(text) > 200).
+//   Uses session_speaker_turn rows as "chunks".
 
 import { createClient, type Client } from '@libsql/client/http';
 
@@ -33,31 +32,52 @@ export function protocolsDbAvailable(): boolean {
   return !!(process.env.TURSO_URL);
 }
 
+// ── Extract "פרוטוקול N" label from rag_card first line ──────────────────────
+// rag_card format: "CommitteeName | YYYY-MM-DD | פרוטוקול N | HH:MM–HH:MM\n..."
+
+function protocolLabel(ragCard: unknown): string | null {
+  const card = typeof ragCard === 'string' ? ragCard : '';
+  const firstLine = card.split('\n')[0] ?? '';
+  const parts = firstLine.split('|');
+  const label = parts[2]?.trim();
+  return label && label.startsWith('פרוטוקול') ? label : null;
+}
+
 // ── Embed a query string via Jina AI ─────────────────────────────────────────
 
 async function embedQuery(text: string): Promise<number[] | null> {
   if (!process.env.JINA_API_KEY) return null;
-  const res = await fetch('https://api.jina.ai/v1/embeddings', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.JINA_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: 'jina-embeddings-v3',
-      input: [text],
-      dimensions: DIMS,
-    }),
-  });
-  if (!res.ok) return null;
-  const data = await res.json() as { data: Array<{ embedding: number[] }> };
-  return data.data[0]?.embedding ?? null;
+  try {
+    const res = await fetch('https://api.jina.ai/v1/embeddings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.JINA_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'jina-embeddings-v3',
+        input: [text],
+        dimensions: DIMS,
+      }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json() as { data?: Array<{ embedding?: number[] }> };
+    const emb = data.data?.[0]?.embedding;
+    return Array.isArray(emb) && emb.length === DIMS ? emb : null;
+  } catch {
+    return null;
+  }
+}
+
+// Public wrapper so route.ts can call embed once and reuse
+export async function embedQueryPublic(text: string): Promise<number[] | null> {
+  return embedQuery(text);
 }
 
 // ── Search ────────────────────────────────────────────────────────────────────
 
 export interface ProtocolSearchResult {
-  chunkId: number;       // = sessionId (session-level results now)
+  chunkId: number;       // = sessionId (session-level results)
   sessionId: number;
   committeeId: number;
   committeeName: string;
@@ -71,6 +91,42 @@ export interface ProtocolSearchResponse {
   results: ProtocolSearchResult[];
   total: number;
   page: number;
+}
+
+// Single-embed vector search — embed once externally, pass the vector in
+export async function searchProtocolsVec(
+  embedding: number[],
+  committee: string | null,
+  limit: number,
+): Promise<ProtocolSearchResult[]> {
+  const client = getTurso();
+  if (!client) return [];
+
+  const vecRes = await client.execute({
+    sql: `
+      SELECT cs.id, cs.committee_id, cs.committee_name, cs.date, cs.rag_card,
+             vector_distance_cos(embedding, vector32(?)) as distance
+      FROM committee_session cs
+      WHERE cs.embedding IS NOT NULL
+        ${committee ? 'AND cs.committee_name = ?' : ''}
+      ORDER BY distance ASC
+      LIMIT ?
+    `,
+    args: committee
+      ? [JSON.stringify(embedding), committee, limit]
+      : [JSON.stringify(embedding), limit],
+  });
+
+  return vecRes.rows.map(r => ({
+    chunkId: Number(r['id']),
+    sessionId: Number(r['id']),
+    committeeId: Number(r['committee_id'] ?? 0),
+    committeeName: String(r['committee_name'] ?? ''),
+    date: String(r['date'] ?? ''),
+    title: protocolLabel(r['rag_card']),
+    speaker: null,
+    snippet: String(r['rag_card'] ?? '').slice(0, 300),
+  }));
 }
 
 export async function searchProtocols(
@@ -91,7 +147,7 @@ export async function searchProtocols(
     // Vector search path — semantically find matching sessions
     const vecRes = await client.execute({
       sql: `
-        SELECT cs.id, cs.committee_id, cs.committee_name, cs.date, cs.title, cs.rag_card,
+        SELECT cs.id, cs.committee_id, cs.committee_name, cs.date, cs.rag_card,
                vector_distance_cos(embedding, vector32(?)) as distance
         FROM committee_session cs
         WHERE cs.embedding IS NOT NULL
@@ -110,7 +166,7 @@ export async function searchProtocols(
       committeeId: Number(r['committee_id'] ?? 0),
       committeeName: String(r['committee_name'] ?? ''),
       date: String(r['date'] ?? ''),
-      title: r['title'] != null ? String(r['title']) : null,
+      title: protocolLabel(r['rag_card']),
       speaker: null,
       snippet: String(r['rag_card'] ?? '').slice(0, 300),
     }));
@@ -140,7 +196,7 @@ export async function searchProtocols(
   const total = Number(countRes.rows[0]['cnt'] ?? 0);
 
   const rowsRes = await client.execute({
-    sql: `SELECT id, committee_id, committee_name, date, title, rag_card
+    sql: `SELECT id, committee_id, committee_name, date, rag_card
           FROM committee_session ${whereClause}
           ORDER BY date DESC LIMIT ? OFFSET ?`,
     args: [...args, pageSize, offset],
@@ -152,7 +208,7 @@ export async function searchProtocols(
     committeeId: Number(r['committee_id'] ?? 0),
     committeeName: String(r['committee_name'] ?? ''),
     date: String(r['date'] ?? ''),
-    title: r['title'] != null ? String(r['title']) : null,
+    title: protocolLabel(r['rag_card']),
     speaker: null,
     snippet: String(r['rag_card'] ?? '').slice(0, 300),
   }));
@@ -186,7 +242,7 @@ export async function getProtocolSession(
 
   const [sessionRes, turnsRes] = await Promise.all([
     client.execute({
-      sql: `SELECT id, committee_id, committee_name, date, title, protocol_url
+      sql: `SELECT id, committee_id, committee_name, date, protocol_url, rag_card
             FROM committee_session WHERE id = ?`,
       args: [sessionId],
     }),
@@ -206,7 +262,7 @@ export async function getProtocolSession(
     committeeId: Number(sr['committee_id'] ?? 0),
     committeeName: sr['committee_name'] != null ? String(sr['committee_name']) : null,
     date: String(sr['date'] ?? ''),
-    title: sr['title'] != null ? String(sr['title']) : null,
+    title: protocolLabel(sr['rag_card']),
     docUrl: sr['protocol_url'] != null ? String(sr['protocol_url']) : null,
     chunkCount: turnsRes.rows.length,
   };
@@ -234,7 +290,7 @@ export async function getCommitteeProtocolSessions(
   if (!client) return [];
 
   const res = await client.execute({
-    sql: `SELECT cs.id as sessionId, cs.date, cs.title,
+    sql: `SELECT cs.id as sessionId, cs.date, cs.rag_card,
                  COUNT(sst.id) as chunkCount
           FROM committee_session cs
           LEFT JOIN session_speaker_turn sst ON sst.session_id = cs.id
@@ -247,7 +303,7 @@ export async function getCommitteeProtocolSessions(
   return res.rows.map(r => ({
     sessionId: Number(r['sessionId']),
     date: String(r['date'] ?? ''),
-    title: r['title'] != null ? String(r['title']) : null,
+    title: protocolLabel(r['rag_card']),
     chunkCount: Number(r['chunkCount'] ?? 0),
   }));
 }
