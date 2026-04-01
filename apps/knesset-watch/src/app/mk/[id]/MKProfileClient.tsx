@@ -585,7 +585,12 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
               <h1 className="text-3xl font-black leading-tight">{mkName || `ח"כ ${mkId}`}</h1>
               <div className="flex items-center gap-2 flex-wrap mt-2">
                 {profile?.factionName && (
-                  <span className="text-sm font-bold text-gray-500">{profile.factionName}</span>
+                  <Link
+                    href={`/search?q=${encodeURIComponent(profile.factionName)}`}
+                    className="text-sm font-bold text-gray-500 hover:text-teal-700 transition-colors"
+                  >
+                    {profile.factionName}
+                  </Link>
                 )}
                 {isCoalition !== null && isCoalition !== undefined && (
                   <span

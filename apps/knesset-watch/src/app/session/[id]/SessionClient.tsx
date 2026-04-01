@@ -157,9 +157,18 @@ export default function SessionClient({
             </span>
           )}
           {chairMember && (
-            <span className="text-[11px] font-black px-3 py-1 rounded-full bg-black text-white">
-              יו&quot;ר: {chairMember.name}
-            </span>
+            chairMember.slug || chairMember.mkId ? (
+              <Link
+                href={`/mk/${chairMember.slug ?? chairMember.mkId}`}
+                className="text-[11px] font-black px-3 py-1 rounded-full bg-black text-white hover:bg-gray-800 transition-colors"
+              >
+                יו&quot;ר: {chairMember.name}
+              </Link>
+            ) : (
+              <span className="text-[11px] font-black px-3 py-1 rounded-full bg-black text-white">
+                יו&quot;ר: {chairMember.name}
+              </span>
+            )
           )}
         </div>
 
@@ -193,7 +202,12 @@ export default function SessionClient({
                 <div className="flex flex-col gap-1">
                   {session.guests.map((g, i) => (
                     <div key={i} className="text-xs text-gray-600">
-                      <span className="font-bold">{g.name}</span>
+                      <Link
+                        href={`/search?q=${encodeURIComponent(g.name)}`}
+                        className="font-bold hover:text-teal-700 transition-colors"
+                      >
+                        {g.name}
+                      </Link>
                       {(g.role || g.organization) && (
                         <span className="text-gray-400">
                           {g.role && ` – ${g.role}`}
@@ -222,7 +236,12 @@ export default function SessionClient({
                     };
                     return (
                       <div key={i} className="text-xs text-gray-600">
-                        <span className="font-bold">{s.name}</span>
+                        <Link
+                          href={`/search?q=${encodeURIComponent(s.name)}`}
+                          className="font-bold hover:text-teal-700 transition-colors"
+                        >
+                          {s.name}
+                        </Link>
                         <span className="text-gray-400"> – {roleLabel[s.role] ?? s.role}</span>
                       </div>
                     );
@@ -292,9 +311,13 @@ export default function SessionClient({
             <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-3">חקיקה</div>
             <div className="flex flex-col gap-1">
               {session.bills.map(b => (
-                <div key={b.billId} className="text-sm text-gray-700">
+                <Link
+                  key={b.billId}
+                  href={`/bill/${b.billId}`}
+                  className="text-sm text-gray-700 hover:text-teal-700 transition-colors font-bold"
+                >
                   {b.title ?? `הצ"ח ${b.billId}`}
-                </div>
+                </Link>
               ))}
             </div>
           </div>

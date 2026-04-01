@@ -136,16 +136,18 @@ export function getMkResultsForVotes(
  */
 export function getVoteResults(
   voteId: number,
-): Array<{ mkId: number; resultCode: number }> {
+): Array<{ mkId: number; resultCode: number; slug: string | null }> {
   const db = getDb();
   if (!db) return [];
 
   return db
     .prepare(
-      `SELECT mk_id AS mkId, result_code AS resultCode
-       FROM mk_vote_result WHERE vote_id = ?`,
+      `SELECT r.mk_id AS mkId, r.result_code AS resultCode, p.slug
+       FROM mk_vote_result r
+       LEFT JOIN mk_person p ON p.person_id = r.mk_id
+       WHERE r.vote_id = ?`,
     )
-    .all(voteId) as Array<{ mkId: number; resultCode: number }>;
+    .all(voteId) as Array<{ mkId: number; resultCode: number; slug: string | null }>;
 }
 
 export interface BillSummary {

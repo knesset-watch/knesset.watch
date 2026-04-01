@@ -34,10 +34,11 @@ export async function GET(
 
       // Merge party + coalition info from KV cache if available
       const mkLookup = await getCachedMkLookup();
-      const mkResults: MkResult[] = rawResults.map(r => {
+      const mkResults: Array<MkResult & { slug?: string | null }> = rawResults.map(r => {
         const info = mkLookup?.[String(r.mkId)];
         return {
           mkId: r.mkId,
+          slug: r.slug ?? null,
           firstName: info?.name?.split(' ')[0] ?? '',
           lastName:  info?.name?.split(' ').slice(1).join(' ') ?? '',
           result: CODE_TO_DESC[r.resultCode] ?? 'נוכח',

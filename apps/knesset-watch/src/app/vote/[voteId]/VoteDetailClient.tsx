@@ -3,7 +3,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { MkResult } from '@/lib/vote-cache';
+import { MkResult as BaseMkResult } from '@/lib/vote-cache';
+
+type MkResult = BaseMkResult & { slug?: string | null };
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
@@ -200,7 +202,13 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
                   <span className={`shrink-0 text-[10px] font-black px-2 py-0.5 rounded-full ${RESULT_COLORS[r.result] ?? 'bg-zinc-100 text-zinc-500'}`}>
                     {r.result}
                   </span>
-                  <span className="font-bold">{r.firstName} {r.lastName}</span>
+                  {r.slug || r.mkId ? (
+                    <Link href={`/mk/${r.slug ?? r.mkId}`} className="font-bold hover:text-teal-700 transition-colors">
+                      {r.firstName} {r.lastName}
+                    </Link>
+                  ) : (
+                    <span className="font-bold">{r.firstName} {r.lastName}</span>
+                  )}
                   <span className="text-xs text-gray-500 font-medium mr-auto">{r.party ?? '—'}</span>
                 </div>
               ))}
