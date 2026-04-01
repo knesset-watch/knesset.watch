@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import type { SessionDetail, SpeakerTurn } from '@/lib/knesset-db';
 
@@ -45,6 +45,14 @@ export default function SessionClient({
   turns: SpeakerTurn[];
 }) {
   const [speakerFilter, setSpeakerFilter] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyLink = useCallback(() => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, []);
 
   const displayDate = new Date(session.date).toLocaleDateString('he-IL', {
     year: 'numeric', month: 'long', day: 'numeric',
@@ -129,10 +137,31 @@ export default function SessionClient({
           <span className="text-black font-black">{displayDate}{session.protocolNumber ? ` · ישיבה ${session.protocolNumber}` : ''}</span>
         </nav>
 
-        {/* Title */}
-        {headingTitle && (
-          <h1 className="text-2xl font-black leading-tight mb-3">{headingTitle}</h1>
-        )}
+        {/* Title + share */}
+        <div className="flex items-start gap-3 mb-3">
+          {headingTitle && (
+            <h1 className="text-2xl font-black leading-tight flex-1">{headingTitle}</h1>
+          )}
+          <button
+            onClick={handleCopyLink}
+            title="העתק קישור"
+            className="shrink-0 flex items-center gap-1.5 text-xs font-black px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors text-gray-600 mt-0.5"
+          >
+            {copied ? (
+              <>
+                <svg className="w-3.5 h-3.5 text-teal-600" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m3 8 4 4 6-8"/></svg>
+                <span className="text-teal-600">הועתק</span>
+              </>
+            ) : (
+              <>
+                <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 0 1 1-1h8"/>
+                </svg>
+                <span>שתף</span>
+              </>
+            )}
+          </button>
+        </div>
 
         {/* Stat pills */}
         <div className="flex flex-wrap gap-2 mb-8">

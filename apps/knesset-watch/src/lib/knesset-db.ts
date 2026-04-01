@@ -1200,7 +1200,7 @@ export interface CommitteeActivity {
 }
 
 export interface SearchHit {
-  type: 'mk' | 'committee' | 'bill';
+  type: 'mk' | 'committee' | 'bill' | 'session';
   id: string;
   title: string;
   subtitle: string | null;
@@ -1237,6 +1237,221 @@ export function searchAll(q: string): SearchHit[] {
   }
 
   return results;
+}
+
+// ── Faction detail ─────────────────────────────────────────────────────────────
+
+export interface FactionMk {
+  personId: number;
+  firstName: string;
+  lastName: string;
+  slug: string | null;
+  isCurrent: boolean;
+}
+
+export interface FactionDetail {
+  name: string;
+  isCoalition: boolean | null;
+  mks: FactionMk[];
+  billCount: number;
+  passedCount: number;
+  rebellionRate: number | null;
+}
+
+export function getFactionDetail(name: string): FactionDetail | null {
+  const db = getDb();
+  if (!db) return null;
+
+  const mks = (db.prepare(`
+    SELECT person_id, first_name, last_name, slug, is_current, is_coalition
+    FROM mk_person WHERE faction_name = ?
+    ORDER BY is_current DESC, last_name ASC
+  `).all(name) as Array<{
+    person_id: number; first_name: string; last_name: string;
+    slug: string | null; is_current: number; is_coalition: number | null;
+  }>);
+
+  if (mks.length === 0) return null;
+
+  const isCoalition = mks[0].is_coalition === null ? null : mks[0].is_coalition === 1;
+
+  const bills = db.prepare(`
+    SELECT COUNT(b.id) as billCount, SUM(b.is_passed) as passedCount
+    FROM bill b
+    JOIN bill_initiator i ON i.bill_id = b.id
+    JOIN mk_person p ON p.person_id = i.mk_id
+    WHERE p.faction_name = ?
+  `).get(name) as { billCount: number; passedCount: number } | undefined;
+
+  const rebelStats = db.prepare(`
+    SELECT SUM(rebel_count) as totalRebels, SUM(vote_count) as totalVotes
+    FROM vote_faction_stats
+    WHERE faction_id = (SELECT faction_id FROM mk_person WHERE faction_name = ? AND faction_id IS NOT NULL LIMIT 1)
+  `).get(name) as { totalRebels: number; totalVotes: number } | undefined;
+
+  const rebellionRate =
+    rebelStats && rebelStats.totalVotes > 0
+      ? (rebelStats.totalRebels / rebelStats.totalVotes) * 100
+      : null;
+
+  return {
+    name,
+    isCoalition,
+    mks: mks.map(r => ({
+      personId: r.person_id,
+      firstName: r.first_name,
+      lastName: r.last_name,
+      slug: r.slug,
+      isCurrent: r.is_current === 1,
+    })),
+    billCount: bills?.billCount ?? 0,
+    passedCount: bills?.passedCount ?? 0,
+    rebellionRate,
+  };
+}
+
+// ── Ministry detail ─────────────────────────────────────────────────────────────
+
+export interface MinistryMinister {
+  personId: number;
+  name: string;
+  slug: string | null;
+  role: string;
+  factionName: string | null;
+  isCurrent: boolean;
+}
+
+export interface MinistryDetail {
+  name: string;
+  ministers: MinistryMinister[];
+  billCount: number;
+  passedCount: number;
+}
+
+export function getMinistryDetail(name: string): MinistryDetail | null {
+  const db = getDb();
+  if (!db) return null;
+
+  const ministers = (db.prepare(`
+    SELECT pos.person_id, mp.first_name || ' ' || mp.last_name as name,
+           mp.slug, pos.duty_desc, mp.faction_name,
+           CASE WHEN pos.finish_date IS NULL OR pos.is_current = 1 THEN 1 ELSE 0 END as is_current
+    FROM mk_position pos
+    JOIN mk_person mp ON mp.person_id = pos.person_id
+    WHERE pos.ministry = ?
+    ORDER BY is_current DESC, pos.start_date DESC
+  `).all(name) as Array<{
+    person_id: number; name: string; slug: string | null;
+    duty_desc: string | null; faction_name: string | null; is_current: number;
+  }>);
+
+  if (ministers.length === 0) return null;
+
+  const bills = db.prepare(`
+    SELECT COUNT(*) as billCount, SUM(is_passed) as passedCount
+    FROM bill
+    WHERE committee_name LIKE ? OR macro_agenda LIKE ?
+  `).get(`%${name}%`, `%${name}%`) as { billCount: number; passedCount: number } | undefined;
+
+  return {
+    name,
+    ministers: ministers.map(r => ({
+      personId: r.person_id,
+      name: r.name,
+      slug: r.slug,
+      role: r.duty_desc ?? name,
+      factionName: r.faction_name,
+      isCurrent: r.is_current === 1,
+    })),
+    billCount: bills?.billCount ?? 0,
+    passedCount: bills?.passedCount ?? 0,
+  };
+}
+
+// ── Votes listing ──────────────────────────────────────────────────────────────
+
+export interface VoteListRow {
+  voteId: number;
+  title: string;
+  date: string;
+  totalFor: number;
+  totalAgainst: number;
+  totalAbstain: number;
+  isPassed: boolean;
+  margin: number;
+  microAgenda: string | null;
+  macroAgenda: string | null;
+}
+
+export interface GetVoteListOptions {
+  passedOnly?: boolean;
+  failedOnly?: boolean;
+  maxMargin?: number;   // only votes decided by ≤ N votes
+  search?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export function getVoteList(opts: GetVoteListOptions = {}): { votes: VoteListRow[]; total: number } {
+  const db = getDb();
+  if (!db) return { votes: [], total: 0 };
+
+  const { passedOnly, failedOnly, maxMargin, search, limit = 50, offset = 0 } = opts;
+  const conditions: string[] = [];
+  const params: (string | number)[] = [];
+
+  if (passedOnly) { conditions.push('is_passed = 1'); }
+  if (failedOnly) { conditions.push('is_passed = 0'); }
+  if (maxMargin !== undefined) {
+    conditions.push('ABS(total_for - total_against) <= ?');
+    params.push(maxMargin);
+  }
+  if (search) {
+    conditions.push('title LIKE ?');
+    params.push(`%${search}%`);
+  }
+
+  const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  const total = (db.prepare(`SELECT COUNT(*) as cnt FROM plenary_vote ${where}`).get(...params) as { cnt: number }).cnt;
+  const rows = db.prepare(`
+    SELECT id, title, date, total_for, total_against, total_abstain, is_passed, micro_agenda, macro_agenda
+    FROM plenary_vote ${where}
+    ORDER BY date DESC
+    LIMIT ? OFFSET ?
+  `).all(...params, limit, offset) as Array<{
+    id: number; title: string; date: string; total_for: number; total_against: number;
+    total_abstain: number; is_passed: number; micro_agenda: string | null; macro_agenda: string | null;
+  }>;
+
+  return {
+    votes: rows.map(r => ({
+      voteId: r.id,
+      title: r.title,
+      date: r.date,
+      totalFor: r.total_for,
+      totalAgainst: r.total_against,
+      totalAbstain: r.total_abstain,
+      isPassed: r.is_passed === 1,
+      margin: Math.abs(r.total_for - r.total_against),
+      microAgenda: r.micro_agenda,
+      macroAgenda: r.macro_agenda,
+    })),
+    total,
+  };
+}
+
+// ── Session title search (for global search) ────────────────────────────────────
+
+export function searchSessions(q: string, limit = 10): Array<{ id: number; title: string | null; committeeName: string | null; date: string }> {
+  const db = getDb();
+  if (!db) return [];
+  return db.prepare(`
+    SELECT id, title, committee_name, date
+    FROM committee_session
+    WHERE title LIKE ? AND title IS NOT NULL
+    ORDER BY date DESC LIMIT ?
+  `).all(`%${q}%`, limit) as Array<{ id: number; title: string | null; committeeName: string | null; date: string }>;
 }
 
 export function getAllCommitteeActivity(): CommitteeActivity[] {

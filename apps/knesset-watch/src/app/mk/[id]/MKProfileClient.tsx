@@ -586,7 +586,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
               <div className="flex items-center gap-2 flex-wrap mt-2">
                 {profile?.factionName && (
                   <Link
-                    href={`/search?q=${encodeURIComponent(profile.factionName)}`}
+                    href={`/faction/${encodeURIComponent(profile.factionName)}`}
                     className="text-sm font-bold text-gray-500 hover:text-teal-700 transition-colors"
                   >
                     {profile.factionName}

@@ -148,6 +148,7 @@ export default function SiteHeader() {
           <Link href="/protocols" className="px-2 py-1 rounded hover:bg-gray-100 transition-colors">פרוטוקולים</Link>
           <Link href="/bills" className="px-2 py-1 rounded hover:bg-gray-100 transition-colors">חוקים</Link>
           <Link href="/ministers" className="px-2 py-1 rounded hover:bg-gray-100 transition-colors">שרים</Link>
+          <Link href="/votes" className="px-2 py-1 rounded hover:bg-gray-100 transition-colors">הצבעות</Link>
         </nav>
       </div>
     </header>

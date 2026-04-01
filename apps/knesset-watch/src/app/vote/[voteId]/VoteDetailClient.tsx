@@ -37,6 +37,14 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
   const [coalFilter, setCoalFilter] = useState<CoalitionFilter>('all');
   const [sortBy, setSortBy] = useState<SortBy>('party');
   const [search, setSearch] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  function handleCopyLink() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
 
   useEffect(() => {
     setLoading(true);
@@ -103,7 +111,7 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
         </nav>
 
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-start gap-4 mb-8">
           <div className="flex-1 min-w-0">
             {loading ? (
               <div className="h-6 bg-gray-100 rounded animate-pulse w-64" />
@@ -124,6 +132,25 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
               </>
             )}
           </div>
+          <button
+            onClick={handleCopyLink}
+            title="העתק קישור"
+            className="shrink-0 flex items-center gap-1.5 text-xs font-black px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors text-gray-600"
+          >
+            {copied ? (
+              <>
+                <svg className="w-3.5 h-3.5 text-teal-600" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m3 8 4 4 6-8"/></svg>
+                <span className="text-teal-600">הועתק</span>
+              </>
+            ) : (
+              <>
+                <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 0 1 1-1h8"/>
+                </svg>
+                <span>שתף</span>
+              </>
+            )}
+          </button>
         </div>
 
         {loading && (

@@ -24,6 +24,7 @@ const SECTIONS = [
   { label: 'חוקים', sublabel: 'הצעות חוק ומעקב', href: '/bills', icon: '📋' },
   { label: 'פרוטוקולים', sublabel: 'חיפוש בתוך הדיונים', href: '/protocols', icon: '🔍' },
   { label: 'שרים', sublabel: 'חברי הממשלה', href: '/ministers', icon: '⭐' },
+  { label: 'הצבעות', sublabel: 'הצבעות מליאה', href: '/votes', icon: '🗳' },
 ];
 
 export default function HomepageClient() {

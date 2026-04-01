@@ -56,7 +56,11 @@ export default function MinistersClient({ ministers }: { ministers: MinisterInfo
                     <span className="text-[11px] text-gray-500">{m.factionName}</span>
                   </div>
                   <div className="min-w-0">
-                    <span className="text-xs text-gray-700 leading-snug line-clamp-2">{m.ministerRole}</span>
+                    {m.ministry ? (
+                      <Link href={`/ministry/${encodeURIComponent(m.ministry)}`} className="text-xs text-gray-700 leading-snug line-clamp-2 hover:underline hover:text-teal-700 transition-colors">{m.ministerRole}</Link>
+                    ) : (
+                      <span className="text-xs text-gray-700 leading-snug line-clamp-2">{m.ministerRole}</span>
+                    )}
                   </div>
                   <span className="text-xl font-black text-center">{m.billCount}</span>
                   <span className="text-xl font-black text-teal-600 text-center">{m.passedCount}</span>
@@ -90,7 +94,11 @@ export default function MinistersClient({ ministers }: { ministers: MinisterInfo
                       </Link>
                       <span className="text-[11px] text-gray-500">{m.factionName}</span>
                     </div>
-                    <span className="text-xs text-gray-700">{m.ministerRole}</span>
+                    {m.ministry ? (
+                      <Link href={`/ministry/${encodeURIComponent(m.ministry)}`} className="text-xs text-gray-700 hover:underline hover:text-teal-700 transition-colors">{m.ministerRole}</Link>
+                    ) : (
+                      <span className="text-xs text-gray-700">{m.ministerRole}</span>
+                    )}
                     <span className="text-xl font-black text-center">{m.billCount}</span>
                     <span className="text-xl font-black text-teal-600 text-center">{m.passedCount}</span>
                     <span className="text-xl font-black text-center">{m.billCount > 0 ? `${ratio}%` : '—'}</span>

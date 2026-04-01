@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 interface SearchHit {
-  type: 'mk' | 'committee' | 'bill';
+  type: 'mk' | 'committee' | 'bill' | 'session';
   id: string;
   title: string;
   subtitle: string | null;
@@ -16,9 +16,10 @@ const TYPE_LABEL: Record<string, string> = {
   mk: 'ח"כים',
   committee: 'ועדות',
   bill: 'חוקים',
+  session: 'ישיבות ועדה',
 };
 
-const TYPE_ORDER: Array<'mk' | 'committee' | 'bill'> = ['mk', 'committee', 'bill'];
+const TYPE_ORDER: Array<'mk' | 'committee' | 'bill' | 'session'> = ['mk', 'committee', 'bill', 'session'];
 
 export default function SearchResultsClient({ initialQ }: { initialQ: string }) {
   const [query, setQuery] = useState(initialQ);
@@ -49,7 +50,7 @@ export default function SearchResultsClient({ initialQ }: { initialQ: string }) 
   const grouped = TYPE_ORDER.reduce<Record<string, SearchHit[]>>((acc, t) => {
     acc[t] = results.filter(r => r.type === t);
     return acc;
-  }, { mk: [], committee: [], bill: [] });
+  }, { mk: [], committee: [], bill: [], session: [] });
 
   const hasResults = results.length > 0;
 
