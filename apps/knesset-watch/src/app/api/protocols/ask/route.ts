@@ -136,8 +136,8 @@ export async function POST(req: NextRequest) {
       console.error('Groq error:', groqRes.status, err);
       const msg = groqRes.status === 429
         ? 'שירות ה-AI עמוס כרגע, נסה שוב בעוד כמה שניות'
-        : 'שגיאה בשירות ה-AI';
-      return NextResponse.json({ error: msg }, { status: 502 });
+        : `שגיאה בשירות ה-AI [${groqRes.status}]`;
+      return NextResponse.json({ error: msg, _debug: err.slice(0, 200) }, { status: 502 });
     }
 
     const groqData = await groqRes.json() as {
