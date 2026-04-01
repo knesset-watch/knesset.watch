@@ -55,6 +55,31 @@ export async function GET(request: Request) {
       SELECT COUNT(*) as cnt FROM committee_attendance WHERE mk_id = ?
     `).get(mkId) as { cnt: number };
 
+    // Committee activity — which committees this MK participated in
+    const committeeActivity = (db.prepare(`
+      SELECT cs.committee_name, COUNT(*) as session_count
+      FROM committee_attendance ca
+      JOIN committee_session cs ON cs.id = ca.session_id
+      WHERE ca.mk_id = ? AND cs.committee_name IS NOT NULL
+      GROUP BY cs.committee_name
+      ORDER BY session_count DESC
+      LIMIT 12
+    `).all(mkId) as Array<{ committee_name: string; session_count: number }>).map(row => {
+      const recentSessions = db.prepare(`
+        SELECT cs.id, cs.date, cs.title
+        FROM committee_attendance ca
+        JOIN committee_session cs ON cs.id = ca.session_id
+        WHERE ca.mk_id = ? AND cs.committee_name = ?
+        ORDER BY cs.date DESC
+        LIMIT 3
+      `).all(mkId, row.committee_name) as Array<{ id: number; date: string; title: string | null }>;
+      return {
+        committeeName: row.committee_name,
+        sessionCount: row.session_count,
+        recentSessions,
+      };
+    });
+
     // List of specific rebelled votes
     const rebelledVotes = db.prepare(`
       SELECT 
@@ -92,6 +117,7 @@ export async function GET(request: Request) {
       agendaStats,
       rebellionCount: rebellion?.cnt ?? 0,
       attendanceCount: attendance?.cnt ?? 0,
+      committeeActivity,
       rebelledVotes,
       // Votes where MK voted with the winning side.
       // For opposition: these are the "crossed the aisle" anomalies.

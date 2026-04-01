@@ -83,6 +83,7 @@ interface ProfileData {
   queries: QuerySummary[];
   positions: PositionSummary[];
   agendaStats: AgendaStat[];
+  committeeActivity: CommitteeActivityItem[];
   withMajorityVotes: MkVoteRow[];
   rebellionCount?: number;
   attendanceCount?: number;
@@ -93,6 +94,12 @@ interface AgendaStat {
   macroAgenda: string;
   pushedCount: number;
   supportedCount: number;
+}
+
+interface CommitteeActivityItem {
+  committeeName: string;
+  sessionCount: number;
+  recentSessions: Array<{ id: number; date: string; title: string | null }>;
 }
 
 interface MkVote {
@@ -708,6 +715,43 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                   attendance={profile.attendanceCount || 0}
                 />
                 <PresenceHeatmap mkId={mkId} />
+              </div>
+            )}
+
+            {/* Committee session activity */}
+            {!profileLoading && profile && profile.committeeActivity?.length > 0 && (
+              <div className="rounded-2xl border border-black/8 p-6">
+                <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-4">פעילות בוועדות</div>
+                <div className="flex flex-col gap-4">
+                  {profile.committeeActivity.map(item => (
+                    <div key={item.committeeName}>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <Link
+                          href={`/committee/${encodeURIComponent(item.committeeName)}`}
+                          className="text-sm font-black text-teal-700 hover:text-teal-900 transition-colors"
+                        >
+                          {item.committeeName}
+                        </Link>
+                        <span className="text-xs text-gray-400 tabular-nums font-bold">{item.sessionCount} ישיבות</span>
+                      </div>
+                      {item.recentSessions.length > 0 && (
+                        <div className="flex flex-col gap-1 mr-1">
+                          {item.recentSessions.map(s => (
+                            <Link
+                              key={s.id}
+                              href={`/session/${s.id}`}
+                              className="flex items-center gap-2 text-[11px] text-gray-500 hover:text-gray-900 transition-colors"
+                            >
+                              <span className="text-gray-300 shrink-0">·</span>
+                              <span className="text-gray-400 shrink-0 tabular-nums">{s.date?.slice(0, 10)}</span>
+                              <span className="truncate">{s.title ?? 'ישיבה'}</span>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
