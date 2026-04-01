@@ -1220,7 +1220,7 @@ export function searchAll(q: string): SearchHit[] {
   }
 
   const committees = db.prepare(`
-    SELECT DISTINCT name FROM committee WHERE name LIKE ? ORDER BY name LIMIT 5
+    SELECT DISTINCT committee_name as name FROM bill WHERE committee_name IS NOT NULL AND committee_name LIKE ? ORDER BY committee_name LIMIT 5
   `).all(term) as Array<{ name: string }>;
   for (const c of committees) {
     results.push({ type: 'committee', id: c.name, title: c.name, subtitle: 'ועדה', url: `/committee/${encodeURIComponent(c.name)}` });
