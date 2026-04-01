@@ -45,7 +45,7 @@ export default async function BillPage({ params }: { params: Promise<{ id: strin
         <nav className="flex items-center gap-1 text-sm text-gray-400 mb-6">
           <Link href="/" className="font-black hover:text-black transition-colors">ראשי</Link>
           <span className="mx-1">›</span>
-          <Link href="/bills" className="font-black hover:text-black transition-colors">ספר החוקים</Link>
+          <Link href="/bills" className="font-black hover:text-black transition-colors">חוקים</Link>
           <span className="mx-1">›</span>
           <span className="text-black font-black truncate max-w-xs">{bill.title}</span>
         </nav>

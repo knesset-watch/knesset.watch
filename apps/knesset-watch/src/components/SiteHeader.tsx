@@ -75,7 +75,11 @@ function GlobalSearch() {
           onChange={e => setQuery(e.target.value)}
           onKeyDown={e => {
             if (e.key === 'Escape') { setOpen(false); setQuery(''); }
-            if (e.key === 'Enter' && results.length > 0) navigate(results[0].url);
+            if (e.key === 'Enter' && query.trim().length >= 2) {
+              setOpen(false);
+              setQuery('');
+              router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+            }
           }}
           placeholder="חיפוש..."
           className="flex-1 bg-transparent text-xs font-black outline-none placeholder:text-gray-400 placeholder:font-normal min-w-0"
@@ -91,7 +95,7 @@ function GlobalSearch() {
 
       {open && results.length > 0 && (
         <div className="absolute top-full mt-1 right-0 w-72 bg-white border border-black/10 rounded-xl shadow-xl overflow-hidden z-50" dir="rtl">
-          {results.map(hit => (
+          {results.slice(0, 8).map(hit => (
             <button
               key={`${hit.type}-${hit.id}`}
               onClick={() => navigate(hit.url)}
@@ -106,6 +110,12 @@ function GlobalSearch() {
               </div>
             </button>
           ))}
+          <button
+            onClick={() => { setOpen(false); setQuery(''); router.push(`/search?q=${encodeURIComponent(query.trim())}`); }}
+            className="w-full text-center px-3 py-2 border-t border-black/5 text-[11px] font-black text-teal-700 hover:bg-gray-50 transition-colors"
+          >
+            ראה את כל התוצאות ←
+          </button>
         </div>
       )}
       {open && results.length === 0 && !loading && query.length >= 2 && (
@@ -133,6 +143,7 @@ export default function SiteHeader() {
         </Link>
         <GlobalSearch />
         <nav className="hidden md:flex items-center gap-1 text-xs font-black text-gray-500 shrink-0">
+          <Link href="/mks" className="px-2 py-1 rounded hover:bg-gray-100 transition-colors">ח"כים</Link>
           <Link href="/committees" className="px-2 py-1 rounded hover:bg-gray-100 transition-colors">ועדות</Link>
           <Link href="/protocols" className="px-2 py-1 rounded hover:bg-gray-100 transition-colors">פרוטוקולים</Link>
           <Link href="/bills" className="px-2 py-1 rounded hover:bg-gray-100 transition-colors">חוקים</Link>

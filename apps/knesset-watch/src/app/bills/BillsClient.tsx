@@ -77,10 +77,10 @@ export default function BillsClient() {
         <nav className="flex items-center gap-1 text-sm text-gray-400 mb-6">
           <Link href="/" className="font-black hover:text-black transition-colors">ראשי</Link>
           <span className="mx-1">›</span>
-          <span className="text-black font-black">ספר החוקים</span>
+          <span className="text-black font-black">חוקים</span>
         </nav>
 
-        <h1 className="text-4xl font-black mb-1">ספר החוקים</h1>
+        <h1 className="text-4xl font-black mb-1">חוקים</h1>
         <p className="text-sm text-gray-500 mb-6">כל הצעות החוק של הכנסת ה-25</p>
 
         {/* Filters */}

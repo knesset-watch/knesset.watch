@@ -1,12 +1,12 @@
 import { checkServerAuth } from '@/lib/ui/auth-utils';
 import { redirect } from 'next/navigation';
-import HomepageClient from './HomepageClient';
+import KnessetWatchWrapper from '../KnessetWatchWrapper';
 
-export default async function Page() {
+export default async function MksPage() {
   const isAuthenticated = await checkServerAuth('SITE_PASSWORD', 'knesset-watch_auth_token');
   if (!isAuthenticated) {
     redirect('/login');
   }
 
-  return <HomepageClient />;
+  return <KnessetWatchWrapper />;
 }
