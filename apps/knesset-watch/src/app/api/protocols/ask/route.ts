@@ -87,8 +87,8 @@ export async function POST(req: NextRequest) {
       }
       context += '\n';
 
-      // Stop adding sessions if we're already at ~8000 chars
-      if (context.length > 8000) break;
+      // Stop adding sessions if we're already at ~4000 chars (keeps token usage under Groq limits)
+      if (context.length > 4000) break;
     }
 
     // Guard: if context is too thin, nothing useful to send to Groq
@@ -99,8 +99,13 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 5. Call Groq with one retry on rate-limit (429)
-    async function callGroq(): Promise<Response> {
+    // 5. Call Groq — try 70b first, fall back to 8b-instant on rate-limit
+    const SYSTEM_PROMPT = `אתה עוזר חוקר לניתוח פרוטוקולים של ועדות הכנסת הישראלי.
+ענה על שאלות בעברית בלבד, בצורה ממוקדת ועובדתית.
+הסתמך אך ורק על הקטעים שסופקו. אם המידע הנדרש אינו מצוי בקטעים — אמור זאת בפירוש.
+ציין שמות דוברים, תאריכים ושמות ועדות כשרלוונטי.`;
+
+    async function callGroq(model: string): Promise<Response> {
       return fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -108,31 +113,22 @@ export async function POST(req: NextRequest) {
           Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
         },
         body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          max_tokens: 1024,
+          model,
+          max_tokens: 768,
           messages: [
-            {
-              role: 'system',
-              content: `אתה עוזר חוקר לניתוח פרוטוקולים של ועדות הכנסת הישראלי.
-ענה על שאלות בעברית בלבד, בצורה ממוקדת ועובדתית.
-הסתמך אך ורק על הקטעים שסופקו. אם המידע הנדרש אינו מצוי בקטעים — אמור זאת בפירוש.
-ציין שמות דוברים, תאריכים ושמות ועדות כשרלוונטי.`,
-            },
-            {
-              role: 'user',
-              content: `שאלה: ${question}\n\nקטעים מפרוטוקולים:\n${context}`,
-            },
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'user', content: `שאלה: ${question}\n\nקטעים מפרוטוקולים:\n${context}` },
           ],
         }),
       });
     }
 
-    let groqRes = await callGroq();
+    let groqRes = await callGroq('llama-3.3-70b-versatile');
 
-    // One retry after 2s on rate-limit
+    // On rate-limit, wait 1s and retry with the faster 8b model (higher token quota)
     if (groqRes.status === 429) {
-      await new Promise(r => setTimeout(r, 2000));
-      groqRes = await callGroq();
+      await new Promise(r => setTimeout(r, 1000));
+      groqRes = await callGroq('llama-3.1-8b-instant');
     }
 
     if (!groqRes.ok) {
