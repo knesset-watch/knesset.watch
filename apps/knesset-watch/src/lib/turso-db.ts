@@ -151,7 +151,7 @@ export async function getTursoSessionDetail(sessionId: number): Promise<SessionD
         args: [sessionId],
       }),
       client.execute({
-        sql: `SELECT name, organization, attendance_method
+        sql: `SELECT name, role, organization, attendance_method
               FROM session_guest WHERE session_id = ?
               ORDER BY id`,
         args: [sessionId],
@@ -191,7 +191,7 @@ export async function getTursoSessionDetail(sessionId: number): Promise<SessionD
 
   const guests: SessionGuest[] = guestsRes.rows.map(r => ({
     name: s(r.name)!,
-    role: null,
+    role: s(r.role),
     organization: s(r.organization),
     method: s(r.attendance_method),
   }));

@@ -29,6 +29,8 @@
     "db:fix-staff": "tsx scripts/fix-staff.ts",
     "db:enrich-turso": "tsx scripts/enrich-turso.ts",
     "db:fix-attendance": "tsx scripts/fix-attendance.ts",
+    "db:sync-participants": "tsx scripts/sync-participants.ts",
+    "db:backfill-short-turns": "tsx scripts/backfill-short-turns.ts",
     "db:embed-sessions": "tsx scripts/embed-sessions.ts"
   },
   "dependencies": {

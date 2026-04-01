@@ -80,15 +80,16 @@ export async function POST(req: NextRequest) {
       context += `[${session.date} | ${session.committeeName ?? 'ועדה'}]\n`;
       if (session.title) context += `${session.title}\n`;
 
-      const cappedChunks = chunks.slice(0, 30);
+      const cappedChunks = chunks.slice(0, 60);
       for (const chunk of cappedChunks) {
         if (chunk.speaker) context += `${chunk.speaker}: `;
         context += chunk.text.trim().replace(/\n{3,}/g, '\n') + '\n';
       }
       context += '\n';
 
-      // Stop at ~2000 chars — keeps request under ~800 tokens (Groq free tier: 6000 TPM per model)
-      if (context.length > 2000) break;
+      // Stop at ~6000 chars — keeps request under ~2000 tokens
+      // Groq llama-3.3-70b has 6000 TPM; 8b-instant fallback has 30,000 TPM
+      if (context.length > 6000) break;
     }
 
     // Guard: if context is too thin, nothing useful to send to Groq

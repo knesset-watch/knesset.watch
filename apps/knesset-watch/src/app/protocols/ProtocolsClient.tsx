@@ -211,16 +211,24 @@ export default function ProtocolsClient({ committees }: Props) {
                   {askSourcesOpen && (
                     <div className="px-5 pb-4 flex flex-col gap-1.5">
                       {askSources.map(s => (
-                        <div key={s.sessionId} className="text-xs text-gray-600">
-                          <span className="font-bold">{s.committeeName ?? 'ועדה'}</span>
-                          <span className="text-gray-400 mx-1">|</span>
-                          <span>{formatDate(s.date)}</span>
-                          {s.title && (
-                            <>
-                              <span className="text-gray-400 mx-1">|</span>
-                              <span className="text-gray-500">{s.title}</span>
-                            </>
-                          )}
+                        <div key={s.sessionId} className="text-xs text-gray-600 flex items-center gap-2">
+                          <div className="flex-1 min-w-0">
+                            <span className="font-bold">{s.committeeName ?? 'ועדה'}</span>
+                            <span className="text-gray-400 mx-1">|</span>
+                            <span>{formatDate(s.date)}</span>
+                            {s.title && (
+                              <>
+                                <span className="text-gray-400 mx-1">|</span>
+                                <span className="text-gray-500">{s.title}</span>
+                              </>
+                            )}
+                          </div>
+                          <Link
+                            href={`${BASE_PATH}/session/${s.sessionId}`}
+                            className="text-[10px] font-black text-teal-700 hover:underline shrink-0"
+                          >
+                            ←
+                          </Link>
                         </div>
                       ))}
                     </div>
@@ -298,6 +306,13 @@ export default function ProtocolsClient({ committees }: Props) {
                       <span className="text-xs font-black px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
                         {first.committeeName}
                       </span>
+                      <Link
+                        href={`${BASE_PATH}/session/${sessionId}`}
+                        onClick={e => e.stopPropagation()}
+                        className="text-[10px] font-black text-teal-700 hover:underline shrink-0"
+                      >
+                        פתח ישיבה ←
+                      </Link>
                     </div>
                     {first.title && <p className="text-sm font-bold text-gray-800 mb-1">{first.title}</p>}
                     {/* Matching excerpts */}

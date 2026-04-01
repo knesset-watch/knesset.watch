@@ -19,11 +19,12 @@ export async function POST(request: Request) {
     const cookieStore = await cookies();
     const secureToken = generateSessionToken(sitePassword);
     
+    const isProduction = process.env.NODE_ENV === 'production';
     cookieStore.set('knesset-watch_auth_token', secureToken, {
       httpOnly: true,
-      secure: true,
+      secure: isProduction,
       sameSite: 'strict',
-      path: '/knesset-watch',
+      path: '/',
       maxAge: 60 * 60 * 24 * 7,
     });
 

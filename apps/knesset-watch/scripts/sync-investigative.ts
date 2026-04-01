@@ -40,14 +40,13 @@ async function sync() {
   
   // For new tables, we check if they are empty
   const { lobbyCount } = db.prepare('SELECT COUNT(*) as lobbyCount FROM lobbyist').get() as { lobbyCount: number };
-  const { attendanceCount } = db.prepare('SELECT COUNT(*) as attendanceCount FROM committee_attendance').get() as { attendanceCount: number };
 
   console.log(`Starting Smart Sync.`);
   console.log(`  Current High-Water Marks: Vote ID ${lastVoteId}, Bill ID ${lastBillId}`);
 
   // ── 2. Sync NEW Bills only (since last high-water mark) ───────────────────
   console.log("  Fetching NEW bills since last sync...");
-  const newBills = await fetchAll(`${API}/KNS_Bill?$filter=KnessetNum eq 25 and Id gt ${lastVoteId}&$select=Id,Name,SubTypeDesc,StatusID,CommitteeID,SummaryLaw,PublicationDate`);
+  const newBills = await fetchAll(`${API}/KNS_Bill?$filter=KnessetNum eq 25 and Id gt ${lastBillId}&$select=Id,Name,SubTypeDesc,StatusID,CommitteeID,SummaryLaw,PublicationDate`);
   if (newBills.length > 0) {
     const insertBill = db.prepare('INSERT OR REPLACE INTO bill (id, title, subtype, status_id, is_passed, committee_id, publication_date) VALUES (?, ?, ?, ?, ?, ?, ?)');
     db.transaction((rows) => {
@@ -62,55 +61,133 @@ async function sync() {
   // ── 3. Fill the Lobbyist Gap (Backfill once, then incremental) ────────────
   if (lobbyCount === 0) {
     console.log("  Backfilling Lobbyists (K25)...");
-    const lobbyists = await fetchAll(`${API}/V_Lobbyists?$select=Id,FullName,CorporationName`);
-    const insertLobby = db.prepare('INSERT OR REPLACE INTO lobbyist (id, first_name, last_name, is_active) VALUES (?, ?, ?, 1)');
-    const insertClient = db.prepare('INSERT OR REPLACE INTO lobbyist_client (lobbyist_id, client_name) VALUES (?, ?)');
-    
-    db.transaction((rows) => {
-      for (const r of rows) {
-        const names = (r.FullName || '').split(' ');
-        const first = names[0] || 'Unknown';
-        const last = names.slice(1).join(' ') || '';
-        insertLobby.run(r.Id, first, last);
-        if (r.CorporationName) insertClient.run(r.Id, r.CorporationName);
-      }
-    })(lobbyists);
-    console.log(`
-    Loaded ${lobbyists.length} lobbyists.`);
+    try {
+      const lobbyists = await fetchAll(`${API}/V_Lobbyists?$select=Id,FullName,CorporationName`);
+      const insertLobby = db.prepare('INSERT OR REPLACE INTO lobbyist (id, first_name, last_name, is_active) VALUES (?, ?, ?, 1)');
+      const insertClient = db.prepare('INSERT OR REPLACE INTO lobbyist_client (lobbyist_id, client_name) VALUES (?, ?)');
+
+      db.transaction((rows) => {
+        for (const r of rows) {
+          const names = (r.FullName || '').split(' ');
+          const first = names[0] || 'Unknown';
+          const last = names.slice(1).join(' ') || '';
+          insertLobby.run(r.Id, first, last);
+          if (r.CorporationName) insertClient.run(r.Id, r.CorporationName);
+        }
+      })(lobbyists);
+      console.log(`    Loaded ${lobbyists.length} lobbyists.`);
+    } catch (err: any) {
+      console.warn(`  ⚠ Lobbyist backfill skipped: ${err.message}`);
+    }
   }
 
-  // ── 4. Fill the Attendance Gap (Incremental since K25 start) ──────────────
-  // We sync committee sessions from the last known session ID or K25 start
-  const { lastSessionId } = db.prepare('SELECT COALESCE(MAX(id), 0) as lastSessionId FROM committee_session').get() as { lastSessionId: number };
-  console.log(`  Syncing Committee Sessions since ID ${lastSessionId}...`);
-  
-  const newSessions = await fetchAll(`${API}/KNS_CommitteeSession?$filter=KnessetNum eq 25 and Id gt ${lastSessionId}&$select=Id,CommitteeID,Name,SessionDate`, 2000);
-  
-  if (newSessions.length > 0) {
-    const insertSession = db.prepare('INSERT OR REPLACE INTO committee_session (id, committee_id, title, date) VALUES (?, ?, ?, ?)');
-    const insertAtt = db.prepare('INSERT OR REPLACE INTO committee_attendance (session_id, mk_id) VALUES (?, ?)');
-    
-    db.transaction((rows) => {
-      for (const r of rows) insertSession.run(r.Id, r.CommitteeID, r.Name, r.SessionDate);
-    })(newSessions);
+  // ── 4. Committee Sessions, Titles, Names, and Attendance ────────────────────
 
-    console.log(`
-    Fetching attendance for ${newSessions.length} sessions...`);
-    // Batch fetch attendance to avoid URL length limits
-    const sessionIds = newSessions.map(s => s.Id);
-    const batchSize = 40;
-    for (let i = 0; i < sessionIds.length; i += batchSize) {
-      const batch = sessionIds.slice(i, i + batchSize);
-      const filter = batch.map(id => `CommitteeSessionID eq ${id}`).join(' or ');
-      const attRecords = await fetchAll(`${API}/KNS_PersonToCommitteeSession?$filter=${encodeURIComponent(filter)}&$select=CommitteeSessionID,PersonID`, 5000);
+  // 4a. Schema migrations (idempotent)
+  const sessionCols = db.prepare('PRAGMA table_info(committee_session)').all() as any[];
+  if (!sessionCols.some((c: any) => c.name === 'committee_name')) {
+    db.exec('ALTER TABLE committee_session ADD COLUMN committee_name TEXT');
+    console.log('  Added committee_name column to committee_session.');
+  }
+  db.exec('CREATE INDEX IF NOT EXISTS idx_attendance_mk ON committee_attendance (mk_id)');
+
+  // 4b. Fetch committee name lookup (small, stable list)
+  console.log('  Fetching committee names...');
+  const committees = await fetchAll(`${API}/KNS_Committee?$select=Id,Name`);
+  const committeeNameMap = new Map<number, string>(
+    committees.filter((c: any) => c.Id != null && c.Name).map((c: any) => [c.Id as number, c.Name as string])
+  );
+  console.log(`    ${committeeNameMap.size} committees loaded.`);
+
+  // 4c. Fetch and insert NEW committee sessions
+  const { lastSessionId } = db.prepare('SELECT COALESCE(MAX(id), 0) as lastSessionId FROM committee_session').get() as { lastSessionId: number };
+  console.log(`  Syncing new sessions (since ID ${lastSessionId})...`);
+  try {
+    const newSessions = await fetchAll(
+      `${API}/KNS_CommitteeSession?$filter=KnessetNum eq 25 and Id gt ${lastSessionId}&$select=Id,CommitteeID,Name,SessionDate`,
+      2000
+    );
+    if (newSessions.length > 0) {
+      const insertSession = db.prepare(
+        'INSERT OR REPLACE INTO committee_session (id, committee_id, title, date, committee_name) VALUES (?, ?, ?, ?, ?)'
+      );
       db.transaction((rows) => {
-        for (const r of rows) insertAtt.run(r.CommitteeSessionID, r.PersonID);
-      })(attRecords);
+        for (const r of rows) {
+          insertSession.run(r.Id, r.CommitteeID, r.Name ?? '', r.SessionDate, committeeNameMap.get(r.CommitteeID) ?? null);
+        }
+      })(newSessions);
+      console.log(`    Inserted ${newSessions.length} new sessions.`);
+    } else {
+      console.log('    No new sessions.');
     }
-    console.log(`
-    Attendance sync complete.`);
+  } catch (err: any) {
+    console.warn(`  ⚠ Session sync skipped: ${err.message}`);
+  }
+
+  // 4d. Backfill committee_name for existing sessions that don't have it
+  const { noNameCount } = db.prepare("SELECT COUNT(*) as noNameCount FROM committee_session WHERE committee_name IS NULL").get() as { noNameCount: number };
+  if (noNameCount > 0) {
+    console.log(`  Updating committee names for ${noNameCount} sessions...`);
+    const updateName = db.prepare('UPDATE committee_session SET committee_name = ? WHERE committee_id = ? AND committee_name IS NULL');
+    db.transaction(() => {
+      for (const [id, name] of committeeNameMap) updateName.run(name, id);
+    })();
+  }
+
+  // 4e. Backfill empty session titles — fetch all K25 sessions once for their Name field
+  const { emptyTitleCount } = db.prepare("SELECT COUNT(*) as emptyTitleCount FROM committee_session WHERE title IS NULL OR title = ''").get() as { emptyTitleCount: number };
+  if (emptyTitleCount > 0) {
+    console.log(`  Backfilling titles for ${emptyTitleCount} sessions...`);
+    try {
+      const allK25Sessions = await fetchAll(`${API}/KNS_CommitteeSession?$filter=KnessetNum eq 25&$select=Id,Name`);
+      const updateTitle = db.prepare("UPDATE committee_session SET title = ? WHERE id = ? AND (title IS NULL OR title = '')");
+      let titleUpdated = 0;
+      db.transaction((rows) => {
+        for (const r of rows) {
+          if (r.Name) {
+            const res = updateTitle.run(r.Name, r.Id);
+            titleUpdated += res.changes;
+          }
+        }
+      })(allK25Sessions);
+      console.log(`    Updated ${titleUpdated} session titles.`);
+    } catch (err: any) {
+      console.warn(`  ⚠ Title backfill skipped: ${err.message}`);
+    }
+  }
+
+  // 4f. Gap-fill attendance for all sessions that have no attendance records yet
+  const gapSessionIds = (db.prepare(`
+    SELECT id FROM committee_session
+    WHERE id NOT IN (SELECT DISTINCT session_id FROM committee_attendance)
+  `).all() as { id: number }[]).map(r => r.id);
+
+  if (gapSessionIds.length > 0) {
+    console.log(`  Fetching attendance for ${gapSessionIds.length} sessions without data...`);
+    const insertAtt = db.prepare('INSERT OR REPLACE INTO committee_attendance (session_id, mk_id) VALUES (?, ?)');
+    const batchSize = 40;
+    let attendanceFailed = false;
+    for (let i = 0; i < gapSessionIds.length; i += batchSize) {
+      const batch = gapSessionIds.slice(i, i + batchSize);
+      const filter = batch.map(id => `CommitteeSessionID eq ${id}`).join(' or ');
+      try {
+        const attRecords = await fetchAll(
+          `${API}/KNS_PersonToCommitteeSession?$filter=${encodeURIComponent(filter)}&$select=CommitteeSessionID,PersonID`,
+          5000
+        );
+        db.transaction((rows) => {
+          for (const r of rows) insertAtt.run(r.CommitteeSessionID, r.PersonID);
+        })(attRecords);
+      } catch (err: any) {
+        console.warn(`  ⚠ Attendance unavailable: ${err.message} — skipping.`);
+        attendanceFailed = true;
+        break;
+      }
+      if (i > 0 && i % 400 === 0) process.stdout.write(`\r    Progress: ${i}/${gapSessionIds.length} sessions...`);
+    }
+    if (!attendanceFailed) console.log(`\n    Attendance gap-fill complete.`);
   } else {
-    console.log("    No new sessions to sync.");
+    console.log('    Attendance is up to date.');
   }
 
   // ── 5. Derived Stats: The Rebellion Engine ────────────────────────────────

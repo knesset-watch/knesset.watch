@@ -3,3 +3,19 @@ node_modules/
 .env.local
 .env*.local
 *.tsbuildinfo
+.vercel
+
+# Local SQLite databases (large, regenerated from scripts)
+knesset.db
+apps/knesset-watch/knesset.db
+
+# Downloaded documents and protocols (local only, not for VCS)
+apps/knesset-watch/documents/
+apps/knesset-watch/protocols/
+
+# Script run logs
+apps/knesset-watch/overnight*.log
+
+# macOS artifacts
+.DS_Store
+apps/.DS_Store
