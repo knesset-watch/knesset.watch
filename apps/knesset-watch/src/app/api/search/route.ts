@@ -4,8 +4,6 @@ import { dbAvailable, searchAll } from '@/lib/knesset-db';
 
 export const dynamic = 'force-dynamic';
 
-export type { SearchHit } from '@/lib/knesset-db';
-
 export async function GET(req: NextRequest) {
   const authError = await validateApiAuth('SITE_PASSWORD', 'knesset-watch_auth_token');
   if (authError) return authError;
