@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
+import { validateApiAuth } from '@/lib/ui/auth-utils';
 import { dbAvailable } from '@/lib/knesset-db';
 import Database from 'better-sqlite3';
 import path from 'path';
 
 const DB_PATH = path.join(process.cwd(), 'knesset.db');
 
-export async function GET() {
+export async function GET(request: Request) {
+  const authError = await validateApiAuth('SITE_PASSWORD', 'knesset-watch_auth_token');
+  if (authError) return authError;
+
   if (!dbAvailable()) {
     return NextResponse.json({ error: 'Database not available' }, { status: 503 });
   }
