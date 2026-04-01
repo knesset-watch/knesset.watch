@@ -1285,7 +1285,7 @@ export function getFactionDetail(name: string): FactionDetail | null {
   `).get(name) as { billCount: number; passedCount: number } | undefined;
 
   const rebelStats = db.prepare(`
-    SELECT SUM(rebel_count) as totalRebels, SUM(vote_count) as totalVotes
+    SELECT SUM(rebel_count) as totalRebels, COUNT(*) as totalVotes
     FROM vote_faction_stats
     WHERE faction_id = (SELECT faction_id FROM mk_person WHERE faction_name = ? AND faction_id IS NOT NULL LIMIT 1)
   `).get(name) as { totalRebels: number; totalVotes: number } | undefined;
@@ -1334,11 +1334,11 @@ export function getMinistryDetail(name: string): MinistryDetail | null {
   if (!db) return null;
 
   const ministers = (db.prepare(`
-    SELECT pos.person_id, mp.first_name || ' ' || mp.last_name as name,
+    SELECT pos.mk_id as person_id, mp.first_name || ' ' || mp.last_name as name,
            mp.slug, pos.duty_desc, mp.faction_name,
            CASE WHEN pos.finish_date IS NULL OR pos.is_current = 1 THEN 1 ELSE 0 END as is_current
     FROM mk_position pos
-    JOIN mk_person mp ON mp.person_id = pos.person_id
+    JOIN mk_person mp ON mp.person_id = pos.mk_id
     WHERE pos.ministry = ?
     ORDER BY is_current DESC, pos.start_date DESC
   `).all(name) as Array<{
