@@ -1197,6 +1197,46 @@ export interface CommitteeActivity {
   lastProtocolDate: string | null;
 }
 
+export interface SearchHit {
+  type: 'mk' | 'committee' | 'bill';
+  id: string;
+  title: string;
+  subtitle: string | null;
+  url: string;
+}
+
+export function searchAll(q: string): SearchHit[] {
+  const db = getDb();
+  if (!db) return [];
+  const term = `%${q}%`;
+  const results: SearchHit[] = [];
+
+  const mks = db.prepare(`
+    SELECT person_id as id, first_name || ' ' || last_name as name, faction_name, slug
+    FROM mk_person WHERE (first_name || ' ' || last_name) LIKE ? LIMIT 5
+  `).all(term) as Array<{ id: number; name: string; faction_name: string | null; slug: string | null }>;
+  for (const m of mks) {
+    results.push({ type: 'mk', id: String(m.id), title: m.name, subtitle: m.faction_name ?? null, url: `/mk/${m.slug ?? m.id}` });
+  }
+
+  const committees = db.prepare(`
+    SELECT DISTINCT committee_name as name FROM committee_session WHERE committee_name LIKE ? LIMIT 5
+  `).all(term) as Array<{ name: string }>;
+  for (const c of committees) {
+    results.push({ type: 'committee', id: c.name, title: c.name, subtitle: 'ועדה', url: `/committee/${encodeURIComponent(c.name)}` });
+  }
+
+  const bills = db.prepare(`
+    SELECT id, title, status_desc, is_passed FROM bill WHERE title LIKE ?
+    ORDER BY is_passed DESC, id DESC LIMIT 5
+  `).all(term) as Array<{ id: number; title: string; status_desc: string | null; is_passed: number }>;
+  for (const b of bills) {
+    results.push({ type: 'bill', id: String(b.id), title: b.title, subtitle: b.status_desc ?? (b.is_passed ? 'עבר' : 'בטיפול'), url: `/bill/${b.id}` });
+  }
+
+  return results;
+}
+
 export function getAllCommitteeActivity(): CommitteeActivity[] {
   const db = getDb();
   if (!db) return [];
