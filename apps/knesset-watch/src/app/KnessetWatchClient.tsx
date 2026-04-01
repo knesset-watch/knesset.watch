@@ -393,6 +393,7 @@ export default function KnessetWatchPage() {
   const [customEnd, setCustomEnd]       = useState('');
   const [viewMode, setViewMode]         = useState<ViewMode>('card');
   const [groupBy, setGroupBy]           = useState<GroupBy>('mk');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [committees, setCommittees]     = useState<any[]>([]);
   const [expandedCommittees, setExpandedCommittees] = useState<Set<string>>(new Set());
   const [factions, setFactions]         = useState<any[]>([]);
@@ -789,7 +790,74 @@ export default function KnessetWatchPage() {
         </div>
       </aside>
 
-      <main className="flex-1 max-w-7xl mx-auto px-4 md:px-12 py-12">
+      {/* ── Mobile top bar (hidden on md+) ── */}
+      <div className="md:hidden fixed top-0 right-0 left-0 z-40 flex items-center justify-between px-4 py-3 bg-white border-b border-black/10">
+        <button
+          onClick={() => setMobileMenuOpen(true)}
+          className="p-2 -ml-2 rounded-lg text-black hover:bg-gray-100 transition-colors"
+          aria-label="פתח תפריט"
+        >
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <rect x="2" y="4" width="16" height="2" rx="1"/>
+            <rect x="2" y="9" width="16" height="2" rx="1"/>
+            <rect x="2" y="14" width="16" height="2" rx="1"/>
+          </svg>
+        </button>
+        <span className="text-lg font-black tracking-tighter">כנסת ווטש</span>
+        <div className="w-8" /> {/* spacer to center the title */}
+      </div>
+
+      {/* ── Mobile drawer overlay ── */}
+      {mobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 z-50 flex" dir="rtl">
+          {/* backdrop */}
+          <div className="absolute inset-0 bg-black/40" onClick={() => setMobileMenuOpen(false)} />
+          {/* drawer — slides in from right (RTL) */}
+          <div className="relative w-72 max-w-[85vw] bg-white h-full flex flex-col shadow-2xl mr-auto">
+            <div className="p-6 border-b border-black/5 flex items-center justify-between">
+              <span className="text-xl font-black tracking-tighter">כנסת ווטש</span>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+                aria-label="סגור תפריט"
+              >
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
+                  <path d="M2 2l14 14M16 2L2 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </button>
+            </div>
+            <nav className="flex-1 overflow-y-auto p-4 space-y-6 mt-2">
+              <div className="space-y-1">
+                <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest px-3">סקירה</span>
+                <button onClick={() => { setGroupBy('mk'); setMobileMenuOpen(false); }} className={`w-full text-right px-3 py-2.5 text-sm font-black rounded-lg transition-colors ${groupBy === 'mk' ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'}`}>חברי כנסת</button>
+                <Link href="/ministers" onClick={() => setMobileMenuOpen(false)} className="block w-full text-right px-3 py-2.5 text-sm font-black rounded-lg transition-colors text-gray-700 hover:bg-gray-100">שרים</Link>
+                <button onClick={() => { setGroupBy('party-total'); setMobileMenuOpen(false); }} className={`w-full text-right px-3 py-2.5 text-sm font-black rounded-lg transition-colors ${groupBy.startsWith('party') ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'}`}>מפלגות</button>
+                <button onClick={() => { setGroupBy('timeline'); setMobileMenuOpen(false); }} className={`w-full text-right px-3 py-2.5 text-sm font-black rounded-lg transition-colors ${groupBy === 'timeline' ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'}`}>ציר זמן חקיקתי</button>
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest px-3">חקירה</span>
+                <button onClick={() => { setGroupBy('rebels'); setMobileMenuOpen(false); }} className={`w-full text-right px-3 py-2.5 text-sm font-black rounded-lg transition-colors ${groupBy === 'rebels' ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'}`}>מדד המורדים</button>
+                <button onClick={() => { setGroupBy('alliances'); setMobileMenuOpen(false); }} className={`w-full text-right px-3 py-2.5 text-sm font-black rounded-lg transition-colors ${groupBy === 'alliances' ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'}`}>רשת קשרים</button>
+                <button onClick={() => { setGroupBy('committee'); setMobileMenuOpen(false); }} className={`w-full text-right px-3 py-2.5 text-sm font-black rounded-lg transition-colors ${groupBy === 'committee' ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'}`}>ועדות</button>
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest px-3">נתונים</span>
+                <Link href="/bills" onClick={() => setMobileMenuOpen(false)} className="block w-full text-right px-3 py-2.5 text-sm font-black rounded-lg transition-colors text-gray-700 hover:bg-gray-100">ספר החוקים</Link>
+                <Link href="/protocols" onClick={() => setMobileMenuOpen(false)} className="block w-full text-right px-3 py-2.5 text-sm font-black rounded-lg transition-colors text-gray-700 hover:bg-gray-100">פרוטוקולים</Link>
+                <button onClick={() => { setGroupBy('agenda'); setMobileMenuOpen(false); }} className={`w-full text-right px-3 py-2.5 text-sm font-black rounded-lg transition-colors ${groupBy === 'agenda' ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'}`}>אג&apos;נדות</button>
+              </div>
+            </nav>
+            <div className="p-6 border-t border-black/5">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Live Data</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <main className="flex-1 max-w-7xl mx-auto px-4 md:px-12 py-12 pt-16 md:pt-12">
         <header className="mb-12">
           <div className="flex items-baseline gap-4 mb-2">
             <h1 className="text-5xl font-black tracking-tighter uppercase">
