@@ -87,8 +87,8 @@ export async function POST(req: NextRequest) {
       }
       context += '\n';
 
-      // Stop adding sessions if we're already at ~4000 chars (keeps token usage under Groq limits)
-      if (context.length > 4000) break;
+      // Stop at ~2000 chars — keeps request under ~800 tokens (Groq free tier: 6000 TPM per model)
+      if (context.length > 2000) break;
     }
 
     // Guard: if context is too thin, nothing useful to send to Groq
@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
         },
         body: JSON.stringify({
           model,
-          max_tokens: 768,
+          max_tokens: 512,
           messages: [
             { role: 'system', content: SYSTEM_PROMPT },
             { role: 'user', content: `שאלה: ${question}\n\nקטעים מפרוטוקולים:\n${context}` },
@@ -134,10 +134,10 @@ export async function POST(req: NextRequest) {
     if (!groqRes.ok) {
       const err = await groqRes.text();
       console.error('Groq error:', groqRes.status, err);
-      const msg = groqRes.status === 429
+      const msg = groqRes.status === 429 || groqRes.status === 413
         ? 'שירות ה-AI עמוס כרגע, נסה שוב בעוד כמה שניות'
-        : `שגיאה בשירות ה-AI [${groqRes.status}]`;
-      return NextResponse.json({ error: msg, _debug: err.slice(0, 200) }, { status: 502 });
+        : 'שגיאה בשירות ה-AI';
+      return NextResponse.json({ error: msg }, { status: 502 });
     }
 
     const groqData = await groqRes.json() as {
