@@ -1447,14 +1447,30 @@ export function getVoteList(opts: GetVoteListOptions = {}): { votes: VoteListRow
 export function searchSessions(q: string, limit = 10): Array<{ id: number; title: string | null; committeeName: string | null; date: string }> {
   const db = getDb();
   if (!db) return [];
-  return (db.prepare(`
-    SELECT cs.id, cs.title, c.name as committee_name, cs.date
-    FROM committee_session cs
-    LEFT JOIN committee c ON c.id = cs.committee_id
-    WHERE cs.title LIKE ? AND cs.title IS NOT NULL
-    ORDER BY cs.date DESC LIMIT ?
-  `).all(`%${q}%`, limit) as Array<{ id: number; title: string | null; committee_name: string | null; date: string }>)
-  .map(r => ({ id: r.id, title: r.title, committeeName: r.committee_name, date: r.date }));
+  try {
+    // Try with committee JOIN first (newer schema); fall back to no-JOIN if committee table missing
+    try {
+      return (db.prepare(`
+        SELECT cs.id, cs.title, c.name as committee_name, cs.date
+        FROM committee_session cs
+        LEFT JOIN committee c ON c.id = cs.committee_id
+        WHERE cs.title LIKE ? AND cs.title IS NOT NULL
+        ORDER BY cs.date DESC LIMIT ?
+      `).all(`%${q}%`, limit) as Array<{ id: number; title: string | null; committee_name: string | null; date: string }>)
+      .map(r => ({ id: r.id, title: r.title, committeeName: r.committee_name, date: r.date }));
+    } catch {
+      // Older schema: no committee table; use committee_name column directly if available
+      return (db.prepare(`
+        SELECT id, title, committee_name, date
+        FROM committee_session
+        WHERE title LIKE ? AND title IS NOT NULL
+        ORDER BY date DESC LIMIT ?
+      `).all(`%${q}%`, limit) as Array<{ id: number; title: string | null; committee_name: string | null; date: string }>)
+      .map(r => ({ id: r.id, title: r.title, committeeName: r.committee_name, date: r.date }));
+    }
+  } catch {
+    return [];
+  }
 }
 
 export function getAllCommitteeActivity(): CommitteeActivity[] {
