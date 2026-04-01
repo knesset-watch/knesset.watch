@@ -308,14 +308,24 @@ export async function getCommitteeProtocolSessions(
   }));
 }
 
-export async function getProtocolCommitteeNames(): Promise<string[]> {
+export interface CommitteeOption {
+  name: string;
+  sessionCount: number;
+}
+
+export async function getProtocolCommitteeNames(): Promise<CommitteeOption[]> {
   const client = getTurso();
   if (!client) return [];
 
   const res = await client.execute(
-    `SELECT DISTINCT committee_name FROM committee_session
-     WHERE committee_name IS NOT NULL ORDER BY committee_name ASC`,
+    `SELECT committee_name, COUNT(*) as session_count
+     FROM committee_session
+     WHERE committee_name IS NOT NULL
+     GROUP BY committee_name
+     ORDER BY session_count DESC`,
   );
 
-  return res.rows.map(r => String(r['committee_name'] ?? '')).filter(Boolean);
+  return res.rows
+    .map(r => ({ name: String(r['committee_name'] ?? ''), sessionCount: Number(r['session_count'] ?? 0) }))
+    .filter(c => c.name);
 }

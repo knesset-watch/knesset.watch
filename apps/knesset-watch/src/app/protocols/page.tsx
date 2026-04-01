@@ -1,6 +1,6 @@
 import { checkServerAuth } from '@/lib/ui/auth-utils';
 import { redirect } from 'next/navigation';
-import { getProtocolCommitteeNames } from '@/lib/protocols-db';
+import { getProtocolCommitteeNames, type CommitteeOption } from '@/lib/protocols-db';
 import ProtocolsClient from './ProtocolsClient';
 
 export default async function ProtocolsPage() {

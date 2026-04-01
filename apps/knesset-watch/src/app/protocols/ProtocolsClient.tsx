@@ -35,8 +35,13 @@ interface AskSource {
   title: string | null;
 }
 
+interface CommitteeOption {
+  name: string;
+  sessionCount: number;
+}
+
 interface Props {
-  committees: string[];
+  committees: CommitteeOption[];
 }
 
 export default function ProtocolsClient({ committees }: Props) {
@@ -264,13 +269,18 @@ export default function ProtocolsClient({ committees }: Props) {
             </button>
             {committees.map(c => (
               <button
-                key={c}
-                onClick={() => handleCommittee(c)}
-                className={`text-xs font-black px-3 py-1.5 rounded-full transition-colors ${
-                  selectedCommittee === c ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                key={c.name}
+                onClick={() => handleCommittee(c.name)}
+                className={`text-xs font-black px-3 py-1.5 rounded-full transition-colors flex items-center gap-1.5 ${
+                  selectedCommittee === c.name ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
-                {c}
+                {c.name}
+                <span className={`text-[10px] font-bold tabular-nums ${
+                  selectedCommittee === c.name ? 'opacity-70' : 'text-gray-400'
+                }`}>
+                  {c.sessionCount}
+                </span>
               </button>
             ))}
           </div>
