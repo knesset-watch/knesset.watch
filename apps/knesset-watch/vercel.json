@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
+  "buildCommand": "cp knesset-deploy.db knesset.db && npm run build",
   "installCommand": "cd ../.. && npm install",
   "framework": "nextjs",
   "regions": ["fra1"]
