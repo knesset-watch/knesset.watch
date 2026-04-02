@@ -216,6 +216,62 @@ export async function searchProtocols(
   return { results, total, page };
 }
 
+// ── MK speaker turn search ────────────────────────────────────────────────────
+
+export interface MkSpeakerTurn {
+  sessionId: number;
+  committeeName: string;
+  date: string;
+  text: string;
+}
+
+/**
+ * Find sessions where a specific MK spoke about a topic keyword.
+ * Returns the most recent turns containing the keyword, deduped to at most
+ * one turn per session (the longest matching turn).
+ */
+export async function searchMkSpeakerTurns(
+  mkId: number,
+  keyword: string,
+  limit = 5,
+): Promise<MkSpeakerTurn[]> {
+  const client = getTurso();
+  if (!client || !keyword.trim()) return [];
+  try {
+    const res = await client.execute({
+      sql: `
+        SELECT sst.session_id, cs.committee_name, cs.date,
+               sst.text
+        FROM session_speaker_turn sst
+        JOIN committee_session cs ON cs.id = sst.session_id
+        WHERE sst.mk_id = ? AND sst.text LIKE ?
+        ORDER BY cs.date DESC, LENGTH(sst.text) DESC
+        LIMIT ?
+      `,
+      args: [mkId, `%${keyword}%`, limit * 3],
+    });
+
+    // Deduplicate: keep one (longest) turn per session
+    const seen = new Set<number>();
+    const results: MkSpeakerTurn[] = [];
+    for (const r of res.rows) {
+      const sid = Number(r['session_id']);
+      if (seen.has(sid)) continue;
+      seen.add(sid);
+      results.push({
+        sessionId: sid,
+        committeeName: String(r['committee_name'] ?? ''),
+        date: String(r['date'] ?? '').slice(0, 10),
+        text: String(r['text'] ?? '').slice(0, 600),
+      });
+      if (results.length >= limit) break;
+    }
+    return results;
+  } catch {
+    return [];
+  }
+}
+
 // ── Session + turns for RAG context ──────────────────────────────────────────
 
 export interface ProtocolSession {

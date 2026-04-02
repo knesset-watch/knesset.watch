@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { kv } from '@vercel/kv';
 import { validateApiAuth } from '@/lib/ui/auth-utils';
-import { embedQueryPublic, searchProtocolsVec, searchProtocols, getProtocolSession } from '@/lib/protocols-db';
-import type { ProtocolSearchResult } from '@/lib/protocols-db';
+import { embedQueryPublic, searchProtocolsVec, searchProtocols, getProtocolSession, searchMkSpeakerTurns } from '@/lib/protocols-db';
+import type { ProtocolSearchResult, MkSpeakerTurn } from '@/lib/protocols-db';
 import {
   findMkInText,
   searchVotesByKeyword,
@@ -126,52 +126,60 @@ export async function GET(req: NextRequest) {
     const topicKeyword = extractTopicKeyword(q, detectedMk?.fullName);
 
     // 3. Run all searches in parallel
-    const protocolSearch = embedding
-      ? searchProtocolsVec(embedding, null, 40).catch((e: unknown) => { console.error('vec search error:', e); return []; })
-      : searchProtocols(q, null, 1).then((r: { results: ProtocolSearchResult[] }) => r.results).catch((e: unknown) => { console.error('text search error:', e); return []; });
-    const [protocolResults, votes, bills, queries] = await Promise.all([
+    // When MK + topic detected: search the MK's actual speech turns instead of generic vector search
+    const protocolSearch: Promise<ProtocolSearchResult[] | MkSpeakerTurn[]> =
+      mkId && topicKeyword.length >= 2
+        ? searchMkSpeakerTurns(mkId, topicKeyword, 5)
+        : embedding
+          ? searchProtocolsVec(embedding, null, 40).catch((e: unknown) => { console.error('vec search error:', e); return []; })
+          : searchProtocols(q, null, 1).then((r: { results: ProtocolSearchResult[] }) => r.results).catch((e: unknown) => { console.error('text search error:', e); return []; });
+
+    const [protocolRaw, votes, bills, queries] = await Promise.all([
       protocolSearch,
       Promise.resolve(searchVotesByKeyword(topicKeyword, mkId, 15)),
       Promise.resolve(searchBillsByKeyword(topicKeyword, mkId, 8)),
       Promise.resolve(searchQueriesByKeyword(topicKeyword, mkId, 8)),
     ]);
 
-    // 4. Deduplicate protocol results → top 5 sessions
-    const seen = new Set<number>();
-    const topSessionIds: number[] = [];
-    for (const r of protocolResults) {
-      if (!seen.has(r.sessionId)) {
-        seen.add(r.sessionId);
-        topSessionIds.push(r.sessionId);
-        if (topSessionIds.length === 5) break;
-      }
-    }
-
-    // 5. Fetch full protocol session content in parallel
-    const sessionResults = await Promise.all(topSessionIds.map(id => getProtocolSession(id)));
-
     // 6. Build LLM context + collect sources
     let context = '';
     const sources: Source[] = [];
 
-    for (const result of sessionResults) {
-      if (!result) continue;
-      const { session, chunks } = result;
-      sources.push({
-        type: 'session',
-        sessionId: session.sessionId,
-        committeeName: session.committeeName ?? '',
-        date: session.date,
-        title: session.title ?? '',
-      });
-      context += `[פרוטוקול | ${session.date} | ${session.committeeName ?? 'ועדה'}]\n`;
-      if (session.title) context += `${session.title}\n`;
-      for (const chunk of chunks.slice(0, 40)) {
-        if (chunk.speaker) context += `${chunk.speaker}: `;
-        context += chunk.text.trim().replace(/\n{3,}/g, '\n') + '\n';
+    const isSpeakerTurns = mkId && topicKeyword.length >= 2;
+    if (isSpeakerTurns) {
+      // Speaker-turn path: MK speech excerpts about the topic
+      const turns = protocolRaw as MkSpeakerTurn[];
+      for (const t of turns) {
+        sources.push({ type: 'session', sessionId: t.sessionId, committeeName: t.committeeName, date: t.date, title: '' });
+        context += `[נאום ${detectedMk!.fullName} | ${t.date} | ${t.committeeName}]\n${t.text}\n\n`;
+        if (context.length > 4000) break;
       }
-      context += '\n';
-      if (context.length > 4000) break;
+    } else {
+      // Generic session path: fetch full protocol sessions
+      const protocolResults = protocolRaw as ProtocolSearchResult[];
+      const seen = new Set<number>();
+      const topSessionIds: number[] = [];
+      for (const r of protocolResults) {
+        if (!seen.has(r.sessionId)) {
+          seen.add(r.sessionId);
+          topSessionIds.push(r.sessionId);
+          if (topSessionIds.length === 5) break;
+        }
+      }
+      const sessionResults = await Promise.all(topSessionIds.map(id => getProtocolSession(id)));
+      for (const result of sessionResults) {
+        if (!result) continue;
+        const { session, chunks } = result;
+        sources.push({ type: 'session', sessionId: session.sessionId, committeeName: session.committeeName ?? '', date: session.date, title: session.title ?? '' });
+        context += `[פרוטוקול | ${session.date} | ${session.committeeName ?? 'ועדה'}]\n`;
+        if (session.title) context += `${session.title}\n`;
+        for (const chunk of chunks.slice(0, 40)) {
+          if (chunk.speaker) context += `${chunk.speaker}: `;
+          context += chunk.text.trim().replace(/\n{3,}/g, '\n') + '\n';
+        }
+        context += '\n';
+        if (context.length > 4000) break;
+      }
     }
 
     if (votes.length > 0) {
@@ -179,7 +187,8 @@ export async function GET(req: NextRequest) {
       for (const v of votes.slice(0, 10)) {
         sources.push({ type: 'vote', voteId: v.voteId, title: v.title, date: v.date, isPassed: v.isPassed });
         const agenda = v.microAgenda ? ` (${v.microAgenda})` : '';
-        context += `• ${v.date} — ${v.title}${agenda} — ${v.isPassed ? 'עבר' : 'לא עבר'}\n`;
+        const mkDir = v.mkVoteResult ? ` — הצביע ${v.mkVoteResult}` : '';
+        context += `• ${v.date} — ${v.title}${agenda} — ${v.isPassed ? 'עבר' : 'לא עבר'}${mkDir}\n`;
       }
     }
 

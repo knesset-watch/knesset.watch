@@ -1715,6 +1715,7 @@ export interface VoteSearchResult {
   isPassed: boolean;
   totalFor: number;
   totalAgainst: number;
+  mkVoteResult: string | null; // 'בעד' | 'נגד' | 'נמנע' | null
 }
 
 /**
@@ -1725,16 +1726,18 @@ export function searchVotesByKeyword(keyword: string, mkId?: number, limit = 10)
   const db = getDb();
   if (!db) return [];
   try {
-    type Row = { id: number; title: string; date: string; micro_agenda: string | null; macro_agenda: string | null; is_passed: number; total_for: number; total_against: number };
+    const VOTE_LABEL: Record<number, string> = { 7: 'בעד', 8: 'נגד', 6: 'נמנע', 9: 'נעדר' };
+    type Row = { id: number; title: string; date: string; micro_agenda: string | null; macro_agenda: string | null; is_passed: number; total_for: number; total_against: number; result_code?: number };
     const map = (r: Row): VoteSearchResult => ({
       voteId: r.id, title: r.title, date: r.date,
       microAgenda: r.micro_agenda, macroAgenda: r.macro_agenda,
       isPassed: r.is_passed === 1, totalFor: r.total_for, totalAgainst: r.total_against,
+      mkVoteResult: r.result_code !== undefined ? (VOTE_LABEL[r.result_code] ?? null) : null,
     });
     if (mkId !== undefined) {
       const term = `%${keyword}%`;
       const filtered = (db.prepare(`
-        SELECT pv.id, pv.title, pv.date, pv.micro_agenda, pv.macro_agenda, pv.is_passed, pv.total_for, pv.total_against
+        SELECT pv.id, pv.title, pv.date, pv.micro_agenda, pv.macro_agenda, pv.is_passed, pv.total_for, pv.total_against, mvr.result_code
         FROM plenary_vote pv
         JOIN mk_vote_result mvr ON mvr.vote_id = pv.id AND mvr.mk_id = ?
         WHERE pv.title LIKE ? OR pv.micro_agenda LIKE ? OR pv.macro_agenda LIKE ?
@@ -1742,7 +1745,7 @@ export function searchVotesByKeyword(keyword: string, mkId?: number, limit = 10)
       `).all(mkId, term, term, term, limit) as Row[]).map(map);
       if (filtered.length > 0) return filtered;
       return (db.prepare(`
-        SELECT pv.id, pv.title, pv.date, pv.micro_agenda, pv.macro_agenda, pv.is_passed, pv.total_for, pv.total_against
+        SELECT pv.id, pv.title, pv.date, pv.micro_agenda, pv.macro_agenda, pv.is_passed, pv.total_for, pv.total_against, mvr.result_code
         FROM plenary_vote pv
         JOIN mk_vote_result mvr ON mvr.vote_id = pv.id AND mvr.mk_id = ?
         ORDER BY pv.date DESC LIMIT ?
