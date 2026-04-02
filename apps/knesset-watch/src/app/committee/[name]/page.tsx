@@ -23,12 +23,15 @@ export default async function CommitteePage({ params }: Props) {
   if (!data) notFound();
 
   // Merge Turso chunkCount into the richer SQLite session records
-  const chunkMap = new Map(tursoCounts.map(s => [s.sessionId, s.chunkCount]));
-  const sessions: CommitteeSessionFull[] = localSessions.map(s => ({
-    ...s,
-    chunkCount: chunkMap.get(s.id) ?? 0,
-    protocolUrl: s.protocolUrl ?? (tursoCounts.find(t => t.sessionId === s.id)?.protocolUrl ?? null),
-  }));
+  const tursoMap = new Map(tursoCounts.map(s => [s.sessionId, s]));
+  const sessions: CommitteeSessionFull[] = localSessions.map(s => {
+    const turso = tursoMap.get(s.id);
+    return {
+      ...s,
+      chunkCount: turso?.chunkCount ?? 0,
+      protocolUrl: s.protocolUrl ?? turso?.protocolUrl ?? null,
+    };
+  });
 
   return <CommitteeClient data={data} sessions={sessions} />;
 }
