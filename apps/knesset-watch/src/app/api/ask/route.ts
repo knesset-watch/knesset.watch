@@ -100,10 +100,11 @@ export async function GET(req: NextRequest) {
     const mkId = detectedMk?.mkId;
 
     // 3. Run all searches in parallel
+    const protocolSearch = embedding
+      ? searchProtocolsVec(embedding, null, 40).catch((e: unknown) => { console.error('vec search error:', e); return []; })
+      : searchProtocols(q, null, 1).then((r: { results: ProtocolSearchResult[] }) => r.results).catch((e: unknown) => { console.error('text search error:', e); return []; });
     const [protocolResults, votes, bills, queries] = await Promise.all([
-      embedding
-        ? searchProtocolsVec(embedding, null, 40)
-        : searchProtocols(q, null, 1).then((r: { results: ProtocolSearchResult[] }) => r.results),
+      protocolSearch,
       Promise.resolve(searchVotesByKeyword(q, mkId, 15)),
       Promise.resolve(searchBillsByKeyword(q, mkId, 8)),
       Promise.resolve(searchQueriesByKeyword(q, mkId, 8)),
