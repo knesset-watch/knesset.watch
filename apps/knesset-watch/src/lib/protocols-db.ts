@@ -279,9 +279,19 @@ export async function getProtocolSession(
 export interface CommitteeProtocolSession {
   sessionId: number;
   date: string;
-  title: string | null;
+  title: string | null;       // "פרוטוקול N" if it's a meeting transcript, else null
+  sessionType: string | null; // raw label from rag_card third field (e.g. "חקיקה", "פרוטוקול N")
   chunkCount: number;
   protocolUrl: string | null;
+}
+
+// Extract the third "|"-delimited field from rag_card as a raw label (e.g. "חקיקה", "פרוטוקול 23")
+function rawLabel(ragCard: unknown): string | null {
+  const card = typeof ragCard === 'string' ? ragCard : '';
+  const firstLine = card.split('\n')[0] ?? '';
+  const parts = firstLine.split('|');
+  const label = parts[2]?.trim();
+  return label || null;
 }
 
 export async function getCommitteeProtocolSessions(
@@ -301,13 +311,17 @@ export async function getCommitteeProtocolSessions(
     args: [committeeName],
   });
 
-  return res.rows.map(r => ({
-    sessionId: Number(r['sessionId']),
-    date: String(r['date'] ?? ''),
-    title: protocolLabel(r['rag_card']),
-    chunkCount: Number(r['chunkCount'] ?? 0),
-    protocolUrl: r['protocol_url'] != null ? String(r['protocol_url']) : null,
-  }));
+  return res.rows.map(r => {
+    const rag = r['rag_card'];
+    return {
+      sessionId: Number(r['sessionId']),
+      date: String(r['date'] ?? ''),
+      title: protocolLabel(rag),
+      sessionType: rawLabel(rag),
+      chunkCount: Number(r['chunkCount'] ?? 0),
+      protocolUrl: r['protocol_url'] != null ? String(r['protocol_url']) : null,
+    };
+  });
 }
 
 export interface CommitteeOption {

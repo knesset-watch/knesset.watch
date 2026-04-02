@@ -297,11 +297,11 @@ export async function getTursoCommitteeDetail(name: string): Promise<CommitteeDe
       args: [committeeId],
     }),
     client.execute({
-      sql: `SELECT COUNT(*) as total, SUM(is_passed) as passed FROM bill WHERE committee_name = ?`,
+      sql: `SELECT COUNT(*) as total, SUM(CAST(is_passed AS INTEGER)) as passed FROM bill WHERE committee_name = ?`,
       args: [name],
     }),
     client.execute({
-      sql: `SELECT id, title, subtype, is_passed, summary, doc_url, micro_agenda, macro_agenda, init_date
+      sql: `SELECT id, title, subtype, is_passed, status_desc, summary, doc_url, micro_agenda, macro_agenda, init_date
             FROM bill WHERE committee_name = ? ORDER BY is_passed DESC, id DESC`,
       args: [name],
     }),
@@ -319,6 +319,7 @@ export async function getTursoCommitteeDetail(name: string): Promise<CommitteeDe
       title: s(r.title)!,
       subtype: s(r.subtype) ?? '',
       isPassed: Number(r.is_passed) === 1,
+      statusDesc: s(r.status_desc),
       summary: s(r.summary),
       docUrl: s(r.doc_url),
       microAgenda: s(r.micro_agenda),
