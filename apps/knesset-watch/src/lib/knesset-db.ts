@@ -678,10 +678,10 @@ export interface CommitteeSessionVote {
   passed: number | null;
 }
 
-export interface SessionLinkedBill {
+export interface CommitteeSessionLinkedBill {
   billId: number;
   title: string;
-  subtype: string;
+  subtype: string | null;
   isPassed: boolean;
 }
 
@@ -696,7 +696,7 @@ export interface CommitteeSessionDocument {
 export interface CommitteeSessionDetail {
   agendaItems: CommitteeSessionAgendaItem[];
   votes: CommitteeSessionVote[];
-  linkedBills: SessionLinkedBill[];
+  linkedBills: CommitteeSessionLinkedBill[];
   documents: CommitteeSessionDocument[];
 }
 
@@ -823,6 +823,8 @@ export function getCommitteeSessionsFull(committeeName: string): CommitteeSessio
     first_agenda: string | null; vote_count: number; linked_bill_count: number;
   };
 
+  // Queries by committee_name text field directly — no ID resolution.
+  // Caller must supply the canonical name as stored in committee_session.committee_name.
   const rows = db.prepare(`
     SELECT
       cs.id, cs.date, cs.status_desc, cs.type_desc,
@@ -866,7 +868,7 @@ export function getCommitteeSessionDetail(sessionId: number): CommitteeSessionDe
 
   type AgendaRow = { item_number: number | null; title: string; item_type: string | null };
   type VoteRow = { subject: string | null; result: string | null; for_count: number | null; against_count: number | null; abstain_count: number | null; passed: number | null };
-  type BillRow = { id: number; title: string; subtype: string; is_passed: number };
+  type BillRow = { id: number; title: string; subtype: string | null; is_passed: number };
   type DocRow = { id: number; group_type_desc: string | null; document_name: string | null; file_path: string | null; application_desc: string | null };
 
   const agendaItems = (db.prepare(
@@ -896,7 +898,7 @@ export function getCommitteeSessionDetail(sessionId: number): CommitteeSessionDe
   ).all(sessionId) as BillRow[]).map(r => ({
     billId: r.id,
     title: r.title,
-    subtype: r.subtype ?? '',
+    subtype: r.subtype,
     isPassed: r.is_passed === 1,
   }));
 
