@@ -1,0 +1,419 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content":
+    - /url: "#geist-skip-nav"
+  - main [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - generic [ref=e9]:
+            - link "Dror's projects Hobby" [ref=e10] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a
+              - img [ref=e11]
+              - generic [ref=e12]:
+                - generic [ref=e13]: Dror's projects
+                - generic [ref=e15]: Hobby
+            - button [ref=e16] [cursor=pointer]:
+              - img [ref=e18]
+          - button "Find… F" [ref=e21]:
+            - generic [ref=e23]:
+              - img [ref=e25]
+              - generic [ref=e27]: Find…
+              - generic [ref=e29]: F
+        - navigation [ref=e31]:
+          - generic [ref=e32]:
+            - generic:
+              - generic:
+                - link "Overview":
+                  - /url: /drors-projects-2fdc212a/knesset-watch
+                  - generic:
+                    - generic: Overview
+                - link "Deployments":
+                  - /url: /drors-projects-2fdc212a/knesset-watch/deployments
+                  - generic:
+                    - img
+                  - generic:
+                    - generic: Deployments
+                - link "Logs":
+                  - /url: /drors-projects-2fdc212a/knesset-watch/logs
+                  - generic:
+                    - img
+                  - generic:
+                    - generic: Logs
+                - link "Analytics":
+                  - /url: /drors-projects-2fdc212a/knesset-watch/analytics
+                  - generic:
+                    - img
+                  - generic:
+                    - generic: Analytics
+                - link "Speed Insights":
+                  - /url: /drors-projects-2fdc212a/knesset-watch/speed-insights
+                  - generic:
+                    - img
+                  - generic:
+                    - generic: Speed Insights
+                - link "Observability":
+                  - /url: /drors-projects-2fdc212a/knesset-watch/observability
+                  - generic:
+                    - img
+                  - generic:
+                    - generic: Observability
+                  - generic:
+                    - img
+                - link "Firewall":
+                  - /url: /drors-projects-2fdc212a/knesset-watch/firewall
+                  - generic:
+                    - img
+                  - generic:
+                    - generic: Firewall
+                  - generic:
+                    - img
+                - link "CDN":
+                  - /url: /drors-projects-2fdc212a/knesset-watch/cdn
+                  - generic:
+                    - img
+                  - generic:
+                    - generic: CDN
+                  - generic:
+                    - img
+                - separator
+                - link "Domains":
+                  - /url: /drors-projects-2fdc212a/knesset-watch/settings/domains
+                  - generic:
+                    - img
+                  - generic:
+                    - generic: Domains
+                - link "Integrations":
+                  - /url: /drors-projects-2fdc212a/knesset-watch/settings/integrations
+                  - generic:
+                    - img
+                  - generic:
+                    - generic: Integrations
+                - link "Storage":
+                  - /url: /drors-projects-2fdc212a/knesset-watch/stores
+                  - generic:
+                    - img
+                  - generic:
+                    - generic: Storage
+                - link "Flags":
+                  - /url: /drors-projects-2fdc212a/knesset-watch/flags
+                  - generic:
+                    - img
+                  - generic:
+                    - generic: Flags
+                  - generic:
+                    - img
+                - link "Agent":
+                  - /url: /drors-projects-2fdc212a/knesset-watch/agent
+                  - generic:
+                    - img
+                  - generic:
+                    - generic: Agent
+                  - generic:
+                    - img
+                - link "AI Gateway":
+                  - /url: /drors-projects-2fdc212a/knesset-watch/ai-gateway
+                  - generic:
+                    - img
+                  - generic:
+                    - generic: AI Gateway
+                  - generic:
+                    - img
+                - link "Sandboxes":
+                  - /url: /drors-projects-2fdc212a/knesset-watch/sandboxes
+                  - generic:
+                    - img
+                  - generic:
+                    - generic: Sandboxes
+                - separator
+                - link "Usage":
+                  - /url: /drors-projects-2fdc212a/knesset-watch/usage
+                  - generic:
+                    - img
+                  - generic:
+                    - generic: Usage
+                - link "Settings":
+                  - /url: /drors-projects-2fdc212a/knesset-watch/settings
+                  - generic:
+                    - img
+                  - generic:
+                    - generic: Settings
+                  - generic:
+                    - img
+            - generic [ref=e33]:
+              - button "Settings" [ref=e35] [cursor=pointer]:
+                - img [ref=e37]
+                - generic [ref=e39]: Settings
+              - generic [ref=e41]:
+                - link "General" [ref=e42] [cursor=pointer]:
+                  - /url: /drors-projects-2fdc212a/knesset-watch/settings/general
+                  - generic [ref=e44]: General
+                - link "Build and Deployment" [ref=e45] [cursor=pointer]:
+                  - /url: /drors-projects-2fdc212a/knesset-watch/settings/build-and-deployment
+                  - generic [ref=e47]: Build and Deployment
+                - link "Environments" [ref=e48] [cursor=pointer]:
+                  - /url: /drors-projects-2fdc212a/knesset-watch/settings/environments
+                  - generic [ref=e50]: Environments
+                - link "Environment Variables" [ref=e51] [cursor=pointer]:
+                  - /url: /drors-projects-2fdc212a/knesset-watch/settings/environment-variables
+                  - generic [ref=e53]: Environment Variables
+                - link "Git" [ref=e54] [cursor=pointer]:
+                  - /url: /drors-projects-2fdc212a/knesset-watch/settings/git
+                  - generic [ref=e56]: Git
+                - link "Deployment Protection" [ref=e57] [cursor=pointer]:
+                  - /url: /drors-projects-2fdc212a/knesset-watch/settings/deployment-protection
+                  - generic [ref=e59]: Deployment Protection
+                - link "Functions" [ref=e60] [cursor=pointer]:
+                  - /url: /drors-projects-2fdc212a/knesset-watch/settings/functions
+                  - generic [ref=e62]: Functions
+                - link "Cron Jobs" [ref=e63] [cursor=pointer]:
+                  - /url: /drors-projects-2fdc212a/knesset-watch/settings/cron-jobs
+                  - generic [ref=e65]: Cron Jobs
+                - link "Microfrontends" [ref=e66] [cursor=pointer]:
+                  - /url: /drors-projects-2fdc212a/knesset-watch/settings/microfrontends
+                  - generic [ref=e68]: Microfrontends
+                - link "Project Members" [ref=e69] [cursor=pointer]:
+                  - /url: /drors-projects-2fdc212a/knesset-watch/settings/project-members
+                  - generic [ref=e71]: Project Members
+                - link "Drains" [ref=e72] [cursor=pointer]:
+                  - /url: /drors-projects-2fdc212a/knesset-watch/settings/drains
+                  - generic [ref=e74]: Drains
+                - link "Security" [ref=e75] [cursor=pointer]:
+                  - /url: /drors-projects-2fdc212a/knesset-watch/settings/security
+                  - generic [ref=e77]: Security
+                - link "Connectivity" [ref=e78] [cursor=pointer]:
+                  - /url: /drors-projects-2fdc212a/knesset-watch/settings/connectivity
+                  - generic [ref=e80]: Connectivity
+                - link "Advanced" [ref=e81] [cursor=pointer]:
+                  - /url: /drors-projects-2fdc212a/knesset-watch/settings/advanced
+                  - generic [ref=e83]: Advanced
+        - generic [ref=e84]:
+          - generic [ref=e85]:
+            - generic [ref=e86]:
+              - generic [ref=e89]:
+                - generic [ref=e90]: Ship
+                - generic [ref=e92]: "26"
+              - button "Dismiss" [ref=e93] [cursor=pointer]:
+                - img [ref=e95]
+            - generic [ref=e97]:
+              - generic [ref=e98]: Built for you to ship what’s next.
+              - link "Save the date" [ref=e100] [cursor=pointer]:
+                - /url: /ship
+                - generic [ref=e101]:
+                  - text: Save the date
+                  - img [ref=e102]
+          - generic [ref=e105]:
+            - button "Avatar for brendror-4601 brendror-4601" [ref=e106] [cursor=pointer]:
+              - img "Avatar for brendror-4601" [ref=e107]:
+                - img "Avatar for brendror-4601" [ref=e108]
+              - generic [ref=e110]: brendror-4601
+              - img [ref=e112]
+            - img [ref=e116]
+      - button [ref=e119] [cursor=pointer]:
+        - img [ref=e120]
+    - generic [ref=e123]:
+      - generic [ref=e124]:
+        - generic [ref=e127]:
+          - link "knesset-watch" [ref=e128] [cursor=pointer]:
+            - /url: /drors-projects-2fdc212a/knesset-watch
+            - generic [ref=e131]: knesset-watch
+          - button [ref=e132] [cursor=pointer]:
+            - img [ref=e134]
+          - link "Back to team view" [ref=e138] [cursor=pointer]:
+            - /url: /drors-projects-2fdc212a/~/settings/environment-variables
+            - img [ref=e140]
+        - generic [ref=e142]:
+          - generic [ref=e143]:
+            - link "Project Settings" [ref=e144] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/settings
+            - img [ref=e145]
+          - generic [ref=e147]: Environment Variables
+        - button "Open page actions menu" [ref=e149] [cursor=pointer]:
+          - img [ref=e151]
+      - generic [ref=e160]:
+        - generic [ref=e162]:
+          - generic [ref=e163]:
+            - heading "Environment Variables" [level=2] [ref=e164]
+            - paragraph [ref=e165]:
+              - text: Store API keys, tokens, and config securely.
+              - link "Learn more" [ref=e166] [cursor=pointer]:
+                - /url: /docs/environment-variables
+                - text: Learn more
+                - img [ref=e167]
+          - generic [ref=e169]:
+            - button "Link Shared Variable" [ref=e170] [cursor=pointer]:
+              - generic [ref=e171]: Link Shared Variable
+            - button "Add Environment Variable" [ref=e172] [cursor=pointer]:
+              - generic [ref=e173]: Add Environment Variable
+        - tablist [ref=e174]:
+          - tab "Project" [selected] [ref=e175] [cursor=pointer]
+          - tab "Shared" [ref=e176] [cursor=pointer]
+        - generic [ref=e177]:
+          - generic [ref=e179]:
+            - searchbox "Search" [ref=e180]
+            - img [ref=e182]
+          - combobox [ref=e185]:
+            - generic [ref=e187]:
+              - searchbox [ref=e188]: All Environments
+              - button "Open menu" [ref=e189] [cursor=pointer]:
+                - img [ref=e190]
+          - generic [ref=e194]:
+            - generic:
+              - img
+            - combobox [ref=e195] [cursor=pointer]:
+              - option "Sort by…" [disabled]
+              - option "Last Updated" [selected]
+              - option "Name"
+              - option "Type"
+            - generic:
+              - img
+        - generic [ref=e197]:
+          - generic [ref=e201]:
+            - generic [ref=e203]:
+              - generic [ref=e204]:
+                - img [ref=e207]
+                - generic [ref=e209]:
+                  - button "GEMINI_API_KEY" [ref=e213] [cursor=pointer]:
+                    - generic "GEMINI_API_KEY" [ref=e214]
+                  - generic [ref=e218]: All Environments
+              - generic [ref=e221]:
+                - button "Click to reveal" [ref=e222] [cursor=pointer]:
+                  - img [ref=e224]
+                - paragraph [ref=e226]: •••••••••••••••
+              - generic [ref=e227]:
+                - generic [ref=e229]:
+                  - generic [ref=e231] [cursor=pointer]:
+                    - generic [ref=e232]: Added
+                    - text: 18m ago
+                  - img [ref=e235]
+                - button "Menu" [ref=e238] [cursor=pointer]:
+                  - img [ref=e242]
+            - generic [ref=e245]:
+              - generic [ref=e246]:
+                - img [ref=e249]
+                - generic [ref=e251]:
+                  - button "GROQ_API_KEY" [ref=e255] [cursor=pointer]:
+                    - generic "GROQ_API_KEY" [ref=e256]
+                  - generic [ref=e260]: Production
+              - generic [ref=e263]:
+                - button "Click to reveal" [ref=e264] [cursor=pointer]:
+                  - img [ref=e266]
+                - paragraph [ref=e268]: •••••••••••••••
+              - generic [ref=e269]:
+                - generic [ref=e271]:
+                  - generic [ref=e273] [cursor=pointer]:
+                    - generic [ref=e274]: Added
+                    - text: 2d ago
+                  - img [ref=e277]
+                - button "Menu" [ref=e280] [cursor=pointer]:
+                  - img [ref=e284]
+            - generic [ref=e287]:
+              - generic [ref=e288]:
+                - img [ref=e291]
+                - generic [ref=e293]:
+                  - button "JINA_API_KEY" [ref=e297] [cursor=pointer]:
+                    - generic "JINA_API_KEY" [ref=e298]
+                  - generic [ref=e302]: Production
+              - generic [ref=e305]:
+                - button "Click to reveal" [ref=e306] [cursor=pointer]:
+                  - img [ref=e308]
+                - paragraph [ref=e310]: •••••••••••••••
+              - generic [ref=e311]:
+                - generic [ref=e313]:
+                  - generic [ref=e315] [cursor=pointer]:
+                    - generic [ref=e316]: Added
+                    - text: 2d ago
+                  - img [ref=e319]
+                - button "Menu" [ref=e322] [cursor=pointer]:
+                  - img [ref=e326]
+            - generic [ref=e329]:
+              - generic [ref=e330]:
+                - img [ref=e333]
+                - generic [ref=e335]:
+                  - button "TURSO_TOKEN" [ref=e339] [cursor=pointer]:
+                    - generic "TURSO_TOKEN" [ref=e340]
+                  - generic [ref=e344]: Production
+              - generic [ref=e347]:
+                - button "Click to reveal" [ref=e348] [cursor=pointer]:
+                  - img [ref=e350]
+                - paragraph [ref=e352]: •••••••••••••••
+              - generic [ref=e353]:
+                - generic [ref=e355]:
+                  - generic [ref=e357] [cursor=pointer]:
+                    - generic [ref=e358]: Added
+                    - text: Mar 29
+                  - img [ref=e361]
+                - button "Menu" [ref=e364] [cursor=pointer]:
+                  - img [ref=e368]
+            - generic [ref=e371]:
+              - generic [ref=e372]:
+                - img [ref=e375]
+                - generic [ref=e377]:
+                  - button "TURSO_URL" [ref=e381] [cursor=pointer]:
+                    - generic "TURSO_URL" [ref=e382]
+                  - generic [ref=e386]: Production
+              - generic [ref=e389]:
+                - button "Click to reveal" [ref=e390] [cursor=pointer]:
+                  - img [ref=e392]
+                - paragraph [ref=e394]: •••••••••••••••
+              - generic [ref=e395]:
+                - generic [ref=e397]:
+                  - generic [ref=e399] [cursor=pointer]:
+                    - generic [ref=e400]: Added
+                    - text: Mar 29
+                  - img [ref=e403]
+                - button "Menu" [ref=e406] [cursor=pointer]:
+                  - img [ref=e410]
+            - generic [ref=e413]:
+              - generic [ref=e414]:
+                - img [ref=e417]
+                - generic [ref=e419]:
+                  - button "KNESSET_PROXY_URL" [ref=e423] [cursor=pointer]:
+                    - generic "KNESSET_PROXY_URL" [ref=e424]
+                  - generic [ref=e428]: Production
+              - generic [ref=e431]:
+                - button "Click to reveal" [ref=e432] [cursor=pointer]:
+                  - img [ref=e434]
+                - paragraph [ref=e436]: •••••••••••••••
+              - generic [ref=e437]:
+                - generic [ref=e439]:
+                  - generic [ref=e441] [cursor=pointer]:
+                    - generic [ref=e442]: Added
+                    - text: Mar 2
+                  - img [ref=e445]
+                - button "Menu" [ref=e448] [cursor=pointer]:
+                  - img [ref=e452]
+            - generic [ref=e455]:
+              - generic [ref=e456]:
+                - img [ref=e459]
+                - generic [ref=e461]:
+                  - button "SITE_PASSWORD" [ref=e465] [cursor=pointer]:
+                    - generic "SITE_PASSWORD" [ref=e466]
+                  - generic [ref=e470]: Production
+              - generic [ref=e473]:
+                - button "Click to reveal" [ref=e474] [cursor=pointer]:
+                  - img [ref=e476]
+                - paragraph [ref=e478]: •••••••••••••••
+              - generic [ref=e479]:
+                - generic [ref=e481]:
+                  - generic [ref=e483] [cursor=pointer]:
+                    - generic [ref=e484]: Added
+                    - text: Mar 2
+                  - img [ref=e487]
+                - button "Menu" [ref=e490] [cursor=pointer]:
+                  - img [ref=e494]
+          - generic [ref=e498]:
+            - generic [ref=e500] [cursor=pointer]:
+              - checkbox [checked] [ref=e501]
+              - img [ref=e503]
+            - generic [ref=e505]:
+              - text: Automatically expose
+              - link "System Environment Variables" [ref=e506] [cursor=pointer]:
+                - /url: /docs/environment-variables/system-environment-variables
+                - text: System Environment Variables
+                - img [ref=e507]
+  - alert [ref=e509]
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - img

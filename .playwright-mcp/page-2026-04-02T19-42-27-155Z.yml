@@ -1,0 +1,31 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "כנסת ווטש" [ref=e4] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e5]:
+        - button "כל הכנסת" [ref=e6]
+        - button "2023" [ref=e7]
+        - button "2024" [ref=e8]
+        - button "2025" [ref=e9]
+        - button "2026" [ref=e10]
+      - generic [ref=e12]:
+        - img [ref=e13]
+        - textbox "חיפוש..." [ref=e16]
+      - navigation [ref=e17]:
+        - link "ח\"כים" [ref=e18] [cursor=pointer]:
+          - /url: /mks
+        - link "ועדות" [ref=e19] [cursor=pointer]:
+          - /url: /committees
+        - link "פרוטוקולים" [ref=e20] [cursor=pointer]:
+          - /url: /protocols
+        - link "חוקים" [ref=e21] [cursor=pointer]:
+          - /url: /bills
+        - link "שרים" [ref=e22] [cursor=pointer]:
+          - /url: /ministers
+        - link "הצבעות" [ref=e23] [cursor=pointer]:
+          - /url: /votes
+  - generic [ref=e25]:
+    - heading "404" [level=1] [ref=e26]
+    - heading "This page could not be found." [level=2] [ref=e28]
+  - alert [ref=e29]

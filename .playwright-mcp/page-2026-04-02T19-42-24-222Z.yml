@@ -1,0 +1,70 @@
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "כנסת ווטש" [ref=e4] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e5]:
+        - button "כל הכנסת" [ref=e6]
+        - button "2023" [ref=e7]
+        - button "2024" [ref=e8]
+        - button "2025" [ref=e9]
+        - button "2026" [ref=e10]
+      - generic [ref=e12]:
+        - img [ref=e13]
+        - textbox "חיפוש..." [ref=e16]
+      - navigation [ref=e17]:
+        - link "ח\"כים" [ref=e18] [cursor=pointer]:
+          - /url: /mks
+        - link "ועדות" [ref=e19] [cursor=pointer]:
+          - /url: /committees
+        - link "פרוטוקולים" [ref=e20] [cursor=pointer]:
+          - /url: /protocols
+        - link "חוקים" [ref=e21] [cursor=pointer]:
+          - /url: /bills
+        - link "שרים" [ref=e22] [cursor=pointer]:
+          - /url: /ministers
+        - link "הצבעות" [ref=e23] [cursor=pointer]:
+          - /url: /votes
+  - generic [ref=e24]:
+    - generic [ref=e25]:
+      - heading "כנסת ווטש" [level=1] [ref=e26]
+      - paragraph [ref=e27]: שקיפות נתוני הכנסת ה-25 בזמן אמת — הצבעות, פרוטוקולים, חוקים, ח"כים וועדות במקום אחד.
+      - generic [ref=e28]:
+        - generic [ref=e29]:
+          - img [ref=e30]
+          - textbox "חפשו ח\"כ, ועדה, חוק..." [active] [ref=e33]
+        - button "חיפוש" [disabled] [ref=e34]
+    - generic [ref=e35]:
+      - generic [ref=e36]: מקטעים
+      - generic [ref=e37]:
+        - link "👤 ח\"כים חברי הכנסת ה-25" [ref=e38] [cursor=pointer]:
+          - /url: /mks
+          - generic [ref=e39]: 👤
+          - generic [ref=e40]: ח"כים
+          - generic [ref=e41]: חברי הכנסת ה-25
+        - link "🏛 ועדות דיונים ופרוטוקולים" [ref=e42] [cursor=pointer]:
+          - /url: /committees
+          - generic [ref=e43]: 🏛
+          - generic [ref=e44]: ועדות
+          - generic [ref=e45]: דיונים ופרוטוקולים
+        - link "📋 חוקים הצעות חוק ומעקב" [ref=e46] [cursor=pointer]:
+          - /url: /bills
+          - generic [ref=e47]: 📋
+          - generic [ref=e48]: חוקים
+          - generic [ref=e49]: הצעות חוק ומעקב
+        - link "🔍 פרוטוקולים חיפוש בתוך הדיונים" [ref=e50] [cursor=pointer]:
+          - /url: /protocols
+          - generic [ref=e51]: 🔍
+          - generic [ref=e52]: פרוטוקולים
+          - generic [ref=e53]: חיפוש בתוך הדיונים
+        - link "⭐ שרים חברי הממשלה" [ref=e54] [cursor=pointer]:
+          - /url: /ministers
+          - generic [ref=e55]: ⭐
+          - generic [ref=e56]: שרים
+          - generic [ref=e57]: חברי הממשלה
+        - link "🗳 הצבעות הצבעות מליאה" [ref=e58] [cursor=pointer]:
+          - /url: /votes
+          - generic [ref=e59]: 🗳
+          - generic [ref=e60]: הצבעות
+          - generic [ref=e61]: הצבעות מליאה
+  - alert [ref=e62]

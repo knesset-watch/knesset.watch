@@ -2,30 +2,59 @@
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
-export type Period = 'all' | '2023' | '2024' | '2025' | '2026';
+// Period values:
+//   'all'                        — all K25 data (no date filter)
+//   '2023' | '2024' | '2025' | '2026' — full calendar year
+//   'custom:YYYY-MM-DD:YYYY-MM-DD'    — arbitrary date range
+export type Period = string;
 
 export interface PeriodOption {
-  value: Period;
+  value: string;
   label: string;
 }
 
-export const PERIODS: PeriodOption[] = [
-  { value: 'all',  label: 'כל הכנסת' },
-  { value: '2023', label: '2023' },
-  { value: '2024', label: '2024' },
-  { value: '2025', label: '2025' },
+export const PERIOD_SHORTCUTS: PeriodOption[] = [
+  { value: 'all',  label: 'כנסת 25' },
   { value: '2026', label: '2026' },
+  { value: '2025', label: '2025' },
+  { value: '2024', label: '2024' },
+  { value: '2023', label: '2023' },
 ];
+
+/** @deprecated Use PERIOD_SHORTCUTS instead */
+export const PERIODS = PERIOD_SHORTCUTS;
 
 /** Returns YYYY-MM-DD bounds for a period, or null for 'all'. */
 export function periodToDateRange(period: Period): { from: string; to: string } | null {
-  const ranges: Partial<Record<Period, { from: string; to: string }>> = {
-    '2023': { from: '2023-01-01', to: '2023-12-31' },
-    '2024': { from: '2024-01-01', to: '2024-12-31' },
-    '2025': { from: '2025-01-01', to: '2025-12-31' },
-    '2026': { from: '2026-01-01', to: '2026-12-31' },
-  };
-  return ranges[period] ?? null;
+  if (!period || period === 'all') return null;
+  if (period.startsWith('custom:')) {
+    const rest = period.slice(7);
+    const colon = rest.indexOf(':');
+    if (colon > 0) return { from: rest.slice(0, colon), to: rest.slice(colon + 1) };
+    return null;
+  }
+  const year = period.match(/^(\d{4})$/)?.[1];
+  if (year) return { from: `${year}-01-01`, to: `${year}-12-31` };
+  return null;
+}
+
+/** Human-readable label for any period value. */
+export function periodLabel(period: Period): string {
+  const shortcut = PERIOD_SHORTCUTS.find(s => s.value === period);
+  if (shortcut) return shortcut.label;
+  if (period.startsWith('custom:')) {
+    const rest = period.slice(7);
+    const colon = rest.indexOf(':');
+    if (colon > 0) {
+      const from = rest.slice(0, colon).slice(0, 7);   // YYYY-MM
+      const to   = rest.slice(colon + 1).slice(0, 7);  // YYYY-MM
+      if (from === to) return from;
+      // If same year, show "Jan–Mar 2025" style
+      if (from.slice(0, 4) === to.slice(0, 4)) return `${from.slice(5)}–${to.slice(5)} ${from.slice(0, 4)}`;
+      return `${from} – ${to}`;
+    }
+  }
+  return period;
 }
 
 // ── Context ───────────────────────────────────────────────────────────────────
@@ -41,14 +70,14 @@ const PeriodContext = createContext<PeriodContextValue>({
 });
 
 const LS_KEY = 'kw-period';
+const KNOWN_VALUES = new Set(PERIOD_SHORTCUTS.map(p => p.value));
 
 export function PeriodProvider({ children }: { children: React.ReactNode }) {
   const [period, setPeriodState] = useState<Period>('all');
 
-  // Hydrate from localStorage on mount
   useEffect(() => {
-    const stored = localStorage.getItem(LS_KEY) as Period | null;
-    if (stored && PERIODS.some(p => p.value === stored)) {
+    const stored = localStorage.getItem(LS_KEY);
+    if (stored && (KNOWN_VALUES.has(stored) || stored.startsWith('custom:'))) {
       setPeriodState(stored);
     }
   }, []);

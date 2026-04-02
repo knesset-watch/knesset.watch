@@ -1,0 +1,8 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - heading "knesset.watch" [level=1] [ref=e5]
+    - generic [ref=e6]:
+      - textbox "Enter Password" [active] [ref=e8]
+      - button "Authorize" [ref=e9]
+  - alert [ref=e10]

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { usePeriod } from '@/lib/period-context';
+import { usePeriod, periodToDateRange } from '@/lib/period-context';
 import EntityTooltip from '@/components/EntityTooltip';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
@@ -65,7 +65,8 @@ export default function BillsClient() {
     });
     if (passedOnly) params.set('passedOnly', 'true');
     if (debouncedSearch) params.set('q', debouncedSearch);
-    if (period !== 'all') params.set('year', period);
+    const dateRange = periodToDateRange(period);
+    if (dateRange) { params.set('from', dateRange.from); params.set('to', dateRange.to); }
 
     try {
       const res = await fetch(`${BASE_PATH}/api/bills?${params}`);

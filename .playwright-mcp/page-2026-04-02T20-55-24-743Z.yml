@@ -1,0 +1,824 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content":
+    - /url: "#geist-skip-nav"
+  - main [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - generic [ref=e9]:
+            - link "Dror's projects Hobby" [ref=e10] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a
+              - img [ref=e11]
+              - generic [ref=e12]:
+                - generic [ref=e13]: Dror's projects
+                - generic [ref=e15]: Hobby
+            - button [ref=e16] [cursor=pointer]:
+              - img [ref=e18]
+          - button "Find… F" [ref=e21]:
+            - generic [ref=e23]:
+              - img [ref=e25]
+              - generic [ref=e27]: Find…
+              - generic [ref=e29]: F
+        - navigation [ref=e31]:
+          - generic [ref=e34]:
+            - link "Overview" [ref=e35] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch
+              - generic [ref=e39]: Overview
+            - link "Deployments" [ref=e40] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/deployments
+              - img [ref=e42]
+              - generic [ref=e45]: Deployments
+            - link "Logs" [ref=e46] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/logs
+              - img [ref=e48]
+              - generic [ref=e51]: Logs
+            - link "Analytics" [ref=e52] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/analytics
+              - img [ref=e54]
+              - generic [ref=e57]: Analytics
+            - link "Speed Insights" [ref=e58] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/speed-insights
+              - img [ref=e60]
+              - generic [ref=e63]: Speed Insights
+            - link "Observability" [ref=e64] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/observability
+              - img [ref=e66]
+              - generic [ref=e69]: Observability
+              - img [ref=e71]
+            - link "Firewall" [ref=e73] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/firewall
+              - img [ref=e75]
+              - generic [ref=e79]: Firewall
+              - img [ref=e81]
+            - link "CDN" [ref=e83] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/cdn
+              - img [ref=e85]
+              - generic [ref=e88]: CDN
+              - img [ref=e90]
+            - separator [ref=e92]
+            - link "Domains" [ref=e93] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/settings/domains
+              - img [ref=e95]
+              - generic [ref=e98]: Domains
+            - link "Integrations" [ref=e99] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/settings/integrations
+              - img [ref=e101]
+              - generic [ref=e104]: Integrations
+            - link "Storage" [ref=e105] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/stores
+              - img [ref=e107]
+              - generic [ref=e110]: Storage
+            - link "Flags" [ref=e111] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/flags
+              - img [ref=e113]
+              - generic [ref=e116]: Flags
+              - img [ref=e118]
+            - link "Agent" [ref=e120] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/agent
+              - img [ref=e122]
+              - generic [ref=e125]: Agent
+              - img [ref=e127]
+            - link "AI Gateway" [ref=e129] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/ai-gateway
+              - img [ref=e131]
+              - generic [ref=e134]: AI Gateway
+              - img [ref=e136]
+            - link "Sandboxes" [ref=e138] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/sandboxes
+              - img [ref=e140]
+              - generic [ref=e143]: Sandboxes
+            - separator [ref=e144]
+            - link "Usage" [ref=e145] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/usage
+              - img [ref=e147]
+              - generic [ref=e150]: Usage
+            - link "Settings" [ref=e151] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/settings
+              - img [ref=e153]
+              - generic [ref=e156]: Settings
+              - img [ref=e158]
+        - generic [ref=e160]:
+          - generic [ref=e161]:
+            - generic [ref=e162]:
+              - generic [ref=e165]:
+                - generic [ref=e166]: Ship
+                - generic [ref=e168]: "26"
+              - button "Dismiss" [ref=e169] [cursor=pointer]:
+                - img [ref=e171]
+            - generic [ref=e173]:
+              - generic [ref=e174]: Built for you to ship what’s next.
+              - link "Save the date" [ref=e176] [cursor=pointer]:
+                - /url: /ship
+                - generic [ref=e177]:
+                  - text: Save the date
+                  - img [ref=e178]
+          - generic [ref=e181]:
+            - button "Avatar for brendror-4601 brendror-4601" [ref=e182] [cursor=pointer]:
+              - img "Avatar for brendror-4601" [ref=e183]:
+                - img "Avatar for brendror-4601" [ref=e184]
+              - generic [ref=e186]: brendror-4601
+              - img [ref=e188]
+            - button "notifications" [ref=e192] [cursor=pointer]:
+              - generic [ref=e194]:
+                - img
+      - button [ref=e196] [cursor=pointer]:
+        - img [ref=e197]
+    - generic [ref=e200]:
+      - generic [ref=e201]:
+        - generic [ref=e204]:
+          - link "knesset-watch" [ref=e205] [cursor=pointer]:
+            - /url: /drors-projects-2fdc212a/knesset-watch
+            - generic [ref=e208]: knesset-watch
+          - button [ref=e209] [cursor=pointer]:
+            - img [ref=e211]
+          - link "Back to team view" [ref=e215] [cursor=pointer]:
+            - /url: /drors-projects-2fdc212a/~/deployments
+            - img [ref=e217]
+        - generic [ref=e220]: Deployments
+        - button "Open page actions menu" [ref=e222] [cursor=pointer]:
+          - img [ref=e224]
+      - generic [ref=e229]:
+        - generic [ref=e230]:
+          - combobox [ref=e232]:
+            - generic [ref=e233]:
+              - generic:
+                - img
+              - searchbox "All Branches…" [ref=e234]
+              - button "Open menu" [ref=e235] [cursor=pointer]:
+                - img [ref=e236]
+          - combobox [ref=e239]:
+            - generic [ref=e240]:
+              - generic:
+                - img
+              - searchbox "All Authors…" [ref=e241]
+              - button "Open menu" [ref=e242] [cursor=pointer]:
+                - img [ref=e243]
+          - button "Menu" [ref=e247] [cursor=pointer]:
+            - generic [ref=e248]:
+              - generic [ref=e250]: All Environments
+              - img [ref=e252]
+          - button "Select Date Range" [ref=e257] [cursor=pointer]:
+            - img [ref=e259]
+            - generic [ref=e261]: Select Date Range
+          - button "Filter by deployment status. 5 of 6 statuses selected" [ref=e264] [cursor=pointer]:
+            - generic [ref=e265]:
+              - generic [ref=e273]: Status
+              - generic "5 of 6 statuses selected" [ref=e274]:
+                - generic [ref=e275]: 5/6
+            - img [ref=e278]
+        - generic [ref=e282]:
+          - generic [ref=e284]:
+            - link [ref=e285] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/HFsdMCRJ8kqg1ZSBLqmVfW5EdMrm
+            - generic [ref=e287]:
+              - link "HFsdMCRJ8" [ref=e290] [cursor=pointer]:
+                - /url: /drors-projects-2fdc212a/knesset-watch/HFsdMCRJ8kqg1ZSBLqmVfW5EdMrm
+                - paragraph [ref=e291]: HFsdMCRJ8
+              - generic [ref=e293]:
+                - text: Production
+                - generic [ref=e296]:
+                  - img [ref=e298]
+                  - text: Current
+            - generic [ref=e301]:
+              - generic "This deployment is ready." [ref=e303]:
+                - generic [ref=e307]: Ready
+              - generic [ref=e311]: 59s
+            - generic [ref=e314]:
+              - generic [ref=e315]:
+                - img [ref=e316]
+                - link "main" [ref=e318] [cursor=pointer]:
+                  - /url: https://github.com/Bren/knesset/tree/main
+              - generic [ref=e319]:
+                - img [ref=e320]
+                - 'link "ef1b5fe debug: surface actual Gemini error in response" [ref=e322] [cursor=pointer]':
+                  - /url: https://github.com/Bren/knesset/commit/ef1b5fe5e41c8df052b70fdb8998a3739e771116
+                  - generic [ref=e323]: ef1b5fe
+                  - 'generic "debug: surface actual Gemini error in response" [ref=e324]'
+            - generic [ref=e325]:
+              - generic [ref=e327]:
+                - generic [ref=e329] [cursor=pointer]: 43m ago by Bren
+                - img "github/Bren" [ref=e333]:
+                  - img "github/Bren" [ref=e334]
+              - button "Deployment Actions" [ref=e336] [cursor=pointer]:
+                - img [ref=e340]
+          - generic [ref=e343]:
+            - link [ref=e344] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/4HgBtAthvoFGPKBVNWSseMmjafq3
+            - generic [ref=e346]:
+              - link "4HgBtAthv" [ref=e349] [cursor=pointer]:
+                - /url: /drors-projects-2fdc212a/knesset-watch/4HgBtAthvoFGPKBVNWSseMmjafq3
+                - paragraph [ref=e350]: 4HgBtAthv
+              - generic [ref=e352]:
+                - text: Production
+                - img [ref=e354]
+            - generic [ref=e357]:
+              - generic "This deployment is ready." [ref=e359]:
+                - generic [ref=e363]: Ready
+              - generic [ref=e367]: 58s
+            - generic [ref=e370]:
+              - generic [ref=e371]:
+                - img [ref=e372]
+                - link "main" [ref=e374] [cursor=pointer]:
+                  - /url: https://github.com/Bren/knesset/tree/main
+              - generic [ref=e375]:
+                - img [ref=e376]
+                - 'link "8d2978d feat: switch /ask to Gemini 2.0 Flash Lite + KV response cache" [ref=e378] [cursor=pointer]':
+                  - /url: https://github.com/Bren/knesset/commit/8d2978df794f36a53cbec7db8e77f01c79924083
+                  - generic [ref=e379]: 8d2978d
+                  - 'generic "feat: switch /ask to Gemini 2.0 Flash Lite + KV response cache" [ref=e380]'
+            - generic [ref=e381]:
+              - generic [ref=e383]:
+                - generic [ref=e385] [cursor=pointer]: 1h ago by Bren
+                - img "github/Bren" [ref=e389]:
+                  - img "github/Bren" [ref=e390]
+              - button "Deployment Actions" [ref=e392] [cursor=pointer]:
+                - img [ref=e396]
+          - generic [ref=e399]:
+            - link [ref=e400] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/4Km61ibJ39dbTQGWuLd5D4kmXNXT
+            - generic [ref=e402]:
+              - link "4Km61ibJ3" [ref=e405] [cursor=pointer]:
+                - /url: /drors-projects-2fdc212a/knesset-watch/4Km61ibJ39dbTQGWuLd5D4kmXNXT
+                - paragraph [ref=e406]: 4Km61ibJ3
+              - generic [ref=e408]:
+                - text: Production
+                - img [ref=e410]
+            - generic [ref=e413]:
+              - generic "This deployment is ready." [ref=e415]:
+                - generic [ref=e419]: Ready
+              - generic [ref=e423]: 56s
+            - generic [ref=e426]:
+              - generic [ref=e427]:
+                - img [ref=e428]
+                - link "main" [ref=e430] [cursor=pointer]:
+                  - /url: https://github.com/Bren/knesset/tree/main
+              - generic [ref=e431]:
+                - img [ref=e432]
+                - 'link "aad8779 fix: /ask — use 8b-instant first (higher TPM), neutral placeholder text" [ref=e434] [cursor=pointer]':
+                  - /url: https://github.com/Bren/knesset/commit/aad8779d5795b4f856f6332a89be97857c9765fd
+                  - generic [ref=e435]: aad8779
+                  - 'generic "fix: /ask — use 8b-instant first (higher TPM), neutral placeholder text" [ref=e436]'
+            - generic [ref=e437]:
+              - generic [ref=e439]:
+                - generic [ref=e441] [cursor=pointer]: 1h ago by Bren
+                - img "github/Bren" [ref=e445]:
+                  - img "github/Bren" [ref=e446]
+              - button "Deployment Actions" [ref=e448] [cursor=pointer]:
+                - img [ref=e452]
+          - generic [ref=e455]:
+            - link [ref=e456] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/5HZWcMXpdb9TzvnJ7K1FiYhUayir
+            - generic [ref=e458]:
+              - link "5HZWcMXpd" [ref=e461] [cursor=pointer]:
+                - /url: /drors-projects-2fdc212a/knesset-watch/5HZWcMXpdb9TzvnJ7K1FiYhUayir
+                - paragraph [ref=e462]: 5HZWcMXpd
+              - generic [ref=e464]:
+                - text: Production
+                - img [ref=e466]
+            - generic [ref=e469]:
+              - generic "This deployment is ready." [ref=e471]:
+                - generic [ref=e475]: Ready
+              - generic [ref=e479]: 57s
+            - generic [ref=e482]:
+              - generic [ref=e483]:
+                - img [ref=e484]
+                - link "main" [ref=e486] [cursor=pointer]:
+                  - /url: https://github.com/Bren/knesset/tree/main
+              - generic [ref=e487]:
+                - img [ref=e488]
+                - 'link "3dc6fd3 feat: AI natural language search — /ask endpoint + results page" [ref=e490] [cursor=pointer]':
+                  - /url: https://github.com/Bren/knesset/commit/3dc6fd33ac113695d71e7ef2985be574844b6313
+                  - generic [ref=e491]: 3dc6fd3
+                  - 'generic "feat: AI natural language search — /ask endpoint + results page" [ref=e492]'
+            - generic [ref=e493]:
+              - generic [ref=e495]:
+                - generic [ref=e497] [cursor=pointer]: 1h ago by Bren
+                - img "github/Bren" [ref=e501]:
+                  - img "github/Bren" [ref=e502]
+              - button "Deployment Actions" [ref=e504] [cursor=pointer]:
+                - img [ref=e508]
+          - generic [ref=e511]:
+            - link [ref=e512] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/HR3BSNoBq4QccdC3c6Y2vdhZQQGY
+            - generic [ref=e514]:
+              - link "HR3BSNoBq" [ref=e517] [cursor=pointer]:
+                - /url: /drors-projects-2fdc212a/knesset-watch/HR3BSNoBq4QccdC3c6Y2vdhZQQGY
+                - paragraph [ref=e518]: HR3BSNoBq
+              - generic [ref=e520]:
+                - text: Production
+                - img [ref=e522]
+            - generic [ref=e525]:
+              - generic "This deployment is ready." [ref=e527]:
+                - generic [ref=e531]: Ready
+              - generic [ref=e535]: 57s
+            - generic [ref=e538]:
+              - generic [ref=e539]:
+                - img [ref=e540]
+                - link "main" [ref=e542] [cursor=pointer]:
+                  - /url: https://github.com/Bren/knesset/tree/main
+              - generic [ref=e543]:
+                - img [ref=e544]
+                - 'link "7de6e46 fix: remove חקיקה badge (98.7% of sessions have bills — not distinctive); hide redundant ''cancelled''…" [ref=e546] [cursor=pointer]':
+                  - /url: https://github.com/Bren/knesset/commit/7de6e46821ff8d54dcb1f78a8bf74d5ea25c167b
+                  - generic [ref=e547]: 7de6e46
+                  - 'generic "fix: remove חקיקה badge (98.7% of sessions have bills — not distinctive); hide redundant ''cancelled'' text" [ref=e548]': "fix: remove חקיקה badge (98.7% of sessions have bills — not distinctive); hide redundant 'cancelled'…"
+            - generic [ref=e549]:
+              - generic [ref=e551]:
+                - generic [ref=e553] [cursor=pointer]: 2h ago by Bren
+                - img "github/Bren" [ref=e557]:
+                  - img "github/Bren" [ref=e558]
+              - button "Deployment Actions" [ref=e560] [cursor=pointer]:
+                - img [ref=e564]
+          - generic [ref=e567]:
+            - link [ref=e568] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/B44EB6hAbcP3AHFJApiUGZ1DCuqn
+            - generic [ref=e570]:
+              - link "B44EB6hAb" [ref=e573] [cursor=pointer]:
+                - /url: /drors-projects-2fdc212a/knesset-watch/B44EB6hAbcP3AHFJApiUGZ1DCuqn
+                - paragraph [ref=e574]: B44EB6hAb
+              - generic [ref=e576]:
+                - text: Production
+                - img [ref=e578]
+            - generic [ref=e581]:
+              - generic "This deployment is ready." [ref=e583]:
+                - generic [ref=e587]: Ready
+              - generic [ref=e591]: 56s
+            - generic [ref=e594]:
+              - generic [ref=e595]:
+                - img [ref=e596]
+                - link "main" [ref=e598] [cursor=pointer]:
+                  - /url: https://github.com/Bren/knesset/tree/main
+              - generic [ref=e599]:
+                - img [ref=e600]
+                - 'link "24b4317 feat: label committee sessions by type — חקיקה badge + bill title fallback" [ref=e602] [cursor=pointer]':
+                  - /url: https://github.com/Bren/knesset/commit/24b4317a08924a1f826d46d102e9df8cad1ef6c2
+                  - generic [ref=e603]: 24b4317
+                  - 'generic "feat: label committee sessions by type — חקיקה badge + bill title fallback" [ref=e604]'
+            - generic [ref=e605]:
+              - generic [ref=e607]:
+                - generic [ref=e609] [cursor=pointer]: 2h ago by Bren
+                - img "github/Bren" [ref=e613]:
+                  - img "github/Bren" [ref=e614]
+              - button "Deployment Actions" [ref=e616] [cursor=pointer]:
+                - img [ref=e620]
+          - generic [ref=e623]:
+            - link [ref=e624] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/9RWJJQwsKEC8kjCt7zeKLsjpB8BT
+            - generic [ref=e626]:
+              - link "9RWJJQwsK" [ref=e629] [cursor=pointer]:
+                - /url: /drors-projects-2fdc212a/knesset-watch/9RWJJQwsKEC8kjCt7zeKLsjpB8BT
+                - paragraph [ref=e630]: 9RWJJQwsK
+              - generic [ref=e632]:
+                - text: Production
+                - img [ref=e634]
+            - generic [ref=e637]:
+              - generic "This deployment is ready." [ref=e639]:
+                - generic [ref=e643]: Ready
+              - generic [ref=e647]: 56s
+            - generic [ref=e650]:
+              - generic [ref=e651]:
+                - img [ref=e652]
+                - link "main" [ref=e654] [cursor=pointer]:
+                  - /url: https://github.com/Bren/knesset/tree/main
+              - generic [ref=e655]:
+                - img [ref=e656]
+                - 'link "49b8d90 fix: show session times on committee page — fix slice bug, add date fallback" [ref=e658] [cursor=pointer]':
+                  - /url: https://github.com/Bren/knesset/commit/49b8d900aed7fb05004c67ea747c9996828dd96c
+                  - generic [ref=e659]: 49b8d90
+                  - 'generic "fix: show session times on committee page — fix slice bug, add date fallback" [ref=e660]'
+            - generic [ref=e661]:
+              - generic [ref=e663]:
+                - generic [ref=e665] [cursor=pointer]: 2h ago by Bren
+                - img "github/Bren" [ref=e669]:
+                  - img "github/Bren" [ref=e670]
+              - button "Deployment Actions" [ref=e672] [cursor=pointer]:
+                - img [ref=e676]
+          - generic [ref=e679]:
+            - link [ref=e680] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/HpLKXn43WwjBdC7NxQrn3BJvYyi4
+            - generic [ref=e682]:
+              - link "HpLKXn43W" [ref=e685] [cursor=pointer]:
+                - /url: /drors-projects-2fdc212a/knesset-watch/HpLKXn43WwjBdC7NxQrn3BJvYyi4
+                - paragraph [ref=e686]: HpLKXn43W
+              - generic [ref=e688]:
+                - text: Production
+                - img [ref=e690]
+            - generic [ref=e693]:
+              - generic "This deployment is ready." [ref=e695]:
+                - generic [ref=e699]: Ready
+              - generic [ref=e703]: 56s
+            - generic [ref=e706]:
+              - generic [ref=e707]:
+                - img [ref=e708]
+                - link "main" [ref=e710] [cursor=pointer]:
+                  - /url: https://github.com/Bren/knesset/tree/main
+              - generic [ref=e711]:
+                - img [ref=e712]
+                - 'link "da21199 fix: rebuild knesset-deploy.db (81MB) — add mk_vote_result, drop session_guest/staff" [ref=e714] [cursor=pointer]':
+                  - /url: https://github.com/Bren/knesset/commit/da21199d6b62710dd020b9d3f2038ad1533d5e4e
+                  - generic [ref=e715]: da21199
+                  - 'generic "fix: rebuild knesset-deploy.db (81MB) — add mk_vote_result, drop session_guest/staff" [ref=e716]'
+            - generic [ref=e717]:
+              - generic [ref=e719]:
+                - generic [ref=e721] [cursor=pointer]: 2h ago by Bren
+                - img "github/Bren" [ref=e725]:
+                  - img "github/Bren" [ref=e726]
+              - button "Deployment Actions" [ref=e728] [cursor=pointer]:
+                - img [ref=e732]
+          - generic [ref=e735]:
+            - link [ref=e736] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/6cKV5UV4129ACuEzpvcga6Cinjht
+            - generic [ref=e738]:
+              - link "6cKV5UV41" [ref=e741] [cursor=pointer]:
+                - /url: /drors-projects-2fdc212a/knesset-watch/6cKV5UV4129ACuEzpvcga6Cinjht
+                - paragraph [ref=e742]: 6cKV5UV41
+              - generic [ref=e744]:
+                - text: Production
+                - img [ref=e746]
+            - generic [ref=e749]:
+              - generic "This deployment is ready." [ref=e751]:
+                - generic [ref=e755]: Ready
+              - generic [ref=e759]: 56s
+            - generic [ref=e762]:
+              - generic [ref=e763]:
+                - img [ref=e764]
+                - link "main" [ref=e766] [cursor=pointer]:
+                  - /url: https://github.com/Bren/knesset/tree/main
+              - generic [ref=e767]:
+                - img [ref=e768]
+                - 'link "ce71c38 fix: add slim deploy DB (74MB) and wire build to copy it as knesset.db" [ref=e770] [cursor=pointer]':
+                  - /url: https://github.com/Bren/knesset/commit/ce71c3878e2651fb17aa7beab6ade55683024325
+                  - generic [ref=e771]: ce71c38
+                  - 'generic "fix: add slim deploy DB (74MB) and wire build to copy it as knesset.db" [ref=e772]'
+            - generic [ref=e773]:
+              - generic [ref=e775]:
+                - generic [ref=e777] [cursor=pointer]: 2h ago by Bren
+                - img "github/Bren" [ref=e781]:
+                  - img "github/Bren" [ref=e782]
+              - button "Deployment Actions" [ref=e784] [cursor=pointer]:
+                - img [ref=e788]
+          - generic [ref=e791]:
+            - link [ref=e792] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/7jH8GzAkMSJ6AU9faaq2tqX6FE3H
+            - generic [ref=e794]:
+              - link "7jH8GzAkM" [ref=e797] [cursor=pointer]:
+                - /url: /drors-projects-2fdc212a/knesset-watch/7jH8GzAkMSJ6AU9faaq2tqX6FE3H
+                - paragraph [ref=e798]: 7jH8GzAkM
+              - generic [ref=e800]:
+                - text: Production
+                - img [ref=e802]
+            - generic [ref=e805]:
+              - generic "This deployment is ready." [ref=e807]:
+                - generic [ref=e811]: Ready
+              - generic [ref=e815]: 44s
+            - generic [ref=e818]:
+              - generic [ref=e819]:
+                - img [ref=e820]
+                - link "main" [ref=e822] [cursor=pointer]:
+                  - /url: https://github.com/Bren/knesset/tree/main
+              - generic [ref=e823]:
+                - img [ref=e824]
+                - 'link "991e18d fix(knesset-watch): rename middleware.ts → proxy.ts with proxyConfig for Next.js 16" [ref=e826] [cursor=pointer]':
+                  - /url: https://github.com/Bren/knesset/commit/991e18dccf1b22e381e9c0c36f99121c82395f82
+                  - generic [ref=e827]: 991e18d
+                  - 'generic "fix(knesset-watch): rename middleware.ts → proxy.ts with proxyConfig for Next.js 16" [ref=e828]'
+            - generic [ref=e829]:
+              - generic [ref=e831]:
+                - generic [ref=e833] [cursor=pointer]: 3h ago by Bren
+                - img "github/Bren" [ref=e837]:
+                  - img "github/Bren" [ref=e838]
+              - button "Deployment Actions" [ref=e840] [cursor=pointer]:
+                - img [ref=e844]
+          - generic [ref=e847]:
+            - link [ref=e848] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/9oqS5sBAm6e6jn8qxzh52zKA1MFn
+            - generic [ref=e850]:
+              - link "9oqS5sBAm" [ref=e853] [cursor=pointer]:
+                - /url: /drors-projects-2fdc212a/knesset-watch/9oqS5sBAm6e6jn8qxzh52zKA1MFn
+                - paragraph [ref=e854]: 9oqS5sBAm
+              - generic [ref=e856]:
+                - text: Production
+                - img [ref=e858]
+            - generic [ref=e861]:
+              - generic "This deployment is ready." [ref=e863]:
+                - generic [ref=e867]: Ready
+              - generic [ref=e871]: 42s
+            - generic [ref=e874]:
+              - generic [ref=e875]:
+                - img [ref=e876]
+                - link "main" [ref=e878] [cursor=pointer]:
+                  - /url: https://github.com/Bren/knesset/tree/main
+              - generic [ref=e879]:
+                - img [ref=e880]
+                - 'link "2e3703c fix(knesset-watch): sessionType label on protocols, pass rate CAST fix, statusDesc in Turso bills" [ref=e882] [cursor=pointer]':
+                  - /url: https://github.com/Bren/knesset/commit/2e3703c5218588fc31216c9c1cf29fc8961f2d8f
+                  - generic [ref=e883]: 2e3703c
+                  - 'generic "fix(knesset-watch): sessionType label on protocols, pass rate CAST fix, statusDesc in Turso bills" [ref=e884]'
+            - generic [ref=e885]:
+              - generic [ref=e887]:
+                - generic [ref=e889] [cursor=pointer]: 3h ago by Bren
+                - img "github/Bren" [ref=e893]:
+                  - img "github/Bren" [ref=e894]
+              - button "Deployment Actions" [ref=e896] [cursor=pointer]:
+                - img [ref=e900]
+          - generic [ref=e903]:
+            - link [ref=e904] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/4EV2rQJmE85ZTGaKpgy33jy1U6U4
+            - generic [ref=e906]:
+              - link "4EV2rQJmE" [ref=e909] [cursor=pointer]:
+                - /url: /drors-projects-2fdc212a/knesset-watch/4EV2rQJmE85ZTGaKpgy33jy1U6U4
+                - paragraph [ref=e910]: 4EV2rQJmE
+              - generic [ref=e912]: Production
+            - generic [ref=e914]:
+              - generic "This deployment had an error." [ref=e916]:
+                - generic [ref=e920]: Error
+              - generic [ref=e924]: 32s
+            - generic [ref=e927]:
+              - generic [ref=e928]:
+                - img [ref=e929]
+                - link "main" [ref=e931] [cursor=pointer]:
+                  - /url: https://github.com/Bren/knesset/tree/main
+              - generic [ref=e932]:
+                - img [ref=e933]
+                - 'link "5625fd8 fix: data accuracy — sync is_passed from publication_date, K25-filter committees, homepage dashboard…" [ref=e935] [cursor=pointer]':
+                  - /url: https://github.com/Bren/knesset/commit/5625fd8cf53561cb3df3844e697f13c34eceb25e
+                  - generic [ref=e936]: 5625fd8
+                  - 'generic "fix: data accuracy — sync is_passed from publication_date, K25-filter committees, homepage dashboard stats" [ref=e937]': "fix: data accuracy — sync is_passed from publication_date, K25-filter committees, homepage dashboard…"
+            - generic [ref=e938]:
+              - generic [ref=e940]:
+                - generic [ref=e942] [cursor=pointer]: 4h ago by Bren
+                - img "github/Bren" [ref=e946]:
+                  - img "github/Bren" [ref=e947]
+              - button "Deployment Actions" [ref=e949] [cursor=pointer]:
+                - img [ref=e953]
+          - generic [ref=e956]:
+            - link [ref=e957] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/GnwEi3egkR9RCJiHYfnCms9UrJE2
+            - generic [ref=e959]:
+              - link "GnwEi3egk" [ref=e962] [cursor=pointer]:
+                - /url: /drors-projects-2fdc212a/knesset-watch/GnwEi3egkR9RCJiHYfnCms9UrJE2
+                - paragraph [ref=e963]: GnwEi3egk
+              - generic [ref=e965]: Production
+            - generic [ref=e967]:
+              - generic "This deployment had an error." [ref=e969]:
+                - generic [ref=e973]: Error
+              - generic [ref=e977]: 32s
+            - generic [ref=e980]:
+              - generic [ref=e981]:
+                - img [ref=e982]
+                - link "main" [ref=e984] [cursor=pointer]:
+                  - /url: https://github.com/Bren/knesset/tree/main
+              - generic [ref=e985]:
+                - img [ref=e986]
+                - 'link "24f69a7 feat: full audit fixes — bill statuses, vote colors, metrics, period filters, UI clarity" [ref=e988] [cursor=pointer]':
+                  - /url: https://github.com/Bren/knesset/commit/24f69a7d31d7654c2fccd8c9aae5a15f036343aa
+                  - generic [ref=e989]: 24f69a7
+                  - 'generic "feat: full audit fixes — bill statuses, vote colors, metrics, period filters, UI clarity" [ref=e990]'
+            - generic [ref=e991]:
+              - generic [ref=e993]:
+                - generic [ref=e995] [cursor=pointer]: 5h ago by Bren
+                - img "github/Bren" [ref=e999]:
+                  - img "github/Bren" [ref=e1000]
+              - button "Deployment Actions" [ref=e1002] [cursor=pointer]:
+                - img [ref=e1006]
+          - generic [ref=e1009]:
+            - link [ref=e1010] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/ApW386ciTBeL2xY3x9gDzQpjbLyh
+            - generic [ref=e1012]:
+              - link "ApW386ciT" [ref=e1015] [cursor=pointer]:
+                - /url: /drors-projects-2fdc212a/knesset-watch/ApW386ciTBeL2xY3x9gDzQpjbLyh
+                - paragraph [ref=e1016]: ApW386ciT
+              - generic [ref=e1018]:
+                - text: Production
+                - img [ref=e1020]
+            - generic [ref=e1023]:
+              - generic "This deployment is ready." [ref=e1025]:
+                - generic [ref=e1029]: Ready
+              - generic [ref=e1033]: 48s
+            - generic [ref=e1036]:
+              - generic [ref=e1037]:
+                - img [ref=e1038]
+                - link "main" [ref=e1040] [cursor=pointer]:
+                  - /url: https://github.com/Bren/knesset/tree/main
+              - generic [ref=e1041]:
+                - img [ref=e1042]
+                - 'link "2c87bb9 feat: card/list toggle for bills+votes; fix badge placement; PDF links for untranscribed sessions" [ref=e1044] [cursor=pointer]':
+                  - /url: https://github.com/Bren/knesset/commit/2c87bb9e428e94d1a6e20b86c2f43fb1a66660eb
+                  - generic [ref=e1045]: 2c87bb9
+                  - 'generic "feat: card/list toggle for bills+votes; fix badge placement; PDF links for untranscribed sessions" [ref=e1046]'
+            - generic [ref=e1047]:
+              - generic [ref=e1049]:
+                - generic [ref=e1051] [cursor=pointer]: 10h ago by Bren
+                - img "github/Bren" [ref=e1055]:
+                  - img "github/Bren" [ref=e1056]
+              - button "Deployment Actions" [ref=e1058] [cursor=pointer]:
+                - img [ref=e1062]
+          - generic [ref=e1065]:
+            - link [ref=e1066] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/7tP2KRFeXVSPd4dvy4imGYj4Hgmc
+            - generic [ref=e1068]:
+              - link "7tP2KRFeX" [ref=e1071] [cursor=pointer]:
+                - /url: /drors-projects-2fdc212a/knesset-watch/7tP2KRFeXVSPd4dvy4imGYj4Hgmc
+                - paragraph [ref=e1072]: 7tP2KRFeX
+              - generic [ref=e1074]:
+                - text: Production
+                - img [ref=e1076]
+            - generic [ref=e1079]:
+              - generic "This deployment is ready." [ref=e1081]:
+                - generic [ref=e1085]: Ready
+              - generic [ref=e1089]: 48s
+            - generic [ref=e1092]:
+              - generic [ref=e1093]:
+                - img [ref=e1094]
+                - link "main" [ref=e1096] [cursor=pointer]:
+                  - /url: https://github.com/Bren/knesset/tree/main
+              - generic [ref=e1097]:
+                - img [ref=e1098]
+                - 'link "6d62fcb feat: period filter, committees sort/view, ministers enrichment, hover tooltips, MK committee attend…" [ref=e1100] [cursor=pointer]':
+                  - /url: https://github.com/Bren/knesset/commit/6d62fcb35c47b6e6454c77b0583d0a35bedb2bb3
+                  - generic [ref=e1101]: 6d62fcb
+                  - 'generic "feat: period filter, committees sort/view, ministers enrichment, hover tooltips, MK committee attendance" [ref=e1102]': "feat: period filter, committees sort/view, ministers enrichment, hover tooltips, MK committee attend…"
+            - generic [ref=e1103]:
+              - generic [ref=e1105]:
+                - generic [ref=e1107] [cursor=pointer]: 10h ago by Bren
+                - img "github/Bren" [ref=e1111]:
+                  - img "github/Bren" [ref=e1112]
+              - button "Deployment Actions" [ref=e1114] [cursor=pointer]:
+                - img [ref=e1118]
+          - generic [ref=e1121]:
+            - link [ref=e1122] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/HVHv1LA3T1qPdzaUF2MchDNLcG5f
+            - generic [ref=e1124]:
+              - link "HVHv1LA3T" [ref=e1127] [cursor=pointer]:
+                - /url: /drors-projects-2fdc212a/knesset-watch/HVHv1LA3T1qPdzaUF2MchDNLcG5f
+                - paragraph [ref=e1128]: HVHv1LA3T
+              - generic [ref=e1130]:
+                - text: Production
+                - img [ref=e1132]
+            - generic [ref=e1135]:
+              - generic "This deployment is ready." [ref=e1137]:
+                - generic [ref=e1141]: Ready
+              - generic [ref=e1145]: 46s
+            - generic [ref=e1148]:
+              - generic [ref=e1149]:
+                - img [ref=e1150]
+                - link "main" [ref=e1152] [cursor=pointer]:
+                  - /url: https://github.com/Bren/knesset/tree/main
+              - generic [ref=e1153]:
+                - img [ref=e1154]
+                - 'link "cc7bee5 feat: committee session counts on protocols filter chips, sorted by activity" [ref=e1156] [cursor=pointer]':
+                  - /url: https://github.com/Bren/knesset/commit/cc7bee511bd3032691a0ddef3dcbeadfe081d7aa
+                  - generic [ref=e1157]: cc7bee5
+                  - 'generic "feat: committee session counts on protocols filter chips, sorted by activity" [ref=e1158]'
+            - generic [ref=e1159]:
+              - generic [ref=e1161]:
+                - generic [ref=e1163] [cursor=pointer]: 1d ago by Bren
+                - img "github/Bren" [ref=e1167]:
+                  - img "github/Bren" [ref=e1168]
+              - button "Deployment Actions" [ref=e1170] [cursor=pointer]:
+                - img [ref=e1174]
+          - generic [ref=e1177]:
+            - link [ref=e1178] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/4s4K35FAZCs2VPkDjtk9yCoWxcZ7
+            - generic [ref=e1180]:
+              - link "4s4K35FAZ" [ref=e1183] [cursor=pointer]:
+                - /url: /drors-projects-2fdc212a/knesset-watch/4s4K35FAZCs2VPkDjtk9yCoWxcZ7
+                - paragraph [ref=e1184]: 4s4K35FAZ
+              - generic [ref=e1186]:
+                - text: Production
+                - img [ref=e1188]
+            - generic [ref=e1191]:
+              - generic "This deployment is ready." [ref=e1193]:
+                - generic [ref=e1197]: Ready
+              - generic [ref=e1201]: 47s
+            - generic [ref=e1204]:
+              - generic [ref=e1205]:
+                - img [ref=e1206]
+                - link "main" [ref=e1208] [cursor=pointer]:
+                  - /url: https://github.com/Bren/knesset/tree/main
+              - generic [ref=e1209]:
+                - img [ref=e1210]
+                - 'link "54e772d feat: sync-participants script, protocols session links, turso guest role fix" [ref=e1212] [cursor=pointer]':
+                  - /url: https://github.com/Bren/knesset/commit/54e772deb76dfce00ef0e2e3623fbbec2010fefa
+                  - generic [ref=e1213]: 54e772d
+                  - 'generic "feat: sync-participants script, protocols session links, turso guest role fix" [ref=e1214]'
+            - generic [ref=e1215]:
+              - generic [ref=e1217]:
+                - generic [ref=e1219] [cursor=pointer]: 1d ago by Bren
+                - img "github/Bren" [ref=e1223]:
+                  - img "github/Bren" [ref=e1224]
+              - button "Deployment Actions" [ref=e1226] [cursor=pointer]:
+                - img [ref=e1230]
+          - generic [ref=e1233]:
+            - link [ref=e1234] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/njRjYhmJcmmMj1xmp6y3hUa3cgdv
+            - generic [ref=e1236]:
+              - link "njRjYhmJc" [ref=e1239] [cursor=pointer]:
+                - /url: /drors-projects-2fdc212a/knesset-watch/njRjYhmJcmmMj1xmp6y3hUa3cgdv
+                - paragraph [ref=e1240]: njRjYhmJc
+              - generic [ref=e1242]:
+                - text: Production
+                - img [ref=e1244]
+            - generic [ref=e1247]:
+              - generic "This deployment is ready." [ref=e1249]:
+                - generic [ref=e1253]: Ready
+              - generic [ref=e1257]: 55s
+            - generic [ref=e1260]:
+              - generic [ref=e1261]:
+                - img [ref=e1262]
+                - link "main" [ref=e1264] [cursor=pointer]:
+                  - /url: https://github.com/Bren/knesset/tree/main
+              - generic [ref=e1265]:
+                - img [ref=e1266]
+                - 'link "34f085a fix: add committee table + attendance data to deployed DB; fix ministers page" [ref=e1268] [cursor=pointer]':
+                  - /url: https://github.com/Bren/knesset/commit/34f085ada69cf7ef69695d1766efc53d6b9a6fe4
+                  - generic [ref=e1269]: 34f085a
+                  - 'generic "fix: add committee table + attendance data to deployed DB; fix ministers page" [ref=e1270]'
+            - generic [ref=e1271]:
+              - generic [ref=e1273]:
+                - generic [ref=e1275] [cursor=pointer]: 1d ago by Bren
+                - img "github/Bren" [ref=e1279]:
+                  - img "github/Bren" [ref=e1280]
+              - button "Deployment Actions" [ref=e1282] [cursor=pointer]:
+                - img [ref=e1286]
+          - generic [ref=e1289]:
+            - link [ref=e1290] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/96rNUruwse26jXVuKTwz6Y6fLmmk
+            - generic [ref=e1292]:
+              - link "96rNUruws" [ref=e1295] [cursor=pointer]:
+                - /url: /drors-projects-2fdc212a/knesset-watch/96rNUruwse26jXVuKTwz6Y6fLmmk
+                - paragraph [ref=e1296]: 96rNUruws
+              - generic [ref=e1298]:
+                - text: Production
+                - img [ref=e1300]
+            - generic [ref=e1303]:
+              - generic "This deployment is ready." [ref=e1305]:
+                - generic [ref=e1309]: Ready
+              - generic [ref=e1313]: 46s
+            - generic [ref=e1316]:
+              - generic [ref=e1317]:
+                - img [ref=e1318]
+                - link "main" [ref=e1320] [cursor=pointer]:
+                  - /url: https://github.com/Bren/knesset/tree/main
+              - generic [ref=e1321]:
+                - img [ref=e1322]
+                - 'link "b254722 fix: mk-profile committeeActivity resilient to missing committee table" [ref=e1324] [cursor=pointer]':
+                  - /url: https://github.com/Bren/knesset/commit/b254722bea7e14a7ed0cf712d14f0370065c8b2a
+                  - generic [ref=e1325]: b254722
+                  - 'generic "fix: mk-profile committeeActivity resilient to missing committee table" [ref=e1326]'
+            - generic [ref=e1327]:
+              - generic [ref=e1329]:
+                - generic [ref=e1331] [cursor=pointer]: 1d ago by Bren
+                - img "github/Bren" [ref=e1335]:
+                  - img "github/Bren" [ref=e1336]
+              - button "Deployment Actions" [ref=e1338] [cursor=pointer]:
+                - img [ref=e1342]
+          - generic [ref=e1345]:
+            - link [ref=e1346] [cursor=pointer]:
+              - /url: /drors-projects-2fdc212a/knesset-watch/7RPvsdmy2v1d1TYGRrseayDvby8j
+            - generic [ref=e1348]:
+              - link "7RPvsdmy2" [ref=e1351] [cursor=pointer]:
+                - /url: /drors-projects-2fdc212a/knesset-watch/7RPvsdmy2v1d1TYGRrseayDvby8j
+                - paragraph [ref=e1352]: 7RPvsdmy2
+              - generic [ref=e1354]:
+                - text: Production
+                - img [ref=e1356]
+            - generic [ref=e1359]:
+              - generic "This deployment is ready." [ref=e1361]:
+                - generic [ref=e1365]: Ready
+              - generic [ref=e1369]: 44s
+            - generic [ref=e1372]:
+              - generic [ref=e1373]:
+                - img [ref=e1374]
+                - link "main" [ref=e1376] [cursor=pointer]:
+                  - /url: https://github.com/Bren/knesset/tree/main
+              - generic [ref=e1377]:
+                - img [ref=e1378]
+                - 'link "2531558 fix: searchSessions resilient to missing committee table in older deployed SQLite schema" [ref=e1380] [cursor=pointer]':
+                  - /url: https://github.com/Bren/knesset/commit/253155846150397d5739991b1bec3b9865839b90
+                  - generic [ref=e1381]: "2531558"
+                  - 'generic "fix: searchSessions resilient to missing committee table in older deployed SQLite schema" [ref=e1382]'
+            - generic [ref=e1383]:
+              - generic [ref=e1385]:
+                - generic [ref=e1387] [cursor=pointer]: 1d ago by Bren
+                - img "github/Bren" [ref=e1391]:
+                  - img "github/Bren" [ref=e1392]
+              - button "Deployment Actions" [ref=e1394] [cursor=pointer]:
+                - img [ref=e1398]
+        - button "Load More" [ref=e1400] [cursor=pointer]:
+          - generic [ref=e1401]: Load More
+        - generic [ref=e1402]:
+          - paragraph [ref=e1403]:
+            - text: Deployment Retention is enabled for this project — some deployments will be deleted after a set time period.
+            - link "Learn more" [ref=e1404] [cursor=pointer]:
+              - /url: /docs/security/deployment-retention
+              - text: Learn more
+              - img [ref=e1405]
+          - button "View Recently Deleted" [ref=e1407] [cursor=pointer]:
+            - generic [ref=e1408]: View Recently Deleted
+  - alert [ref=e1410]
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - img

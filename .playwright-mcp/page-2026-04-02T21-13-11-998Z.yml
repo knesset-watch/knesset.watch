@@ -1,0 +1,267 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - complementary "Skip links" [ref=e5]:
+        - link "Skip to main content" [ref=e6] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e7]: Skip to main content
+        - button "Keyboard shortcuts" [ref=e8]:
+          - generic [ref=e9]: Keyboard shortcuts
+        - link "Accessibility Help external, opens new window" [ref=e10] [cursor=pointer]:
+          - /url: https://cloud.google.com/docs/accessibility?hl=en_US
+          - generic [ref=e11]:
+            - text: Accessibility Help
+            - generic "external, opens new window" [ref=e12]:
+              - img "external, opens new window" [ref=e13]:
+                - img [ref=e14]
+        - link "Accessibility Feedback external, opens new window" [ref=e16] [cursor=pointer]:
+          - /url: https://support.google.com/accessibility/contact/feedback?hl=en_US
+          - generic [ref=e17]:
+            - text: Accessibility Feedback
+            - generic "external, opens new window" [ref=e18]:
+              - img "external, opens new window" [ref=e19]:
+                - img [ref=e20]
+      - banner [ref=e23]:
+        - generic [ref=e24]:
+          - navigation [ref=e27]:
+            - button "Navigation menu (.)" [ref=e28] [cursor=pointer]:
+              - img [ref=e30]
+          - link "Google Cloud Platform Home" [ref=e32] [cursor=pointer]:
+            - /url: /
+            - generic:
+              - img
+          - button "You're currently working in Default Gemini Project. Hit enter to switch projects, folders, or organizations" [ref=e205]:
+            - generic [ref=e206]:
+              - img [ref=e208]
+              - generic [ref=e211]: Default Gemini Project
+        - search "Google Cloud Platform" [ref=e46]:
+          - combobox [ref=e47]:
+            - searchbox "Enter query to search for resources, docs, products, and more" [ref=e48]
+          - button "See all search results" [disabled]:
+            - generic:
+              - img
+            - generic: Search
+        - generic [ref=e49]:
+          - generic [ref=e50]:
+            - button "Open or close Gemini Cloud Assist chat (Option G)" [ref=e215] [cursor=pointer]:
+              - img [ref=e217]
+            - button "Activate Cloud Shell (G then S)" [ref=e219] [cursor=pointer]:
+              - img [ref=e221]
+            - button "Open notifications" [ref=e57] [cursor=pointer]:
+              - img [ref=e59]
+            - button "Settings and utilities" [ref=e65] [cursor=pointer]:
+              - img [ref=e67]
+          - 'button "Account: Dror Bren (brendror@gmail.com)" [ref=e225]':
+            - img [ref=e226]
+    - generic [ref=e91]:
+      - navigation "APIs & Services" [ref=e98]:
+        - generic [ref=e99]:
+          - generic [ref=e100]:
+            - heading "APIs & Services" [level=2] [ref=e101]:
+              - link "APIs & Services" [ref=e102] [cursor=pointer]:
+                - /url: /apis
+                - img [ref=e105]
+                - generic [ref=e109]: APIs & Services
+            - button "Favorite APIs & Services to top" [ref=e229] [cursor=pointer]:
+              - img [ref=e231]
+          - list "Enabled APIs & services, 1 of 5 Library, 2 of 5 Credentials, 3 of 5 OAuth consent screen, 4 of 5 Page usage agreements, 5 of 5" [ref=e113]:
+            - listitem [ref=e114]:
+              - link "Enabled APIs & services, 1 of 5" [ref=e118] [cursor=pointer]:
+                - /url: /apis/dashboard
+                - generic [ref=e119]:
+                  - img [ref=e122]
+                  - generic [ref=e124]: Enabled APIs & services
+            - listitem [ref=e125]:
+              - link "Library, 2 of 5" [ref=e129] [cursor=pointer]:
+                - /url: /apis/library
+                - generic [ref=e130]:
+                  - img [ref=e133]
+                  - generic [ref=e135]: Library
+            - listitem [ref=e136]:
+              - link "Credentials, 3 of 5" [ref=e140] [cursor=pointer]:
+                - /url: /apis/credentials
+                - generic [ref=e141]:
+                  - img [ref=e144]
+                  - generic [ref=e146]: Credentials
+            - listitem [ref=e147]:
+              - link "OAuth consent screen, 4 of 5" [ref=e151] [cursor=pointer]:
+                - /url: /apis/credentials/consent
+                - generic [ref=e152]:
+                  - img [ref=e155]
+                  - generic [ref=e157]: OAuth consent screen
+            - listitem [ref=e158]:
+              - link "Page usage agreements, 5 of 5" [ref=e162] [cursor=pointer]:
+                - /url: /apis/agreements
+                - generic [ref=e163]:
+                  - img [ref=e166]
+                  - generic [ref=e169]: Page usage agreements
+          - button "Toggle APIs & Services navigation menu" [pressed] [ref=e172] [cursor=pointer]:
+            - img [ref=e175]
+      - main [ref=e178]:
+        - generic [ref=e238]:
+          - generic [ref=e241]:
+            - heading "Credentials" [level=1] [ref=e244]:
+              - generic [ref=e245]: Credentials
+            - generic [ref=e249]:
+              - generic [ref=e250]:
+                - button "Create credential" [ref=e252]:
+                  - generic [ref=e253]:
+                    - img [ref=e255]:
+                      - img [ref=e256]
+                    - text: Create credentials
+                  - img [ref=e259]
+                - button "Delete credential" [disabled] [ref=e263]:
+                  - img [ref=e265]:
+                    - img [ref=e266]
+                  - generic [ref=e268]: Delete
+              - button "Restore deleted credentials" [ref=e269] [cursor=pointer]:
+                - generic [ref=e270]:
+                  - img [ref=e272]:
+                    - img [ref=e273]
+                  - text: Restore deleted credentials
+          - generic [ref=e282]:
+            - paragraph [ref=e284]:
+              - text: Create credentials to access your enabled APIs.
+              - link "Learn more about this feature external, opens new window" [ref=e285] [cursor=pointer]:
+                - /url: https://cloud.google.com/docs/authentication
+                - text: Learn more
+                - img "external, opens new window" [ref=e286]:
+                  - img [ref=e287]
+            - status [ref=e290]:
+              - img "Warning" [ref=e291]:
+                - img [ref=e292]
+              - generic [ref=e294]:
+                - generic [ref=e296]: Remember to configure the OAuth consent screen with information about your application.
+                - link "Configure consent screen" [ref=e298] [cursor=pointer]:
+                  - /url: /apis/credentials/consent?project=gen-lang-client-0754467841
+                  - generic [ref=e299]: Configure consent screen
+            - generic [ref=e300]:
+              - heading "API Keys" [level=2] [ref=e302]
+              - grid "API Keys , Navigate table with arrow keys. Enter key to interact with cell. Tab to navigate inside cell. Escape to exit cell." [ref=e306]:
+                - rowgroup [ref=e315]:
+                  - row "Row selection Status Name Bound account Creation date Restrictions Actions" [ref=e316] [cursor=pointer]:
+                    - gridcell "Row selection" [ref=e317]:
+                      - checkbox "Select all rows" [ref=e318]
+                    - columnheader "Status" [ref=e319]:
+                      - img [ref=e323]
+                    - columnheader "Name" [ref=e325]:
+                      - generic [ref=e327]:
+                        - generic [ref=e328]: Name
+                        - button "Sort by Name" [ref=e329]:
+                          - img [ref=e331]
+                    - columnheader "Bound account" [ref=e333]:
+                      - generic [ref=e335]:
+                        - generic [ref=e336]:
+                          - text: Bound account
+                          - button "Help with bound account" [ref=e338]:
+                            - img [ref=e340]
+                        - button "Sort by Bound account" [ref=e342]:
+                          - img [ref=e344]
+                    - columnheader "Creation date" [ref=e346]:
+                      - generic [ref=e348]:
+                        - generic [ref=e349]: Creation date
+                        - button "Sort by Creation date" [ref=e350]:
+                          - img [ref=e352]
+                    - columnheader "Restrictions" [ref=e354]:
+                      - generic [ref=e356]:
+                        - generic [ref=e357]: Restrictions
+                        - button "Sort by Restrictions" [ref=e358]:
+                          - img [ref=e360]
+                    - columnheader "Actions" [ref=e362]:
+                      - generic [ref=e364]: Actions
+                - rowgroup [ref=e365]:
+                  - row "knesset api key Available. Press enter for more information knesset api key — Apr 3, 2026 Generative Language API API key restrictions Show key Actions" [ref=e366] [cursor=pointer]:
+                    - gridcell "knesset api key" [ref=e367]:
+                      - checkbox "knesset api key" [ref=e369]
+                    - gridcell "Available. Press enter for more information" [ref=e370]:
+                      - img "Available. Press enter for more information" [ref=e373]:
+                        - img [ref=e374]
+                    - rowheader "knesset api key" [ref=e376]:
+                      - link "knesset api key" [ref=e378]:
+                        - /url: /apis/credentials/key/5842b585-4cd1-49b8-89ad-f9cdde20e11c?project=gen-lang-client-0754467841
+                    - gridcell "—" [ref=e379]
+                    - gridcell "Apr 3, 2026" [ref=e380]
+                    - gridcell "Generative Language API API key restrictions" [ref=e381]:
+                      - generic [ref=e382]:
+                        - text: Generative Language API
+                        - button "API key restrictions" [ref=e383]:
+                          - img [ref=e385]:
+                            - img [ref=e386]
+                    - gridcell "Show key Actions" [ref=e388]:
+                      - button "Show key" [ref=e392]:
+                        - generic [ref=e393]: Show key
+                      - button "Actions" [ref=e396]:
+                        - img [ref=e398]:
+                          - img [ref=e399]
+            - generic [ref=e401]:
+              - heading "OAuth 2.0 Client IDs" [level=2] [ref=e403]
+              - grid "OAuth 2.0 Client IDs , Navigate table with arrow keys. Enter key to interact with cell. Tab to navigate inside cell. Escape to exit cell." [ref=e407]:
+                - rowgroup [ref=e415]:
+                  - row "Row selection Name Creation date Type Client ID Actions" [ref=e416] [cursor=pointer]:
+                    - gridcell "Row selection" [ref=e417]:
+                      - checkbox "Select all rows" [disabled] [ref=e418]
+                    - columnheader "Name" [ref=e419]:
+                      - generic [ref=e421]:
+                        - generic [ref=e422]: Name
+                        - button "Sort by Name" [ref=e423]:
+                          - img [ref=e425]
+                    - columnheader "Creation date" [ref=e427]:
+                      - generic [ref=e429]:
+                        - generic [ref=e430]: Creation date
+                        - button "Sort by Creation date" [ref=e431]:
+                          - img [ref=e433]
+                    - columnheader "Type" [ref=e435]:
+                      - generic [ref=e437]:
+                        - generic [ref=e438]: Type
+                        - button "Sort by Type" [ref=e439]:
+                          - img [ref=e441]
+                    - columnheader "Client ID" [ref=e443]:
+                      - generic [ref=e445]:
+                        - generic [ref=e446]: Client ID
+                        - button "Sort by Client ID" [ref=e447]:
+                          - img [ref=e449]
+                    - columnheader "Actions" [ref=e451]:
+                      - generic [ref=e453]: Actions
+                - rowgroup [ref=e454]:
+                  - row "No OAuth clients to display" [ref=e455] [cursor=pointer]:
+                    - gridcell "No OAuth clients to display" [ref=e456]
+            - generic [ref=e457]:
+              - generic [ref=e458]:
+                - heading "Service Accounts" [level=2] [ref=e459]
+                - link "Manage service accounts" [ref=e463] [cursor=pointer]:
+                  - /url: /iam-admin/serviceaccounts?project=gen-lang-client-0754467841
+              - grid "Service Accounts , Navigate table with arrow keys. Enter key to interact with cell. Tab to navigate inside cell. Escape to exit cell." [ref=e467]:
+                - rowgroup [ref=e473]:
+                  - row "Row selection Email Name Actions" [ref=e474] [cursor=pointer]:
+                    - gridcell "Row selection" [ref=e475]:
+                      - checkbox "Select all rows" [disabled] [ref=e476]
+                    - columnheader "Email" [ref=e477]:
+                      - generic [ref=e479]:
+                        - generic [ref=e480]: Email
+                        - button "Sort by Email" [ref=e481]:
+                          - img [ref=e483]
+                    - columnheader "Name" [ref=e485]:
+                      - generic [ref=e487]:
+                        - generic [ref=e488]: Name
+                        - button "Sort by Name" [ref=e489]:
+                          - img [ref=e491]
+                    - columnheader "Actions" [ref=e493]:
+                      - generic [ref=e495]: Actions
+                - rowgroup [ref=e496]:
+                  - row "No service accounts to display" [ref=e497] [cursor=pointer]:
+                    - gridcell "No service accounts to display" [ref=e498]
+  - iframe [ref=e202]:
+    
+  - iframe [ref=e203]:
+    
+  - iframe [ref=e500]:
+    
+  - dialog "Dark Mode applied based on your operating system preference" [ref=e503]:
+    - generic [ref=e504]:
+      - generic [ref=e505]:
+        - heading "Dark Mode applied based on your operating system preference" [level=2] [ref=e508]:
+          - generic [ref=e509]: Dark Mode applied based on your operating system preference
+        - paragraph [ref=e510]: To change it, open Settings, select Appearance, and choose a color theme
+      - button "Close callout" [ref=e511] [cursor=pointer]:
+        - img [ref=e513]:
+          - img [ref=e514]

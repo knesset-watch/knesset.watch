@@ -1,0 +1,14 @@
+[    2399ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "new-password"): (More info: https://goo.gl/9p2vKq) %o @ https://knesset.watch/login:0
+[  165439ms] [ERROR] Failed to load resource: the server responded with a status of 503 () @ https://knesset.watch/api/homepage-stats:0
+[  165449ms] TypeError: Cannot read properties of undefined (reading 'toLocaleString')
+    at c (https://knesset.watch/_next/static/chunks/9ff83b019e6ee4a3.js:1:3394)
+    at av (https://knesset.watch/_next/static/chunks/f2f58a7e93290fbb.js:1:63230)
+    at oY (https://knesset.watch/_next/static/chunks/f2f58a7e93290fbb.js:1:83503)
+    at io (https://knesset.watch/_next/static/chunks/f2f58a7e93290fbb.js:1:94935)
+    at sc (https://knesset.watch/_next/static/chunks/f2f58a7e93290fbb.js:1:137956)
+    at https://knesset.watch/_next/static/chunks/f2f58a7e93290fbb.js:1:137801
+    at ss (https://knesset.watch/_next/static/chunks/f2f58a7e93290fbb.js:1:137809)
+    at u9 (https://knesset.watch/_next/static/chunks/f2f58a7e93290fbb.js:1:133734)
+    at sV (https://knesset.watch/_next/static/chunks/f2f58a7e93290fbb.js:1:159329)
+    at MessagePort.O (https://knesset.watch/_next/static/chunks/f2f58a7e93290fbb.js:1:8295)
+[  165463ms] [ERROR] Failed to load resource: the server responded with a status of 503 () @ https://knesset.watch/api/pulse:0

@@ -1019,6 +1019,9 @@ export interface GetBillsOptions {
   passedOnly?: boolean;
   q?: string;
   committee?: string;
+  from?: string;   // YYYY-MM-DD inclusive
+  to?: string;     // YYYY-MM-DD inclusive
+  /** @deprecated use from/to instead */
   year?: string;
 }
 
@@ -1026,7 +1029,7 @@ export function getBills(opts: GetBillsOptions): { bills: BillRow[]; total: numb
   const db = getDb();
   if (!db) return { bills: [], total: 0 };
 
-  const { limit = 50, offset = 0, passedOnly, q, committee, year } = opts;
+  const { limit = 50, offset = 0, passedOnly, q, committee, from, to, year } = opts;
 
   let where = 'WHERE 1=1';
   const params: (string | number)[] = [];
@@ -1038,7 +1041,13 @@ export function getBills(opts: GetBillsOptions): { bills: BillRow[]; total: numb
     params.push(term, term, term);
   }
   if (committee) { where += ' AND b.committee_name = ?'; params.push(committee); }
-  if (year) { where += ' AND b.init_date = ?'; params.push(year); }
+  // from/to take precedence over legacy year param
+  if (from) { where += ' AND b.init_date >= ?'; params.push(from); }
+  if (to)   { where += ' AND b.init_date <= ?'; params.push(to); }
+  if (!from && !to && year) {
+    where += ' AND b.init_date >= ? AND b.init_date <= ?';
+    params.push(`${year}-01-01`, `${year}-12-31`);
+  }
 
   const total = (db.prepare(`SELECT COUNT(*) as cnt FROM bill b ${where}`).get(...params) as { cnt: number }).cnt;
 

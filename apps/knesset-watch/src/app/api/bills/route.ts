@@ -16,10 +16,11 @@ export async function GET(request: Request) {
   const passedOnly = searchParams.get('passedOnly') === 'true';
   const q = searchParams.get('q') ?? undefined;
   const committee = searchParams.get('committee') ?? undefined;
-  const year = searchParams.get('year') ?? undefined;
+  const from = searchParams.get('from') ?? undefined;
+  const to   = searchParams.get('to')   ?? undefined;
 
   try {
-    const result = getBills({ limit, offset, passedOnly, q, committee, year });
+    const result = getBills({ limit, offset, passedOnly, q, committee, from, to });
     return NextResponse.json(result);
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : String(error);

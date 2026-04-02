@@ -1,0 +1,339 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content":
+    - /url: "#geist-skip-nav"
+  - main [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - generic [ref=e9]:
+            - link "Dror's projects Hobby" [disabled] [ref=e10]:
+              - img [ref=e11]
+              - generic [ref=e12]:
+                - generic [ref=e13]: Dror's projects
+                - generic [ref=e15]: Hobby
+            - button [ref=e16] [cursor=pointer]:
+              - img [ref=e18]
+          - button "Find… F" [ref=e21]:
+            - generic [ref=e23]:
+              - img [ref=e25]
+              - generic [ref=e27]: Find…
+              - generic [ref=e29]: F
+        - navigation [ref=e31]:
+          - generic [ref=e34]:
+            - link "Projects" [ref=e35] [cursor=pointer]:
+              - /url: "#intent:sidebar:projects"
+              - img [ref=e37]
+              - generic [ref=e40]: Projects
+            - link "Deployments" [ref=e41] [cursor=pointer]:
+              - /url: "#intent:sidebar:deployments"
+              - img [ref=e43]
+              - generic [ref=e46]: Deployments
+            - link "Logs" [ref=e47] [cursor=pointer]:
+              - /url: "#intent:sidebar:logs"
+              - img [ref=e49]
+              - generic [ref=e52]: Logs
+            - link "Analytics" [ref=e53] [cursor=pointer]:
+              - /url: "#intent:sidebar:analytics"
+              - img [ref=e55]
+              - generic [ref=e58]: Analytics
+            - link "Speed Insights" [ref=e59] [cursor=pointer]:
+              - /url: "#intent:sidebar:speed-insights"
+              - img [ref=e61]
+              - generic [ref=e64]: Speed Insights
+            - link "Observability" [ref=e65] [cursor=pointer]:
+              - /url: "#intent:sidebar:observability"
+              - img [ref=e67]
+              - generic [ref=e70]: Observability
+              - img [ref=e72]
+            - link "Firewall" [ref=e74] [cursor=pointer]:
+              - /url: "#intent:sidebar:firewall"
+              - img [ref=e76]
+              - generic [ref=e80]: Firewall
+            - link "CDN" [ref=e81] [cursor=pointer]:
+              - /url: "#intent:sidebar:cdn"
+              - img [ref=e83]
+              - generic [ref=e86]: CDN
+            - separator [ref=e87]
+            - link "Domains" [ref=e88] [cursor=pointer]:
+              - /url: "#intent:sidebar:domains"
+              - img [ref=e90]
+              - generic [ref=e93]: Domains
+            - link "Integrations" [ref=e94] [cursor=pointer]:
+              - /url: "#intent:sidebar:integrations"
+              - img [ref=e96]
+              - generic [ref=e99]: Integrations
+            - link "Storage" [ref=e100] [cursor=pointer]:
+              - /url: "#intent:sidebar:storage"
+              - img [ref=e102]
+              - generic [ref=e105]: Storage
+            - link "Flags" [ref=e106] [cursor=pointer]:
+              - /url: "#intent:sidebar:flags"
+              - img [ref=e108]
+              - generic [ref=e111]: Flags
+            - link "Agent" [ref=e112] [cursor=pointer]:
+              - /url: "#intent:sidebar:agent"
+              - img [ref=e114]
+              - generic [ref=e117]: Agent
+              - img [ref=e119]
+            - link "AI Gateway" [ref=e121] [cursor=pointer]:
+              - /url: "#intent:sidebar:ai-gateway"
+              - img [ref=e123]
+              - generic [ref=e126]: AI Gateway
+              - img [ref=e128]
+            - link "Sandboxes" [ref=e130] [cursor=pointer]:
+              - /url: "#intent:sidebar:sandboxes"
+              - img [ref=e132]
+              - generic [ref=e135]: Sandboxes
+            - separator [ref=e136]
+            - link "Usage" [ref=e137] [cursor=pointer]:
+              - /url: "#intent:sidebar:usage"
+              - img [ref=e139]
+              - generic [ref=e142]: Usage
+            - link "Support" [ref=e143] [cursor=pointer]:
+              - /url: "#intent:sidebar:support"
+              - img [ref=e145]
+              - generic [ref=e148]: Support
+            - link "Settings" [ref=e149] [cursor=pointer]:
+              - /url: "#intent:sidebar:settings"
+              - img [ref=e151]
+              - generic [ref=e154]: Settings
+              - img [ref=e156]
+        - generic [ref=e158]:
+          - generic [ref=e159]:
+            - generic [ref=e160]:
+              - generic [ref=e163]:
+                - generic [ref=e164]: Ship
+                - generic [ref=e166]: "26"
+              - button "Dismiss" [ref=e167] [cursor=pointer]:
+                - img [ref=e169]
+            - generic [ref=e171]:
+              - generic [ref=e172]: Built for you to ship what’s next.
+              - link "Save the date" [ref=e174] [cursor=pointer]:
+                - /url: /ship
+                - generic [ref=e175]:
+                  - text: Save the date
+                  - img [ref=e176]
+          - generic [ref=e179]:
+            - button "Avatar for brendror-4601 brendror-4601" [ref=e180] [cursor=pointer]:
+              - img "Avatar for brendror-4601" [ref=e181]:
+                - img "Avatar for brendror-4601" [ref=e182]
+              - generic [ref=e184]: brendror-4601
+              - img [ref=e186]
+            - img [ref=e190]
+      - button [ref=e193] [cursor=pointer]:
+        - img [ref=e194]
+    - generic [ref=e197]:
+      - generic [ref=e198]:
+        - generic [ref=e205]: Overview
+        - button "Open page actions menu" [ref=e207] [cursor=pointer]:
+          - img [ref=e209]
+      - generic [ref=e214]:
+        - generic [ref=e216]:
+          - generic [ref=e217]:
+            - searchbox "Search" [ref=e218]
+            - img [ref=e220]
+          - button "Filter and Sort Projects" [ref=e222] [cursor=pointer]:
+            - img [ref=e224]
+          - button "Add New..." [ref=e226] [cursor=pointer]:
+            - generic [ref=e227]: Add New...
+            - img [ref=e229]
+        - generic [ref=e231]:
+          - generic [ref=e234]:
+            - generic [ref=e235]:
+              - generic [ref=e237]: Usage
+              - generic [ref=e238]:
+                - generic [ref=e239]:
+                  - link "Last 30 days" [disabled] [ref=e241]
+                  - button "Upgrade" [ref=e242] [cursor=pointer]:
+                    - generic [ref=e243]: Upgrade
+                - list [ref=e244]:
+                  - listitem [ref=e245]:
+                    - link "17.797979166666668 Fluid Active CPU 42m 43s / 4h 16h" [disabled] [ref=e246]:
+                      - progressbar [ref=e247]:
+                        - img [ref=e248]
+                      - generic [ref=e251]:
+                        - generic [ref=e252]: Fluid Active CPU
+                        - img [ref=e255]
+                      - generic [ref=e258]:
+                        - text: 42m 43s /
+                        - generic [ref=e259]: 4h
+                      - generic: 16h
+                  - listitem [ref=e260]:
+                    - link "4.5446 Edge Requests 45K / 1M 10M" [disabled] [ref=e261]:
+                      - progressbar [ref=e262]:
+                        - img [ref=e263]
+                      - generic [ref=e266]:
+                        - generic [ref=e267]: Edge Requests
+                        - img [ref=e270]
+                      - generic [ref=e273]:
+                        - text: 45K /
+                        - generic [ref=e274]: 1M
+                      - generic: 10M
+                  - listitem [ref=e275]:
+                    - link "3.2613000000000003 Function Invocations 33K / 1M" [disabled] [ref=e276]:
+                      - progressbar [ref=e277]:
+                        - img [ref=e278]
+                      - generic [ref=e281]:
+                        - generic [ref=e282]: Function Invocations
+                        - img [ref=e285]
+                      - generic [ref=e288]: 33K / 1M
+                  - listitem [ref=e289]:
+                    - link "2.588231585185185 Fluid Provisioned Memory 9.3 GB-Hrs / 360 GB-Hrs 1,440 GB-Hrs" [disabled] [ref=e290]:
+                      - progressbar [ref=e291]:
+                        - img [ref=e292]
+                      - generic [ref=e295]:
+                        - generic [ref=e296]: Fluid Provisioned Memory
+                        - img [ref=e299]
+                      - generic [ref=e302]:
+                        - text: 9.3 GB-Hrs /
+                        - generic [ref=e303]: 360 GB-Hrs
+                      - generic: 1,440 GB-Hrs
+                  - listitem [ref=e304]:
+                    - link "0.72617246 Fast Origin Transfer 72.62 MB / 10 GB 100 GB" [disabled] [ref=e305]:
+                      - progressbar [ref=e306]:
+                        - img [ref=e307]
+                      - generic [ref=e310]:
+                        - generic [ref=e311]: Fast Origin Transfer
+                        - img [ref=e314]
+                      - generic [ref=e317]:
+                        - text: 72.62 MB /
+                        - generic [ref=e318]: 10 GB
+                      - generic: 100 GB
+                  - listitem [ref=e319]:
+                    - link "0.2808 ISR Reads 2.8K / 1M 10M" [disabled] [ref=e320]:
+                      - progressbar [ref=e321]:
+                        - img [ref=e322]
+                      - generic [ref=e325]:
+                        - generic [ref=e326]: ISR Reads
+                        - img [ref=e329]
+                      - generic [ref=e332]:
+                        - text: 2.8K /
+                        - generic [ref=e333]: 1M
+                      - generic: 10M
+                  - listitem [ref=e334]:
+                    - link "0.233436891 Fast Data Transfer 233.44 MB / 100 GB 1 TB" [disabled] [ref=e335]:
+                      - progressbar [ref=e336]:
+                        - img [ref=e337]
+                      - generic [ref=e340]:
+                        - generic [ref=e341]: Fast Data Transfer
+                        - img [ref=e344]
+                      - generic [ref=e347]:
+                        - text: 233.44 MB /
+                        - generic [ref=e348]: 100 GB
+                      - generic: 1 TB
+                  - listitem [ref=e349]:
+                    - link "0.11916666666666666 Edge Request CPU Duration 4s / 1h" [disabled] [ref=e350]:
+                      - progressbar [ref=e351]:
+                        - img [ref=e352]
+                      - generic [ref=e355]:
+                        - generic [ref=e356]: Edge Request CPU Duration
+                        - img [ref=e359]
+                      - generic [ref=e362]: 4s / 1h
+                  - listitem [ref=e363]:
+                    - link "0 Microfrontends Routing 0 / 50K" [disabled] [ref=e364]:
+                      - progressbar [ref=e365]:
+                        - img [ref=e366]
+                      - generic [ref=e369]:
+                        - generic [ref=e370]: Microfrontends Routing
+                        - img [ref=e373]
+                      - generic [ref=e376]: 0 / 50K
+                  - listitem [ref=e377]:
+                    - link "0 ISR Writes 0 / 200K 2M" [disabled] [ref=e378]:
+                      - progressbar [ref=e379]:
+                        - img [ref=e380]
+                      - generic [ref=e383]:
+                        - generic [ref=e384]: ISR Writes
+                        - img [ref=e387]
+                      - generic [ref=e390]:
+                        - text: 0 /
+                        - generic [ref=e391]: 200K
+                      - generic: 2M
+              - button "Show More Usage" [ref=e392] [cursor=pointer]:
+                - img [ref=e394]
+            - generic [ref=e396]:
+              - generic [ref=e398]: Alerts
+              - generic [ref=e403]:
+                - generic [ref=e404]:
+                  - generic [ref=e405]: Get alerted for anomalies
+                  - generic [ref=e406]: Automatically monitor your projects for anomalies and get notified.
+                - button "Upgrade to Observability Plus" [ref=e407] [cursor=pointer]:
+                  - generic [ref=e408]: Upgrade to Observability Plus
+            - generic [ref=e409]:
+              - generic [ref=e411]: Recent Previews
+              - list [ref=e412]:
+                - generic [ref=e414]:
+                  - img [ref=e416]
+                  - generic [ref=e419]: Preview deployments that you have recently visited or created will appear here.
+          - generic [ref=e421]:
+            - generic [ref=e423]: Projects
+            - list [ref=e424]:
+              - listitem [ref=e425]:
+                - link [disabled] [ref=e426]
+                - generic [ref=e427]:
+                  - link [disabled] [ref=e428]:
+                    - img [ref=e430] [cursor=pointer]
+                  - generic [ref=e431]:
+                    - link "knesse t -watch" [disabled] [ref=e432]:
+                      - generic [ref=e433]:
+                        - generic [ref=e434]: knesse
+                        - generic [ref=e435]: t
+                        - generic [ref=e436]: "-watch"
+                    - link "knesset.watch" [ref=e437] [cursor=pointer]:
+                      - /url: https://knesset.watch
+                  - link "20" [ref=e438] [cursor=pointer]:
+                    - /url: /drors-projects-2fdc212a/knesset-watch#production-checklist
+                    - progressbar [ref=e440]:
+                      - img [ref=e441]
+                      - img [ref=e446]
+                  - button "Project Menu" [ref=e448] [cursor=pointer]:
+                    - img [ref=e450]
+                - link "github Bren/knesset" [ref=e453] [cursor=pointer]:
+                  - /url: /drors-projects-2fdc212a?repo=https://github.com/Bren/knesset
+                  - img "github" [ref=e454]
+                  - generic [ref=e456]: Bren/knesset
+                - generic [ref=e457]:
+                  - 'link "debug: surface actual Gemini error in response" [ref=e458] [cursor=pointer]':
+                    - /url: /drors-projects-2fdc212a/knesset-watch/HFsdMCRJ8kqg1ZSBLqmVfW5EdMrm
+                  - generic [ref=e459]:
+                    - generic [ref=e460]:
+                      - generic [ref=e462] [cursor=pointer]: 40m ago
+                      - text: "on"
+                    - img [ref=e463]
+                    - link "main" [ref=e465] [cursor=pointer]:
+                      - /url: /drors-projects-2fdc212a/knesset-watch/deployments?filterBranch=main
+              - listitem [ref=e466]:
+                - link [disabled] [ref=e467]
+                - generic [ref=e468]:
+                  - link [disabled] [ref=e469]:
+                    - img [ref=e471] [cursor=pointer]
+                  - generic [ref=e472]:
+                    - link "web" [disabled] [ref=e473]
+                    - link "web-tau-lime-46.vercel.app" [ref=e474] [cursor=pointer]:
+                      - /url: https://web-tau-lime-46.vercel.app
+                  - link "40" [ref=e475] [cursor=pointer]:
+                    - /url: /drors-projects-2fdc212a/web#production-checklist
+                    - progressbar [ref=e477]:
+                      - img [ref=e478]
+                      - img [ref=e483]
+                  - button "Project Menu" [ref=e485] [cursor=pointer]:
+                    - img [ref=e487]
+                - link "github Bren/drorbren" [ref=e490] [cursor=pointer]:
+                  - /url: /drors-projects-2fdc212a?repo=https://github.com/Bren/drorbren
+                  - img "github" [ref=e491]
+                  - generic [ref=e493]: Bren/drorbren
+                - generic [ref=e494]:
+                  - 'link "fix: remove invalid trailing comma and stale knesset-watch rewrites from vercel.json" [ref=e495] [cursor=pointer]':
+                    - /url: /drors-projects-2fdc212a/web/5w8ty4YGvFzEqjvANUuEy3nqtAzz
+                  - generic [ref=e496]:
+                    - generic [ref=e497]:
+                      - generic [ref=e499] [cursor=pointer]: Mar 30
+                      - text: "on"
+                    - img [ref=e500]
+                    - link "main" [ref=e502] [cursor=pointer]:
+                      - /url: /drors-projects-2fdc212a/web/deployments?filterBranch=main
+  - alert [ref=e504]
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - img
