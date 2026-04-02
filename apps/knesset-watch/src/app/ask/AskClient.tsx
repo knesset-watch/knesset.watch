@@ -143,7 +143,7 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="מה עשה גלעד קריב למען החטופים?"
+            placeholder="שאל שאלה על פעילות הכנסת..."
             className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             autoFocus
           />

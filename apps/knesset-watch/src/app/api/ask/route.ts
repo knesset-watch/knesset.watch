@@ -138,10 +138,11 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    let groqRes = await callGroq('llama-3.3-70b-versatile');
+    // Use 8b-instant first — 5× higher TPM quota than 70b; fall back to 70b if needed
+    let groqRes = await callGroq('llama-3.1-8b-instant');
     if (groqRes.status === 429) {
       await new Promise(r => setTimeout(r, 1000));
-      groqRes = await callGroq('llama-3.1-8b-instant');
+      groqRes = await callGroq('llama-3.3-70b-versatile');
     }
 
     if (!groqRes.ok) {
