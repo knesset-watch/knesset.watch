@@ -34,6 +34,7 @@ export default function CommitteeClient({
   const [expandedSessions, setExpandedSessions] = useState<Map<number, FullSessionDetail>>(new Map());
   const [expandedSessionTabs, setExpandedSessionTabs] = useState<Map<number, string>>(new Map());
   const [loadingSessions, setLoadingSessions] = useState<Set<number>>(new Set());
+  const [failedSessions, setFailedSessions] = useState<Set<number>>(new Set());
   const [sessionSearch, setSessionSearch] = useState('');
 
   // Derived values
@@ -74,9 +75,11 @@ export default function CommitteeClient({
       setExpandedSessions(prev => { const next = new Map(prev); next.delete(sessionId); return next; });
       return;
     }
+    setFailedSessions(prev => { const n = new Set(prev); n.delete(sessionId); return n; });
     setLoadingSessions(prev => new Set(prev).add(sessionId));
     try {
       const res = await fetch(`${BASE_PATH}/api/committee/session/${sessionId}`);
+      if (!res.ok) throw new Error(`שגיאת שרת ${res.status}`);
       const detail: FullSessionDetail = await res.json();
       setExpandedSessions(prev => new Map(prev).set(sessionId, detail));
       const firstTab = detail.agendaItems.length > 0 ? 'agenda'
@@ -85,6 +88,8 @@ export default function CommitteeClient({
         : detail.chunks.length > 0 ? 'transcript'
         : 'documents';
       setExpandedSessionTabs(prev => new Map(prev).set(sessionId, firstTab));
+    } catch {
+      setFailedSessions(prev => new Set(prev).add(sessionId));
     } finally {
       setLoadingSessions(prev => { const n = new Set(prev); n.delete(sessionId); return n; });
     }
@@ -277,7 +282,7 @@ export default function CommitteeClient({
                           {b.macroAgenda && <span className="text-[10px] font-black text-white bg-black px-1.5 py-0.5 rounded-full">{b.macroAgenda}</span>}
                           {b.subtype && <span className="text-[10px] text-gray-400">{b.subtype}</span>}
                           <button
-                            onClick={() => { setActiveTab('sessions'); setSessionSearch(b.title.slice(0, 20)); }}
+                            onClick={() => setActiveTab('sessions')}
                             className="text-[10px] font-black text-indigo-600 hover:text-indigo-800 border border-indigo-200 hover:border-indigo-400 px-1.5 py-0.5 rounded transition-colors"
                           >
                             ← ישיבות
@@ -326,7 +331,7 @@ export default function CommitteeClient({
                 return (
                   <div key={s.id} className={`rounded-xl overflow-hidden border ${isCancelled ? 'border-gray-200 opacity-60' : 'border-transparent bg-gray-50'}`}>
                     {/* Header — always clickable */}
-                    <div className="flex items-start justify-between px-4 py-3 cursor-pointer hover:bg-gray-100 transition-colors"
+                    <button type="button" className="w-full text-right flex items-start justify-between px-4 py-3 hover:bg-gray-100 transition-colors"
                       onClick={() => expandSession(s.id)}>
                       <div className="flex-1 min-w-0">
                         {/* Date + badges */}
@@ -368,11 +373,16 @@ export default function CommitteeClient({
                           {loadingSessions.has(s.id) ? '...' : expandedSessions.has(s.id) ? '▲' : '▼'}
                         </span>
                       </div>
-                    </div>
+                    </button>
+
+                    {failedSessions.has(s.id) && !expandedSessions.has(s.id) && (
+                      <p className="px-4 py-2 text-xs text-red-500 border-t border-black/5">שגיאה בטעינת פרטי הישיבה. נסה שוב.</p>
+                    )}
 
                     {/* Expanded detail */}
-                    {expandedSessions.has(s.id) && expandedSessions.get(s.id) && (() => {
-                      const detail = expandedSessions.get(s.id)!;
+                    {(() => {
+                      const detail = expandedSessions.get(s.id);
+                      if (!detail) return null;
                       const activeDetailTab = expandedSessionTabs.get(s.id) ?? 'agenda';
                       const tabs = [
                         { key: 'agenda', label: 'סדר יום', count: detail.agendaItems.length },
@@ -406,7 +416,7 @@ export default function CommitteeClient({
                             {activeDetailTab === 'agenda' && (
                               <ol className="flex flex-col gap-1.5">
                                 {detail.agendaItems.map((item, i) => (
-                                  <li key={i} className="text-xs text-gray-700 leading-relaxed flex gap-2">
+                                  <li key={item.itemNumber ?? i} className="text-xs text-gray-700 leading-relaxed flex gap-2">
                                     {item.itemNumber != null && <span className="font-black text-gray-400 shrink-0">{item.itemNumber}.</span>}
                                     <span>{item.title}</span>
                                   </li>
@@ -444,7 +454,7 @@ export default function CommitteeClient({
                             {activeDetailTab === 'transcript' && (
                               <div className="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap">
                                 {detail.chunks.map((chunk, i) => (
-                                  <div key={i} className="mb-3">
+                                  <div key={chunk.chunkIndex} className="mb-3">
                                     {chunk.speaker && <span className="font-black text-gray-800">{chunk.speaker}: </span>}
                                     {chunk.text}
                                   </div>
