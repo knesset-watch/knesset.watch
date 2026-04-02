@@ -14,12 +14,14 @@ export async function GET(request: Request) {
   const maxMarginStr = searchParams.get('maxMargin');
   const maxMargin = maxMarginStr ? parseInt(maxMarginStr, 10) : undefined;
   const search = searchParams.get('q') ?? undefined;
+  const from = searchParams.get('from') ?? undefined;
+  const to = searchParams.get('to') ?? undefined;
   const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10));
   const limit = 50;
   const offset = (page - 1) * limit;
 
   try {
-    const result = getVoteList({ passedOnly, failedOnly, maxMargin, search, limit, offset });
+    const result = getVoteList({ passedOnly, failedOnly, maxMargin, search, limit, offset, from, to });
     return NextResponse.json({ ...result, page, limit });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });

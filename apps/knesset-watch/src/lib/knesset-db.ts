@@ -675,26 +675,33 @@ export function getCommitteeDetail(name: string): CommitteeDetail | null {
   // Return null only if we have no data at all
   if (!resolvedCommitteeId && (!billStats || billStats.total === 0)) return null;
 
-  // Prefer committee_id lookup (exact match); fall back to name string
-  const memberRows = resolvedCommitteeId
-    ? db.prepare(`
-        SELECT pos.duty_desc, mp.person_id as id, mp.first_name || ' ' || mp.last_name as name,
-               mp.slug, mp.is_coalition as isCoalition
-        FROM mk_position pos
-        JOIN mk_person mp ON mp.person_id = pos.mk_id
-        WHERE pos.is_current = 1 AND pos.committee_id = ? AND mp.is_current = 1
-        GROUP BY mp.person_id
-        ORDER BY mp.last_name
-      `).all(resolvedCommitteeId) as Array<{ duty_desc: string | null; id: number; name: string; slug: string | null; isCoalition: number | null }>
-    : db.prepare(`
-        SELECT pos.duty_desc, mp.person_id as id, mp.first_name || ' ' || mp.last_name as name,
-               mp.slug, mp.is_coalition as isCoalition
-        FROM mk_position pos
-        JOIN mk_person mp ON mp.person_id = pos.mk_id
-        WHERE pos.is_current = 1 AND pos.committee = ? AND mp.is_current = 1
-        GROUP BY mp.person_id
-        ORDER BY mp.last_name
-      `).all(name) as Array<{ duty_desc: string | null; id: number; name: string; slug: string | null; isCoalition: number | null }>;
+  const memberQuery = db.prepare(`
+    SELECT pos.duty_desc, mp.person_id as id, mp.first_name || ' ' || mp.last_name as name,
+           mp.slug, mp.is_coalition as isCoalition
+    FROM mk_position pos
+    JOIN mk_person mp ON mp.person_id = pos.mk_id
+    WHERE pos.is_current = 1 AND pos.committee_id = ? AND mp.is_current = 1
+    GROUP BY mp.person_id
+    ORDER BY mp.last_name
+  `);
+  const memberQueryByName = db.prepare(`
+    SELECT pos.duty_desc, mp.person_id as id, mp.first_name || ' ' || mp.last_name as name,
+           mp.slug, mp.is_coalition as isCoalition
+    FROM mk_position pos
+    JOIN mk_person mp ON mp.person_id = pos.mk_id
+    WHERE pos.is_current = 1 AND pos.committee = ? AND mp.is_current = 1
+    GROUP BY mp.person_id
+    ORDER BY mp.last_name
+  `);
+
+  type MemberRow = { duty_desc: string | null; id: number; name: string; slug: string | null; isCoalition: number | null };
+  // Try committee_id first, fall back to text name if empty (covers schema mismatches between DB versions)
+  let memberRows: MemberRow[] = resolvedCommitteeId
+    ? memberQuery.all(resolvedCommitteeId) as MemberRow[]
+    : memberQueryByName.all(name) as MemberRow[];
+  if (memberRows.length === 0 && resolvedCommitteeId) {
+    memberRows = memberQueryByName.all(name) as MemberRow[];
+  }
 
   const billRows = db.prepare(`
     SELECT b.id, b.title, b.subtype, b.is_passed, b.summary, b.doc_url,
@@ -754,6 +761,7 @@ export interface MinisterInfo {
   ministry: string | null;
   billCount: number;
   passedCount: number;
+  committeeSessionCount: number;
 }
 
 export function getMinisters(): MinisterInfo[] {
@@ -770,7 +778,8 @@ export function getMinisters(): MinisterInfo[] {
       pos.duty_desc as ministerRole,
       pos.ministry,
       (SELECT COUNT(*) FROM bill_initiator WHERE mk_id = mp.person_id) as billCount,
-      (SELECT COUNT(DISTINCT bi.bill_id) FROM bill_initiator bi JOIN bill b ON b.id = bi.bill_id WHERE bi.mk_id = mp.person_id AND b.is_passed = 1) as passedCount
+      (SELECT COUNT(DISTINCT bi.bill_id) FROM bill_initiator bi JOIN bill b ON b.id = bi.bill_id WHERE bi.mk_id = mp.person_id AND b.is_passed = 1) as passedCount,
+      (SELECT COUNT(*) FROM committee_attendance ca WHERE ca.mk_id = mp.person_id) as committeeSessionCount
     FROM mk_position pos
     JOIN mk_person mp ON mp.person_id = pos.mk_id
     WHERE pos.is_current = 1 AND mp.is_current = 1
@@ -778,10 +787,8 @@ export function getMinisters(): MinisterInfo[] {
         OR pos.duty_desc LIKE 'השר %' OR pos.duty_desc LIKE 'השרה %'
         OR pos.duty_desc LIKE 'סגן שר%' OR pos.duty_desc LIKE 'סגנית שר%')
     GROUP BY mp.person_id
-    ORDER BY
-      CASE WHEN pos.duty_desc LIKE 'סגן%' OR pos.duty_desc LIKE 'סגנית%' THEN 1 ELSE 0 END,
-      mp.last_name
-  `).all() as Array<{ id: number; name: string; slug: string | null; isCoalition: number | null; factionName: string | null; ministerRole: string; ministry: string | null; billCount: number; passedCount: number }>)
+    ORDER BY committeeSessionCount DESC
+  `).all() as Array<{ id: number; name: string; slug: string | null; isCoalition: number | null; factionName: string | null; ministerRole: string; ministry: string | null; billCount: number; passedCount: number; committeeSessionCount: number }>)
   .map(r => ({
     ...r,
     isCoalition: r.isCoalition === null ? null : r.isCoalition === 1,
@@ -1391,13 +1398,15 @@ export interface GetVoteListOptions {
   search?: string;
   limit?: number;
   offset?: number;
+  from?: string;        // YYYY-MM-DD inclusive
+  to?: string;          // YYYY-MM-DD inclusive
 }
 
 export function getVoteList(opts: GetVoteListOptions = {}): { votes: VoteListRow[]; total: number } {
   const db = getDb();
   if (!db) return { votes: [], total: 0 };
 
-  const { passedOnly, failedOnly, maxMargin, search, limit = 50, offset = 0 } = opts;
+  const { passedOnly, failedOnly, maxMargin, search, limit = 50, offset = 0, from, to } = opts;
   const conditions: string[] = [];
   const params: (string | number)[] = [];
 
@@ -1411,6 +1420,8 @@ export function getVoteList(opts: GetVoteListOptions = {}): { votes: VoteListRow
     conditions.push('title LIKE ?');
     params.push(`%${search}%`);
   }
+  if (from) { conditions.push('date >= ?'); params.push(from); }
+  if (to) { conditions.push('date <= ?'); params.push(to + 'T23:59:59'); }
 
   const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 

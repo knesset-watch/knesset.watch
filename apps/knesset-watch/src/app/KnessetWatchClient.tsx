@@ -7,7 +7,7 @@ import AllianceGraph from '@/components/AllianceGraph';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
-type SortOption      = 'default' | 'proposed' | 'passed' | 'ratio-desc' | 'ratio-asc';
+type SortOption      = 'default' | 'proposed' | 'passed' | 'ratio-desc' | 'ratio-asc' | 'committee';
 type ViewMode        = 'card' | 'list';
 type GroupBy         = 'mk' | 'party-total' | 'party-avg' | 'committee' | 'faction' | 'bill' | 'agenda' | 'rebels' | 'attendance' | 'lobbyists' | 'timeline' | 'alliances';
 type CoalitionFilter = 'all' | 'coalition' | 'opposition';
@@ -184,6 +184,7 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'passed',     label: 'חוקים שעברו' },
   { value: 'ratio-desc', label: 'יחס גבוה ← נמוך' },
   { value: 'ratio-asc',  label: 'יחס נמוך ← גבוה' },
+  { value: 'committee',  label: 'נוכחות בוועדות' },
 ];
 
 const COALITION_OPTIONS: [CoalitionFilter, string][] = [
@@ -597,6 +598,8 @@ export default function KnessetWatchPage() {
         if (ga !== gb) result = ga - gb;
         else if (ga === 1) result = (a.stats?.proposed || 0) - (b.stats?.proposed || 0);
         else if (ga >= 2) result = getRatio(a.stats) - getRatio(b.stats);
+      } else if (sortBy === 'committee') {
+        result = (b.stats?.committeeSessions || 0) - (a.stats?.committeeSessions || 0);
       }
       return result !== 0 ? result : byName(a, b);
     });
@@ -1624,23 +1627,29 @@ export default function KnessetWatchPage() {
                     </div>
                   )}
                   <div className="mt-auto pt-6">
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-4 gap-2">
                       <div className="flex flex-col">
                         <span className="text-[9px] font-black uppercase text-gray-400 mb-1">הצעות</span>
-                        <span className={`text-3xl font-black transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
+                        <span className={`text-2xl font-black transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
                           {item.stats?.proposed ?? 0}
                         </span>
                       </div>
-                      <div className="flex flex-col border-r border-black/5 pr-3">
+                      <div className="flex flex-col border-r border-black/5 pr-2">
                         <span className="text-[9px] font-black uppercase text-gray-400 mb-1">עברו</span>
-                        <span className={`text-3xl font-black text-teal-600 transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
+                        <span className={`text-2xl font-black text-teal-600 transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
                           {item.stats?.passed ?? 0}
                         </span>
                       </div>
-                      <div className="flex flex-col border-r border-black/5 pr-3">
+                      <div className="flex flex-col border-r border-black/5 pr-2">
                         <span className="text-[9px] font-black uppercase text-gray-400 mb-1">יחס</span>
-                        <span className={`text-3xl font-black text-gray-900 transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
+                        <span className={`text-2xl font-black text-gray-900 transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
                           {item.stats ? (ratio !== null ? `${ratio}%` : '—') : 0}
+                        </span>
+                      </div>
+                      <div className="flex flex-col border-r border-black/5 pr-2">
+                        <span className="text-[9px] font-black uppercase text-gray-400 mb-1">ועדות</span>
+                        <span className={`text-2xl font-black text-blue-700 transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
+                          {item.stats?.committeeSessions ?? 0}
                         </span>
                       </div>
                     </div>
@@ -1652,11 +1661,12 @@ export default function KnessetWatchPage() {
         ) : (
           /* ── MK list view ── */
           <div className="flex flex-col gap-1.5">
-            <div className="grid grid-cols-[1fr_6rem_6rem_6rem] gap-4 py-2 px-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
+            <div className="grid grid-cols-[1fr_6rem_6rem_6rem_6rem] gap-4 py-2 px-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
               <span>שם</span>
               <span>הצעות</span>
               <span>עברו</span>
               <span>יחס</span>
+              <span>ועדות</span>
             </div>
             {filteredData.map((item) => {
               const ratio = (item.stats?.proposed ?? 0) > 0
@@ -1682,7 +1692,7 @@ export default function KnessetWatchPage() {
               return (
                 <div
                   key={item.Id}
-                  className={`relative grid grid-cols-[1fr_6rem_6rem_6rem] gap-4 py-3 px-4 hover:brightness-[1.02] hover:saturate-[1.15] hover:z-10 transition-all items-center ${isStale && !statsLoading ? 'opacity-75' : ''}`}
+                  className={`relative grid grid-cols-[1fr_6rem_6rem_6rem_6rem] gap-4 py-3 px-4 hover:brightness-[1.02] hover:saturate-[1.15] hover:z-10 transition-all items-center ${isStale && !statsLoading ? 'opacity-75' : ''}`}
                   style={buildRowStyleFromSegments(displaySegments)}
                 >
                   <div className="flex flex-col">
@@ -1736,6 +1746,9 @@ export default function KnessetWatchPage() {
                   </div>
                   <span className={`font-black text-base tabular-nums text-gray-900 transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
                     {item.stats ? (ratio !== null ? `${ratio}%` : '—') : 0}
+                  </span>
+                  <span className={`font-black text-base tabular-nums text-blue-700 transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
+                    {item.stats?.committeeSessions ?? 0}
                   </span>
                 </div>
               );

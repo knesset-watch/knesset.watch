@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { usePeriod } from '@/lib/period-context';
+import EntityTooltip from '@/components/EntityTooltip';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
-const YEARS = ['2022', '2023', '2024', '2025', '2026'];
 const PAGE_SIZE = 50;
 
 interface Bill {
@@ -23,6 +24,7 @@ interface Bill {
 }
 
 export default function BillsClient() {
+  const { period } = usePeriod();
   const [bills, setBills] = useState<Bill[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -30,7 +32,6 @@ export default function BillsClient() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [passedOnly, setPassedOnly] = useState(false);
-  const [yearFilter, setYearFilter] = useState<string | null>(null);
   const [expandedBills, setExpandedBills] = useState<Set<number>>(new Set());
 
   // Debounce search
@@ -40,7 +41,7 @@ export default function BillsClient() {
   }, [search]);
 
   // Reset page when filters change
-  useEffect(() => { setPage(0); }, [debouncedSearch, passedOnly, yearFilter]);
+  useEffect(() => { setPage(0); }, [debouncedSearch, passedOnly, period]);
 
   const fetchBills = useCallback(async () => {
     setLoading(true);
@@ -50,7 +51,7 @@ export default function BillsClient() {
     });
     if (passedOnly) params.set('passedOnly', 'true');
     if (debouncedSearch) params.set('q', debouncedSearch);
-    if (yearFilter) params.set('year', yearFilter);
+    if (period !== 'all') params.set('year', period);
 
     try {
       const res = await fetch(`${BASE_PATH}/api/bills?${params}`);
@@ -59,7 +60,7 @@ export default function BillsClient() {
       setTotal(data.total ?? 0);
     } catch { /* ignore */ }
     setLoading(false);
-  }, [page, passedOnly, debouncedSearch, yearFilter]);
+  }, [page, passedOnly, debouncedSearch, period]);
 
   useEffect(() => { fetchBills(); }, [fetchBills]);
 
@@ -100,14 +101,6 @@ export default function BillsClient() {
             >
               עברו בלבד
             </button>
-            {YEARS.map(y => (
-              <button key={y}
-                onClick={() => setYearFilter(yearFilter === y ? null : y)}
-                className={`text-xs font-black px-3 py-1.5 rounded-full transition-colors ${yearFilter === y ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-              >
-                {y}
-              </button>
-            ))}
           </div>
         </div>
 
@@ -147,17 +140,17 @@ export default function BillsClient() {
                     <div className="flex items-center gap-2 mt-1 flex-wrap">
                       {b.init_date && <span className="text-[10px] text-gray-400">{b.init_date}</span>}
                       {b.initiators?.map(i => (
-                        <Link key={i.person_id} href={`/mk/${i.slug ?? i.person_id}`}
+                        <EntityTooltip key={i.person_id} href={`/mk/${i.slug ?? i.person_id}`} type="mk" id={i.slug ?? i.person_id}
                           className="text-[10px] font-bold text-teal-700 hover:underline">
                           {i.first_name} {i.last_name}
-                        </Link>
+                        </EntityTooltip>
                       ))}
                       {b.macro_agenda && <span className="text-[10px] font-black text-white bg-black px-1.5 py-0.5 rounded-full">{b.macro_agenda}</span>}
                       {b.committee_name && (
-                        <Link href={`/committee/${encodeURIComponent(b.committee_name)}`}
+                        <EntityTooltip href={`/committee/${encodeURIComponent(b.committee_name)}`} type="committee" id={b.committee_name}
                           className="text-[10px] font-black text-gray-400 border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded-full transition-colors">
                           {b.committee_name}
-                        </Link>
+                        </EntityTooltip>
                       )}
                       {b.subtype && <span className="text-[10px] text-gray-400">{b.subtype}</span>}
                     </div>

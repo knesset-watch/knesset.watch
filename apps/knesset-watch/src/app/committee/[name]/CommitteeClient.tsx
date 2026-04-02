@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import type { CommitteeDetail } from '@/lib/knesset-db';
 import type { CommitteeProtocolSession } from '@/lib/protocols-db';
+import EntityTooltip from '@/components/EntityTooltip';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
@@ -133,10 +134,10 @@ export default function CommitteeClient({
                   <div className="text-[9px] font-black text-[#16A34A] uppercase tracking-widest mb-2">קואליציה</div>
                   <div className="flex flex-wrap gap-1.5">
                     {coalitionMembers.map(m => (
-                      <Link key={m.id} href={`/mk/${m.slug ?? m.id}`}
+                      <EntityTooltip key={m.id} href={`/mk/${m.slug ?? m.id}`} type="mk" id={m.slug ?? m.id}
                         className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-green-50 border border-green-200 text-green-800 hover:bg-green-100 transition-colors">
                         {m.name}
-                      </Link>
+                      </EntityTooltip>
                     ))}
                   </div>
                 </div>
@@ -146,10 +147,10 @@ export default function CommitteeClient({
                   <div className="text-[9px] font-black text-[#2563EB] uppercase tracking-widest mb-2">אופוזיציה</div>
                   <div className="flex flex-wrap gap-1.5">
                     {oppositionMembers.map(m => (
-                      <Link key={m.id} href={`/mk/${m.slug ?? m.id}`}
+                      <EntityTooltip key={m.id} href={`/mk/${m.slug ?? m.id}`} type="mk" id={m.slug ?? m.id}
                         className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-800 hover:bg-blue-100 transition-colors">
                         {m.name}
-                      </Link>
+                      </EntityTooltip>
                     ))}
                   </div>
                 </div>
@@ -157,49 +158,12 @@ export default function CommitteeClient({
               {otherMembers.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {otherMembers.map(m => (
-                    <Link key={m.id} href={`/mk/${m.slug ?? m.id}`}
+                    <EntityTooltip key={m.id} href={`/mk/${m.slug ?? m.id}`} type="mk" id={m.slug ?? m.id}
                       className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gray-200 transition-colors">
                       {m.name}
-                    </Link>
+                    </EntityTooltip>
                   ))}
                 </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Recent discussions */}
-        {protocolSessions.length > 0 && (
-          <div className="mb-6">
-            <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-2">דיונים אחרונים</div>
-            <div className="flex flex-col gap-1.5">
-              {protocolSessions.slice(0, 3).map(s => {
-                const date = new Date(s.date).toLocaleDateString('he-IL', {
-                  year: 'numeric', month: 'short', day: 'numeric',
-                });
-                return (
-                  <Link
-                    key={s.sessionId}
-                    href={`/session/${s.sessionId}`}
-                    className="flex items-center justify-between rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors px-4 py-3 group"
-                  >
-                    <div>
-                      <span className="text-xs font-bold text-gray-500">{date}</span>
-                      {s.title && <p className="text-sm font-bold mt-0.5 text-gray-900 group-hover:text-black">{s.title}</p>}
-                    </div>
-                    <span className="text-[10px] font-black text-gray-400 group-hover:text-black border border-gray-200 group-hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors shrink-0 mr-2">
-                      פתח ←
-                    </span>
-                  </Link>
-                );
-              })}
-              {protocolSessions.length > 3 && (
-                <button
-                  onClick={() => setActiveTab('protocols')}
-                  className="text-xs font-black text-gray-400 hover:text-black text-right px-4 py-2 transition-colors"
-                >
-                  + {protocolSessions.length - 3} דיונים נוספים ▾
-                </button>
               )}
             </div>
           </div>
@@ -329,14 +293,18 @@ export default function CommitteeClient({
                 return (
                   <div key={s.sessionId} className="rounded-xl bg-gray-50 overflow-hidden">
                     <div
-                      className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-100 transition-colors"
-                      onClick={() => expandProtocol(s.sessionId)}
+                      className={`flex items-center justify-between px-4 py-3 transition-colors ${s.chunkCount > 0 ? 'cursor-pointer hover:bg-gray-100' : ''}`}
+                      onClick={() => s.chunkCount > 0 && expandProtocol(s.sessionId)}
                     >
                       <div>
-                        <span className="text-xs font-bold text-gray-700">{date}</span>
-                        {s.chunkCount > 0 && (
-                          <span className="text-[10px] text-gray-400 font-medium mr-2">{s.chunkCount} קטעים</span>
-                        )}
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-gray-700">{date}</span>
+                          {s.chunkCount > 0 ? (
+                            <span className="text-[10px] text-gray-400 font-medium">{s.chunkCount} קטעים</span>
+                          ) : (
+                            <span className="text-[10px] font-black text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">ללא תמליל</span>
+                          )}
+                        </div>
                         {s.title && <p className="text-sm font-bold mt-0.5">{s.title}</p>}
                       </div>
                       <div className="flex items-center gap-2">
@@ -344,9 +312,11 @@ export default function CommitteeClient({
                           className="text-[10px] font-black text-gray-400 hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">
                           פתח
                         </Link>
-                        <span className="text-gray-400 text-sm">
-                          {isLoading ? '...' : isExpanded ? '▲' : '▼'}
-                        </span>
+                        {s.chunkCount > 0 && (
+                          <span className="text-gray-400 text-sm">
+                            {isLoading ? '...' : isExpanded ? '▲' : '▼'}
+                          </span>
+                        )}
                       </div>
                     </div>
                     {isExpanded && protocol && (

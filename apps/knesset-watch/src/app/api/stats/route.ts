@@ -82,6 +82,18 @@ export async function GET(request: Request) {
       if (results[r.mk_id]) results[r.mk_id].rebellions = r.cnt;
     });
 
+    // 4. Committee session attendance
+    const attendance = db.prepare(`
+      SELECT mk_id, COUNT(*) as cnt
+      FROM committee_attendance
+      WHERE mk_id IN (${ids.map(() => '?').join(',')})
+      GROUP BY mk_id
+    `).all(ids) as Array<{ mk_id: number, cnt: number }>;
+
+    attendance.forEach(a => {
+      if (results[a.mk_id]) results[a.mk_id].committeeSessions = a.cnt;
+    });
+
     return NextResponse.json(results);
   } catch (error: any) {
     console.error('Stats DB fetch error:', error.message);

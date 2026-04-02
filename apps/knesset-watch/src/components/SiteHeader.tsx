@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
+import { usePeriod, PERIODS } from '@/lib/period-context';
 
 interface SearchHit {
   type: 'mk' | 'committee' | 'bill';
@@ -127,10 +128,30 @@ function GlobalSearch() {
   );
 }
 
-// Shown on all pages except the home page, which has its own sidebar nav.
+function PeriodSelector() {
+  const { period, setPeriod } = usePeriod();
+  return (
+    <div className="flex items-center gap-1">
+      {PERIODS.map(p => (
+        <button
+          key={p.value}
+          onClick={() => setPeriod(p.value)}
+          className={`text-[11px] font-black px-2.5 py-0.5 rounded-full transition-colors ${
+            period === p.value
+              ? 'bg-black text-white'
+              : 'text-gray-500 hover:bg-gray-100'
+          }`}
+        >
+          {p.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function SiteHeader() {
   const pathname = usePathname();
-  if (pathname === '/') return null;
+  if (pathname === '/login') return null;
 
   return (
     <header
@@ -141,6 +162,7 @@ export default function SiteHeader() {
         <Link href="/" className="text-base font-black tracking-tighter hover:opacity-70 transition-opacity shrink-0">
           כנסת ווטש
         </Link>
+        <PeriodSelector />
         <GlobalSearch />
         <nav className="hidden md:flex items-center gap-1 text-xs font-black text-gray-500 shrink-0">
           <Link href="/mks" className="px-2 py-1 rounded hover:bg-gray-100 transition-colors">ח"כים</Link>

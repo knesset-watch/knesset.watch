@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { usePeriod, periodToDateRange } from '@/lib/period-context';
 
 interface VoteRow {
   voteId: number;
@@ -22,6 +23,7 @@ function formatDate(iso: string) {
 }
 
 export default function VotesClient() {
+  const { period } = usePeriod();
   const [votes, setVotes] = useState<VoteRow[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -34,13 +36,15 @@ export default function VotesClient() {
   const [failedOnly, setFailedOnly] = useState(false);
   const [maxMargin, setMaxMargin] = useState('');
 
-  const fetchVotes = useCallback((p: number, q: string, passed: boolean, failed: boolean, margin: string) => {
+  const fetchVotes = useCallback((p: number, q: string, passed: boolean, failed: boolean, margin: string, per: typeof period) => {
     setLoading(true);
     const params = new URLSearchParams({ page: String(p) });
     if (q) params.set('q', q);
     if (passed) params.set('passed', '1');
     if (failed) params.set('failed', '1');
     if (margin) params.set('maxMargin', margin);
+    const dateRange = periodToDateRange(per);
+    if (dateRange) { params.set('from', dateRange.from); params.set('to', dateRange.to); }
 
     fetch(`/api/votes-list?${params}`)
       .then(r => r.json())
@@ -53,8 +57,12 @@ export default function VotesClient() {
   }, []);
 
   useEffect(() => {
-    fetchVotes(page, submittedSearch, passedOnly, failedOnly, maxMargin);
-  }, [page, submittedSearch, passedOnly, failedOnly, maxMargin, fetchVotes]);
+    setPage(1);
+  }, [period]);
+
+  useEffect(() => {
+    fetchVotes(page, submittedSearch, passedOnly, failedOnly, maxMargin, period);
+  }, [page, submittedSearch, passedOnly, failedOnly, maxMargin, period, fetchVotes]);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
