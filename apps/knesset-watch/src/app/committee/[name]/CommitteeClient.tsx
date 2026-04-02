@@ -321,9 +321,12 @@ export default function CommitteeClient({
                 const isCancelled = s.statusDesc === 'מבוטלת';
                 const isClosed = s.typeDesc === 'חסויה';
                 const date = new Date(s.date).toLocaleDateString('he-IL', { year: 'numeric', month: 'long', day: 'numeric' });
+                const timeFromDate = s.date.includes('T')
+                  ? new Date(s.date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jerusalem' })
+                  : null;
                 const timeRange = s.startTime && s.endTime
-                  ? `${s.startTime.slice(11, 16)}–${s.endTime.slice(11, 16)}`
-                  : s.startTime ? s.startTime.slice(11, 16) : null;
+                  ? `${s.startTime}–${s.endTime}`
+                  : s.startTime ?? timeFromDate;
                 const sessionLabel = s.protocolNumber
                   ? `פרוטוקול ${s.protocolNumber}`
                   : s.sessionNumber ? `ישיבה ${s.sessionNumber}` : null;
