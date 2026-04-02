@@ -658,6 +658,7 @@ export interface CommitteeSessionFull {
   startTime: string | null;
   endTime: string | null;
   firstAgendaTitle: string | null;
+  firstBillTitle: string | null;   // fallback label when no agenda — first linked bill title
   voteCount: number;
   linkedBillCount: number;
   chunkCount: number;              // filled in by caller from Turso — always 0 here
@@ -820,7 +821,7 @@ export function getCommitteeSessionsFull(committeeName: string): CommitteeSessio
     is_joint: number; session_number: number | null; protocol_number: number | null;
     protocol_url: string | null; session_url: string | null;
     no_protocol_reason: string | null; start_time: string | null; end_time: string | null;
-    first_agenda: string | null; vote_count: number; linked_bill_count: number;
+    first_agenda: string | null; first_bill_title: string | null; vote_count: number; linked_bill_count: number;
   };
 
   // Queries by committee_name text field directly — no ID resolution.
@@ -832,6 +833,7 @@ export function getCommitteeSessionsFull(committeeName: string): CommitteeSessio
       cs.protocol_url, cs.session_url,
       cs.no_protocol_reason, cs.start_time, cs.end_time,
       (SELECT title FROM session_agenda_item WHERE session_id = cs.id LIMIT 1) AS first_agenda,
+      (SELECT b.title FROM session_bill sb JOIN bill b ON b.id = sb.bill_id WHERE sb.session_id = cs.id LIMIT 1) AS first_bill_title,
       (SELECT COUNT(*) FROM session_vote WHERE session_id = cs.id) AS vote_count,
       (SELECT COUNT(*) FROM session_bill WHERE session_id = cs.id) AS linked_bill_count
     FROM committee_session cs
@@ -853,6 +855,7 @@ export function getCommitteeSessionsFull(committeeName: string): CommitteeSessio
     startTime: r.start_time,
     endTime: r.end_time,
     firstAgendaTitle: r.first_agenda,
+    firstBillTitle: r.first_bill_title,
     voteCount: r.vote_count,
     linkedBillCount: r.linked_bill_count,
     chunkCount: 0,

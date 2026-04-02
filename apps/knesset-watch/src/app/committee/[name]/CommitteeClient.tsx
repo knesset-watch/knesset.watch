@@ -344,11 +344,16 @@ export default function CommitteeClient({
                           {isCancelled && <span className="text-[10px] font-black text-gray-500 bg-gray-200 px-1.5 py-0.5 rounded">בוטלה</span>}
                           {isClosed && <span className="text-[10px] font-black text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded">🔒 חסויה</span>}
                           {s.isJoint && <span className="text-[10px] font-black text-blue-600 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">משותפת</span>}
+                          {s.linkedBillCount > 0 && <span className="text-[10px] font-black text-purple-600 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded">חקיקה</span>}
                           {sessionLabel && <span className="text-[10px] text-gray-400 font-medium">{sessionLabel}</span>}
                           {s.chunkCount > 0 && <span className="text-[10px] font-black text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded">✓ תמלול</span>}
                         </div>
-                        {/* Agenda title */}
-                        {s.firstAgendaTitle && <p className="text-sm font-bold leading-snug text-gray-900 mt-0.5">{s.firstAgendaTitle}</p>}
+                        {/* Agenda or bill title as session label */}
+                        {(s.firstAgendaTitle || s.firstBillTitle) && (
+                          <p className="text-sm font-bold leading-snug text-gray-900 mt-0.5">
+                            {s.firstAgendaTitle ?? s.firstBillTitle}
+                          </p>
+                        )}
                         {/* Cancellation reason */}
                         {isCancelled && s.noProtocolReason && <p className="text-xs text-gray-400 mt-0.5">{s.noProtocolReason}</p>}
                         {/* Mini stats */}
