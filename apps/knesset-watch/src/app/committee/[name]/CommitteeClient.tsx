@@ -453,7 +453,7 @@ export default function CommitteeClient({
                             )}
                             {activeDetailTab === 'transcript' && (
                               <div className="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap">
-                                {detail.chunks.map((chunk, i) => (
+                                {detail.chunks.map((chunk) => (
                                   <div key={chunk.chunkIndex} className="mb-3">
                                     {chunk.speaker && <span className="font-black text-gray-800">{chunk.speaker}: </span>}
                                     {chunk.text}
