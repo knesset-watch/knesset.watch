@@ -1680,3 +1680,152 @@ export function getAllCommitteeActivity(): CommitteeActivity[] {
   }>)
   .map(r => ({ committeeId: r.committee_id, name: r.name, sessionCount: r.session_count, lastSessionDate: r.last_session_date, lastProtocolDate: null }));
 }
+
+// ── AI Search helpers ────────────────────────────────────────────────────────
+
+/**
+ * Scans all MKs to find one whose full name ("first last") appears in the query text.
+ * Returns the first match, or null if no MK name is found.
+ */
+export function findMkInText(query: string): { mkId: number; fullName: string } | null {
+  const db = getDb();
+  if (!db) return null;
+  try {
+    const mks = db.prepare(
+      `SELECT person_id, first_name, last_name FROM mk_person`,
+    ).all() as Array<{ person_id: number; first_name: string; last_name: string }>;
+    for (const mk of mks) {
+      const fullName = `${mk.first_name} ${mk.last_name}`;
+      if (query.includes(fullName)) {
+        return { mkId: mk.person_id, fullName };
+      }
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+export interface VoteSearchResult {
+  voteId: number;
+  title: string;
+  date: string;
+  microAgenda: string | null;
+  macroAgenda: string | null;
+  isPassed: boolean;
+  totalFor: number;
+  totalAgainst: number;
+}
+
+/**
+ * For a specific MK: returns their recent votes.
+ * Without an MK: keyword search on title/micro_agenda/macro_agenda.
+ */
+export function searchVotesByKeyword(keyword: string, mkId?: number, limit = 10): VoteSearchResult[] {
+  const db = getDb();
+  if (!db) return [];
+  try {
+    type Row = { id: number; title: string; date: string; micro_agenda: string | null; macro_agenda: string | null; is_passed: number; total_for: number; total_against: number };
+    const map = (r: Row): VoteSearchResult => ({
+      voteId: r.id, title: r.title, date: r.date,
+      microAgenda: r.micro_agenda, macroAgenda: r.macro_agenda,
+      isPassed: r.is_passed === 1, totalFor: r.total_for, totalAgainst: r.total_against,
+    });
+    if (mkId !== undefined) {
+      return (db.prepare(`
+        SELECT pv.id, pv.title, pv.date, pv.micro_agenda, pv.macro_agenda, pv.is_passed, pv.total_for, pv.total_against
+        FROM plenary_vote pv
+        JOIN mk_vote_result mvr ON mvr.vote_id = pv.id AND mvr.mk_id = ?
+        ORDER BY pv.date DESC LIMIT ?
+      `).all(mkId, limit) as Row[]).map(map);
+    }
+    const term = `%${keyword}%`;
+    return (db.prepare(`
+      SELECT id, title, date, micro_agenda, macro_agenda, is_passed, total_for, total_against
+      FROM plenary_vote
+      WHERE title LIKE ? OR micro_agenda LIKE ? OR macro_agenda LIKE ?
+      ORDER BY date DESC LIMIT ?
+    `).all(term, term, term, limit) as Row[]).map(map);
+  } catch {
+    return [];
+  }
+}
+
+export interface BillSearchResult {
+  billId: number;
+  title: string;
+  committeeName: string | null;
+  isPassed: boolean;
+}
+
+/**
+ * For a specific MK: returns their recent bill proposals.
+ * Without an MK: keyword search on bill title.
+ */
+export function searchBillsByKeyword(keyword: string, mkId?: number, limit = 8): BillSearchResult[] {
+  const db = getDb();
+  if (!db) return [];
+  try {
+    type Row = { id: number; title: string; committee_name: string | null; is_passed: number };
+    const map = (r: Row): BillSearchResult => ({
+      billId: r.id, title: r.title, committeeName: r.committee_name, isPassed: r.is_passed === 1,
+    });
+    if (mkId !== undefined) {
+      return (db.prepare(`
+        SELECT b.id, b.title, b.committee_name, b.is_passed
+        FROM bill b
+        JOIN bill_initiator i ON i.bill_id = b.id AND i.mk_id = ?
+        ORDER BY b.id DESC LIMIT ?
+      `).all(mkId, limit) as Row[]).map(map);
+    }
+    const term = `%${keyword}%`;
+    return (db.prepare(`
+      SELECT id, title, committee_name, is_passed
+      FROM bill WHERE title LIKE ?
+      ORDER BY id DESC LIMIT ?
+    `).all(term, limit) as Row[]).map(map);
+  } catch {
+    return [];
+  }
+}
+
+export interface QuerySearchResult {
+  queryId: number;
+  title: string;
+  submitDate: string;
+  mkId: number;
+  mkName: string;
+}
+
+/**
+ * For a specific MK: returns their recent parliamentary queries.
+ * Without an MK: keyword search on query title.
+ */
+export function searchQueriesByKeyword(keyword: string, mkId?: number, limit = 8): QuerySearchResult[] {
+  const db = getDb();
+  if (!db) return [];
+  try {
+    type Row = { id: number; title: string; submit_date: string; mk_id: number; first_name: string; last_name: string };
+    const map = (r: Row): QuerySearchResult => ({
+      queryId: r.id, title: r.title, submitDate: r.submit_date,
+      mkId: r.mk_id, mkName: `${r.first_name} ${r.last_name}`,
+    });
+    if (mkId !== undefined) {
+      return (db.prepare(`
+        SELECT q.id, q.title, q.submit_date, q.mk_id, p.first_name, p.last_name
+        FROM mk_query q JOIN mk_person p ON p.person_id = q.mk_id
+        WHERE q.mk_id = ?
+        ORDER BY q.submit_date DESC LIMIT ?
+      `).all(mkId, limit) as Row[]).map(map);
+    }
+    const term = `%${keyword}%`;
+    return (db.prepare(`
+      SELECT q.id, q.title, q.submit_date, q.mk_id, p.first_name, p.last_name
+      FROM mk_query q JOIN mk_person p ON p.person_id = q.mk_id
+      WHERE q.title LIKE ?
+      ORDER BY q.submit_date DESC LIMIT ?
+    `).all(term, limit) as Row[]).map(map);
+  } catch {
+    return [];
+  }
+}
