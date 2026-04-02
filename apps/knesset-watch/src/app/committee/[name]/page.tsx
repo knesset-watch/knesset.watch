@@ -1,7 +1,6 @@
 import { checkServerAuth } from '@/lib/ui/auth-utils';
 import { redirect, notFound } from 'next/navigation';
-import { getCommitteeDetail } from '@/lib/knesset-db';
-import { tursoAvailable, getTursoCommitteeDetail } from '@/lib/turso-db';
+import { getCommitteeDetail, getCommitteeSessionsFull, type CommitteeSessionFull } from '@/lib/knesset-db';
 import { getCommitteeProtocolSessions } from '@/lib/protocols-db';
 import CommitteeClient from './CommitteeClient';
 
@@ -16,11 +15,20 @@ export default async function CommitteePage({ params }: Props) {
   const { name: rawName } = await params;
   const name = decodeURIComponent(rawName);
 
-  const [data, protocolSessions] = await Promise.all([
-    tursoAvailable() ? getTursoCommitteeDetail(name) : Promise.resolve(getCommitteeDetail(name)),
+  const [data, localSessions, tursoCounts] = await Promise.all([
+    Promise.resolve(getCommitteeDetail(name)),
+    Promise.resolve(getCommitteeSessionsFull(name)),
     getCommitteeProtocolSessions(name),
   ]);
   if (!data) notFound();
 
-  return <CommitteeClient data={data} protocolSessions={protocolSessions} />;
+  // Merge Turso chunkCount into the richer SQLite session records
+  const chunkMap = new Map(tursoCounts.map(s => [s.sessionId, s.chunkCount]));
+  const sessions: CommitteeSessionFull[] = localSessions.map(s => ({
+    ...s,
+    chunkCount: chunkMap.get(s.id) ?? 0,
+    protocolUrl: s.protocolUrl ?? (tursoCounts.find(t => t.sessionId === s.id)?.protocolUrl ?? null),
+  }));
+
+  return <CommitteeClient data={data} sessions={sessions} />;
 }
