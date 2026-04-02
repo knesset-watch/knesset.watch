@@ -65,8 +65,8 @@ async function callGemini(userMessage: string): Promise<string> {
   if (!res.ok) {
     const err = await res.text();
     console.error('Gemini error:', res.status, err);
-    if (res.status === 429) throw new Error('RATE_LIMIT');
-    throw new Error(`Gemini ${res.status}`);
+    if (res.status === 429) throw new Error(`RATE_LIMIT:${err}`);
+    throw new Error(`Gemini ${res.status}: ${err}`);
   }
 
   const data = await res.json() as {
