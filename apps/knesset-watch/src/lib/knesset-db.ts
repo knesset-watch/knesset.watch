@@ -644,6 +644,62 @@ export interface CommitteeDetail {
   bills: CommitteeBill[];
 }
 
+export interface CommitteeSessionFull {
+  id: number;
+  date: string;
+  statusDesc: string | null;       // "פעילה" | "מבוטלת"
+  typeDesc: string | null;         // "פתוחה" | "חסויה"
+  isJoint: boolean;
+  sessionNumber: number | null;
+  protocolNumber: number | null;
+  protocolUrl: string | null;
+  sessionUrl: string | null;
+  noProtocolReason: string | null;
+  startTime: string | null;
+  endTime: string | null;
+  firstAgendaTitle: string | null;
+  voteCount: number;
+  linkedBillCount: number;
+  chunkCount: number;              // filled in by caller from Turso — always 0 here
+}
+
+export interface CommitteeSessionAgendaItem {
+  itemNumber: number | null;
+  title: string;
+  itemType: string | null;
+}
+
+export interface CommitteeSessionVote {
+  subject: string | null;
+  result: string | null;
+  forCount: number | null;
+  againstCount: number | null;
+  abstainCount: number | null;
+  passed: number | null;
+}
+
+export interface SessionLinkedBill {
+  billId: number;
+  title: string;
+  subtype: string;
+  isPassed: boolean;
+}
+
+export interface CommitteeSessionDocument {
+  id: number;
+  groupTypeDesc: string | null;
+  documentName: string | null;
+  filePath: string | null;
+  applicationDesc: string | null;
+}
+
+export interface CommitteeSessionDetail {
+  agendaItems: CommitteeSessionAgendaItem[];
+  votes: CommitteeSessionVote[];
+  linkedBills: SessionLinkedBill[];
+  documents: CommitteeSessionDocument[];
+}
+
 export function getCommitteeDetail(name: string): CommitteeDetail | null {
   const db = getDb();
   if (!db) return null;
@@ -749,6 +805,115 @@ export function getCommitteeDetail(name: string): CommitteeDetail | null {
     })),
     bills,
   };
+}
+
+/**
+ * Returns all sessions for a committee with rich metadata from local SQLite.
+ * chunkCount is left at 0 — caller merges it from Turso.
+ */
+export function getCommitteeSessionsFull(committeeName: string): CommitteeSessionFull[] {
+  const db = getDb();
+  if (!db) return [];
+
+  type Row = {
+    id: number; date: string; status_desc: string | null; type_desc: string | null;
+    is_joint: number; session_number: number | null; protocol_number: number | null;
+    protocol_url: string | null; session_url: string | null;
+    no_protocol_reason: string | null; start_time: string | null; end_time: string | null;
+    first_agenda: string | null; vote_count: number; linked_bill_count: number;
+  };
+
+  const rows = db.prepare(`
+    SELECT
+      cs.id, cs.date, cs.status_desc, cs.type_desc,
+      cs.is_joint, cs.session_number, cs.protocol_number,
+      cs.protocol_url, cs.session_url,
+      cs.no_protocol_reason, cs.start_time, cs.end_time,
+      (SELECT title FROM session_agenda_item WHERE session_id = cs.id LIMIT 1) AS first_agenda,
+      (SELECT COUNT(*) FROM session_vote WHERE session_id = cs.id) AS vote_count,
+      (SELECT COUNT(*) FROM session_bill WHERE session_id = cs.id) AS linked_bill_count
+    FROM committee_session cs
+    WHERE cs.committee_name = ?
+    ORDER BY cs.date DESC
+  `).all(committeeName) as Row[];
+
+  return rows.map(r => ({
+    id: r.id,
+    date: r.date,
+    statusDesc: r.status_desc,
+    typeDesc: r.type_desc,
+    isJoint: r.is_joint === 1,
+    sessionNumber: r.session_number,
+    protocolNumber: r.protocol_number,
+    protocolUrl: r.protocol_url,
+    sessionUrl: r.session_url,
+    noProtocolReason: r.no_protocol_reason,
+    startTime: r.start_time,
+    endTime: r.end_time,
+    firstAgendaTitle: r.first_agenda,
+    voteCount: r.vote_count,
+    linkedBillCount: r.linked_bill_count,
+    chunkCount: 0,
+  }));
+}
+
+/**
+ * Returns full detail for a single committee session for lazy loading.
+ */
+export function getCommitteeSessionDetail(sessionId: number): CommitteeSessionDetail | null {
+  const db = getDb();
+  if (!db) return null;
+
+  type AgendaRow = { item_number: number | null; title: string; item_type: string | null };
+  type VoteRow = { subject: string | null; result: string | null; for_count: number | null; against_count: number | null; abstain_count: number | null; passed: number | null };
+  type BillRow = { id: number; title: string; subtype: string; is_passed: number };
+  type DocRow = { id: number; group_type_desc: string | null; document_name: string | null; file_path: string | null; application_desc: string | null };
+
+  const agendaItems = (db.prepare(
+    `SELECT item_number, title, item_type FROM session_agenda_item WHERE session_id = ? ORDER BY item_number`
+  ).all(sessionId) as AgendaRow[]).map(r => ({
+    itemNumber: r.item_number,
+    title: r.title,
+    itemType: r.item_type,
+  }));
+
+  const votes = (db.prepare(
+    `SELECT subject, result, for_count, against_count, abstain_count, passed FROM session_vote WHERE session_id = ? ORDER BY rowid`
+  ).all(sessionId) as VoteRow[]).map(r => ({
+    subject: r.subject,
+    result: r.result,
+    forCount: r.for_count,
+    againstCount: r.against_count,
+    abstainCount: r.abstain_count,
+    passed: r.passed,
+  }));
+
+  const linkedBills = (db.prepare(
+    `SELECT b.id, b.title, b.subtype, b.is_passed
+     FROM session_bill sb JOIN bill b ON b.id = sb.bill_id
+     WHERE sb.session_id = ?
+     ORDER BY b.is_passed DESC, b.id DESC`
+  ).all(sessionId) as BillRow[]).map(r => ({
+    billId: r.id,
+    title: r.title,
+    subtype: r.subtype ?? '',
+    isPassed: r.is_passed === 1,
+  }));
+
+  const documents = (db.prepare(
+    `SELECT id, group_type_desc, document_name, file_path, application_desc
+     FROM session_document
+     WHERE session_id = ? AND file_path IS NOT NULL AND file_path != ''
+     ORDER BY group_type_id`
+  ).all(sessionId) as DocRow[]).map(r => ({
+    id: r.id,
+    groupTypeDesc: r.group_type_desc,
+    documentName: r.document_name,
+    filePath: r.file_path,
+    applicationDesc: r.application_desc,
+  }));
+
+  return { agendaItems, votes, linkedBills, documents };
 }
 
 // ── Ministers ────────────────────────────────────────────────────────────────
