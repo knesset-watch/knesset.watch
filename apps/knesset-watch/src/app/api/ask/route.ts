@@ -184,7 +184,7 @@ export async function GET(req: NextRequest) {
       const msg = e instanceof Error ? e.message : String(e);
       const userMsg = msg === 'RATE_LIMIT'
         ? 'שירות ה-AI עמוס כרגע, נסה שוב בעוד כמה שניות'
-        : 'שגיאה בשירות ה-AI';
+        : `שגיאה בשירות ה-AI: ${msg}`;
       return NextResponse.json({ error: userMsg }, { status: 502 });
     }
 
