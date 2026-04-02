@@ -5,6 +5,8 @@ import { embedQueryPublic, searchProtocolsVec, searchProtocols, getProtocolSessi
 import type { ProtocolSearchResult, MkSpeakerTurn } from '@/lib/protocols-db';
 import {
   findMkInText,
+  getMkPerson,
+  getMkPositions,
   searchVotesByKeyword,
   searchBillsByKeyword,
   searchQueriesByKeyword,
@@ -41,9 +43,12 @@ async function setCached(key: string, value: AskResponse): Promise<void> {
 
 // ── Gemini call ───────────────────────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `אתה עוזר המנתח נתוני הכנסת הישראלית. ענה בעברית בלבד, בצורה ממוקדת ועובדתית.
-הסתמך אך ורק על המקורות שסופקו. אם המידע הנדרש אינו מצוי — אמור זאת בפירוש.
-ציין שמות דוברים, תאריכים ושמות ועדות כשרלוונטי.`;
+const SYSTEM_PROMPT = `אתה אנליסט נתוני הכנסת הישראלית. ענה בעברית בלבד, בצורה ממוקדת ואנליטית.
+נתח את המקורות שסופקו: פרוטוקולים, הצבעות, הצעות חוק ושאילתות פרלמנטריות.
+- כשנשאלים על ח"כ ספציפי: סכם את עמדותיו, מה יזם, כיצד הצביע, ומה השיג בפועל.
+- כשנשאלים שאלה אנליטית: הסק מסקנות מבוססות-נתונים ממה שמופיע במקורות.
+- ציין תאריכים, שמות ועדות, תוצאות הצבעות (בעד/נגד/עבר/נכשל) ושמות ח"כים.
+- הסתמך אך ורק על המקורות שסופקו. אל תמציא. אם אין מידע מספיק — אמור זאת.`;
 
 async function callGemini(userMessage: string): Promise<string> {
   const key = process.env.GEMINI_API_KEY;
@@ -57,7 +62,7 @@ async function callGemini(userMessage: string): Promise<string> {
       body: JSON.stringify({
         system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
         contents: [{ role: 'user', parts: [{ text: userMessage }] }],
-        generationConfig: { maxOutputTokens: 600 },
+        generationConfig: { maxOutputTokens: 1200 },
       }),
     },
   );
@@ -85,18 +90,20 @@ const HE_STOP = new Set([
   'ה','ש','ו',
 ]);
 
-function extractTopicKeyword(query: string, mkName?: string): string {
+// Returns top 3 meaningful topic keywords, longest first.
+function extractTopicKeywords(query: string, mkName?: string): string[] {
   let text = mkName ? query.replace(mkName, '') : query;
-  // Also strip individual name parts
   if (mkName) {
     for (const part of mkName.split(' ')) text = text.replace(part, '');
   }
-  const words = text
+  const seen = new Set<string>();
+  return text
     .split(/\s+/)
     .map(w => w.replace(/^[הוש]/, ''))   // strip ה/ו/ש prefix
-    .filter(w => w.length >= 3 && !HE_STOP.has(w));
-  // Return longest word (usually the most content-bearing noun)
-  return words.sort((a, b) => b.length - a.length)[0] ?? query;
+    .filter(w => w.length >= 3 && !HE_STOP.has(w))
+    .sort((a, b) => b.length - a.length)
+    .filter(w => { if (seen.has(w)) return false; seen.add(w); return true; })
+    .slice(0, 3);
 }
 
 // ── Route handler ─────────────────────────────────────────────────────────────
@@ -122,44 +129,61 @@ export async function GET(req: NextRequest) {
     ]);
 
     const mkId = detectedMk?.mkId;
-    // Extract a topic keyword (strip MK name + stop words) for structured-data filtering
-    const topicKeyword = extractTopicKeyword(q, detectedMk?.fullName);
+    // Extract topic keywords (top 3 meaningful words, MK name removed)
+    const topicKeywords = extractTopicKeywords(q, detectedMk?.fullName);
+    const primaryKeyword = topicKeywords[0] ?? '';
 
-    // 3. Run all searches in parallel
-    // When MK + topic detected: search the MK's actual speech turns instead of generic vector search
-    const protocolSearch: Promise<ProtocolSearchResult[] | MkSpeakerTurn[]> =
-      mkId && topicKeyword.length >= 2
-        ? searchMkSpeakerTurns(mkId, topicKeyword, 5)
-        : embedding
-          ? searchProtocolsVec(embedding, null, 40).catch((e: unknown) => { console.error('vec search error:', e); return []; })
-          : searchProtocols(q, null, 1).then((r: { results: ProtocolSearchResult[] }) => r.results).catch((e: unknown) => { console.error('text search error:', e); return []; });
+    // 3. Run all searches in parallel:
+    //    - Speaker turns (MK + topic): targeted speech excerpts
+    //    - Vector search: semantic session search (always run when embedding available)
+    //    - Structured data: votes, bills, queries
+    const vectorSearchPromise: Promise<ProtocolSearchResult[]> = embedding
+      ? searchProtocolsVec(embedding, null, 40).catch((e: unknown) => { console.error('vec search error:', e); return []; })
+      : searchProtocols(q, null, 1).then((r: { results: ProtocolSearchResult[] }) => r.results).catch((e: unknown) => { console.error('text search error:', e); return []; });
 
-    const [protocolRaw, votes, bills, queries] = await Promise.all([
-      protocolSearch,
-      Promise.resolve(searchVotesByKeyword(topicKeyword, mkId, 15)),
-      Promise.resolve(searchBillsByKeyword(topicKeyword, mkId, 8)),
-      Promise.resolve(searchQueriesByKeyword(topicKeyword, mkId, 8)),
+    const speakerTurnsPromise: Promise<MkSpeakerTurn[]> = mkId && primaryKeyword.length >= 2
+      ? searchMkSpeakerTurns(mkId, primaryKeyword, 6)
+      : Promise.resolve([]);
+
+    const [speakerTurns, vectorResults, votes, bills, queries] = await Promise.all([
+      speakerTurnsPromise,
+      vectorSearchPromise,
+      Promise.resolve(searchVotesByKeyword(topicKeywords.length > 0 ? topicKeywords : [q], mkId, 15)),
+      Promise.resolve(searchBillsByKeyword(topicKeywords.length > 0 ? topicKeywords : [q], mkId, 8)),
+      Promise.resolve(searchQueriesByKeyword(topicKeywords.length > 0 ? topicKeywords : [q], mkId, 8)),
     ]);
 
-    // 6. Build LLM context + collect sources
+    // 4. Build LLM context + collect sources
     let context = '';
     const sources: Source[] = [];
 
-    const isSpeakerTurns = mkId && topicKeyword.length >= 2;
-    if (isSpeakerTurns) {
-      // Speaker-turn path: MK speech excerpts about the topic
-      const turns = protocolRaw as MkSpeakerTurn[];
-      for (const t of turns) {
+    // MK profile context (faction + current committees)
+    if (mkId && detectedMk) {
+      const mkInfo = getMkPerson(mkId);
+      const positions = getMkPositions(mkId).filter(p => p.isCurrent);
+      if (mkInfo) {
+        context += `[פרופיל: ${detectedMk.fullName}]\n`;
+        if (mkInfo.factionName) context += `סיעה: ${mkInfo.factionName}\n`;
+        const committees = positions.map(p => p.committee || p.dutyDesc).filter(Boolean).slice(0, 5);
+        if (committees.length > 0) context += `חברות בוועדות: ${committees.join(', ')}\n`;
+        context += '\n';
+      }
+    }
+
+    // Speaker turns: MK speech excerpts about the topic
+    // Falls back to vector search sessions when no turns found
+    const useSpeakerTurns = speakerTurns.length > 0;
+    if (useSpeakerTurns) {
+      for (const t of speakerTurns) {
         sources.push({ type: 'session', sessionId: t.sessionId, committeeName: t.committeeName, date: t.date, title: '' });
         context += `[נאום ${detectedMk!.fullName} | ${t.date} | ${t.committeeName}]\n${t.text}\n\n`;
-        if (context.length > 4000) break;
+        if (context.length > 5000) break;
       }
     } else {
-      // Generic session path: fetch full protocol sessions
-      const protocolResults = protocolRaw as ProtocolSearchResult[];
+      // Generic session path: fetch full protocol sessions from vector results
       const seen = new Set<number>();
       const topSessionIds: number[] = [];
-      for (const r of protocolResults) {
+      for (const r of vectorResults) {
         if (!seen.has(r.sessionId)) {
           seen.add(r.sessionId);
           topSessionIds.push(r.sessionId);
@@ -178,7 +202,7 @@ export async function GET(req: NextRequest) {
           context += chunk.text.trim().replace(/\n{3,}/g, '\n') + '\n';
         }
         context += '\n';
-        if (context.length > 4000) break;
+        if (context.length > 5000) break;
       }
     }
 

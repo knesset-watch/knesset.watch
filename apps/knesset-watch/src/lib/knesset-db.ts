@@ -1721,11 +1721,14 @@ export interface VoteSearchResult {
 /**
  * For a specific MK: returns their recent votes.
  * Without an MK: keyword search on title/micro_agenda/macro_agenda.
+ * Accepts a single keyword or array of keywords (OR-matched).
  */
-export function searchVotesByKeyword(keyword: string, mkId?: number, limit = 10): VoteSearchResult[] {
+export function searchVotesByKeyword(keyword: string | string[], mkId?: number, limit = 10): VoteSearchResult[] {
   const db = getDb();
   if (!db) return [];
   try {
+    const keywords = (Array.isArray(keyword) ? keyword : [keyword]).filter(k => k.length >= 2);
+    if (keywords.length === 0) return [];
     const VOTE_LABEL: Record<number, string> = { 7: 'בעד', 8: 'נגד', 6: 'נמנע', 9: 'נעדר' };
     type Row = { id: number; title: string; date: string; micro_agenda: string | null; macro_agenda: string | null; is_passed: number; total_for: number; total_against: number; result_code?: number };
     const map = (r: Row): VoteSearchResult => ({
@@ -1734,15 +1737,18 @@ export function searchVotesByKeyword(keyword: string, mkId?: number, limit = 10)
       isPassed: r.is_passed === 1, totalFor: r.total_for, totalAgainst: r.total_against,
       mkVoteResult: r.result_code !== undefined ? (VOTE_LABEL[r.result_code] ?? null) : null,
     });
+    const mkCond = keywords.map(() => '(pv.title LIKE ? OR pv.micro_agenda LIKE ? OR pv.macro_agenda LIKE ?)').join(' OR ');
+    const plainCond = keywords.map(() => '(title LIKE ? OR micro_agenda LIKE ? OR macro_agenda LIKE ?)').join(' OR ');
+    const kArgs = keywords.flatMap(k => [`%${k}%`, `%${k}%`, `%${k}%`]);
+
     if (mkId !== undefined) {
-      const term = `%${keyword}%`;
       const filtered = (db.prepare(`
         SELECT pv.id, pv.title, pv.date, pv.micro_agenda, pv.macro_agenda, pv.is_passed, pv.total_for, pv.total_against, mvr.result_code
         FROM plenary_vote pv
         JOIN mk_vote_result mvr ON mvr.vote_id = pv.id AND mvr.mk_id = ?
-        WHERE pv.title LIKE ? OR pv.micro_agenda LIKE ? OR pv.macro_agenda LIKE ?
+        WHERE ${mkCond}
         ORDER BY pv.date DESC LIMIT ?
-      `).all(mkId, term, term, term, limit) as Row[]).map(map);
+      `).all(mkId, ...kArgs, limit) as Row[]).map(map);
       if (filtered.length > 0) return filtered;
       return (db.prepare(`
         SELECT pv.id, pv.title, pv.date, pv.micro_agenda, pv.macro_agenda, pv.is_passed, pv.total_for, pv.total_against, mvr.result_code
@@ -1751,13 +1757,11 @@ export function searchVotesByKeyword(keyword: string, mkId?: number, limit = 10)
         ORDER BY pv.date DESC LIMIT ?
       `).all(mkId, limit) as Row[]).map(map);
     }
-    const term = `%${keyword}%`;
     return (db.prepare(`
       SELECT id, title, date, micro_agenda, macro_agenda, is_passed, total_for, total_against
-      FROM plenary_vote
-      WHERE title LIKE ? OR micro_agenda LIKE ? OR macro_agenda LIKE ?
+      FROM plenary_vote WHERE ${plainCond}
       ORDER BY date DESC LIMIT ?
-    `).all(term, term, term, limit) as Row[]).map(map);
+    `).all(...kArgs, limit) as Row[]).map(map);
   } catch {
     return [];
   }
@@ -1773,24 +1777,30 @@ export interface BillSearchResult {
 /**
  * For a specific MK: returns their recent bill proposals.
  * Without an MK: keyword search on bill title.
+ * Accepts a single keyword or array of keywords (OR-matched).
  */
-export function searchBillsByKeyword(keyword: string, mkId?: number, limit = 8): BillSearchResult[] {
+export function searchBillsByKeyword(keyword: string | string[], mkId?: number, limit = 8): BillSearchResult[] {
   const db = getDb();
   if (!db) return [];
   try {
+    const keywords = (Array.isArray(keyword) ? keyword : [keyword]).filter(k => k.length >= 2);
+    if (keywords.length === 0) return [];
     type Row = { id: number; title: string; committee_name: string | null; is_passed: number };
     const map = (r: Row): BillSearchResult => ({
       billId: r.id, title: r.title, committeeName: r.committee_name, isPassed: r.is_passed === 1,
     });
+    const mkCond = keywords.map(() => 'b.title LIKE ?').join(' OR ');
+    const plainCond = keywords.map(() => 'title LIKE ?').join(' OR ');
+    const kArgs = keywords.map(k => `%${k}%`);
+
     if (mkId !== undefined) {
-      const term = `%${keyword}%`;
       const filtered = (db.prepare(`
         SELECT b.id, b.title, b.committee_name, b.is_passed
         FROM bill b
         JOIN bill_initiator i ON i.bill_id = b.id AND i.mk_id = ?
-        WHERE b.title LIKE ?
+        WHERE ${mkCond}
         ORDER BY b.id DESC LIMIT ?
-      `).all(mkId, term, limit) as Row[]).map(map);
+      `).all(mkId, ...kArgs, limit) as Row[]).map(map);
       if (filtered.length > 0) return filtered;
       return (db.prepare(`
         SELECT b.id, b.title, b.committee_name, b.is_passed
@@ -1799,12 +1809,11 @@ export function searchBillsByKeyword(keyword: string, mkId?: number, limit = 8):
         ORDER BY b.id DESC LIMIT ?
       `).all(mkId, limit) as Row[]).map(map);
     }
-    const term = `%${keyword}%`;
     return (db.prepare(`
       SELECT id, title, committee_name, is_passed
-      FROM bill WHERE title LIKE ?
+      FROM bill WHERE ${plainCond}
       ORDER BY id DESC LIMIT ?
-    `).all(term, limit) as Row[]).map(map);
+    `).all(...kArgs, limit) as Row[]).map(map);
   } catch {
     return [];
   }
@@ -1821,24 +1830,29 @@ export interface QuerySearchResult {
 /**
  * For a specific MK: returns their recent parliamentary queries.
  * Without an MK: keyword search on query title.
+ * Accepts a single keyword or array of keywords (OR-matched).
  */
-export function searchQueriesByKeyword(keyword: string, mkId?: number, limit = 8): QuerySearchResult[] {
+export function searchQueriesByKeyword(keyword: string | string[], mkId?: number, limit = 8): QuerySearchResult[] {
   const db = getDb();
   if (!db) return [];
   try {
+    const keywords = (Array.isArray(keyword) ? keyword : [keyword]).filter(k => k.length >= 2);
+    if (keywords.length === 0) return [];
     type Row = { id: number; title: string; submit_date: string; mk_id: number; first_name: string; last_name: string };
     const map = (r: Row): QuerySearchResult => ({
       queryId: r.id, title: r.title, submitDate: r.submit_date,
       mkId: r.mk_id, mkName: `${r.first_name} ${r.last_name}`,
     });
+    const cond = keywords.map(() => 'q.title LIKE ?').join(' OR ');
+    const kArgs = keywords.map(k => `%${k}%`);
+
     if (mkId !== undefined) {
-      const term = `%${keyword}%`;
       const filtered = (db.prepare(`
         SELECT q.id, q.title, q.submit_date, q.mk_id, p.first_name, p.last_name
         FROM mk_query q JOIN mk_person p ON p.person_id = q.mk_id
-        WHERE q.mk_id = ? AND q.title LIKE ?
+        WHERE q.mk_id = ? AND (${cond})
         ORDER BY q.submit_date DESC LIMIT ?
-      `).all(mkId, term, limit) as Row[]).map(map);
+      `).all(mkId, ...kArgs, limit) as Row[]).map(map);
       if (filtered.length > 0) return filtered;
       return (db.prepare(`
         SELECT q.id, q.title, q.submit_date, q.mk_id, p.first_name, p.last_name
@@ -1847,13 +1861,12 @@ export function searchQueriesByKeyword(keyword: string, mkId?: number, limit = 8
         ORDER BY q.submit_date DESC LIMIT ?
       `).all(mkId, limit) as Row[]).map(map);
     }
-    const term = `%${keyword}%`;
     return (db.prepare(`
       SELECT q.id, q.title, q.submit_date, q.mk_id, p.first_name, p.last_name
       FROM mk_query q JOIN mk_person p ON p.person_id = q.mk_id
-      WHERE q.title LIKE ?
+      WHERE ${cond}
       ORDER BY q.submit_date DESC LIMIT ?
-    `).all(term, limit) as Row[]).map(map);
+    `).all(...kArgs, limit) as Row[]).map(map);
   } catch {
     return [];
   }
