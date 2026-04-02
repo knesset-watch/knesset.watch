@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { validateAuth } from '@/lib/ui/auth-utils';
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { isAllowed, redirectTo } = validateAuth(
     request,
     'SITE_PASSWORD',
@@ -18,6 +18,6 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-export const config = {
+export const proxyConfig = {
   matcher: '/((?!_next/static|_next/image|favicon.ico).*)',
 };
