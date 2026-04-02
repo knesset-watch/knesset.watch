@@ -19,3 +19,6 @@ apps/knesset-watch/overnight*.log
 # macOS artifacts
 .DS_Store
 apps/.DS_Store
+
+# Playwright MCP session cache
+.playwright-mcp/
