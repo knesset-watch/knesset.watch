@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { kv } from '@vercel/kv';
 import { validateApiAuth } from '@/lib/ui/auth-utils';
 import { embedQueryPublic, searchProtocolsVec, searchProtocols, getProtocolSession } from '@/lib/protocols-db';
 import type { ProtocolSearchResult } from '@/lib/protocols-db';
@@ -17,6 +18,65 @@ type BillSource   = { type: 'bill';    billId: number;    title: string; committ
 type QuerySource  = { type: 'query';   queryId: number;   title: string; submitDate: string; mkName: string };
 type Source = SessionSource | VoteSource | BillSource | QuerySource;
 
+interface AskResponse {
+  answer: string;
+  sources: Source[];
+  detectedMk: { mkId: number; fullName: string } | null;
+}
+
+// ── KV cache helpers ──────────────────────────────────────────────────────────
+
+const kvEnabled = () => !!process.env.KV_REST_API_URL && !!process.env.KV_REST_API_TOKEN;
+const TTL_ASK = 2 * 60 * 60; // 2 hours
+
+async function getCached(key: string): Promise<AskResponse | null> {
+  if (!kvEnabled()) return null;
+  try { return await kv.get<AskResponse>(key); } catch { return null; }
+}
+
+async function setCached(key: string, value: AskResponse): Promise<void> {
+  if (!kvEnabled()) return;
+  try { await kv.set(key, value, { ex: TTL_ASK }); } catch { /* best-effort */ }
+}
+
+// ── Gemini call ───────────────────────────────────────────────────────────────
+
+const SYSTEM_PROMPT = `אתה עוזר המנתח נתוני הכנסת הישראלית. ענה בעברית בלבד, בצורה ממוקדת ועובדתית.
+הסתמך אך ורק על המקורות שסופקו. אם המידע הנדרש אינו מצוי — אמור זאת בפירוש.
+ציין שמות דוברים, תאריכים ושמות ועדות כשרלוונטי.`;
+
+async function callGemini(userMessage: string): Promise<string> {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error('GEMINI_API_KEY not set');
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${key}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+        generationConfig: { maxOutputTokens: 600 },
+      }),
+    },
+  );
+
+  if (!res.ok) {
+    const err = await res.text();
+    console.error('Gemini error:', res.status, err);
+    if (res.status === 429) throw new Error('RATE_LIMIT');
+    throw new Error(`Gemini ${res.status}`);
+  }
+
+  const data = await res.json() as {
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+  };
+  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+}
+
+// ── Route handler ─────────────────────────────────────────────────────────────
+
 export async function GET(req: NextRequest) {
   const authError = await validateApiAuth('SITE_PASSWORD', 'knesset-watch_auth_token');
   if (authError) return authError;
@@ -25,8 +85,13 @@ export async function GET(req: NextRequest) {
   if (!q || q.length < 2) return NextResponse.json({ error: 'שאלה קצרה מדי' }, { status: 400 });
   if (q.length > 500)      return NextResponse.json({ error: 'שאלה ארוכה מדי' }, { status: 400 });
 
+  // 1. Check cache
+  const cacheKey = `ask:v1:${q}`;
+  const cached = await getCached(cacheKey);
+  if (cached) return NextResponse.json(cached);
+
   try {
-    // 1. Embed query and detect MK entity in parallel
+    // 2. Embed query and detect MK entity in parallel
     const [embedding, detectedMk] = await Promise.all([
       embedQueryPublic(q),
       Promise.resolve(findMkInText(q)),
@@ -34,7 +99,7 @@ export async function GET(req: NextRequest) {
 
     const mkId = detectedMk?.mkId;
 
-    // 2. Run all searches in parallel
+    // 3. Run all searches in parallel
     const [protocolResults, votes, bills, queries] = await Promise.all([
       embedding
         ? searchProtocolsVec(embedding, null, 40)
@@ -44,7 +109,7 @@ export async function GET(req: NextRequest) {
       Promise.resolve(searchQueriesByKeyword(q, mkId, 8)),
     ]);
 
-    // 3. Deduplicate protocol results → top 5 sessions
+    // 4. Deduplicate protocol results → top 5 sessions
     const seen = new Set<number>();
     const topSessionIds: number[] = [];
     for (const r of protocolResults) {
@@ -55,14 +120,13 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // 4. Fetch full protocol session content in parallel
+    // 5. Fetch full protocol session content in parallel
     const sessionResults = await Promise.all(topSessionIds.map(id => getProtocolSession(id)));
 
-    // 5. Build LLM context + collect sources
+    // 6. Build LLM context + collect sources
     let context = '';
     const sources: Source[] = [];
 
-    // Protocol context (~4000 chars)
     for (const result of sessionResults) {
       if (!result) continue;
       const { session, chunks } = result;
@@ -83,7 +147,6 @@ export async function GET(req: NextRequest) {
       if (context.length > 4000) break;
     }
 
-    // Vote context (~1200 chars)
     if (votes.length > 0) {
       context += '\n[הצבעות]\n';
       for (const v of votes.slice(0, 10)) {
@@ -93,7 +156,6 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Bill context (~800 chars)
     if (bills.length > 0) {
       context += '\n[הצעות חוק]\n';
       for (const b of bills.slice(0, 5)) {
@@ -102,7 +164,6 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Query context
     if (queries.length > 0) {
       context += '\n[שאילתות פרלמנטריות]\n';
       for (const qr of queries.slice(0, 5)) {
@@ -115,49 +176,23 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ answer: 'לא נמצא מידע רלוונטי לשאלה זו בנתוני הכנסת.', sources: [], detectedMk });
     }
 
-    // 6. Call Groq — try 70b first, fall back to 8b-instant on rate-limit
-    const SYSTEM_PROMPT = `אתה עוזר המנתח נתוני הכנסת הישראלית. ענה בעברית בלבד, בצורה ממוקדת ועובדתית.
-הסתמך אך ורק על המקורות שסופקו. אם המידע הנדרש אינו מצוי — אמור זאת בפירוש.
-ציין שמות דוברים, תאריכים ושמות ועדות כשרלוונטי.`;
-
-    async function callGroq(model: string): Promise<Response> {
-      return fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model,
-          max_tokens: 600,
-          messages: [
-            { role: 'system', content: SYSTEM_PROMPT },
-            { role: 'user', content: `שאלה: ${q}\n\nמקורות:\n${context}` },
-          ],
-        }),
-      });
-    }
-
-    // Use 8b-instant first — 5× higher TPM quota than 70b; fall back to 70b if needed
-    let groqRes = await callGroq('llama-3.1-8b-instant');
-    if (groqRes.status === 429) {
-      await new Promise(r => setTimeout(r, 1000));
-      groqRes = await callGroq('llama-3.3-70b-versatile');
-    }
-
-    if (!groqRes.ok) {
-      const err = await groqRes.text();
-      console.error('ask error:', groqRes.status, err);
-      const msg = groqRes.status === 429 || groqRes.status === 413
+    // 7. Call Gemini
+    let answer: string;
+    try {
+      answer = await callGemini(`שאלה: ${q}\n\nמקורות:\n${context}`);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      const userMsg = msg === 'RATE_LIMIT'
         ? 'שירות ה-AI עמוס כרגע, נסה שוב בעוד כמה שניות'
         : 'שגיאה בשירות ה-AI';
-      return NextResponse.json({ error: msg }, { status: 502 });
+      return NextResponse.json({ error: userMsg }, { status: 502 });
     }
 
-    const groqData = await groqRes.json() as { choices: Array<{ message: { content: string } }> };
-    const answer = groqData.choices[0]?.message?.content ?? '';
+    const response: AskResponse = { answer, sources, detectedMk: detectedMk ?? null };
 
-    return NextResponse.json({ answer, sources, detectedMk: detectedMk ?? null });
+    // 8. Cache and return
+    await setCached(cacheKey, response);
+    return NextResponse.json(response);
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error('ask error:', msg);
