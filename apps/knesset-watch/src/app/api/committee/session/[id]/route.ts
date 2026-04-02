@@ -15,19 +15,24 @@ export async function GET(req: NextRequest, { params }: Props) {
   const sessionId = parseInt(id, 10);
   if (isNaN(sessionId)) return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
 
-  // Fetch SQLite detail and Turso transcript in parallel
-  const [detail, protocol] = await Promise.all([
-    Promise.resolve(getCommitteeSessionDetail(sessionId)),
-    getProtocolSession(sessionId),
-  ]);
+  try {
+    const [detail, protocol] = await Promise.all([
+      getCommitteeSessionDetail(sessionId),
+      getProtocolSession(sessionId),
+    ]);
 
-  if (!detail) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    if (!detail) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-  return NextResponse.json({
-    agendaItems: detail.agendaItems,
-    votes: detail.votes,
-    linkedBills: detail.linkedBills,
-    documents: detail.documents,
-    chunks: protocol?.chunks ?? [],
-  });
+    return NextResponse.json({
+      agendaItems: detail.agendaItems,
+      votes: detail.votes,
+      linkedBills: detail.linkedBills,
+      documents: detail.documents,
+      chunks: protocol?.chunks ?? [],
+    });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Internal error';
+    console.error('committee session fetch error:', msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
 }
