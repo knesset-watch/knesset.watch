@@ -625,6 +625,7 @@ export interface CommitteeBill {
   title: string;
   subtype: string;
   isPassed: boolean;
+  statusDesc: string | null;
   summary: string | null;
   docUrl: string | null;
   microAgenda: string | null;
@@ -704,12 +705,12 @@ export function getCommitteeDetail(name: string): CommitteeDetail | null {
   }
 
   const billRows = db.prepare(`
-    SELECT b.id, b.title, b.subtype, b.is_passed, b.summary, b.doc_url,
+    SELECT b.id, b.title, b.subtype, b.is_passed, b.status_desc, b.summary, b.doc_url,
            b.micro_agenda, b.macro_agenda, b.init_date
     FROM bill b
     WHERE b.committee_name = ?
     ORDER BY b.is_passed DESC, b.id DESC
-  `).all(name) as Array<{ id: number; title: string; subtype: string; is_passed: number; summary: string | null; doc_url: string | null; micro_agenda: string | null; macro_agenda: string | null; init_date: string | null }>;
+  `).all(name) as Array<{ id: number; title: string; subtype: string; is_passed: number; status_desc: string | null; summary: string | null; doc_url: string | null; micro_agenda: string | null; macro_agenda: string | null; init_date: string | null }>;
 
   // Fetch initiators for each bill
   const getInitiators = db.prepare(`
@@ -724,6 +725,7 @@ export function getCommitteeDetail(name: string): CommitteeDetail | null {
     title: r.title,
     subtype: r.subtype,
     isPassed: r.is_passed === 1,
+    statusDesc: r.status_desc ?? null,
     summary: r.summary,
     docUrl: r.doc_url,
     microAgenda: r.micro_agenda,

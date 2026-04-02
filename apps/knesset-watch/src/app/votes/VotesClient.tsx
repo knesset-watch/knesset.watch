@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { usePeriod, periodToDateRange } from '@/lib/period-context';
 
@@ -31,6 +31,17 @@ export default function VotesClient() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [view, setView] = useState<ViewMode>('list');
+  const didMount = useRef(false);
+
+  // Persist view mode
+  useEffect(() => {
+    const saved = localStorage.getItem('kw-view-votes') as ViewMode | null;
+    if (saved === 'list' || saved === 'cards') setView(saved);
+    didMount.current = true;
+  }, []);
+  useEffect(() => {
+    if (didMount.current) localStorage.setItem('kw-view-votes', view);
+  }, [view]);
 
   // Filters
   const [search, setSearch] = useState('');

@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import MKAgendaView from './MKAgendaView';
 import PresenceHeatmap from '@/components/PresenceHeatmap';
+import { VOTE_RESULT_COLORS, CODE_TO_LABEL } from '@/lib/vote-utils';
+import { usePeriod, periodToDateRange } from '@/lib/period-context';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
@@ -86,8 +88,10 @@ interface ProfileData {
   committeeActivity: CommitteeActivityItem[];
   withMajorityVotes: MkVoteRow[];
   rebellionCount?: number;
+  totalPartisanVotes?: number;
   attendanceCount?: number;
-  rebelledVotes?: any[];
+  totalRelevantSessions?: number;
+  rebelledVotes?: Array<{ voteId: number; title: string; date: string; resultCode: number; factionMajority: number }>;
 }
 
 interface AgendaStat {
@@ -117,16 +121,7 @@ interface MkVote {
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const RESULT_COLORS: Record<string, string> = {
-  'בעד':  'bg-[#16A34A] text-white',
-  'נגד':  'bg-[#2563EB] text-white',
-  'נמנע': 'bg-amber-100 text-amber-800',
-  'נוכח': 'bg-zinc-100 text-zinc-500',
-};
-
-const CODE_TO_LABEL: Record<number, string> = {
-  6: 'נוכח', 7: 'בעד', 8: 'נגד', 9: 'נמנע',
-};
+const RESULT_COLORS = VOTE_RESULT_COLORS;
 
 const TABS: Array<[TabView, string]> = [
   ['overview', 'סקירה'],
@@ -161,7 +156,7 @@ function VoteBreakdownBar({ stats }: { stats: VoteStats }) {
 
   const segments = [
     { count: forCount,     color: '#16A34A', label: 'בעד' },
-    { count: againstCount, color: '#2563EB', label: 'נגד' },
+    { count: againstCount, color: '#DC2626', label: 'נגד' },
     { count: abstainCount, color: '#D97706', label: 'נמנע' },
     { count: presentCount, color: '#9CA3AF', label: 'נוכח' },
   ].filter(s => s.count > 0);
@@ -299,7 +294,23 @@ function AgendaFingerprint({ stats }: { stats: AgendaStat[] }) {
 
 // ── Forensic Investigation insights (Rebellion, Attendance) ──────────────────
 
-function ForensicInsightsCard({ rebellions, attendance }: { rebellions: number; attendance: number }) {
+function ForensicInsightsCard({
+  rebellions, totalPartisanVotes, attendance, totalRelevantSessions, rebelledVotes,
+}: {
+  rebellions: number;
+  totalPartisanVotes: number;
+  attendance: number;
+  totalRelevantSessions: number;
+  rebelledVotes: Array<{ voteId: number; title: string; date: string; resultCode: number; factionMajority: number }>;
+}) {
+  const [showRebelled, setShowRebelled] = useState(false);
+  const rebellionRate = totalPartisanVotes > 0
+    ? ((rebellions / totalPartisanVotes) * 100).toFixed(1)
+    : null;
+  const attendanceRate = totalRelevantSessions > 0
+    ? Math.round((attendance / totalRelevantSessions) * 100)
+    : null;
+
   return (
     <div className="bg-orange-50/50 border border-orange-100 p-6 rounded-2xl">
       <div className="text-[11px] font-black text-orange-400 uppercase tracking-wide mb-4 flex items-center gap-2">
@@ -310,14 +321,48 @@ function ForensicInsightsCard({ rebellions, attendance }: { rebellions: number; 
         <div>
           <span className="block text-3xl font-black text-orange-600">{rebellions}</span>
           <span className="text-[10px] font-black text-orange-400 uppercase leading-tight block mt-1">הצבעות נגד הסיעה</span>
-          <p className="text-[10px] text-orange-300 mt-2 leading-relaxed font-medium">נמדד לפי הצבעות שסתרו את רוב חברי המפלגה.</p>
+          {rebellionRate !== null && (
+            <p className="text-[10px] text-orange-400 mt-1 font-black">
+              {rebellionRate}% מתוך {totalPartisanVotes.toLocaleString()} הצבעות בעד/נגד
+            </p>
+          )}
+          {rebelledVotes.length > 0 && (
+            <button
+              onClick={() => setShowRebelled(v => !v)}
+              className="text-[10px] font-black text-orange-500 hover:text-orange-700 mt-2 underline underline-offset-2"
+            >
+              {showRebelled ? '▲ הסתר' : `▼ הצג הצבעות (${rebelledVotes.length})`}
+            </button>
+          )}
         </div>
         <div className="border-r border-orange-100 pr-6">
           <span className="block text-3xl font-black text-gray-900">{attendance}</span>
           <span className="text-[10px] font-black text-gray-400 uppercase leading-tight block mt-1">נוכחות בוועדות</span>
-          <p className="text-[10px] text-gray-400 mt-2 leading-relaxed font-medium">מספר ישיבות הוועדה בהן תועדה השתתפות רשמית.</p>
+          {attendanceRate !== null ? (
+            <p className="text-[10px] text-gray-400 mt-1 font-black">
+              {attendanceRate}% מתוך {totalRelevantSessions} ישיבות
+            </p>
+          ) : (
+            <p className="text-[10px] text-gray-400 mt-1 font-medium">ישיבות שתועדה בהן נוכחות</p>
+          )}
         </div>
       </div>
+      {showRebelled && rebelledVotes.length > 0 && (
+        <div className="mt-4 border-t border-orange-100 pt-4 flex flex-col gap-1.5">
+          {rebelledVotes.map(v => (
+            <Link key={v.voteId} href={`/vote/${v.voteId}`}
+              className="flex items-start gap-2 px-3 py-2 rounded-xl bg-white hover:bg-orange-50 transition-colors">
+              <span className={`shrink-0 mt-0.5 text-[10px] font-black px-2 py-0.5 rounded-full ${RESULT_COLORS[CODE_TO_LABEL[v.resultCode]] ?? 'bg-zinc-100 text-zinc-500'}`}>
+                {CODE_TO_LABEL[v.resultCode]}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-gray-800 leading-snug line-clamp-2">{v.title}</p>
+                <span className="text-[10px] text-gray-400">{v.date?.slice(0, 10)}</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -406,6 +451,7 @@ type ResultFilter = 'all' | 'בעד' | 'נגד' | 'נמנע' | 'נוכח' | 'ע�
 
 export default function MKProfileClient({ mkId }: { mkId: string }) {
   const router = useRouter();
+  const { period } = usePeriod();
   const [tab, setTab] = useState<TabView>('overview');
 
   // Profile data (bills, queries, positions, stats)
@@ -433,14 +479,17 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
   // Queries tab UI state
   const [querySearch, setQuerySearch] = useState('');
 
-  // ── Fetch profile data on mount ─────────────────────────────────────────────
+  // ── Fetch profile data (re-fetch when period changes) ──────────────────────
 
   useEffect(() => {
     async function loadProfile() {
       setProfileLoading(true);
       setProfileError(null);
       try {
-        const res = await fetch(`${BASE_PATH}/api/mk-profile?mkId=${mkId}`);
+        const params = new URLSearchParams({ mkId });
+        const dateRange = periodToDateRange(period);
+        if (dateRange) { params.set('from', dateRange.from); params.set('to', dateRange.to); }
+        const res = await fetch(`${BASE_PATH}/api/mk-profile?${params}`);
         const json = await res.json();
         if (json.error) throw new Error(json.error);
         setProfile(json);
@@ -451,7 +500,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
       }
     }
     loadProfile();
-  }, [mkId]);
+  }, [mkId, period]);
 
   // ── Lazy-load votes when votes tab opens ────────────────────────────────────
 
@@ -716,8 +765,11 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
             {!profileLoading && profile && (
               <div className="flex flex-col gap-4">
                 <ForensicInsightsCard
-                  rebellions={profile.rebellionCount || 0}
-                  attendance={profile.attendanceCount || 0}
+                  rebellions={profile.rebellionCount ?? 0}
+                  totalPartisanVotes={profile.totalPartisanVotes ?? 0}
+                  attendance={profile.attendanceCount ?? 0}
+                  totalRelevantSessions={profile.totalRelevantSessions ?? 0}
+                  rebelledVotes={profile.rebelledVotes ?? []}
                 />
                 <PresenceHeatmap mkId={mkId} />
               </div>

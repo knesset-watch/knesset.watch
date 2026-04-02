@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import type { CommitteeActivity } from '@/lib/knesset-db';
 
@@ -21,6 +21,16 @@ export default function CommitteesClient({
   const [sort, setSort] = useState<SortOption>('sessions');
   const [view, setView] = useState<ViewMode>('cards');
   const [search, setSearch] = useState('');
+  const didMount = useRef(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('kw-view-committees') as ViewMode | null;
+    if (saved === 'cards' || saved === 'list') setView(saved);
+    didMount.current = true;
+  }, []);
+  useEffect(() => {
+    if (didMount.current) localStorage.setItem('kw-view-committees', view);
+  }, [view]);
 
   const sorted = useMemo(() => {
     const filtered = search.trim()

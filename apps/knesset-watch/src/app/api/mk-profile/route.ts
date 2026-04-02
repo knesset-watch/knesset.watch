@@ -30,6 +30,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'mkId required' }, { status: 400 });
   }
   const mkId = parseInt(mkIdStr, 10);
+  const fromDate = searchParams.get('from') ?? null;
+  const toDate = searchParams.get('to') ?? null;
+  const dateClause = `${fromDate ? ' AND pv.date >= ?' : ''}${toDate ? ' AND pv.date <= ?' : ''}`;
+  const dateArgs = (fromDate || toDate) ? [fromDate, toDate].filter(Boolean) : [];
 
   try {
     const person            = getMkPerson(mkId);
@@ -47,13 +51,39 @@ export async function GET(request: Request) {
       SELECT COUNT(*) as cnt
       FROM mk_vote_result r
       JOIN mk_person p ON p.person_id = r.mk_id
+      JOIN plenary_vote pv ON pv.id = r.vote_id
       JOIN vote_faction_stats s ON s.vote_id = r.vote_id AND s.faction_id = p.faction_id
-      WHERE r.mk_id = ? AND r.result_code IN (7, 8) AND r.result_code != s.majority_code
-    `).get(mkId) as { cnt: number };
+      WHERE r.mk_id = ? AND r.result_code IN (7, 8) AND r.result_code != s.majority_code${dateClause}
+    `).get([mkId, ...dateArgs]) as { cnt: number };
 
+    const totalPartisanVotes = db.prepare(`
+      SELECT COUNT(*) as cnt
+      FROM mk_vote_result r
+      JOIN plenary_vote pv ON pv.id = r.vote_id
+      WHERE r.mk_id = ? AND r.result_code IN (7, 8)${dateClause}
+    `).get([mkId, ...dateArgs]) as { cnt: number };
+
+    const attendanceDateClause = `${fromDate ? ' AND cs.date >= ?' : ''}${toDate ? ' AND cs.date <= ?' : ''}`;
     const attendance = db.prepare(`
-      SELECT COUNT(*) as cnt FROM committee_attendance WHERE mk_id = ?
-    `).get(mkId) as { cnt: number };
+      SELECT COUNT(*) as cnt
+      FROM committee_attendance ca
+      JOIN committee_session cs ON cs.id = ca.session_id
+      WHERE ca.mk_id = ?${attendanceDateClause}
+    `).get([mkId, ...dateArgs]) as { cnt: number };
+
+    // Total sessions in committees where this MK is a current member
+    let totalRelevantSessions = 0;
+    try {
+      const sessionTotal = db.prepare(`
+        SELECT COUNT(*) as cnt
+        FROM committee_session cs
+        WHERE cs.committee_id IN (
+          SELECT committee_id FROM mk_position
+          WHERE mk_id = ? AND is_current = 1 AND committee_id IS NOT NULL
+        )
+      `).get(mkId) as { cnt: number };
+      totalRelevantSessions = sessionTotal?.cnt ?? 0;
+    } catch { /* stay 0 if schema differs */ }
 
     // Committee activity — which committees this MK participated in
     let committeeActivity: Array<{ committeeName: string; sessionCount: number; recentSessions: Array<{ id: number; date: string; title: string | null }> }> = [];
@@ -151,7 +181,9 @@ export async function GET(request: Request) {
       positions,
       agendaStats,
       rebellionCount: rebellion?.cnt ?? 0,
+      totalPartisanVotes: totalPartisanVotes?.cnt ?? 0,
       attendanceCount: attendance?.cnt ?? 0,
+      totalRelevantSessions,
       committeeActivity,
       rebelledVotes,
       // Votes where MK voted with the winning side.

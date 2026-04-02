@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { usePeriod } from '@/lib/period-context';
 import EntityTooltip from '@/components/EntityTooltip';
@@ -36,6 +36,17 @@ export default function BillsClient() {
   const [passedOnly, setPassedOnly] = useState(false);
   const [view, setView] = useState<ViewMode>('list');
   const [expandedBills, setExpandedBills] = useState<Set<number>>(new Set());
+  const didMount = useRef(false);
+
+  // Persist view mode
+  useEffect(() => {
+    const saved = localStorage.getItem('kw-view-bills') as ViewMode | null;
+    if (saved === 'list' || saved === 'cards') setView(saved);
+    didMount.current = true;
+  }, []);
+  useEffect(() => {
+    if (didMount.current) localStorage.setItem('kw-view-bills', view);
+  }, [view]);
 
   // Debounce search
   useEffect(() => {
@@ -154,7 +165,7 @@ export default function BillsClient() {
                     </div>
                     <div className="flex items-center gap-2 px-4 pb-3 flex-wrap">
                       <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${b.is_passed ? 'bg-[#16A34A] text-white' : 'bg-gray-200 text-gray-500'}`}>
-                        {b.is_passed ? 'עבר' : 'הוגש'}
+                        {b.is_passed ? 'עבר' : (b.status_desc ?? 'בתהליך')}
                       </span>
                       {b.init_date && <span className="text-[10px] text-gray-400">{b.init_date}</span>}
                       {b.initiators?.map(i => (
@@ -189,7 +200,7 @@ export default function BillsClient() {
                 <Link key={b.id} href={`/bill/${b.id}`} className="rounded-2xl border border-black/8 p-4 hover:border-black/20 hover:bg-gray-50 transition-colors flex flex-col gap-2">
                   <div className="flex items-start justify-between gap-2">
                     <span className={`shrink-0 text-[10px] font-black px-2 py-0.5 rounded-full ${b.is_passed ? 'bg-[#16A34A] text-white' : 'bg-gray-100 text-gray-500'}`}>
-                      {b.is_passed ? 'עבר' : 'הוגש'}
+                      {b.is_passed ? 'עבר' : (b.status_desc ?? 'בתהליך')}
                     </span>
                     {b.doc_url && (
                       <a href={b.doc_url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}

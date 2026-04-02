@@ -15,8 +15,8 @@ function formatDate(iso: string | null) {
 }
 
 const SUBTYPE_LABEL: Record<string, string> = {
-  'ממשלתית': 'הצעת חוק ממשלתית',
-  'פרטית': 'הצעת חוק פרטית',
+  'ממשלתית': 'הצעת חוק ממשלתית (יוזמת הממשלה)',
+  'פרטית': 'הצעת חוק פרטית (יוזמת ח״כ)',
 };
 
 export default async function BillPage({ params }: { params: Promise<{ id: string }> }) {
@@ -33,12 +33,12 @@ export default async function BillPage({ params }: { params: Promise<{ id: strin
   const initDate = formatDate(bill.init_date);
   const pubDate = formatDate(bill.publication_date);
 
-  // Build a simple status timeline from available data
+  // 3-step legislative timeline: הגשה → ועדה → עבר
+  // (פרסום/publication happens AFTER passing — not a pre-passing step)
   const timeline: Array<{ label: string; date: string | null; done: boolean }> = [
     { label: 'הגשה', date: initDate, done: true },
     { label: 'ועדה', date: null, done: !!bill.committee_name },
-    { label: 'פרסום', date: pubDate, done: !!pubDate },
-    { label: 'עבר', date: null, done: bill.is_passed === 1 },
+    { label: 'עבר', date: pubDate, done: bill.is_passed === 1 },
   ];
 
   return (
@@ -60,7 +60,7 @@ export default async function BillPage({ params }: { params: Promise<{ id: strin
             <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
               bill.is_passed ? 'bg-teal-50 text-teal-700 border border-teal-200' : 'bg-gray-100 text-gray-600'
             }`}>
-              {bill.is_passed ? 'עבר' : bill.status_desc ?? 'בטיפול'}
+              {bill.is_passed ? 'עבר' : bill.status_desc ?? 'בתהליך'}
             </span>
             {bill.subtype && (
               <span className="text-[10px] font-black text-gray-400 uppercase tracking-wide">

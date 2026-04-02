@@ -32,14 +32,28 @@ export async function GET(request: Request) {
       };
     });
 
+    const placeholder = ids.map(() => '?').join(',');
+    const dateParams: string[] = [];
+    const dateClause = startDate || endDate
+      ? ` AND (${startDate ? 'pv.date >= ?' : '1'}) AND (${endDate ? 'pv.date <= ?' : '1'})`
+      : '';
+    if (startDate) dateParams.push(startDate);
+    if (endDate) dateParams.push(endDate);
+
+    const billDateParams: string[] = [];
+    const billDateClause = startDate || endDate
+      ? ` AND (${startDate ? 'b.init_date >= ?' : '1'}) AND (${endDate ? 'b.init_date <= ?' : '1'})`
+      : '';
+    if (startDate) billDateParams.push(startDate);
+    if (endDate) billDateParams.push(endDate);
+
     // 1. Proposed bills and Pushed agendas
-    // Note: Local DB currently only has K25 bills in full.
     const bills = db.prepare(`
       SELECT i.mk_id, b.is_passed, b.macro_agenda
       FROM bill_initiator i
       JOIN bill b ON b.id = i.bill_id
-      WHERE i.mk_id IN (${ids.map(() => '?').join(',')})
-    `).all(ids) as Array<{ mk_id: number, is_passed: number, macro_agenda: string | null }>;
+      WHERE i.mk_id IN (${placeholder})${billDateClause}
+    `).all([...ids, ...billDateParams]) as Array<{ mk_id: number, is_passed: number, macro_agenda: string | null }>;
 
     bills.forEach(b => {
       const res = results[b.mk_id];
@@ -57,9 +71,9 @@ export async function GET(request: Request) {
       SELECT r.mk_id, pv.macro_agenda, COUNT(*) as cnt
       FROM mk_vote_result r
       JOIN plenary_vote pv ON pv.id = r.vote_id
-      WHERE r.mk_id IN (${ids.map(() => '?').join(',')}) AND r.result_code = 7 AND pv.macro_agenda IS NOT NULL
+      WHERE r.mk_id IN (${placeholder}) AND r.result_code = 7 AND pv.macro_agenda IS NOT NULL${dateClause}
       GROUP BY r.mk_id, pv.macro_agenda
-    `).all(ids) as Array<{ mk_id: number, macro_agenda: string, cnt: number }>;
+    `).all([...ids, ...dateParams]) as Array<{ mk_id: number, macro_agenda: string, cnt: number }>;
 
     votes.forEach(v => {
       const res = results[v.mk_id];
@@ -73,22 +87,30 @@ export async function GET(request: Request) {
       SELECT r.mk_id, COUNT(*) as cnt
       FROM mk_vote_result r
       JOIN mk_person p ON p.person_id = r.mk_id
+      JOIN plenary_vote pv ON pv.id = r.vote_id
       JOIN vote_faction_stats s ON s.vote_id = r.vote_id AND s.faction_id = p.faction_id
-      WHERE r.mk_id IN (${ids.map(() => '?').join(',')}) AND r.result_code IN (7, 8) AND r.result_code != s.majority_code
+      WHERE r.mk_id IN (${placeholder}) AND r.result_code IN (7, 8) AND r.result_code != s.majority_code${dateClause}
       GROUP BY r.mk_id
-    `).all(ids) as Array<{ mk_id: number, cnt: number }>;
+    `).all([...ids, ...dateParams]) as Array<{ mk_id: number, cnt: number }>;
 
     rebellions.forEach(r => {
       if (results[r.mk_id]) results[r.mk_id].rebellions = r.cnt;
     });
 
-    // 4. Committee session attendance
-    const attendance = db.prepare(`
-      SELECT mk_id, COUNT(*) as cnt
-      FROM committee_attendance
-      WHERE mk_id IN (${ids.map(() => '?').join(',')})
-      GROUP BY mk_id
-    `).all(ids) as Array<{ mk_id: number, cnt: number }>;
+    // 4. Committee session attendance (join to session date for filtering)
+    const attendanceDateParams: string[] = [];
+    const attendanceDateClause = startDate || endDate
+      ? ` JOIN committee_session cs ON cs.id = ca.session_id WHERE ca.mk_id IN (${placeholder})${startDate ? ' AND cs.date >= ?' : ''}${endDate ? ' AND cs.date <= ?' : ''}`
+      : ` WHERE mk_id IN (${placeholder})`;
+    if (startDate) attendanceDateParams.push(startDate);
+    if (endDate) attendanceDateParams.push(endDate);
+
+    const attendanceSql = (startDate || endDate)
+      ? `SELECT ca.mk_id, COUNT(*) as cnt FROM committee_attendance ca${attendanceDateClause} GROUP BY ca.mk_id`
+      : `SELECT mk_id, COUNT(*) as cnt FROM committee_attendance WHERE mk_id IN (${placeholder}) GROUP BY mk_id`;
+
+    const attendance = db.prepare(attendanceSql)
+      .all([...ids, ...attendanceDateParams]) as Array<{ mk_id: number, cnt: number }>;
 
     attendance.forEach(a => {
       if (results[a.mk_id]) results[a.mk_id].committeeSessions = a.cnt;

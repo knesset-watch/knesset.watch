@@ -4,17 +4,12 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { MkResult as BaseMkResult } from '@/lib/vote-cache';
+import { VOTE_RESULT_COLORS } from '@/lib/vote-utils';
 
 type MkResult = BaseMkResult & { slug?: string | null };
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
-
-const RESULT_COLORS: Record<string, string> = {
-  'בעד':  'bg-[#16A34A] text-white',
-  'נגד':  'bg-[#2563EB] text-white',
-  'נמנע': 'bg-amber-100 text-amber-800',
-  'נוכח': 'bg-zinc-100 text-zinc-500',
-};
+const RESULT_COLORS = VOTE_RESULT_COLORS;
 
 type CoalitionFilter = 'all' | 'coalition' | 'opposition';
 type SortBy = 'party' | 'name' | 'result';
