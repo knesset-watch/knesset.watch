@@ -1,5 +1,6 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { getBillById } from '@/lib/knesset-db';
+import { checkServerAuth } from '@/lib/ui/auth-utils';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -19,6 +20,9 @@ const SUBTYPE_LABEL: Record<string, string> = {
 };
 
 export default async function BillPage({ params }: { params: Promise<{ id: string }> }) {
+  const isAuthenticated = await checkServerAuth('SITE_PASSWORD', 'knesset-watch_auth_token');
+  if (!isAuthenticated) redirect('/login');
+
   const { id } = await params;
   const billId = Number(id);
   if (isNaN(billId)) notFound();

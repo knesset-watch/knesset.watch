@@ -22,12 +22,15 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('he-IL', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+type ViewMode = 'list' | 'cards';
+
 export default function VotesClient() {
   const { period } = usePeriod();
   const [votes, setVotes] = useState<VoteRow[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [view, setView] = useState<ViewMode>('list');
 
   // Filters
   const [search, setSearch] = useState('');
@@ -155,6 +158,23 @@ export default function VotesClient() {
               <option value="10">10</option>
             </select>
           </div>
+
+          {/* View toggle */}
+          <div className="flex items-center gap-1 border border-black/10 rounded-xl p-0.5 mr-auto">
+            <button onClick={() => setView('list')} title="רשימה"
+              className={`p-1.5 rounded-lg transition-colors ${view === 'list' ? 'bg-black text-white' : 'text-gray-400 hover:text-black'}`}>
+              <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="currentColor">
+                <rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="14" height="2" rx="1"/><rect x="1" y="12" width="14" height="2" rx="1"/>
+              </svg>
+            </button>
+            <button onClick={() => setView('cards')} title="כרטיסים"
+              className={`p-1.5 rounded-lg transition-colors ${view === 'cards' ? 'bg-black text-white' : 'text-gray-400 hover:text-black'}`}>
+              <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="currentColor">
+                <rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/>
+                <rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/>
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Total count */}
@@ -164,16 +184,6 @@ export default function VotesClient() {
           </div>
         )}
 
-        {/* Table header */}
-        <div className="grid grid-cols-[1fr_5rem_4rem_4rem_4rem_3rem] gap-4 py-2 px-4 text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">
-          <span>נושא</span>
-          <span>תאריך</span>
-          <span className="text-center">בעד</span>
-          <span className="text-center">נגד</span>
-          <span className="text-center">הפרש</span>
-          <span></span>
-        </div>
-
         {loading && (
           <div className="py-16 text-center text-gray-400 font-black animate-pulse">טוען...</div>
         )}
@@ -182,34 +192,70 @@ export default function VotesClient() {
           <div className="py-16 text-center text-gray-400">לא נמצאו הצבעות</div>
         )}
 
-        {!loading && (
-          <div className="flex flex-col gap-1.5">
+        {!loading && view === 'list' && (
+          <>
+            <div className="grid grid-cols-[1fr_5rem_4rem_4rem_4rem_3rem] gap-4 py-2 px-4 text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">
+              <span>נושא</span>
+              <span>תאריך</span>
+              <span className="text-center">בעד</span>
+              <span className="text-center">נגד</span>
+              <span className="text-center">הפרש</span>
+              <span></span>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              {votes.map(v => (
+                <Link
+                  key={v.voteId}
+                  href={`/vote/${v.voteId}`}
+                  className={`grid grid-cols-[1fr_5rem_4rem_4rem_4rem_3rem] gap-4 py-3 px-4 rounded-xl items-center transition-colors ${v.isPassed ? 'bg-[#F0FDF4] hover:bg-green-100' : 'bg-gray-50 hover:bg-gray-100'}`}
+                >
+                  <div className="min-w-0">
+                    <div className="text-sm font-black text-gray-900 line-clamp-2 leading-snug">{v.title}</div>
+                    {(v.macroAgenda || v.microAgenda) && (
+                      <div className="flex gap-1.5 mt-1 flex-wrap">
+                        {v.macroAgenda && (
+                          <span className="text-[9px] font-black text-gray-500 bg-gray-200/60 px-1.5 py-0.5 rounded-full">{v.macroAgenda}</span>
+                        )}
+                        {v.microAgenda && (
+                          <span className="text-[9px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">#{v.microAgenda}</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-[11px] text-gray-500 shrink-0">{formatDate(v.date)}</span>
+                  <span className="text-base font-black text-teal-700 text-center">{v.totalFor}</span>
+                  <span className="text-base font-black text-blue-700 text-center">{v.totalAgainst}</span>
+                  <span className="text-base font-black text-center">{v.margin}</span>
+                  <svg className="w-3.5 h-3.5 text-gray-300 shrink-0 justify-self-end rotate-180" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="m6 3 5 5-5 5"/>
+                  </svg>
+                </Link>
+              ))}
+            </div>
+          </>
+        )}
+
+        {!loading && view === 'cards' && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {votes.map(v => (
               <Link
                 key={v.voteId}
                 href={`/vote/${v.voteId}`}
-                className={`grid grid-cols-[1fr_5rem_4rem_4rem_4rem_3rem] gap-4 py-3 px-4 rounded-xl items-center transition-colors ${v.isPassed ? 'bg-[#F0FDF4] hover:bg-green-100' : 'bg-gray-50 hover:bg-gray-100'}`}
+                className={`rounded-2xl border p-4 flex flex-col gap-2 transition-colors ${v.isPassed ? 'border-green-100 bg-[#F0FDF4] hover:bg-green-100' : 'border-black/8 hover:border-black/20 hover:bg-gray-50'}`}
               >
-                <div className="min-w-0">
-                  <div className="text-sm font-black text-gray-900 line-clamp-2 leading-snug">{v.title}</div>
-                  {(v.macroAgenda || v.microAgenda) && (
-                    <div className="flex gap-1.5 mt-1 flex-wrap">
-                      {v.macroAgenda && (
-                        <span className="text-[9px] font-black text-gray-500 bg-gray-200/60 px-1.5 py-0.5 rounded-full">{v.macroAgenda}</span>
-                      )}
-                      {v.microAgenda && (
-                        <span className="text-[9px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">#{v.microAgenda}</span>
-                      )}
-                    </div>
-                  )}
+                <div className="flex items-center justify-between gap-2">
+                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${v.isPassed ? 'bg-[#16A34A] text-white' : 'bg-gray-200 text-gray-500'}`}>
+                    {v.isPassed ? 'עבר' : 'לא עבר'}
+                  </span>
+                  <span className="text-[10px] text-gray-400">{formatDate(v.date)}</span>
                 </div>
-                <span className="text-[11px] text-gray-500 shrink-0">{formatDate(v.date)}</span>
-                <span className="text-base font-black text-teal-700 text-center">{v.totalFor}</span>
-                <span className="text-base font-black text-blue-700 text-center">{v.totalAgainst}</span>
-                <span className="text-base font-black text-center">{v.margin}</span>
-                <svg className="w-3.5 h-3.5 text-gray-300 shrink-0 justify-self-end rotate-180" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="m6 3 5 5-5 5"/>
-                </svg>
+                <p className="text-sm font-bold leading-snug text-gray-900 line-clamp-3">{v.title}</p>
+                {v.macroAgenda && <span className="text-[9px] font-black text-gray-500 bg-gray-200/60 px-1.5 py-0.5 rounded-full self-start">{v.macroAgenda}</span>}
+                <div className="flex items-center gap-4 mt-auto pt-1 text-[11px]">
+                  <span className="font-black text-teal-700">בעד {v.totalFor}</span>
+                  <span className="font-black text-blue-700">נגד {v.totalAgainst}</span>
+                  <span className="text-gray-400">הפרש {v.margin}</span>
+                </div>
               </Link>
             ))}
           </div>

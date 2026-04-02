@@ -23,6 +23,8 @@ interface Bill {
   initiators: Array<{ person_id: number; first_name: string; last_name: string; slug: string | null }>;
 }
 
+type ViewMode = 'list' | 'cards';
+
 export default function BillsClient() {
   const { period } = usePeriod();
   const [bills, setBills] = useState<Bill[]>([]);
@@ -32,6 +34,7 @@ export default function BillsClient() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [passedOnly, setPassedOnly] = useState(false);
+  const [view, setView] = useState<ViewMode>('list');
   const [expandedBills, setExpandedBills] = useState<Set<number>>(new Set());
 
   // Debounce search
@@ -101,6 +104,21 @@ export default function BillsClient() {
             >
               עברו בלבד
             </button>
+            <div className="flex items-center gap-1 border border-black/10 rounded-xl p-0.5 mr-auto">
+              <button onClick={() => setView('list')} title="רשימה"
+                className={`p-1.5 rounded-lg transition-colors ${view === 'list' ? 'bg-black text-white' : 'text-gray-400 hover:text-black'}`}>
+                <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="currentColor">
+                  <rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="14" height="2" rx="1"/><rect x="1" y="12" width="14" height="2" rx="1"/>
+                </svg>
+              </button>
+              <button onClick={() => setView('cards')} title="כרטיסים"
+                className={`p-1.5 rounded-lg transition-colors ${view === 'cards' ? 'bg-black text-white' : 'text-gray-400 hover:text-black'}`}>
+                <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="currentColor">
+                  <rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/>
+                  <rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -110,17 +128,14 @@ export default function BillsClient() {
         </div>
 
         {/* Bills list */}
-        <div className={`flex flex-col gap-1.5 transition-opacity ${loading ? 'opacity-40' : ''}`}>
-          {bills.map(b => {
-            const isExpanded = expandedBills.has(b.id);
-            return (
-              <div key={b.id} className="rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
-                <div className="flex items-start gap-3 px-4 py-3">
-                  <span className={`shrink-0 mt-0.5 text-[10px] font-black px-2 py-0.5 rounded-full ${b.is_passed ? 'bg-[#16A34A] text-white' : 'bg-gray-200 text-gray-500'}`}>
-                    {b.is_passed ? 'עבר' : 'הוגש'}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
+        <div className={`transition-opacity ${loading ? 'opacity-40' : ''}`}>
+          {view === 'list' && (
+            <div className="flex flex-col gap-1.5">
+              {bills.map(b => {
+                const isExpanded = expandedBills.has(b.id);
+                return (
+                  <div key={b.id} className="rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
+                    <div className="flex items-start justify-between gap-2 px-4 pt-3 pb-1">
                       <Link href={`/bill/${b.id}`} className="text-sm font-bold leading-snug text-gray-900 hover:text-teal-700 transition-colors">{b.title}</Link>
                       <div className="flex items-center gap-1 shrink-0">
                         {b.doc_url && (
@@ -137,7 +152,10 @@ export default function BillsClient() {
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    <div className="flex items-center gap-2 px-4 pb-3 flex-wrap">
+                      <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${b.is_passed ? 'bg-[#16A34A] text-white' : 'bg-gray-200 text-gray-500'}`}>
+                        {b.is_passed ? 'עבר' : 'הוגש'}
+                      </span>
                       {b.init_date && <span className="text-[10px] text-gray-400">{b.init_date}</span>}
                       {b.initiators?.map(i => (
                         <EntityTooltip key={i.person_id} href={`/mk/${i.slug ?? i.person_id}`} type="mk" id={i.slug ?? i.person_id}
@@ -154,16 +172,46 @@ export default function BillsClient() {
                       )}
                       {b.subtype && <span className="text-[10px] text-gray-400">{b.subtype}</span>}
                     </div>
+                    {b.summary && isExpanded && (
+                      <div className="px-4 pb-3 border-t border-black/5 pt-2">
+                        <p className="text-xs text-gray-600 leading-relaxed">{b.summary}</p>
+                      </div>
+                    )}
                   </div>
-                </div>
-                {b.summary && isExpanded && (
-                  <div className="px-4 pb-3 border-t border-black/5 pt-2">
-                    <p className="text-xs text-gray-600 leading-relaxed">{b.summary}</p>
+                );
+              })}
+            </div>
+          )}
+
+          {view === 'cards' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {bills.map(b => (
+                <Link key={b.id} href={`/bill/${b.id}`} className="rounded-2xl border border-black/8 p-4 hover:border-black/20 hover:bg-gray-50 transition-colors flex flex-col gap-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className={`shrink-0 text-[10px] font-black px-2 py-0.5 rounded-full ${b.is_passed ? 'bg-[#16A34A] text-white' : 'bg-gray-100 text-gray-500'}`}>
+                      {b.is_passed ? 'עבר' : 'הוגש'}
+                    </span>
+                    {b.doc_url && (
+                      <a href={b.doc_url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
+                        className="text-[10px] font-black text-gray-400 hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">
+                        PDF
+                      </a>
+                    )}
                   </div>
-                )}
-              </div>
-            );
-          })}
+                  <p className="text-sm font-bold leading-snug text-gray-900 line-clamp-3">{b.title}</p>
+                  {b.summary && <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2">{b.summary}</p>}
+                  <div className="flex items-center gap-1.5 flex-wrap mt-auto pt-1">
+                    {b.init_date && <span className="text-[10px] text-gray-400">{b.init_date}</span>}
+                    {b.macro_agenda && <span className="text-[10px] font-black text-white bg-black px-1.5 py-0.5 rounded-full">{b.macro_agenda}</span>}
+                    {b.committee_name && <span className="text-[10px] text-gray-400 border border-gray-200 px-1.5 py-0.5 rounded-full">{b.committee_name}</span>}
+                    {b.initiators?.slice(0, 2).map(i => (
+                      <span key={i.person_id} className="text-[10px] font-bold text-teal-700">{i.first_name} {i.last_name}</span>
+                    ))}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Pagination */}

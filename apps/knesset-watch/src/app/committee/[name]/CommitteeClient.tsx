@@ -312,6 +312,13 @@ export default function CommitteeClient({
                           className="text-[10px] font-black text-gray-400 hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">
                           פתח
                         </Link>
+                        {s.chunkCount === 0 && s.protocolUrl && (
+                          <a href={s.protocolUrl} target="_blank" rel="noopener noreferrer"
+                            onClick={e => e.stopPropagation()}
+                            className="text-[10px] font-black text-teal-700 hover:text-teal-900 border border-teal-200 hover:border-teal-400 px-1.5 py-0.5 rounded transition-colors">
+                            PDF
+                          </a>
+                        )}
                         {s.chunkCount > 0 && (
                           <span className="text-gray-400 text-sm">
                             {isLoading ? '...' : isExpanded ? '▲' : '▼'}

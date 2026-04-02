@@ -281,6 +281,7 @@ export interface CommitteeProtocolSession {
   date: string;
   title: string | null;
   chunkCount: number;
+  protocolUrl: string | null;
 }
 
 export async function getCommitteeProtocolSessions(
@@ -290,7 +291,7 @@ export async function getCommitteeProtocolSessions(
   if (!client) return [];
 
   const res = await client.execute({
-    sql: `SELECT cs.id as sessionId, cs.date, cs.rag_card,
+    sql: `SELECT cs.id as sessionId, cs.date, cs.rag_card, cs.protocol_url,
                  COUNT(sst.id) as chunkCount
           FROM committee_session cs
           LEFT JOIN session_speaker_turn sst ON sst.session_id = cs.id
@@ -305,6 +306,7 @@ export async function getCommitteeProtocolSessions(
     date: String(r['date'] ?? ''),
     title: protocolLabel(r['rag_card']),
     chunkCount: Number(r['chunkCount'] ?? 0),
+    protocolUrl: r['protocol_url'] != null ? String(r['protocol_url']) : null,
   }));
 }
 
