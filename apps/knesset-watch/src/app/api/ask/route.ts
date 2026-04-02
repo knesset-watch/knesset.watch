@@ -75,6 +75,30 @@ async function callGemini(userMessage: string): Promise<string> {
   return data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
 }
 
+// ── Topic keyword extraction ─────────────────────────────────────────────────
+// Strips question/stop words and MK name to get a meaningful topic term for DB search.
+const HE_STOP = new Set([
+  'מה','מי','איך','כיצד','מדוע','למה','מתי','האם','כמה',
+  'עשה','עשתה','עשו','אמר','אמרה','הצביע','הצביעה','הגיש','הגישה',
+  'על','של','ל','ב','מ','את','עם','ו','או','אל','כ','מי',
+  'למען','בעד','נגד','לגבי','בנושא','בעניין','בכנסת','הכנסת','כנסת',
+  'ה','ש','ו',
+]);
+
+function extractTopicKeyword(query: string, mkName?: string): string {
+  let text = mkName ? query.replace(mkName, '') : query;
+  // Also strip individual name parts
+  if (mkName) {
+    for (const part of mkName.split(' ')) text = text.replace(part, '');
+  }
+  const words = text
+    .split(/\s+/)
+    .map(w => w.replace(/^[הוש]/, ''))   // strip ה/ו/ש prefix
+    .filter(w => w.length >= 3 && !HE_STOP.has(w));
+  // Return longest word (usually the most content-bearing noun)
+  return words.sort((a, b) => b.length - a.length)[0] ?? query;
+}
+
 // ── Route handler ─────────────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
@@ -98,6 +122,8 @@ export async function GET(req: NextRequest) {
     ]);
 
     const mkId = detectedMk?.mkId;
+    // Extract a topic keyword (strip MK name + stop words) for structured-data filtering
+    const topicKeyword = extractTopicKeyword(q, detectedMk?.fullName);
 
     // 3. Run all searches in parallel
     const protocolSearch = embedding
@@ -105,9 +131,9 @@ export async function GET(req: NextRequest) {
       : searchProtocols(q, null, 1).then((r: { results: ProtocolSearchResult[] }) => r.results).catch((e: unknown) => { console.error('text search error:', e); return []; });
     const [protocolResults, votes, bills, queries] = await Promise.all([
       protocolSearch,
-      Promise.resolve(searchVotesByKeyword(q, mkId, 15)),
-      Promise.resolve(searchBillsByKeyword(q, mkId, 8)),
-      Promise.resolve(searchQueriesByKeyword(q, mkId, 8)),
+      Promise.resolve(searchVotesByKeyword(topicKeyword, mkId, 15)),
+      Promise.resolve(searchBillsByKeyword(topicKeyword, mkId, 8)),
+      Promise.resolve(searchQueriesByKeyword(topicKeyword, mkId, 8)),
     ]);
 
     // 4. Deduplicate protocol results → top 5 sessions

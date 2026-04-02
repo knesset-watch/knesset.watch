@@ -1732,6 +1732,15 @@ export function searchVotesByKeyword(keyword: string, mkId?: number, limit = 10)
       isPassed: r.is_passed === 1, totalFor: r.total_for, totalAgainst: r.total_against,
     });
     if (mkId !== undefined) {
+      const term = `%${keyword}%`;
+      const filtered = (db.prepare(`
+        SELECT pv.id, pv.title, pv.date, pv.micro_agenda, pv.macro_agenda, pv.is_passed, pv.total_for, pv.total_against
+        FROM plenary_vote pv
+        JOIN mk_vote_result mvr ON mvr.vote_id = pv.id AND mvr.mk_id = ?
+        WHERE pv.title LIKE ? OR pv.micro_agenda LIKE ? OR pv.macro_agenda LIKE ?
+        ORDER BY pv.date DESC LIMIT ?
+      `).all(mkId, term, term, term, limit) as Row[]).map(map);
+      if (filtered.length > 0) return filtered;
       return (db.prepare(`
         SELECT pv.id, pv.title, pv.date, pv.micro_agenda, pv.macro_agenda, pv.is_passed, pv.total_for, pv.total_against
         FROM plenary_vote pv
@@ -1771,6 +1780,15 @@ export function searchBillsByKeyword(keyword: string, mkId?: number, limit = 8):
       billId: r.id, title: r.title, committeeName: r.committee_name, isPassed: r.is_passed === 1,
     });
     if (mkId !== undefined) {
+      const term = `%${keyword}%`;
+      const filtered = (db.prepare(`
+        SELECT b.id, b.title, b.committee_name, b.is_passed
+        FROM bill b
+        JOIN bill_initiator i ON i.bill_id = b.id AND i.mk_id = ?
+        WHERE b.title LIKE ?
+        ORDER BY b.id DESC LIMIT ?
+      `).all(mkId, term, limit) as Row[]).map(map);
+      if (filtered.length > 0) return filtered;
       return (db.prepare(`
         SELECT b.id, b.title, b.committee_name, b.is_passed
         FROM bill b
@@ -1811,6 +1829,14 @@ export function searchQueriesByKeyword(keyword: string, mkId?: number, limit = 8
       mkId: r.mk_id, mkName: `${r.first_name} ${r.last_name}`,
     });
     if (mkId !== undefined) {
+      const term = `%${keyword}%`;
+      const filtered = (db.prepare(`
+        SELECT q.id, q.title, q.submit_date, q.mk_id, p.first_name, p.last_name
+        FROM mk_query q JOIN mk_person p ON p.person_id = q.mk_id
+        WHERE q.mk_id = ? AND q.title LIKE ?
+        ORDER BY q.submit_date DESC LIMIT ?
+      `).all(mkId, term, limit) as Row[]).map(map);
+      if (filtered.length > 0) return filtered;
       return (db.prepare(`
         SELECT q.id, q.title, q.submit_date, q.mk_id, p.first_name, p.last_name
         FROM mk_query q JOIN mk_person p ON p.person_id = q.mk_id
