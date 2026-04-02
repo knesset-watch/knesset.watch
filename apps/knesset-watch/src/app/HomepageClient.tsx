@@ -9,6 +9,20 @@ interface Stats {
   committees: number;
   sessions: number;
   billsPassed: number;
+  billsTotal: number;
+  votes: number;
+}
+
+function relativeDate(iso: string | null): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const diffDays = Math.floor((Date.now() - d.getTime()) / 86400000);
+  if (diffDays === 0) return 'היום';
+  if (diffDays === 1) return 'אתמול';
+  if (diffDays < 7) return `לפני ${diffDays} ימים`;
+  if (diffDays < 30) return `לפני ${Math.floor(diffDays / 7)} שבועות`;
+  if (diffDays < 365) return `לפני ${Math.floor(diffDays / 30)} חודשים`;
+  return `לפני ${Math.floor(diffDays / 365)} שנים`;
 }
 
 interface RecentBill {
@@ -82,21 +96,33 @@ export default function HomepageClient() {
       </div>
 
       {/* Stats row */}
-      {stats && stats.mks !== undefined && (
+      {stats && (
         <div className="max-w-3xl mx-auto px-6 mb-14">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {[
-              { label: 'ח"כים', value: stats.mks, href: '/mks' },
-              { label: 'ועדות', value: stats.committees, href: '/committees' },
-              { label: 'ישיבות ועדה', value: stats.sessions.toLocaleString(), href: '/protocols' },
-              { label: 'חוקים שעברו', value: stats.billsPassed.toLocaleString(), href: '/bills?passedOnly=true' },
-            ].map(s => (
-              <Link key={s.label} href={s.href}
-                className="rounded-2xl border border-black/8 p-5 hover:border-black/20 hover:bg-gray-50 transition-colors text-center">
-                <div className="text-3xl font-black">{s.value}</div>
-                <div className="text-[11px] text-gray-400 font-black uppercase tracking-wide mt-1">{s.label}</div>
-              </Link>
-            ))}
+            <Link href="/mks"
+              className="rounded-2xl border border-black/8 p-5 hover:border-black/20 hover:bg-gray-50 transition-colors text-center">
+              <div className="text-3xl font-black">{stats.mks}</div>
+              <div className="text-[11px] text-gray-400 font-black uppercase tracking-wide mt-1">ח&quot;כים</div>
+            </Link>
+            <Link href="/committees"
+              className="rounded-2xl border border-black/8 p-5 hover:border-black/20 hover:bg-gray-50 transition-colors text-center">
+              <div className="text-3xl font-black">{stats.committees}</div>
+              <div className="text-[11px] text-gray-400 font-black uppercase tracking-wide mt-1">ועדות</div>
+              <div className="text-[10px] text-gray-300 mt-0.5">{stats.sessions.toLocaleString()} ישיבות</div>
+            </Link>
+            <Link href="/bills?passedOnly=true"
+              className="rounded-2xl border border-black/8 p-5 hover:border-black/20 hover:bg-gray-50 transition-colors text-center">
+              <div className="text-3xl font-black text-teal-700">{stats.billsPassed.toLocaleString()}</div>
+              <div className="text-[11px] text-gray-400 font-black uppercase tracking-wide mt-1">חוקים עברו</div>
+              {stats.billsTotal > 0 && (
+                <div className="text-[10px] text-gray-300 mt-0.5">מתוך {stats.billsTotal.toLocaleString()} הצ&quot;ח</div>
+              )}
+            </Link>
+            <Link href="/votes"
+              className="rounded-2xl border border-black/8 p-5 hover:border-black/20 hover:bg-gray-50 transition-colors text-center">
+              <div className="text-3xl font-black">{stats.votes?.toLocaleString() ?? '—'}</div>
+              <div className="text-[11px] text-gray-400 font-black uppercase tracking-wide mt-1">הצבעות מליאה</div>
+            </Link>
           </div>
         </div>
       )}
@@ -129,9 +155,9 @@ export default function HomepageClient() {
                 className="flex items-start gap-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors px-4 py-3">
                 <span className="shrink-0 text-[10px] font-black bg-teal-500 text-white px-2 py-0.5 rounded-full mt-0.5">עבר</span>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-bold text-gray-900 leading-snug truncate">{b.title}</div>
+                  <div className="text-sm font-bold text-gray-900 leading-snug line-clamp-2">{b.title}</div>
                   <div className="flex items-center gap-2 mt-0.5">
-                    {b.date && <span className="text-[10px] text-gray-400">{b.date}</span>}
+                    {b.date && <span className="text-[10px] text-gray-400">{relativeDate(b.date)}</span>}
                     {b.macroAgenda && <span className="text-[10px] font-black text-white bg-black px-1.5 py-0.5 rounded-full">{b.macroAgenda}</span>}
                   </div>
                 </div>

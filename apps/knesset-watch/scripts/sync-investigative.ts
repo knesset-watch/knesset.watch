@@ -46,16 +46,29 @@ async function sync() {
 
   // ── 2. Sync NEW Bills only (since last high-water mark) ───────────────────
   console.log("  Fetching NEW bills since last sync...");
-  const newBills = await fetchAll(`${API}/KNS_Bill?$filter=KnessetNum eq 25 and Id gt ${lastBillId}&$select=Id,Name,SubTypeDesc,StatusID,CommitteeID,SummaryLaw,PublicationDate`);
+  const newBills = await fetchAll(`${API}/KNS_Bill?$filter=KnessetNum eq 25 and Id gt ${lastBillId}&$select=Id,Name,SubTypeDesc,StatusID,StatusDesc,CommitteeID,SummaryLaw,PublicationDate,InitDate`);
   if (newBills.length > 0) {
-    const insertBill = db.prepare('INSERT OR REPLACE INTO bill (id, title, subtype, status_id, is_passed, committee_id, publication_date) VALUES (?, ?, ?, ?, ?, ?, ?)');
+    // A bill is passed when it has been published in the Official Gazette (Reshumot).
+    // PublicationDate being set is the reliable proxy for is_passed = 1.
+    const insertBill = db.prepare('INSERT OR REPLACE INTO bill (id, title, subtype, status_id, is_passed, status_desc, committee_id, publication_date, init_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
     db.transaction((rows) => {
-      for (const r of rows) insertBill.run(r.Id, r.Name, r.SubTypeDesc, r.StatusID, 0, r.CommitteeID, r.PublicationDate);
+      for (const r of rows) {
+        const isPassed = r.PublicationDate != null ? 1 : 0;
+        insertBill.run(r.Id, r.Name, r.SubTypeDesc, r.StatusID, isPassed, r.StatusDesc ?? null, r.CommitteeID, r.PublicationDate ?? null, r.InitDate ?? null);
+      }
     })(newBills);
-    console.log(`
-    Sync'd ${newBills.length} NEW bills.`);
+    console.log(`\n    Sync'd ${newBills.length} NEW bills.`);
   } else {
     console.log("    No new bills found.");
+  }
+
+  // One-time repair: fix any existing bills that have publication_date but is_passed = 0
+  // (happens when DB was loaded with the old hardcoded-zero bug)
+  const repaired = db.prepare(`
+    UPDATE bill SET is_passed = 1 WHERE publication_date IS NOT NULL AND is_passed = 0
+  `).run();
+  if (repaired.changes > 0) {
+    console.log(`  Repaired is_passed for ${repaired.changes} bills with publication_date.`);
   }
 
   // ── 3. Fill the Lobbyist Gap (Backfill once, then incremental) ────────────

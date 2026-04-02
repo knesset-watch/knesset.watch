@@ -785,8 +785,10 @@ export function getMinisters(): MinisterInfo[] {
     FROM mk_position pos
     JOIN mk_person mp ON mp.person_id = pos.mk_id
     WHERE pos.is_current = 1 AND mp.is_current = 1
+      AND pos.ministry IS NOT NULL
       AND (pos.duty_desc LIKE 'שר %' OR pos.duty_desc LIKE 'שרת %'
         OR pos.duty_desc LIKE 'השר %' OR pos.duty_desc LIKE 'השרה %'
+        OR pos.duty_desc LIKE 'ראש הממשלה%'
         OR pos.duty_desc LIKE 'סגן שר%' OR pos.duty_desc LIKE 'סגנית שר%')
     GROUP BY mp.person_id
     ORDER BY committeeSessionCount DESC
@@ -1490,26 +1492,21 @@ export function getAllCommitteeActivity(): CommitteeActivity[] {
   const db = getDb();
   if (!db) return [];
 
-  // Group by name to deduplicate committees that appear in multiple Knessets.
-  // Pick the committee_id with the most sessions (the most active / current one).
+  // Only show committees active in K25 (sessions from Nov 2022 onward).
+  // Deduplicate by name in SQL using MAX to pick the most-active committee_id per name.
   return (db.prepare(`
-    SELECT c.id as committee_id, c.name,
+    SELECT c.name,
+           MAX(c.id) as committee_id,
            COUNT(cs.id) as session_count,
            MAX(cs.date) as last_session_date
     FROM committee c
     JOIN committee_session cs ON cs.committee_id = c.id
-    GROUP BY c.id
+    WHERE cs.date >= '2022-11-15'
+    GROUP BY c.name
     HAVING session_count > 0
-    ORDER BY session_count DESC
+    ORDER BY last_session_date DESC
   `).all() as Array<{
     committee_id: number; name: string; session_count: number; last_session_date: string | null;
   }>)
-  // Deduplicate by name: SQL orders by session_count DESC so first occurrence is always the winner
-  .reduce((acc, r) => {
-    if (!acc.find(a => a.name === r.name)) {
-      acc.push({ committeeId: r.committee_id, name: r.name, sessionCount: r.session_count, lastSessionDate: r.last_session_date, lastProtocolDate: null });
-    }
-    return acc;
-  }, [] as CommitteeActivity[])
-  .sort((a, b) => (b.lastSessionDate ?? '').localeCompare(a.lastSessionDate ?? ''));
+  .map(r => ({ committeeId: r.committee_id, name: r.name, sessionCount: r.session_count, lastSessionDate: r.last_session_date, lastProtocolDate: null }));
 }

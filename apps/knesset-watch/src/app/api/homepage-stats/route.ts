@@ -19,10 +19,14 @@ export async function GET(request: Request) {
     const row = db.prepare(`
       SELECT
         (SELECT COUNT(*) FROM mk_person WHERE is_current = 1) as mks,
-        (SELECT COUNT(*) FROM committee) as committees,
-        (SELECT COUNT(*) FROM committee_session) as sessions,
-        (SELECT COUNT(*) FROM bill WHERE is_passed = 1) as billsPassed
-    `).get() as { mks: number; committees: number; sessions: number; billsPassed: number };
+        (SELECT COUNT(DISTINCT c.name) FROM committee c
+           JOIN committee_session cs ON cs.committee_id = c.id
+           WHERE cs.date >= '2022-11-15') as committees,
+        (SELECT COUNT(*) FROM committee_session WHERE date >= '2022-11-15') as sessions,
+        (SELECT COUNT(*) FROM bill WHERE is_passed = 1) as billsPassed,
+        (SELECT COUNT(*) FROM bill) as billsTotal,
+        (SELECT COUNT(*) FROM plenary_vote) as votes
+    `).get() as { mks: number; committees: number; sessions: number; billsPassed: number; billsTotal: number; votes: number };
 
     return NextResponse.json(row);
   } catch (error: unknown) {
