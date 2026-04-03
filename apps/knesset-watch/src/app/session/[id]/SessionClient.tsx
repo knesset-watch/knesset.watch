@@ -397,32 +397,38 @@ export default function SessionClient({
                 <div className="flex flex-col gap-1 max-h-[70vh] overflow-y-auto">
                   {displayTurns.map((dt, idx) => {
                     const prev = displayTurns[idx - 1];
-                    const showSpeaker = !prev || prev.speakerName !== dt.speakerName || prev.speakerRole !== dt.speakerRole;
+                    // Always break on anonymous turns (no name = can't group by identity)
+                    const isAnon = !dt.speakerName;
+                    const showSpeaker = !prev || isAnon || prev.speakerName !== dt.speakerName || prev.speakerRole !== dt.speakerRole;
                     return (
                       <div key={dt.key} className={`flex gap-3 ${showSpeaker && idx > 0 ? 'mt-4' : ''}`}>
                         <div className="shrink-0 w-28 flex flex-col items-end gap-1 pt-0.5">
                           {showSpeaker && (
-                            <>
-                              {dt.mkId ? (
-                                <Link
-                                  href={`/mk/${dt.slug ?? dt.mkId}`}
-                                  className="text-[11px] font-black text-teal-700 hover:underline text-left leading-tight"
-                                >
-                                  {dt.speakerName}
-                                </Link>
-                              ) : (
-                                <span className="text-[11px] font-black text-gray-600 text-left leading-tight">
-                                  {dt.speakerName}
-                                </span>
-                              )}
-                              {dt.speakerRole && dt.speakerRole !== 'member' && (
-                                <RoleBadge role={dt.speakerRole} />
-                              )}
-                            </>
+                            isAnon ? (
+                              <span className="text-[11px] font-black text-gray-300 select-none">—</span>
+                            ) : (
+                              <>
+                                {dt.mkId ? (
+                                  <Link
+                                    href={`/mk/${dt.slug ?? dt.mkId}`}
+                                    className="text-[11px] font-black text-teal-700 hover:underline text-left leading-tight"
+                                  >
+                                    {dt.speakerName}
+                                  </Link>
+                                ) : (
+                                  <span className="text-[11px] font-black text-gray-600 text-left leading-tight">
+                                    {dt.speakerName}
+                                  </span>
+                                )}
+                                {dt.speakerRole && dt.speakerRole !== 'member' && (
+                                  <RoleBadge role={dt.speakerRole} />
+                                )}
+                              </>
+                            )
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm leading-relaxed whitespace-pre-wrap text-gray-800">{dt.text}</p>
+                          <p className={`text-sm leading-relaxed whitespace-pre-wrap ${isAnon ? 'text-gray-500 italic' : 'text-gray-800'}`}>{dt.text}</p>
                         </div>
                       </div>
                     );
