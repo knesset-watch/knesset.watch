@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import type { CommitteeDetail, CommitteeSessionFull } from '@/lib/knesset-db';
 import EntityTooltip from '@/components/EntityTooltip';
+import { usePeriod, periodToDateRange } from '@/lib/period-context';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
@@ -22,7 +23,26 @@ export default function CommitteeClient({
   data: CommitteeDetail;
   sessions: CommitteeSessionFull[];
 }) {
-  const ratio = data.billCount > 0 ? Math.round((data.passedCount / data.billCount) * 100) : 0;
+  const { period } = usePeriod();
+  const dateRange = useMemo(() => periodToDateRange(period), [period]);
+
+  const activeSessions = useMemo(() =>
+    dateRange
+      ? sessions.filter(s => s.date >= dateRange.from && s.date <= dateRange.to)
+      : sessions,
+    [sessions, dateRange]
+  );
+
+  const activeBills = useMemo(() =>
+    dateRange
+      ? data.bills.filter(b => !b.initDate || (b.initDate >= dateRange.from && b.initDate <= dateRange.to))
+      : data.bills,
+    [data.bills, dateRange]
+  );
+
+  const ratio = activeBills.length > 0
+    ? Math.round((activeBills.filter(b => b.isPassed).length / activeBills.length) * 100)
+    : 0;
 
   // Bills state
   const [search, setSearch] = useState('');
@@ -38,11 +58,11 @@ export default function CommitteeClient({
   const [sessionSearch, setSessionSearch] = useState('');
 
   // Derived values
-  const cancelledCount = sessions.filter(s => s.statusDesc === 'מבוטלת').length;
-  const closedCount = sessions.filter(s => s.typeDesc === 'חסויה').length;
-  const jointCount = sessions.filter(s => s.isJoint).length;
+  const cancelledCount = activeSessions.filter(s => s.statusDesc === 'מבוטלת').length;
+  const closedCount = activeSessions.filter(s => s.typeDesc === 'חסויה').length;
+  const jointCount = activeSessions.filter(s => s.isJoint).length;
 
-  const filtered = data.bills.filter(b => {
+  const filtered = activeBills.filter(b => {
     if (showPassedOnly && !b.isPassed) return false;
     if (search) {
       const q = search.toLowerCase();
@@ -53,7 +73,7 @@ export default function CommitteeClient({
     return true;
   });
 
-  const filteredSessions = sessions.filter(s => {
+  const filteredSessions = activeSessions.filter(s => {
     if (!sessionSearch) return true;
     const q = sessionSearch.toLowerCase();
     return s.firstAgendaTitle?.toLowerCase().includes(q) ||
@@ -112,15 +132,15 @@ export default function CommitteeClient({
 
         {/* Stats row */}
         <div className="flex gap-6 mb-8 mt-4 flex-wrap">
-          {data.billCount > 0 && (
+          {activeBills.length > 0 && (
             <>
               <div className="flex flex-col">
                 <span className="text-[9px] font-black uppercase text-gray-400 mb-1">הצעות חוק</span>
-                <span className="text-3xl font-black">{data.billCount}</span>
+                <span className="text-3xl font-black">{activeBills.length}</span>
               </div>
               <div className="flex flex-col border-r border-black/8 pr-6">
                 <span className="text-[9px] font-black uppercase text-gray-400 mb-1">עברו</span>
-                <span className="text-3xl font-black text-teal-600">{data.passedCount}</span>
+                <span className="text-3xl font-black text-teal-600">{activeBills.filter(b => b.isPassed).length}</span>
               </div>
               <div className="flex flex-col border-r border-black/8 pr-6">
                 <span className="text-[9px] font-black uppercase text-gray-400 mb-1">יחס</span>
@@ -128,10 +148,10 @@ export default function CommitteeClient({
               </div>
             </>
           )}
-          {sessions.length > 0 && (
+          {activeSessions.length > 0 && (
             <div className="flex flex-col border-r border-black/8 pr-6">
               <span className="text-[9px] font-black uppercase text-gray-400 mb-1">ישיבות</span>
-              <span className="text-3xl font-black">{sessions.length}</span>
+              <span className="text-3xl font-black">{activeSessions.length}</span>
               {cancelledCount > 0 && <span className="text-[9px] text-gray-400 mt-0.5">{cancelledCount} בוטלו</span>}
             </div>
           )}
@@ -206,16 +226,16 @@ export default function CommitteeClient({
               activeTab === 'bills' ? 'border-black text-black' : 'border-transparent text-gray-400 hover:text-black'
             }`}
           >
-            הצ&quot;ח ({data.bills.length})
+            הצ&quot;ח ({activeBills.length})
           </button>
-          {sessions.length > 0 && (
+          {activeSessions.length > 0 && (
             <button
               onClick={() => setActiveTab('sessions')}
               className={`text-xs font-black px-4 py-2.5 transition-colors border-b-2 -mb-px ${
                 activeTab === 'sessions' ? 'border-black text-black' : 'border-transparent text-gray-400 hover:text-black'
               }`}
             >
-              ישיבות ({sessions.length})
+              ישיבות ({activeSessions.length})
             </button>
           )}
         </div>
@@ -241,7 +261,7 @@ export default function CommitteeClient({
             </div>
 
             <div className="text-xs text-gray-400 font-medium mb-3">
-              {filtered.length} מתוך {data.bills.length} הצ&quot;ח
+              {filtered.length} מתוך {activeBills.length} הצ&quot;ח
             </div>
 
             <div className="flex flex-col gap-1.5">

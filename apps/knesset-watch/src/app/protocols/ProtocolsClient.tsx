@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { usePeriod, periodToDateRange } from '@/lib/period-context';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
@@ -46,6 +47,7 @@ interface Props {
 
 export default function ProtocolsClient({ committees }: Props) {
   const router = useRouter();
+  const { period } = usePeriod();
 
   // AI ask state
   const [askQuery, setAskQuery] = useState('');
@@ -66,12 +68,14 @@ export default function ProtocolsClient({ committees }: Props) {
   const [expandedSessions, setExpandedSessions] = useState<Map<number, FullProtocol>>(new Map());
   const [loadingSessions, setLoadingSessions] = useState<Set<number>>(new Set());
 
-  const search = useCallback(async (q: string, committee: string | null, p: number) => {
+  const search = useCallback(async (q: string, committee: string | null, p: number, searchPeriod?: string) => {
     if (!q.trim()) { setResults([]); setTotal(0); return; }
     setLoading(true);
     try {
       const params = new URLSearchParams({ q, page: String(p) });
       if (committee) params.set('committee', committee);
+      const dateRange = periodToDateRange(searchPeriod ?? period);
+      if (dateRange) { params.set('from', dateRange.from); params.set('to', dateRange.to); }
       const res = await fetch(`${BASE_PATH}/api/protocols/search?${params}`);
       const data = await res.json();
       setResults(data.results ?? []);
@@ -80,7 +84,13 @@ export default function ProtocolsClient({ committees }: Props) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [period]);
+
+  // Re-run search when period changes (if there's an active query)
+  useEffect(() => {
+    if (query.trim().length >= 2) search(query, selectedCommittee, 1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [period]);
 
   const handleSearch = (q: string) => {
     setQuery(q);

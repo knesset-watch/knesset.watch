@@ -1,8 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { usePeriod, periodToDateRange } from '@/lib/period-context';
+
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
 interface Stats {
   mks: number;
@@ -47,11 +50,18 @@ export default function HomepageClient() {
   const [recentBills, setRecentBills] = useState<RecentBill[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const { period } = usePeriod();
 
-  useEffect(() => {
-    fetch('/api/homepage-stats').then(r => r.json()).then(setStats).catch(() => {});
-    fetch('/api/pulse').then(r => r.json()).then(d => setRecentBills(d.bills?.slice(0, 6) ?? [])).catch(() => {});
-  }, []);
+  const fetchData = useCallback(async () => {
+    const dateRange = periodToDateRange(period);
+    const params = new URLSearchParams();
+    if (dateRange) { params.set('from', dateRange.from); params.set('to', dateRange.to); }
+    const qs = params.toString() ? `?${params}` : '';
+    fetch(`${BASE_PATH}/api/homepage-stats${qs}`).then(r => r.json()).then(setStats).catch(() => {});
+    fetch(`${BASE_PATH}/api/pulse${qs}`).then(r => r.json()).then(d => setRecentBills(d.bills?.slice(0, 6) ?? [])).catch(() => {});
+  }, [period]);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
