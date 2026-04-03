@@ -112,20 +112,20 @@ export default function BillsClient() {
           <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={() => setPassedOnly(!passedOnly)}
-              className={`text-xs font-black px-3 py-1.5 rounded-full transition-colors ${passedOnly ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+              className={`text-xs font-black px-4 py-2.5 rounded-full transition-colors ${passedOnly ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
             >
               עברו בלבד
             </button>
-            <div className="flex items-center gap-1 border border-black/10 rounded-xl p-0.5 mr-auto">
+            <div className="hidden sm:flex items-center gap-1 border border-black/10 rounded-xl p-0.5 mr-auto">
               <button onClick={() => setView('list')} title="רשימה"
-                className={`p-1.5 rounded-lg transition-colors ${view === 'list' ? 'bg-black text-white' : 'text-gray-400 hover:text-black'}`}>
-                <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="currentColor">
+                className={`p-2 rounded-lg transition-colors ${view === 'list' ? 'bg-black text-white' : 'text-gray-400 hover:text-black'}`}>
+                <svg viewBox="0 0 16 16" className="w-4 h-4" fill="currentColor">
                   <rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="14" height="2" rx="1"/><rect x="1" y="12" width="14" height="2" rx="1"/>
                 </svg>
               </button>
               <button onClick={() => setView('cards')} title="כרטיסים"
-                className={`p-1.5 rounded-lg transition-colors ${view === 'cards' ? 'bg-black text-white' : 'text-gray-400 hover:text-black'}`}>
-                <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="currentColor">
+                className={`p-2 rounded-lg transition-colors ${view === 'cards' ? 'bg-black text-white' : 'text-gray-400 hover:text-black'}`}>
+                <svg viewBox="0 0 16 16" className="w-4 h-4" fill="currentColor">
                   <rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/>
                   <rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/>
                 </svg>
@@ -152,13 +152,13 @@ export default function BillsClient() {
                       <div className="flex items-center gap-1 shrink-0">
                         {b.doc_url && (
                           <a href={b.doc_url} target="_blank" rel="noopener noreferrer"
-                            className="text-[11px] font-black text-gray-400 hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">
+                            className="text-[11px] font-black text-gray-400 hover:text-black border border-gray-200 hover:border-gray-400 px-2 py-1 rounded transition-colors">
                             PDF
                           </a>
                         )}
                         {b.summary && (
                           <button onClick={() => toggleBill(b.id)}
-                            className="text-[11px] font-black text-gray-400 hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">
+                            className="text-[11px] font-black text-gray-400 hover:text-black border border-gray-200 hover:border-gray-400 px-2 py-1 rounded transition-colors">
                             {isExpanded ? '▲' : '▼'}
                           </button>
                         )}

@@ -33,10 +33,11 @@ export default function VotesClient() {
   const [view, setView] = useState<ViewMode>('list');
   const didMount = useRef(false);
 
-  // Persist view mode
+  // Persist view mode; force cards on mobile
   useEffect(() => {
     const saved = localStorage.getItem('kw-view-votes') as ViewMode | null;
     if (saved === 'list' || saved === 'cards') setView(saved);
+    if (window.innerWidth < 640) setView('cards');
     didMount.current = true;
   }, []);
   useEffect(() => {
@@ -170,17 +171,17 @@ export default function VotesClient() {
             </select>
           </div>
 
-          {/* View toggle */}
-          <div className="flex items-center gap-1 border border-black/10 rounded-xl p-0.5 mr-auto">
+          {/* View toggle — hidden on mobile (cards always shown on small screens) */}
+          <div className="hidden sm:flex items-center gap-1 border border-black/10 rounded-xl p-0.5 mr-auto">
             <button onClick={() => setView('list')} title="רשימה"
-              className={`p-1.5 rounded-lg transition-colors ${view === 'list' ? 'bg-black text-white' : 'text-gray-400 hover:text-black'}`}>
-              <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="currentColor">
+              className={`p-2 rounded-lg transition-colors ${view === 'list' ? 'bg-black text-white' : 'text-gray-400 hover:text-black'}`}>
+              <svg viewBox="0 0 16 16" className="w-4 h-4" fill="currentColor">
                 <rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="14" height="2" rx="1"/><rect x="1" y="12" width="14" height="2" rx="1"/>
               </svg>
             </button>
             <button onClick={() => setView('cards')} title="כרטיסים"
-              className={`p-1.5 rounded-lg transition-colors ${view === 'cards' ? 'bg-black text-white' : 'text-gray-400 hover:text-black'}`}>
-              <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="currentColor">
+              className={`p-2 rounded-lg transition-colors ${view === 'cards' ? 'bg-black text-white' : 'text-gray-400 hover:text-black'}`}>
+              <svg viewBox="0 0 16 16" className="w-4 h-4" fill="currentColor">
                 <rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/>
                 <rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/>
               </svg>
@@ -203,8 +204,9 @@ export default function VotesClient() {
           <div className="py-16 text-center text-gray-400">לא נמצאו הצבעות</div>
         )}
 
+        {/* List view — desktop only (hidden on mobile) */}
         {!loading && view === 'list' && (
-          <>
+          <div className="hidden sm:block">
             <div className="grid grid-cols-[1fr_5rem_4rem_4rem_4rem_3rem] gap-4 py-2 px-4 text-[11px] font-black uppercase tracking-widest text-gray-400 mb-1">
               <span>נושא</span>
               <span>תאריך</span>
@@ -243,32 +245,35 @@ export default function VotesClient() {
                 </Link>
               ))}
             </div>
-          </>
+          </div>
         )}
 
-        {!loading && view === 'cards' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {votes.map(v => (
-              <Link
-                key={v.voteId}
-                href={`/vote/${v.voteId}`}
-                className={`rounded-2xl border p-4 flex flex-col gap-2 transition-colors ${v.isPassed ? 'border-green-100 bg-[#F0FDF4] hover:bg-green-100' : 'border-black/8 hover:border-black/20 hover:bg-gray-50'}`}
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <span className={`text-[11px] font-black px-2 py-0.5 rounded-full ${v.isPassed ? 'bg-[#16A34A] text-white' : 'bg-gray-200 text-gray-500'}`}>
-                    {v.isPassed ? 'עבר' : 'לא עבר'}
-                  </span>
-                  <span className="text-[11px] text-gray-500">{formatDate(v.date)}</span>
-                </div>
-                <p className="text-sm font-bold leading-snug text-gray-900 line-clamp-3">{v.title}</p>
-                {v.macroAgenda && <span className="text-[11px] font-black text-gray-500 bg-gray-200/60 px-1.5 py-0.5 rounded-full self-start">{v.macroAgenda}</span>}
-                <div className="flex items-center gap-4 mt-auto pt-1 text-[11px]">
-                  <span className="font-black text-teal-700">בעד {v.totalFor}</span>
-                  <span className="font-black text-blue-700">נגד {v.totalAgainst}</span>
-                  <span className="text-gray-400">הפרש {v.margin}</span>
-                </div>
-              </Link>
-            ))}
+        {/* Cards view — always on mobile, conditionally on desktop */}
+        {!loading && (
+          <div className={view === 'cards' ? 'block' : 'block sm:hidden'}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {votes.map(v => (
+                <Link
+                  key={v.voteId}
+                  href={`/vote/${v.voteId}`}
+                  className={`rounded-2xl border p-4 flex flex-col gap-2 transition-colors ${v.isPassed ? 'border-green-100 bg-[#F0FDF4] hover:bg-green-100' : 'border-black/8 hover:border-black/20 hover:bg-gray-50'}`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className={`text-[11px] font-black px-2 py-0.5 rounded-full ${v.isPassed ? 'bg-[#16A34A] text-white' : 'bg-gray-200 text-gray-500'}`}>
+                      {v.isPassed ? 'עבר' : 'לא עבר'}
+                    </span>
+                    <span className="text-[11px] text-gray-500">{formatDate(v.date)}</span>
+                  </div>
+                  <p className="text-sm font-bold leading-snug text-gray-900 line-clamp-3">{v.title}</p>
+                  {v.macroAgenda && <span className="text-[11px] font-black text-gray-500 bg-gray-200/60 px-1.5 py-0.5 rounded-full self-start">{v.macroAgenda}</span>}
+                  <div className="flex items-center gap-4 mt-auto pt-1 text-[11px]">
+                    <span className="font-black text-teal-700">בעד {v.totalFor}</span>
+                    <span className="font-black text-blue-700">נגד {v.totalAgainst}</span>
+                    <span className="text-gray-400">הפרש {v.margin}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         )}
 
@@ -278,17 +283,17 @@ export default function VotesClient() {
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="text-xs font-black px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 disabled:opacity-30 transition-colors"
+              className="text-xs font-black px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 disabled:opacity-30 transition-colors"
             >
               הקודם
             </button>
-            <span className="text-xs font-black px-3 py-2 text-gray-500">
+            <span className="text-xs font-black px-4 py-2.5 text-gray-500">
               עמוד {page} מתוך {totalPages}
             </span>
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="text-xs font-black px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 disabled:opacity-30 transition-colors"
+              className="text-xs font-black px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 disabled:opacity-30 transition-colors"
             >
               הבא
             </button>

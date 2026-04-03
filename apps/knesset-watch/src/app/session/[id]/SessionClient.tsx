@@ -145,7 +145,7 @@ export default function SessionClient({
           <button
             onClick={handleCopyLink}
             title="העתק קישור"
-            className="shrink-0 flex items-center gap-1.5 text-xs font-black px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors text-gray-600 mt-0.5"
+            className="shrink-0 flex items-center gap-1.5 text-xs font-black px-3 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors text-gray-600 mt-0.5"
           >
             {copied ? (
               <>
@@ -402,7 +402,7 @@ export default function SessionClient({
                     const showSpeaker = !prev || isAnon || prev.speakerName !== dt.speakerName || prev.speakerRole !== dt.speakerRole;
                     return (
                       <div key={dt.key} className={`flex gap-3 ${showSpeaker && idx > 0 ? 'mt-4' : ''}`}>
-                        <div className="shrink-0 w-28 flex flex-col items-end gap-1 pt-0.5">
+                        <div className="shrink-0 w-16 sm:w-28 flex flex-col items-end gap-1 pt-0.5">
                           {showSpeaker && (
                             isAnon ? (
                               <span className="text-[11px] font-black text-gray-300 select-none">—</span>
@@ -411,12 +411,12 @@ export default function SessionClient({
                                 {dt.mkId ? (
                                   <Link
                                     href={`/mk/${dt.slug ?? dt.mkId}`}
-                                    className="text-[11px] font-black text-teal-700 hover:underline text-left leading-tight"
+                                    className="text-[11px] font-black text-teal-700 hover:underline text-left leading-tight truncate w-full"
                                   >
                                     {dt.speakerName}
                                   </Link>
                                 ) : (
-                                  <span className="text-[11px] font-black text-gray-600 text-left leading-tight">
+                                  <span className="text-[11px] font-black text-gray-600 text-left leading-tight truncate w-full">
                                     {dt.speakerName}
                                   </span>
                                 )}

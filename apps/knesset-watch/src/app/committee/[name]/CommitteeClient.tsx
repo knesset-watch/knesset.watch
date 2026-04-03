@@ -131,43 +131,43 @@ export default function CommitteeClient({
         <h1 className="text-3xl font-black leading-tight mb-2">{data.name}</h1>
 
         {/* Stats row */}
-        <div className="flex gap-6 mb-8 mt-4 flex-wrap">
+        <div className="flex gap-x-6 gap-y-3 mb-8 mt-4 flex-wrap">
           {activeBills.length > 0 && (
             <>
               <div className="flex flex-col">
                 <span className="text-[11px] font-black uppercase text-gray-400 mb-1">הצעות חוק</span>
                 <span className="text-3xl font-black">{activeBills.length}</span>
               </div>
-              <div className="flex flex-col border-r border-black/8 pr-6">
+              <div className="flex flex-col">
                 <span className="text-[11px] font-black uppercase text-gray-400 mb-1">עברו</span>
                 <span className="text-3xl font-black text-teal-600">{activeBills.filter(b => b.isPassed).length}</span>
               </div>
-              <div className="flex flex-col border-r border-black/8 pr-6">
+              <div className="flex flex-col">
                 <span className="text-[11px] font-black uppercase text-gray-400 mb-1">יחס</span>
                 <span className="text-3xl font-black">{ratio}%</span>
               </div>
             </>
           )}
           {activeSessions.length > 0 && (
-            <div className="flex flex-col border-r border-black/8 pr-6">
+            <div className="flex flex-col">
               <span className="text-[11px] font-black uppercase text-gray-400 mb-1">ישיבות</span>
               <span className="text-3xl font-black">{activeSessions.length}</span>
               {cancelledCount > 0 && <span className="text-[11px] text-gray-500 mt-0.5">{cancelledCount} בוטלו</span>}
             </div>
           )}
           {closedCount > 0 && (
-            <div className="flex flex-col border-r border-black/8 pr-6">
+            <div className="flex flex-col">
               <span className="text-[11px] font-black uppercase text-gray-400 mb-1">חסויות</span>
               <span className="text-3xl font-black text-red-500">{closedCount}</span>
             </div>
           )}
           {jointCount > 0 && (
-            <div className="flex flex-col border-r border-black/8 pr-6">
+            <div className="flex flex-col">
               <span className="text-[11px] font-black uppercase text-gray-400 mb-1">משותפות</span>
               <span className="text-3xl font-black text-blue-500">{jointCount}</span>
             </div>
           )}
-          <div className="flex flex-col border-r border-black/8 pr-6">
+          <div className="flex flex-col">
             <span className="text-[11px] font-black uppercase text-gray-400 mb-1">חברים</span>
             <span className="text-3xl font-black">{data.members.length}</span>
           </div>
@@ -303,7 +303,7 @@ export default function CommitteeClient({
                           {b.subtype && <span className="text-[11px] text-gray-500">{b.subtype}</span>}
                           <button
                             onClick={() => setActiveTab('sessions')}
-                            className="text-[11px] font-black text-indigo-600 hover:text-indigo-800 border border-indigo-200 hover:border-indigo-400 px-1.5 py-0.5 rounded transition-colors"
+                            className="text-[11px] font-black text-indigo-600 hover:text-indigo-800 border border-indigo-200 hover:border-indigo-400 px-2 py-1 rounded transition-colors"
                           >
                             ← ישיבות
                           </button>
@@ -426,7 +426,7 @@ export default function CommitteeClient({
                       return (
                         <div className="border-t border-black/5 bg-white">
                           {/* Detail tab bar */}
-                          <div className="flex gap-0 border-b border-black/5 px-4">
+                          <div className="flex gap-0 border-b border-black/5 px-4 overflow-x-auto">
                             {tabs.map(t => (
                               <button key={t.key}
                                 onClick={() => setExpandedSessionTabs(prev => new Map(prev).set(s.id, t.key))}

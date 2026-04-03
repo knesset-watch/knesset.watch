@@ -73,7 +73,7 @@ export default function HomepageClient() {
     <div className="min-h-screen bg-white" dir="rtl">
       {/* Hero */}
       <div className="max-w-3xl mx-auto px-6 pt-20 pb-14 text-center">
-        <h1 className="text-5xl font-black tracking-tighter mb-3">כנסת ווטש</h1>
+        <h1 className="text-4xl sm:text-5xl font-black tracking-tighter mb-3">כנסת ווטש</h1>
         <p className="text-base text-gray-500 mb-10 leading-relaxed">
           שקיפות נתוני הכנסת ה-25 בזמן אמת — הצבעות, פרוטוקולים, חוקים, ח&quot;כים וועדות במקום אחד.
         </p>

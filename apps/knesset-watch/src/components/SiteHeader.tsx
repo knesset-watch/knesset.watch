@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { usePeriod, PERIOD_SHORTCUTS, periodLabel } from '@/lib/period-context';
 
 interface SearchHit {
@@ -63,7 +63,7 @@ function GlobalSearch() {
   }
 
   return (
-    <div ref={containerRef} className="relative w-48 sm:w-64">
+    <div ref={containerRef} className="relative w-32 sm:w-48 md:w-64">
       <div className="flex items-center border border-black/15 rounded-lg px-2.5 py-1 bg-gray-50 focus-within:border-black/40 transition-colors">
         <svg className="w-3.5 h-3.5 text-gray-400 shrink-0 ml-1.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
           <circle cx="6.5" cy="6.5" r="4.5"/>
@@ -207,7 +207,7 @@ function PeriodSelector() {
     <div ref={containerRef} className="relative">
       <button
         onClick={() => { setOpen(o => !o); setRangeStart(null); }}
-        className="flex items-center gap-1 text-[11px] font-black px-2.5 py-1 rounded-lg border border-black/10 hover:border-black/25 bg-white transition-colors"
+        className="flex items-center gap-1 text-[11px] font-black px-3 py-2 rounded-lg border border-black/10 hover:border-black/25 bg-white transition-colors"
       >
         <span>{label}</span>
         <svg className={`w-2.5 h-2.5 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -223,7 +223,7 @@ function PeriodSelector() {
               <button
                 key={p.value}
                 onClick={() => { setPeriod(p.value); setOpen(false); setRangeStart(null); }}
-                className={`text-[11px] font-black px-2 py-0.5 rounded-full transition-colors ${
+                className={`text-[11px] font-black px-2 py-1.5 rounded-full transition-colors ${
                   period === p.value
                     ? 'bg-black text-white'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -277,7 +277,7 @@ function PeriodSelector() {
                   onClick={() => handleDayClick(dateStr)}
                   onMouseEnter={() => rangeStart && setHoverDate(dateStr)}
                   onMouseLeave={() => setHoverDate(null)}
-                  className={`text-[11px] font-black h-6 w-full flex items-center justify-center rounded transition-colors
+                  className={`text-[11px] font-black h-8 w-full flex items-center justify-center rounded transition-colors
                     ${isStart ? 'bg-black text-white' : ''}
                     ${!isStart && inRng ? 'bg-blue-100 text-blue-800' : ''}
                     ${!isStart && !inRng ? 'hover:bg-gray-100 text-gray-700' : ''}
@@ -295,8 +295,27 @@ function PeriodSelector() {
   );
 }
 
+const NAV_LINKS: Array<{ href: string; label: string; highlight?: boolean }> = [
+  { href: '/mks', label: 'ח"כים' },
+  { href: '/committees', label: 'ועדות' },
+  { href: '/protocols', label: 'פרוטוקולים' },
+  { href: '/bills', label: 'חוקים' },
+  { href: '/ministers', label: 'שרים' },
+  { href: '/votes', label: 'הצבעות' },
+  { href: '/ask', label: 'שאל AI', highlight: true },
+];
+
 export default function SiteHeader() {
   const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    closeMenu();
+  }, [pathname, closeMenu]);
+
   if (pathname === '/login') return null;
 
   return (
@@ -311,15 +330,63 @@ export default function SiteHeader() {
         <PeriodSelector />
         <GlobalSearch />
         <nav className="hidden md:flex items-center gap-1 text-xs font-black text-gray-500 shrink-0">
-          <Link href="/mks" className="px-2 py-1 rounded hover:bg-gray-100 transition-colors">ח"כים</Link>
-          <Link href="/committees" className="px-2 py-1 rounded hover:bg-gray-100 transition-colors">ועדות</Link>
-          <Link href="/protocols" className="px-2 py-1 rounded hover:bg-gray-100 transition-colors">פרוטוקולים</Link>
-          <Link href="/bills" className="px-2 py-1 rounded hover:bg-gray-100 transition-colors">חוקים</Link>
-          <Link href="/ministers" className="px-2 py-1 rounded hover:bg-gray-100 transition-colors">שרים</Link>
-          <Link href="/votes" className="px-2 py-1 rounded hover:bg-gray-100 transition-colors">הצבעות</Link>
-          <Link href="/ask" className="px-2 py-1 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors">שאל AI</Link>
+          {NAV_LINKS.map(link => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`px-2 py-2 rounded transition-colors ${
+                link.highlight
+                  ? 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+                  : 'hover:bg-gray-100'
+              }`}
+            >
+              {link.label}
+            </Link>
+          ))}
         </nav>
+        {/* Hamburger button — mobile only */}
+        <button
+          onClick={() => setMenuOpen(o => !o)}
+          className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg hover:bg-gray-100 transition-colors shrink-0"
+          aria-label={menuOpen ? 'סגור תפריט' : 'פתח תפריט'}
+          aria-expanded={menuOpen}
+        >
+          {menuOpen ? (
+            <svg className="w-5 h-5 text-gray-700" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M4 4l12 12M16 4L4 16"/>
+            </svg>
+          ) : (
+            <svg className="w-5 h-5 text-gray-700" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M3 5h14M3 10h14M3 15h14"/>
+            </svg>
+          )}
+        </button>
       </div>
+
+      {/* Mobile dropdown menu */}
+      {menuOpen && (
+        <div
+          className="md:hidden border-t border-black/8 bg-white/95 backdrop-blur"
+          dir="rtl"
+        >
+          <nav className="max-w-6xl mx-auto px-4 py-2 flex flex-col">
+            {NAV_LINKS.map(link => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={closeMenu}
+                className={`text-sm font-black py-3 px-3 rounded-lg transition-colors ${
+                  link.highlight
+                    ? 'text-blue-700 hover:bg-blue-50'
+                    : 'text-gray-700 hover:bg-gray-100'
+                } ${pathname === link.href ? 'bg-gray-100' : ''}`}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+      )}
     </header>
   );
 }

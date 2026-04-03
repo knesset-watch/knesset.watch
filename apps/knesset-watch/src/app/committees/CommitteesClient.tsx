@@ -90,58 +90,60 @@ export default function CommitteesClient({
         </p>
 
         {/* Controls */}
-        <div className="flex items-center gap-3 mb-6 flex-wrap">
+        <div className="flex flex-col gap-3 mb-6">
           <input
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="חיפוש ועדה..."
-            className="text-sm px-3 py-2 rounded-xl border border-black/10 bg-gray-50 focus:outline-none focus:border-black/30 w-48"
+            className="w-full text-sm px-3 py-2 rounded-xl border border-black/10 bg-gray-50 focus:outline-none focus:border-black/30"
             dir="rtl"
           />
 
-          {/* Sort */}
-          <div className="flex items-center gap-1 mr-2">
-            <span className="text-[11px] font-black text-gray-400 uppercase tracking-wide ml-1">מיון:</span>
-            {([
-              { value: 'sessions', label: 'ישיבות' },
-              { value: 'recent',   label: 'פעילות אחרונה' },
-              { value: 'name',     label: 'שם' },
-            ] as { value: SortOption; label: string }[]).map(o => (
-              <button
-                key={o.value}
-                onClick={() => setSort(o.value)}
-                className={`text-xs font-black px-3 py-1.5 rounded-full transition-colors ${
-                  sort === o.value ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                {o.label}
-              </button>
-            ))}
-          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Sort */}
+            <div className="flex items-center gap-1">
+              <span className="text-[11px] font-black text-gray-400 uppercase tracking-wide ml-1">מיון:</span>
+              {([
+                { value: 'sessions', label: 'ישיבות' },
+                { value: 'recent',   label: 'פעילות אחרונה' },
+                { value: 'name',     label: 'שם' },
+              ] as { value: SortOption; label: string }[]).map(o => (
+                <button
+                  key={o.value}
+                  onClick={() => setSort(o.value)}
+                  className={`text-xs font-black px-3 py-2 rounded-full transition-colors ${
+                    sort === o.value ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {o.label}
+                </button>
+              ))}
+            </div>
 
-          {/* View toggle */}
-          <div className="flex items-center gap-1 border border-black/10 rounded-xl p-0.5 mr-auto">
-            <button
-              onClick={() => setView('cards')}
-              title="תצוגת כרטיסים"
-              className={`p-1.5 rounded-lg transition-colors ${view === 'cards' ? 'bg-black text-white' : 'text-gray-400 hover:text-black'}`}
-            >
-              <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="currentColor">
-                <rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/>
-                <rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/>
-              </svg>
-            </button>
-            <button
-              onClick={() => setView('list')}
-              title="תצוגת רשימה"
-              className={`p-1.5 rounded-lg transition-colors ${view === 'list' ? 'bg-black text-white' : 'text-gray-400 hover:text-black'}`}
-            >
-              <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="currentColor">
-                <rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="14" height="2" rx="1"/>
-                <rect x="1" y="12" width="14" height="2" rx="1"/>
-              </svg>
-            </button>
+            {/* View toggle */}
+            <div className="flex items-center gap-1 border border-black/10 rounded-xl p-0.5 mr-auto">
+              <button
+                onClick={() => setView('cards')}
+                title="תצוגת כרטיסים"
+                className={`p-2 rounded-lg transition-colors ${view === 'cards' ? 'bg-black text-white' : 'text-gray-400 hover:text-black'}`}
+              >
+                <svg viewBox="0 0 16 16" className="w-4 h-4" fill="currentColor">
+                  <rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/>
+                  <rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/>
+                </svg>
+              </button>
+              <button
+                onClick={() => setView('list')}
+                title="תצוגת רשימה"
+                className={`p-2 rounded-lg transition-colors ${view === 'list' ? 'bg-black text-white' : 'text-gray-400 hover:text-black'}`}
+              >
+                <svg viewBox="0 0 16 16" className="w-4 h-4" fill="currentColor">
+                  <rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="14" height="2" rx="1"/>
+                  <rect x="1" y="12" width="14" height="2" rx="1"/>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -189,10 +191,10 @@ export default function CommitteesClient({
         {/* List view */}
         {view === 'list' && (
           <div className={`flex flex-col gap-px transition-opacity ${loading ? 'opacity-40' : ''}`}>
-            <div className="grid grid-cols-[1fr_6rem_10rem] gap-4 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-gray-400">
+            <div className="grid grid-cols-[1fr_5rem] sm:grid-cols-[1fr_6rem_10rem] gap-4 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-gray-400">
               <span>ועדה</span>
               <span className="text-center">ישיבות</span>
-              <span className="text-left">פעילות אחרונה</span>
+              <span className="hidden sm:block text-left">פעילות אחרונה</span>
             </div>
             {sorted.map(c => {
               const lastDate = c.lastProtocolDate ?? c.lastSessionDate;
@@ -201,11 +203,11 @@ export default function CommitteesClient({
                 <Link
                   key={c.committeeId}
                   href={`/committee/${encodeURIComponent(c.name)}`}
-                  className="grid grid-cols-[1fr_6rem_10rem] gap-4 items-center px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors group"
+                  className="grid grid-cols-[1fr_5rem] sm:grid-cols-[1fr_6rem_10rem] gap-4 items-center px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors group"
                 >
                   <span className="text-sm font-bold text-gray-900 group-hover:text-black truncate">{c.name}</span>
                   <span className="text-sm font-black text-center tabular-nums">{c.sessionCount.toLocaleString('he-IL')}</span>
-                  <span className={`text-xs font-bold ${hasProtocol ? 'text-teal-700' : 'text-gray-400'}`}>
+                  <span className={`hidden sm:block text-xs font-bold ${hasProtocol ? 'text-teal-700' : 'text-gray-400'}`}>
                     {lastDate ? formatDate(lastDate) : '—'}
                   </span>
                 </Link>

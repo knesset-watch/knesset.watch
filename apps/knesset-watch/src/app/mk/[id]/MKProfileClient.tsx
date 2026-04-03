@@ -622,7 +622,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
         <div className="mb-8">
           <button
             onClick={() => window.history.length > 1 ? router.back() : router.push('/')}
-            className="text-sm font-black px-3 py-1.5 rounded border border-black/10 hover:bg-gray-50 transition-colors mb-5"
+            className="text-sm font-black px-3 py-2 rounded border border-black/10 hover:bg-gray-50 transition-colors mb-5"
           >
             → חזרה
           </button>
@@ -670,12 +670,12 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
         </div>
 
         {/* ── Tab bar ─────────────────────────────────────────────────────── */}
-        <div className="flex gap-1 flex-wrap mb-6">
+        <div className="flex gap-1 mb-6 border-b border-black/8 overflow-x-auto scrollbar-none pb-px">
           {TABS.map(([t, label]) => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`text-xs font-black px-4 py-1.5 rounded-lg transition-colors ${
+              className={`shrink-0 text-xs font-black px-4 py-2 rounded-lg transition-colors ${
                 tab === t ? 'bg-black text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -727,7 +727,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
 
             {/* Queries / positions / absence grid */}
             {!profileLoading && profile && (
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 <div className="rounded-2xl border border-black/8 p-5">
                   <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-2">שאילתות</div>
                   <div className="text-4xl font-black tabular-nums leading-none">{profile.queries.length.toLocaleString()}</div>
@@ -982,7 +982,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                       <button
                         key={f}
                         onClick={() => setVoteFilter(f)}
-                        className={`text-xs font-black px-3 py-1.5 rounded-full transition-colors ${colorCls}`}
+                        className={`text-xs font-black px-3 py-2 rounded-full transition-colors ${colorCls}`}
                       >
                         {f === 'all' ? 'הכל' : f === 'עם-הרוב' ? 'עם הרוב' : f === 'rebellions' ? 'מורדות' : f}{' '}
                         {count > 0 && <span className="opacity-70">({count.toLocaleString()})</span>}
@@ -1109,7 +1109,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                   <div className="flex flex-wrap gap-1.5 mb-3">
                     <button
                       onClick={() => setCommitteeFilter(null)}
-                      className={`text-xs font-black px-3 py-1 rounded-full transition-colors ${!committeeFilter ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                      className={`text-xs font-black px-3 py-2 rounded-full transition-colors ${!committeeFilter ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                     >
                       הכל
                     </button>
@@ -1117,7 +1117,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                       <button
                         key={t.committeeName}
                         onClick={() => setCommitteeFilter(committeeFilter === t.committeeName ? null : t.committeeName)}
-                        className={`text-xs font-black px-3 py-1 rounded-full transition-colors ${committeeFilter === t.committeeName ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                        className={`text-xs font-black px-3 py-2 rounded-full transition-colors ${committeeFilter === t.committeeName ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                       >
                         {t.committeeName} <span className="opacity-60">({t.total})</span>
                       </button>
