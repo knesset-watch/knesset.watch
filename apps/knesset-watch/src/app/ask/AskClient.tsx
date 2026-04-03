@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import EntityTooltip from '@/components/EntityTooltip';
 
 type SessionSource = { type: 'session'; sessionId: number; committeeName: string; date: string; title: string };
 type VoteSource   = { type: 'vote';    voteId: number;    title: string; date: string; isPassed: boolean };
@@ -214,7 +215,10 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
           <div className="space-y-8">
             {result.detectedMk && (
               <p className="text-xs text-blue-600 bg-blue-50 rounded-md px-3 py-2 inline-block">
-                חיפוש ממוקד עבור <Link href={`/mk/${result.detectedMk.mkId}`} className="font-semibold underline">{result.detectedMk.fullName}</Link>
+                חיפוש ממוקד עבור{' '}
+                <EntityTooltip href={`/mk/${result.detectedMk.mkId}`} type="mk" id={result.detectedMk.mkId} className="font-semibold underline">
+                  {result.detectedMk.fullName}
+                </EntityTooltip>
               </p>
             )}
 
