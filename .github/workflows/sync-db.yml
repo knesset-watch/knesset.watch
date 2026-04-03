@@ -13,7 +13,7 @@ on:
 
 jobs:
   sync:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 30
 
     steps:
@@ -30,7 +30,9 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Install build tools (for better-sqlite3 native compilation)
-        run: sudo apt-get install -y python3 make g++
+        run: |
+          # macOS has python3, make, and clang pre-installed via Xcode CLT
+          xcode-select --install 2>/dev/null || true
 
       - name: Install dependencies
         run: npm install --ignore-scripts && npm rebuild better-sqlite3
@@ -44,14 +46,12 @@ jobs:
         run: cd apps/knesset-watch && npm run db:sync
         env:
           NODE_OPTIONS: '--max-old-space-size=512'
-          KNESSET_API_BASE: 'https://knesset-proxy.fly.dev'
 
       - name: Run investigative sync (sessions + attendance)
         if: github.event.inputs.run_investigative == 'true'
         run: cd apps/knesset-watch && npm run db:sync-investigative
         env:
           NODE_OPTIONS: '--max-old-space-size=512'
-          KNESSET_API_BASE: 'https://knesset-proxy.fly.dev'
 
       - name: Update deploy DB
         run: |
