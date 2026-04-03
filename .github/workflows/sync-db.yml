@@ -41,19 +41,17 @@ jobs:
           echo "Deploy DB size: $(du -sh apps/knesset-watch/knesset-deploy.db | cut -f1)"
 
       - name: Run incremental sync
-        run: |
-          cd apps/knesset-watch && npm run db:sync || {
-            echo "::error::Sync failed — likely Knesset API blocked GitHub Actions IPs. Run sync locally instead."
-            exit 1
-          }
+        run: cd apps/knesset-watch && npm run db:sync
         env:
           NODE_OPTIONS: '--max-old-space-size=512'
+          KNESSET_API_BASE: 'https://knesset-proxy.fly.dev'
 
       - name: Run investigative sync (sessions + attendance)
         if: github.event.inputs.run_investigative == 'true'
         run: cd apps/knesset-watch && npm run db:sync-investigative
         env:
           NODE_OPTIONS: '--max-old-space-size=512'
+          KNESSET_API_BASE: 'https://knesset-proxy.fly.dev'
 
       - name: Update deploy DB
         run: |

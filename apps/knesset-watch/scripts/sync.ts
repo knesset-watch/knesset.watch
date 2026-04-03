@@ -10,7 +10,7 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 
-const API = 'https://knesset.gov.il/OdataV4/ParliamentInfo';
+const API = (process.env.KNESSET_API_BASE ?? 'https://knesset.gov.il') + '/OdataV4/ParliamentInfo';
 const DB_PATH = path.join(process.cwd(), 'knesset.db');
 
 // Overlap ensures we never miss anything due to clock skew or delayed updates

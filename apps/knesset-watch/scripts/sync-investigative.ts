@@ -6,7 +6,7 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 
-const API = 'https://knesset.gov.il/OdataV4/ParliamentInfo';
+const API = (process.env.KNESSET_API_BASE ?? 'https://knesset.gov.il') + '/OdataV4/ParliamentInfo';
 const DB_PATH = path.join(process.cwd(), 'knesset.db');
 const K25_START = '2022-11-15T00:00:00+02:00';
 
