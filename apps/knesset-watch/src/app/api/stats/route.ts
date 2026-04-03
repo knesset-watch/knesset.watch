@@ -42,7 +42,7 @@ export async function GET(request: Request) {
 
     const billDateParams: string[] = [];
     const billDateClause = startDate || endDate
-      ? ` AND (${startDate ? 'b.init_date >= ?' : '1'}) AND (${endDate ? 'b.init_date <= ?' : '1'})`
+      ? ` AND (${startDate ? 'b.publication_date >= ?' : '1'}) AND (${endDate ? 'b.publication_date <= ?' : '1'})`
       : '';
     if (startDate) billDateParams.push(startDate);
     if (endDate) billDateParams.push(endDate);

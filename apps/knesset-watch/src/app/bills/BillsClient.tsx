@@ -20,6 +20,7 @@ interface Bill {
   micro_agenda: string | null;
   macro_agenda: string | null;
   init_date: string | null;
+  publication_date: string | null;
   initiators: Array<{ person_id: number; first_name: string; last_name: string; slug: string | null }>;
 }
 
@@ -168,7 +169,7 @@ export default function BillsClient() {
                       <span className={`text-[11px] font-black px-2 py-0.5 rounded-full ${b.is_passed ? 'bg-[#16A34A] text-white' : 'bg-gray-200 text-gray-500'}`}>
                         {b.is_passed ? 'עבר' : (b.status_desc ?? 'בתהליך')}
                       </span>
-                      {b.init_date && <span className="text-[11px] text-gray-500">{b.init_date}</span>}
+                      {b.publication_date && <span className="text-[11px] text-gray-500">{b.publication_date.slice(0, 10)}</span>}
                       {b.initiators?.map(i => (
                         <EntityTooltip key={i.person_id} href={`/mk/${i.slug ?? i.person_id}`} type="mk" id={i.slug ?? i.person_id}
                           className="text-[11px] font-bold text-teal-700 hover:underline">
@@ -213,7 +214,7 @@ export default function BillsClient() {
                   <p className="text-sm font-bold leading-snug text-gray-900 line-clamp-3">{b.title}</p>
                   {b.summary && <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2">{b.summary}</p>}
                   <div className="flex items-center gap-1.5 flex-wrap mt-auto pt-1">
-                    {b.init_date && <span className="text-[11px] text-gray-500">{b.init_date}</span>}
+                    {b.publication_date && <span className="text-[11px] text-gray-500">{b.publication_date.slice(0, 10)}</span>}
                     {b.macro_agenda && <span className="text-[11px] font-black text-white bg-black px-1.5 py-0.5 rounded-full">{b.macro_agenda}</span>}
                     {b.committee_name && <span className="text-[11px] text-gray-500 border border-gray-200 px-1.5 py-0.5 rounded-full">{b.committee_name}</span>}
                     {b.initiators?.slice(0, 2).map(i => (

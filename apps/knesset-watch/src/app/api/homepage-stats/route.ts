@@ -27,8 +27,8 @@ export async function GET(request: Request) {
            JOIN committee_session cs ON cs.committee_id = c.id
            WHERE cs.date >= ? AND cs.date <= ?) as committees,
         (SELECT COUNT(*) FROM committee_session WHERE date >= ? AND date <= ?) as sessions,
-        (SELECT COUNT(*) FROM bill WHERE is_passed = 1 AND init_date >= ? AND init_date <= ?) as billsPassed,
-        (SELECT COUNT(*) FROM bill WHERE init_date >= ? AND init_date <= ?) as billsTotal,
+        (SELECT COUNT(*) FROM bill WHERE is_passed = 1 AND publication_date >= ? AND publication_date <= ?) as billsPassed,
+        (SELECT COUNT(*) FROM bill WHERE publication_date >= ? AND publication_date <= ?) as billsTotal,
         (SELECT COUNT(*) FROM plenary_vote WHERE date >= ? AND date <= ?) as votes
     `).get(from, to, from, to, from, to, from, to, from, to) as {
       mks: number; committees: number; sessions: number; billsPassed: number; billsTotal: number; votes: number;

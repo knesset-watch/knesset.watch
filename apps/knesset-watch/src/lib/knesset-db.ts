@@ -954,7 +954,7 @@ export function getMinisters(): MinisterInfo[] {
       (SELECT COUNT(*) FROM committee_attendance ca WHERE ca.mk_id = mp.person_id) as committeeSessionCount
     FROM mk_position pos
     JOIN mk_person mp ON mp.person_id = pos.mk_id
-    WHERE pos.is_current = 1 AND mp.is_current = 1
+    WHERE pos.is_current = 1
       AND pos.ministry IS NOT NULL
       AND (pos.duty_desc LIKE 'שר %' OR pos.duty_desc LIKE 'שרת %'
         OR pos.duty_desc LIKE 'השר %' OR pos.duty_desc LIKE 'השרה %'
@@ -1042,10 +1042,10 @@ export function getBills(opts: GetBillsOptions): { bills: BillRow[]; total: numb
   }
   if (committee) { where += ' AND b.committee_name = ?'; params.push(committee); }
   // from/to take precedence over legacy year param
-  if (from) { where += ' AND b.init_date >= ?'; params.push(from); }
-  if (to)   { where += ' AND b.init_date <= ?'; params.push(to); }
+  if (from) { where += ' AND b.publication_date >= ?'; params.push(from); }
+  if (to)   { where += ' AND b.publication_date <= ?'; params.push(to); }
   if (!from && !to && year) {
-    where += ' AND b.init_date >= ? AND b.init_date <= ?';
+    where += ' AND b.publication_date >= ? AND b.publication_date <= ?';
     params.push(`${year}-01-01`, `${year}-12-31`);
   }
 
