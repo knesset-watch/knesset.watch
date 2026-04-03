@@ -31,7 +31,7 @@ function RoleBadge({ role }: { role: string }) {
     member: 'bg-gray-100 text-gray-600',
   };
   return (
-    <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full ${colors[role] ?? 'bg-gray-100 text-gray-600'}`}>
+    <span className={`text-[11px] font-black px-1.5 py-0.5 rounded-full ${colors[role] ?? 'bg-gray-100 text-gray-600'}`}>
       {label}
     </span>
   );
@@ -244,7 +244,7 @@ export default function SessionClient({
                         </span>
                       )}
                       {g.method === 'online' && (
-                        <span className="mr-1 text-[9px] font-black bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full">מרחוק</span>
+                        <span className="mr-1 text-[11px] font-black bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full">מרחוק</span>
                       )}
                     </div>
                   ))}
@@ -306,7 +306,7 @@ export default function SessionClient({
                   : null;
                 return (
                   <div key={i} className="flex items-start gap-3">
-                    <span className={`shrink-0 text-[10px] font-black px-2 py-0.5 rounded-full mt-0.5 ${
+                    <span className={`shrink-0 text-[11px] font-black px-2 py-0.5 rounded-full mt-0.5 ${
                       v.passed === true ? 'bg-teal-500 text-white'
                       : v.passed === false ? 'bg-red-100 text-red-700'
                       : 'bg-gray-200 text-gray-500'
@@ -322,7 +322,7 @@ export default function SessionClient({
                         <p className="text-sm text-gray-400 leading-snug">הצבעה {v.voteNumber}</p>
                       )}
                       {(v.forCount > 0 || v.againstCount > 0) && (
-                        <p className="text-[11px] text-gray-400 mt-0.5">
+                        <p className="text-[11px] text-gray-500 mt-0.5">
                           {v.forCount} בעד · {v.againstCount} נגד{v.abstainCount > 0 ? ` · ${v.abstainCount} נמנע` : ''}
                         </p>
                       )}
@@ -381,7 +381,7 @@ export default function SessionClient({
                     {speakerFilter && (
                       <button
                         onClick={() => setSpeakerFilter(null)}
-                        className="text-[10px] font-black text-gray-400 hover:text-black transition-colors"
+                        className="text-[11px] font-black text-gray-400 hover:text-black transition-colors"
                       >
                         ✕
                       </button>
@@ -448,7 +448,7 @@ export default function SessionClient({
                     )
                   ))}
                 </div>
-                <p className="text-[10px] text-gray-400 mt-3">תמליל הישיבה אינו זמין</p>
+                <p className="text-[11px] text-gray-500 mt-3">תמליל הישיבה אינו זמין</p>
               </>
             )}
           </div>
@@ -462,14 +462,14 @@ export default function SessionClient({
               {session.documents.filter(d => d.type === 'protocol').map(d => (
                 <a key={d.id} href={d.url} target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-2 text-sm font-bold text-teal-700 hover:text-teal-900">
-                  <span className="text-[10px] font-black bg-teal-50 border border-teal-200 text-teal-700 px-2 py-0.5 rounded-full shrink-0">פרוטוקול</span>
+                  <span className="text-[11px] font-black bg-teal-50 border border-teal-200 text-teal-700 px-2 py-0.5 rounded-full shrink-0">פרוטוקול</span>
                   {d.name}
                 </a>
               ))}
               {session.documents.filter(d => d.type !== 'protocol').map(d => (
                 <a key={d.id} href={d.url} target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-2 text-xs text-gray-600 hover:text-black">
-                  <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full shrink-0">{d.appDesc ?? 'מסמך'}</span>
+                  <span className="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full shrink-0">{d.appDesc ?? 'מסמך'}</span>
                   {d.name}
                 </a>
               ))}

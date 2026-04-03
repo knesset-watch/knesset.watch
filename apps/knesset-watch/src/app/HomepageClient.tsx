@@ -112,26 +112,26 @@ export default function HomepageClient() {
             <Link href="/mks"
               className="rounded-2xl border border-black/8 p-5 hover:border-black/20 hover:bg-gray-50 transition-colors text-center">
               <div className="text-3xl font-black">{stats.mks}</div>
-              <div className="text-[11px] text-gray-400 font-black uppercase tracking-wide mt-1">ח&quot;כים</div>
+              <div className="text-[11px] text-gray-500 font-black uppercase tracking-wide mt-1">ח&quot;כים</div>
             </Link>
             <Link href="/committees"
               className="rounded-2xl border border-black/8 p-5 hover:border-black/20 hover:bg-gray-50 transition-colors text-center">
               <div className="text-3xl font-black">{stats.committees}</div>
-              <div className="text-[11px] text-gray-400 font-black uppercase tracking-wide mt-1">ועדות</div>
-              <div className="text-[10px] text-gray-300 mt-0.5">{stats.sessions.toLocaleString()} ישיבות</div>
+              <div className="text-[11px] text-gray-500 font-black uppercase tracking-wide mt-1">ועדות</div>
+              <div className="text-[11px] text-gray-300 mt-0.5">{stats.sessions.toLocaleString()} ישיבות</div>
             </Link>
             <Link href="/bills?passedOnly=true"
               className="rounded-2xl border border-black/8 p-5 hover:border-black/20 hover:bg-gray-50 transition-colors text-center">
               <div className="text-3xl font-black text-teal-700">{stats.billsPassed.toLocaleString()}</div>
-              <div className="text-[11px] text-gray-400 font-black uppercase tracking-wide mt-1">חוקים עברו</div>
+              <div className="text-[11px] text-gray-500 font-black uppercase tracking-wide mt-1">חוקים עברו</div>
               {stats.billsTotal > 0 && (
-                <div className="text-[10px] text-gray-300 mt-0.5">מתוך {stats.billsTotal.toLocaleString()} הצ&quot;ח</div>
+                <div className="text-[11px] text-gray-300 mt-0.5">מתוך {stats.billsTotal.toLocaleString()} הצ&quot;ח</div>
               )}
             </Link>
             <Link href="/votes"
               className="rounded-2xl border border-black/8 p-5 hover:border-black/20 hover:bg-gray-50 transition-colors text-center">
               <div className="text-3xl font-black">{stats.votes?.toLocaleString() ?? '—'}</div>
-              <div className="text-[11px] text-gray-400 font-black uppercase tracking-wide mt-1">הצבעות מליאה</div>
+              <div className="text-[11px] text-gray-500 font-black uppercase tracking-wide mt-1">הצבעות מליאה</div>
             </Link>
           </div>
         </div>
@@ -146,7 +146,7 @@ export default function HomepageClient() {
               className="rounded-2xl border border-black/8 p-5 hover:border-black/20 hover:bg-gray-50 transition-colors group">
               <div className="text-2xl mb-2">{s.icon}</div>
               <div className="text-base font-black group-hover:text-teal-700 transition-colors">{s.label}</div>
-              <div className="text-xs text-gray-400 mt-0.5">{s.sublabel}</div>
+              <div className="text-xs text-gray-500 mt-0.5">{s.sublabel}</div>
             </Link>
           ))}
         </div>
@@ -163,12 +163,12 @@ export default function HomepageClient() {
             {recentBills.map(b => (
               <Link key={b.id} href={`/bill/${b.id}`}
                 className="flex items-start gap-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors px-4 py-3">
-                <span className="shrink-0 text-[10px] font-black bg-teal-500 text-white px-2 py-0.5 rounded-full mt-0.5">עבר</span>
+                <span className="shrink-0 text-[11px] font-black bg-teal-500 text-white px-2 py-0.5 rounded-full mt-0.5">עבר</span>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-bold text-gray-900 leading-snug line-clamp-2">{b.title}</div>
                   <div className="flex items-center gap-2 mt-0.5">
-                    {b.date && <span className="text-[10px] text-gray-400">{relativeDate(b.date)}</span>}
-                    {b.macroAgenda && <span className="text-[10px] font-black text-white bg-black px-1.5 py-0.5 rounded-full">{b.macroAgenda}</span>}
+                    {b.date && <span className="text-[11px] text-gray-500">{relativeDate(b.date)}</span>}
+                    {b.macroAgenda && <span className="text-[11px] font-black text-white bg-black px-1.5 py-0.5 rounded-full">{b.macroAgenda}</span>}
                   </div>
                 </div>
               </Link>

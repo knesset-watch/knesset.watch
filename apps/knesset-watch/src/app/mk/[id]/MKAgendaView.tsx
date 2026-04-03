@@ -78,7 +78,7 @@ export default function MKAgendaView({ mkId, limit }: { mkId: string; limit?: nu
                 {/* Topic name */}
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-black leading-snug">{topic.label}</h3>
-                  <p className="text-[11px] text-gray-400 font-medium mt-0.5">
+                  <p className="text-[11px] text-gray-500 font-medium mt-0.5">
                     {totalVotes === 0 ? 'לא נמצאו הצבעות' : `${totalVotes} הצבעות`}
                   </p>
                 </div>
@@ -111,7 +111,7 @@ export default function MKAgendaView({ mkId, limit }: { mkId: string; limit?: nu
                 )}
 
                 {totalVotes > 0 && (
-                  <span className="text-gray-400 text-[10px] font-bold shrink-0">
+                  <span className="text-gray-400 text-[11px] font-bold shrink-0">
                     {isExpanded ? '▲' : '▼'}
                   </span>
                 )}
@@ -124,11 +124,11 @@ export default function MKAgendaView({ mkId, limit }: { mkId: string; limit?: nu
                 {topic.votes.map(v => (
                   <div key={v.voteId} className="flex items-center gap-3 px-4 py-2.5">
                     {v.result ? (
-                      <span className={`shrink-0 text-[10px] font-black px-2 py-0.5 rounded-full ${RESULT_COLORS[v.result] ?? 'bg-zinc-100 text-zinc-500'}`}>
+                      <span className={`shrink-0 text-[11px] font-black px-2 py-0.5 rounded-full ${RESULT_COLORS[v.result] ?? 'bg-zinc-100 text-zinc-500'}`}>
                         {v.result}
                       </span>
                     ) : (
-                      <span className="shrink-0 text-[10px] font-black px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-400">
+                      <span className="shrink-0 text-[11px] font-black px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-400">
                         לא הצביע
                       </span>
                     )}
@@ -141,7 +141,7 @@ export default function MKAgendaView({ mkId, limit }: { mkId: string; limit?: nu
                         {v.title || '—'}
                       </Link>
                     </div>
-                    <span className="shrink-0 text-[11px] text-gray-400 font-medium tabular-nums">
+                    <span className="shrink-0 text-[11px] text-gray-500 font-medium tabular-nums">
                       {formatDate(v.date)}
                     </span>
                   </div>

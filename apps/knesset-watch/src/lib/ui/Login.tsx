@@ -76,7 +76,7 @@ export function LoginForm({
           </div>
 
           {error && (
-            <p className="text-[10px] lowercase tracking-tight text-red-500 font-sans italic">
+            <p className="text-[11px] lowercase tracking-tight text-red-500 font-sans italic">
               {error}
             </p>
           )}
@@ -84,7 +84,7 @@ export function LoginForm({
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all
+            className={`w-full py-4 text-[11px] font-black uppercase tracking-[0.2em] transition-all
               ${loading 
                 ? 'opacity-50 cursor-not-allowed' 
                 : 'bg-black text-white hover:bg-black/80'

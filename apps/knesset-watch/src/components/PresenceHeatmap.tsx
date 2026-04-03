@@ -32,7 +32,7 @@ export default function PresenceHeatmap({ mkId }: { mkId: string }) {
     <div className="bg-white border border-black/8 rounded-2xl p-6" dir="ltr">
       <div className="flex items-center justify-between mb-4" dir="rtl">
         <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide">מפת נוכחות במליאה (שנה אחרונה)</div>
-        <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase">
+        <div className="flex items-center gap-2 text-[11px] font-black text-gray-400 uppercase">
           <span>נעדר</span>
           <div className="flex gap-1">
             <span className="w-3 h-3 rounded-sm bg-rose-500"></span>

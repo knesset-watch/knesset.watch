@@ -155,7 +155,7 @@ export default function VotesClient() {
 
           {/* Max margin filter */}
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-black uppercase text-gray-400 shrink-0">הפרש מקסימלי:</span>
+            <span className="text-[11px] font-black uppercase text-gray-400 shrink-0">הפרש מקסימלי:</span>
             <select
               value={maxMargin}
               onChange={e => handleMarginChange(e.target.value)}
@@ -190,7 +190,7 @@ export default function VotesClient() {
 
         {/* Total count */}
         {!loading && (
-          <div className="text-[11px] text-gray-400 font-black uppercase mb-3">
+          <div className="text-[11px] text-gray-500 font-black uppercase mb-3">
             {total.toLocaleString()} הצבעות
           </div>
         )}
@@ -205,7 +205,7 @@ export default function VotesClient() {
 
         {!loading && view === 'list' && (
           <>
-            <div className="grid grid-cols-[1fr_5rem_4rem_4rem_4rem_3rem] gap-4 py-2 px-4 text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">
+            <div className="grid grid-cols-[1fr_5rem_4rem_4rem_4rem_3rem] gap-4 py-2 px-4 text-[11px] font-black uppercase tracking-widest text-gray-400 mb-1">
               <span>נושא</span>
               <span>תאריך</span>
               <span className="text-center">בעד</span>
@@ -225,10 +225,10 @@ export default function VotesClient() {
                     {(v.macroAgenda || v.microAgenda) && (
                       <div className="flex gap-1.5 mt-1 flex-wrap">
                         {v.macroAgenda && (
-                          <span className="text-[9px] font-black text-gray-500 bg-gray-200/60 px-1.5 py-0.5 rounded-full">{v.macroAgenda}</span>
+                          <span className="text-[11px] font-black text-gray-500 bg-gray-200/60 px-1.5 py-0.5 rounded-full">{v.macroAgenda}</span>
                         )}
                         {v.microAgenda && (
-                          <span className="text-[9px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">#{v.microAgenda}</span>
+                          <span className="text-[11px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">#{v.microAgenda}</span>
                         )}
                       </div>
                     )}
@@ -255,13 +255,13 @@ export default function VotesClient() {
                 className={`rounded-2xl border p-4 flex flex-col gap-2 transition-colors ${v.isPassed ? 'border-green-100 bg-[#F0FDF4] hover:bg-green-100' : 'border-black/8 hover:border-black/20 hover:bg-gray-50'}`}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${v.isPassed ? 'bg-[#16A34A] text-white' : 'bg-gray-200 text-gray-500'}`}>
+                  <span className={`text-[11px] font-black px-2 py-0.5 rounded-full ${v.isPassed ? 'bg-[#16A34A] text-white' : 'bg-gray-200 text-gray-500'}`}>
                     {v.isPassed ? 'עבר' : 'לא עבר'}
                   </span>
-                  <span className="text-[10px] text-gray-400">{formatDate(v.date)}</span>
+                  <span className="text-[11px] text-gray-500">{formatDate(v.date)}</span>
                 </div>
                 <p className="text-sm font-bold leading-snug text-gray-900 line-clamp-3">{v.title}</p>
-                {v.macroAgenda && <span className="text-[9px] font-black text-gray-500 bg-gray-200/60 px-1.5 py-0.5 rounded-full self-start">{v.macroAgenda}</span>}
+                {v.macroAgenda && <span className="text-[11px] font-black text-gray-500 bg-gray-200/60 px-1.5 py-0.5 rounded-full self-start">{v.macroAgenda}</span>}
                 <div className="flex items-center gap-4 mt-auto pt-1 text-[11px]">
                   <span className="font-black text-teal-700">בעד {v.totalFor}</span>
                   <span className="font-black text-blue-700">נגד {v.totalAgainst}</span>

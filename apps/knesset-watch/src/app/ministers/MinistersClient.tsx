@@ -65,7 +65,7 @@ export default function MinistersClient({ ministers }: { ministers: MinisterInfo
     return (
       <button
         onClick={() => setSort(col)}
-        className={`text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-1 ${className} ${
+        className={`text-[11px] font-black uppercase tracking-widest transition-colors flex items-center gap-1 ${className} ${
           sort === col ? 'text-black' : 'text-gray-400 hover:text-gray-600'
         }`}
       >
@@ -80,10 +80,10 @@ export default function MinistersClient({ ministers }: { ministers: MinisterInfo
       <div className="flex flex-col gap-1.5">
         <div className="grid grid-cols-[1fr_1fr_5rem_5rem_5rem] gap-4 py-2 px-4">
           <SortHeader col="name" label="שם" />
-          <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">משרד</span>
+          <span className="text-[11px] font-black uppercase tracking-widest text-gray-400">משרד</span>
           <SortHeader col="sessions" label="ועדות" className="justify-center" />
           <SortHeader col="bills" label="הצעות" className="justify-center" />
-          <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">עברו</span>
+          <span className="text-[11px] font-black uppercase tracking-widest text-gray-400 text-center">עברו</span>
         </div>
         {sortRows(rows).map(m => <MinisterRow key={m.id} m={m} />)}
       </div>
@@ -104,11 +104,11 @@ export default function MinistersClient({ ministers }: { ministers: MinisterInfo
 
         <div className="flex gap-4 mb-8">
           <div className="flex flex-col">
-            <span className="text-[9px] font-black uppercase text-gray-400 mb-1">שרים</span>
+            <span className="text-[11px] font-black uppercase text-gray-400 mb-1">שרים</span>
             <span className="text-3xl font-black">{fullMinisters.length}</span>
           </div>
           <div className="flex flex-col border-r border-black/8 pr-4">
-            <span className="text-[9px] font-black uppercase text-gray-400 mb-1">סגני שרים</span>
+            <span className="text-[11px] font-black uppercase text-gray-400 mb-1">סגני שרים</span>
             <span className="text-3xl font-black">{deputies.length}</span>
           </div>
         </div>

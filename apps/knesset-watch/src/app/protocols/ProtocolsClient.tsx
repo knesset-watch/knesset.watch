@@ -240,7 +240,7 @@ export default function ProtocolsClient({ committees }: Props) {
                           </div>
                           <Link
                             href={`${BASE_PATH}/session/${s.sessionId}`}
-                            className="text-[10px] font-black text-teal-700 hover:underline shrink-0"
+                            className="text-[11px] font-black text-teal-700 hover:underline shrink-0"
                           >
                             ←
                           </Link>
@@ -286,7 +286,7 @@ export default function ProtocolsClient({ committees }: Props) {
                 }`}
               >
                 {c.name}
-                <span className={`text-[10px] font-bold tabular-nums ${
+                <span className={`text-[11px] font-bold tabular-nums ${
                   selectedCommittee === c.name ? 'opacity-70' : 'text-gray-400'
                 }`}>
                   {c.sessionCount}
@@ -298,7 +298,7 @@ export default function ProtocolsClient({ committees }: Props) {
 
         {/* Results count */}
         {total > 0 && (
-          <p className="text-xs text-gray-400 font-medium mb-4">
+          <p className="text-xs text-gray-500 font-medium mb-4">
             {total.toLocaleString('he-IL')} תוצאות
           </p>
         )}
@@ -329,7 +329,7 @@ export default function ProtocolsClient({ committees }: Props) {
                       <Link
                         href={`${BASE_PATH}/session/${sessionId}`}
                         onClick={e => e.stopPropagation()}
-                        className="text-[10px] font-black text-teal-700 hover:underline shrink-0"
+                        className="text-[11px] font-black text-teal-700 hover:underline shrink-0"
                       >
                         פתח ישיבה ←
                       </Link>

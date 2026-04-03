@@ -102,7 +102,7 @@ export default function CommitteesClient({
 
           {/* Sort */}
           <div className="flex items-center gap-1 mr-2">
-            <span className="text-[10px] font-black text-gray-400 uppercase tracking-wide ml-1">מיון:</span>
+            <span className="text-[11px] font-black text-gray-400 uppercase tracking-wide ml-1">מיון:</span>
             {([
               { value: 'sessions', label: 'ישיבות' },
               { value: 'recent',   label: 'פעילות אחרונה' },
@@ -146,7 +146,7 @@ export default function CommitteesClient({
         </div>
 
         {search.trim() && (
-          <p className="text-xs text-gray-400 font-medium mb-4">{sorted.length} תוצאות</p>
+          <p className="text-xs text-gray-500 font-medium mb-4">{sorted.length} תוצאות</p>
         )}
 
         {/* Cards view */}
@@ -166,12 +166,12 @@ export default function CommitteesClient({
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col">
-                      <span className="text-[9px] font-black uppercase text-gray-400 mb-0.5">ישיבות</span>
+                      <span className="text-[11px] font-black uppercase text-gray-400 mb-0.5">ישיבות</span>
                       <span className="text-xl font-black">{c.sessionCount.toLocaleString('he-IL')}</span>
                     </div>
                     {lastDate && (
                       <div className="flex flex-col items-end">
-                        <span className={`text-[9px] font-black uppercase mb-0.5 ${hasProtocol ? 'text-teal-600' : 'text-gray-400'}`}>
+                        <span className={`text-[11px] font-black uppercase mb-0.5 ${hasProtocol ? 'text-teal-600' : 'text-gray-400'}`}>
                           {hasProtocol ? 'דיון אחרון' : 'אחרונה'}
                         </span>
                         <span className={`text-xs font-bold ${hasProtocol ? 'text-teal-700' : 'text-gray-500'}`}>
@@ -189,7 +189,7 @@ export default function CommitteesClient({
         {/* List view */}
         {view === 'list' && (
           <div className={`flex flex-col gap-px transition-opacity ${loading ? 'opacity-40' : ''}`}>
-            <div className="grid grid-cols-[1fr_6rem_10rem] gap-4 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-gray-400">
+            <div className="grid grid-cols-[1fr_6rem_10rem] gap-4 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-gray-400">
               <span>ועדה</span>
               <span className="text-center">ישיבות</span>
               <span className="text-left">פעילות אחרונה</span>

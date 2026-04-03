@@ -115,13 +115,13 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
                 <h1 className="text-xl font-black leading-snug">{title || `הצבעה ${voteId}`}</h1>
                 <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                   {date && (
-                    <span className="text-[11px] text-gray-400 font-medium ml-2">{formatDate(date)}</span>
+                    <span className="text-[11px] text-gray-500 font-medium ml-2">{formatDate(date)}</span>
                   )}
                   {macroAgenda && (
-                    <span className="text-[10px] font-black text-white bg-black/60 px-2 py-0.5 rounded-full">{macroAgenda}</span>
+                    <span className="text-[11px] font-black text-white bg-black/60 px-2 py-0.5 rounded-full">{macroAgenda}</span>
                   )}
                   {microAgenda && (
-                    <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">#{microAgenda}</span>
+                    <span className="text-[11px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">#{microAgenda}</span>
                   )}
                 </div>
               </>
@@ -190,7 +190,7 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
 
               {/* Sort */}
               <div className="flex gap-1 items-center">
-                <span className="text-[10px] font-black uppercase text-gray-400">מיון:</span>
+                <span className="text-[11px] font-black uppercase text-gray-400">מיון:</span>
                 {([['party', 'סיעה'], ['name', 'שם'], ['result', 'תוצאה']] as [SortBy, string][]).map(([s, label]) => (
                   <button
                     key={s}
@@ -221,7 +221,7 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
                   key={r.mkId}
                   className={`flex items-center gap-3 py-2.5 px-4 rounded-xl text-sm ${r.isCoalition === true ? 'bg-[#F0FDF4]/50' : r.isCoalition === false ? 'bg-[#EFF6FF]/50' : 'bg-gray-50'}`}
                 >
-                  <span className={`shrink-0 text-[10px] font-black px-2 py-0.5 rounded-full ${RESULT_COLORS[r.result] ?? 'bg-zinc-100 text-zinc-500'}`}>
+                  <span className={`shrink-0 text-[11px] font-black px-2 py-0.5 rounded-full ${RESULT_COLORS[r.result] ?? 'bg-zinc-100 text-zinc-500'}`}>
                     {r.result}
                   </span>
                   {r.slug || r.mkId ? (

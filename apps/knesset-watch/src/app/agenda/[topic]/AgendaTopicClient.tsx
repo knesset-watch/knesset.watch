@@ -259,7 +259,7 @@ export default function AgendaTopicClient({ topic }: { topic: string }) {
           <div>
             <h1 className="text-2xl font-black leading-tight">{agenda.label}</h1>
             {!votesLoading && (
-              <p className="text-xs text-gray-400 mt-0.5 font-medium">
+              <p className="text-xs text-gray-500 mt-0.5 font-medium">
                 {votes.length} הצבעות
                 {!allResultsLoaded && votes.length > 0 && (
                   <span className="mr-2 animate-pulse">
@@ -323,7 +323,7 @@ export default function AgendaTopicClient({ topic }: { topic: string }) {
             {/* ── Tab: votes list ─────────────────────────────────────────── */}
             {tab === 'votes' && (
               <div className="flex flex-col gap-1.5">
-                <div className="grid grid-cols-[1fr_6rem_6rem] text-[10px] font-black uppercase text-gray-400 px-4 pb-1 gap-2">
+                <div className="grid grid-cols-[1fr_6rem_6rem] text-[11px] font-black uppercase text-gray-400 px-4 pb-1 gap-2">
                   <span>כותרת</span>
                   <span className="text-center">קואליציה</span>
                   <span className="text-center">אופוזיציה</span>
@@ -341,7 +341,7 @@ export default function AgendaTopicClient({ topic }: { topic: string }) {
                       >
                         <div className="min-w-0">
                           <p className="text-sm font-bold leading-snug text-gray-900 truncate">{v.title || '—'}</p>
-                          <p className="text-[11px] text-gray-400 font-medium mt-0.5">{formatDate(v.date)}</p>
+                          <p className="text-[11px] text-gray-500 font-medium mt-0.5">{formatDate(v.date)}</p>
                         </div>
 
                         {v.resultsLoading ? (
@@ -369,7 +369,7 @@ export default function AgendaTopicClient({ topic }: { topic: string }) {
                       {/* Expanded MK results */}
                       {isExpanded && v.results && (
                         <div className="mx-2 mb-2 rounded-xl border border-black/5 overflow-hidden">
-                          <div className="grid grid-cols-[1fr_auto_auto] gap-2 px-4 py-2 text-[10px] font-black uppercase text-gray-400 bg-gray-50 border-b border-black/5">
+                          <div className="grid grid-cols-[1fr_auto_auto] gap-2 px-4 py-2 text-[11px] font-black uppercase text-gray-400 bg-gray-50 border-b border-black/5">
                             <span>שם</span>
                             <span>סיעה</span>
                             <span>תוצאה</span>
@@ -381,7 +381,7 @@ export default function AgendaTopicClient({ topic }: { topic: string }) {
                             >
                               <span className="font-bold">{r.firstName} {r.lastName}</span>
                               <span className="text-xs text-gray-500 font-medium">{r.party ?? '—'}</span>
-                              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${RESULT_COLORS[r.result] ?? 'bg-zinc-100 text-zinc-500'}`}>
+                              <span className={`text-[11px] font-black px-2 py-0.5 rounded-full ${RESULT_COLORS[r.result] ?? 'bg-zinc-100 text-zinc-500'}`}>
                                 {r.result}
                               </span>
                             </div>
@@ -399,7 +399,7 @@ export default function AgendaTopicClient({ topic }: { topic: string }) {
               <>
                 {/* Sort controls */}
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-[10px] font-black uppercase text-gray-400">מיון:</span>
+                  <span className="text-[11px] font-black uppercase text-gray-400">מיון:</span>
                   {([['support', 'תמיכה'], ['party', 'סיעה'], ['name', 'שם']] as ['support' | 'party' | 'name', string][]).map(([s, label]) => (
                     <button
                       key={s}
@@ -417,7 +417,7 @@ export default function AgendaTopicClient({ topic }: { topic: string }) {
                   </div>
                 ) : (
                   <div className="flex flex-col gap-1">
-                    <div className="grid grid-cols-[1fr_6rem_4rem_4rem_4rem_5rem] text-[10px] font-black uppercase text-gray-400 px-3 pb-1 gap-1">
+                    <div className="grid grid-cols-[1fr_6rem_4rem_4rem_4rem_5rem] text-[11px] font-black uppercase text-gray-400 px-3 pb-1 gap-1">
                       <span>שם</span>
                       <span>סיעה</span>
                       <span className="text-center">בעד</span>
@@ -457,7 +457,7 @@ export default function AgendaTopicClient({ topic }: { topic: string }) {
                   </div>
                 ) : (
                   <div className="flex flex-col gap-1">
-                    <div className="grid grid-cols-[1fr_5rem_4rem_4rem_4rem_5rem] text-[10px] font-black uppercase text-gray-400 px-3 pb-1 gap-1">
+                    <div className="grid grid-cols-[1fr_5rem_4rem_4rem_4rem_5rem] text-[11px] font-black uppercase text-gray-400 px-3 pb-1 gap-1">
                       <span>סיעה</span>
                       <span>מעמד</span>
                       <span className="text-center">בעד</span>
@@ -473,7 +473,7 @@ export default function AgendaTopicClient({ topic }: { topic: string }) {
                           className={`grid grid-cols-[1fr_5rem_4rem_4rem_4rem_5rem] items-center gap-1 py-2.5 px-3 rounded-lg ${p.isCoalition === true ? 'bg-[#F0FDF4]/50' : p.isCoalition === false ? 'bg-[#EFF6FF]/50' : 'bg-gray-50'}`}
                         >
                           <span className="text-sm font-black">{p.party}</span>
-                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-full w-fit ${p.isCoalition === true ? 'bg-[#16A34A] text-white' : p.isCoalition === false ? 'bg-[#2563EB] text-white' : 'bg-zinc-200 text-zinc-600'}`}>
+                          <span className={`text-[11px] font-black px-2 py-0.5 rounded-full w-fit ${p.isCoalition === true ? 'bg-[#16A34A] text-white' : p.isCoalition === false ? 'bg-[#2563EB] text-white' : 'bg-zinc-200 text-zinc-600'}`}>
                             {p.isCoalition === true ? 'קואליציה' : p.isCoalition === false ? 'אופוזיציה' : '—'}
                           </span>
                           <span className="text-center text-sm font-black text-[#16A34A]">{p.for}</span>

@@ -123,7 +123,7 @@ export default function MKVotesClient({ mkId }: { mkId: string }) {
               {loading ? 'טוען...' : mkName || `חבר כנסת ${mkId}`}
             </h1>
             {!loading && !error && (
-              <p className="text-xs text-gray-400 mt-0.5 font-medium">
+              <p className="text-xs text-gray-500 mt-0.5 font-medium">
                 {total > votes.length
                   ? `מוצגות ${votes.length} מתוך ${total} הצבעות בכנסת 25`
                   : `${votes.length} הצבעות בכנסת 25`}
@@ -199,7 +199,7 @@ export default function MKVotesClient({ mkId }: { mkId: string }) {
                   key={v.Id}
                   className="flex items-start gap-3 py-3 px-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
                 >
-                  <span className={`shrink-0 mt-0.5 text-[10px] font-black px-2 py-1 rounded-full ${RESULT_COLORS[v.ResultDesc] ?? 'bg-zinc-100 text-zinc-500'}`}>
+                  <span className={`shrink-0 mt-0.5 text-[11px] font-black px-2 py-1 rounded-full ${RESULT_COLORS[v.ResultDesc] ?? 'bg-zinc-100 text-zinc-500'}`}>
                     {v.ResultDesc}
                   </span>
                   <div className="flex-1 min-w-0">
@@ -213,10 +213,10 @@ export default function MKVotesClient({ mkId }: { mkId: string }) {
                       </Link>
                     </p>
                     {v.Vote?.VoteSubject && v.Vote.VoteSubject !== v.Vote.VoteTitle && (
-                      <p className="text-xs text-gray-400 mt-0.5 leading-snug">{v.Vote.VoteSubject}</p>
+                      <p className="text-xs text-gray-500 mt-0.5 leading-snug">{v.Vote.VoteSubject}</p>
                     )}
                   </div>
-                  <span className="shrink-0 text-[11px] text-gray-400 font-medium tabular-nums">
+                  <span className="shrink-0 text-[11px] text-gray-500 font-medium tabular-nums">
                     {new Date(v.VoteDate).toLocaleDateString('he-IL', { day: 'numeric', month: 'short', year: '2-digit' })}
                   </span>
                 </div>

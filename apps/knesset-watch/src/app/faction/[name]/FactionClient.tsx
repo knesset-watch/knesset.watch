@@ -34,24 +34,24 @@ export default function FactionClient({ data }: { data: FactionDetail }) {
         {/* Stats row */}
         <div className={`flex flex-wrap gap-6 rounded-xl px-6 py-4 mb-8 ${bgColor}`}>
           <div className="flex flex-col">
-            <span className="text-[9px] font-black uppercase text-gray-400 mb-0.5">ח"כים פעילים</span>
+            <span className="text-[11px] font-black uppercase text-gray-400 mb-0.5">ח"כים פעילים</span>
             <span className="text-3xl font-black">{currentMks.length}</span>
           </div>
           <div className="flex flex-col border-r border-black/8 pr-6">
-            <span className="text-[9px] font-black uppercase text-gray-400 mb-0.5">הצעות חוק</span>
+            <span className="text-[11px] font-black uppercase text-gray-400 mb-0.5">הצעות חוק</span>
             <span className="text-3xl font-black">{billCount}</span>
           </div>
           <div className="flex flex-col border-r border-black/8 pr-6">
-            <span className="text-[9px] font-black uppercase text-gray-400 mb-0.5">חוקים שעברו</span>
+            <span className="text-[11px] font-black uppercase text-gray-400 mb-0.5">חוקים שעברו</span>
             <span className="text-3xl font-black text-teal-600">{passedCount}</span>
           </div>
           <div className="flex flex-col border-r border-black/8 pr-6">
-            <span className="text-[9px] font-black uppercase text-gray-400 mb-0.5">יחס מעבר</span>
+            <span className="text-[11px] font-black uppercase text-gray-400 mb-0.5">יחס מעבר</span>
             <span className="text-3xl font-black">{billCount > 0 ? `${passRatio}%` : '—'}</span>
           </div>
           {rebellionRate !== null && (
             <div className="flex flex-col border-r border-black/8 pr-6">
-              <span className="text-[9px] font-black uppercase text-gray-400 mb-0.5">מרד בהצבעות</span>
+              <span className="text-[11px] font-black uppercase text-gray-400 mb-0.5">מרד בהצבעות</span>
               <span className="text-3xl font-black">{rebellionRate.toFixed(1)}%</span>
             </div>
           )}

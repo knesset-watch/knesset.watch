@@ -135,7 +135,7 @@ export default function BillsClient() {
         </div>
 
         {/* Count */}
-        <div className="text-xs text-gray-400 font-medium mb-3">
+        <div className="text-xs text-gray-500 font-medium mb-3">
           {total.toLocaleString()} הצ&quot;ח {page > 0 || bills.length < total ? `· עמוד ${page + 1} מתוך ${totalPages}` : ''}
         </div>
 
@@ -152,37 +152,37 @@ export default function BillsClient() {
                       <div className="flex items-center gap-1 shrink-0">
                         {b.doc_url && (
                           <a href={b.doc_url} target="_blank" rel="noopener noreferrer"
-                            className="text-[10px] font-black text-gray-400 hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">
+                            className="text-[11px] font-black text-gray-400 hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">
                             PDF
                           </a>
                         )}
                         {b.summary && (
                           <button onClick={() => toggleBill(b.id)}
-                            className="text-[10px] font-black text-gray-400 hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">
+                            className="text-[11px] font-black text-gray-400 hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">
                             {isExpanded ? '▲' : '▼'}
                           </button>
                         )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 px-4 pb-3 flex-wrap">
-                      <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${b.is_passed ? 'bg-[#16A34A] text-white' : 'bg-gray-200 text-gray-500'}`}>
+                      <span className={`text-[11px] font-black px-2 py-0.5 rounded-full ${b.is_passed ? 'bg-[#16A34A] text-white' : 'bg-gray-200 text-gray-500'}`}>
                         {b.is_passed ? 'עבר' : (b.status_desc ?? 'בתהליך')}
                       </span>
-                      {b.init_date && <span className="text-[10px] text-gray-400">{b.init_date}</span>}
+                      {b.init_date && <span className="text-[11px] text-gray-500">{b.init_date}</span>}
                       {b.initiators?.map(i => (
                         <EntityTooltip key={i.person_id} href={`/mk/${i.slug ?? i.person_id}`} type="mk" id={i.slug ?? i.person_id}
-                          className="text-[10px] font-bold text-teal-700 hover:underline">
+                          className="text-[11px] font-bold text-teal-700 hover:underline">
                           {i.first_name} {i.last_name}
                         </EntityTooltip>
                       ))}
-                      {b.macro_agenda && <span className="text-[10px] font-black text-white bg-black px-1.5 py-0.5 rounded-full">{b.macro_agenda}</span>}
+                      {b.macro_agenda && <span className="text-[11px] font-black text-white bg-black px-1.5 py-0.5 rounded-full">{b.macro_agenda}</span>}
                       {b.committee_name && (
                         <EntityTooltip href={`/committee/${encodeURIComponent(b.committee_name)}`} type="committee" id={b.committee_name}
-                          className="text-[10px] font-black text-gray-400 border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded-full transition-colors">
+                          className="text-[11px] font-black text-gray-400 border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded-full transition-colors">
                           {b.committee_name}
                         </EntityTooltip>
                       )}
-                      {b.subtype && <span className="text-[10px] text-gray-400">{b.subtype}</span>}
+                      {b.subtype && <span className="text-[11px] text-gray-500">{b.subtype}</span>}
                     </div>
                     {b.summary && isExpanded && (
                       <div className="px-4 pb-3 border-t border-black/5 pt-2">
@@ -200,12 +200,12 @@ export default function BillsClient() {
               {bills.map(b => (
                 <Link key={b.id} href={`/bill/${b.id}`} className="rounded-2xl border border-black/8 p-4 hover:border-black/20 hover:bg-gray-50 transition-colors flex flex-col gap-2">
                   <div className="flex items-start justify-between gap-2">
-                    <span className={`shrink-0 text-[10px] font-black px-2 py-0.5 rounded-full ${b.is_passed ? 'bg-[#16A34A] text-white' : 'bg-gray-100 text-gray-500'}`}>
+                    <span className={`shrink-0 text-[11px] font-black px-2 py-0.5 rounded-full ${b.is_passed ? 'bg-[#16A34A] text-white' : 'bg-gray-100 text-gray-500'}`}>
                       {b.is_passed ? 'עבר' : (b.status_desc ?? 'בתהליך')}
                     </span>
                     {b.doc_url && (
                       <a href={b.doc_url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
-                        className="text-[10px] font-black text-gray-400 hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">
+                        className="text-[11px] font-black text-gray-400 hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">
                         PDF
                       </a>
                     )}
@@ -213,11 +213,11 @@ export default function BillsClient() {
                   <p className="text-sm font-bold leading-snug text-gray-900 line-clamp-3">{b.title}</p>
                   {b.summary && <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2">{b.summary}</p>}
                   <div className="flex items-center gap-1.5 flex-wrap mt-auto pt-1">
-                    {b.init_date && <span className="text-[10px] text-gray-400">{b.init_date}</span>}
-                    {b.macro_agenda && <span className="text-[10px] font-black text-white bg-black px-1.5 py-0.5 rounded-full">{b.macro_agenda}</span>}
-                    {b.committee_name && <span className="text-[10px] text-gray-400 border border-gray-200 px-1.5 py-0.5 rounded-full">{b.committee_name}</span>}
+                    {b.init_date && <span className="text-[11px] text-gray-500">{b.init_date}</span>}
+                    {b.macro_agenda && <span className="text-[11px] font-black text-white bg-black px-1.5 py-0.5 rounded-full">{b.macro_agenda}</span>}
+                    {b.committee_name && <span className="text-[11px] text-gray-500 border border-gray-200 px-1.5 py-0.5 rounded-full">{b.committee_name}</span>}
                     {b.initiators?.slice(0, 2).map(i => (
-                      <span key={i.person_id} className="text-[10px] font-bold text-teal-700">{i.first_name} {i.last_name}</span>
+                      <span key={i.person_id} className="text-[11px] font-bold text-teal-700">{i.first_name} {i.last_name}</span>
                     ))}
                   </div>
                 </Link>

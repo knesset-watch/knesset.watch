@@ -106,28 +106,28 @@ export default function EntityTooltip({ href, type, id, children, className }: P
                 </div>
                 <div className="flex flex-col items-end gap-1 shrink-0">
                   {preview.data.isCoalition !== null && (
-                    <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full ${
+                    <span className={`text-[11px] font-black uppercase px-1.5 py-0.5 rounded-full ${
                       preview.data.isCoalition ? 'bg-green-600 text-white' : 'bg-blue-600 text-white'
                     }`}>
                       {preview.data.isCoalition ? 'קואליציה' : 'אופוזיציה'}
                     </span>
                   )}
                   {preview.data.ministerRole && (
-                    <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full bg-amber-400 text-white">שר</span>
+                    <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded-full bg-amber-400 text-white">שר</span>
                   )}
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-2 border-t border-black/5 pt-3">
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-black uppercase text-gray-400 mb-0.5">הצעות</span>
+                  <span className="text-[11px] font-black uppercase text-gray-400 mb-0.5">הצעות</span>
                   <span className="text-xl font-black">{preview.data.proposed}</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-black uppercase text-gray-400 mb-0.5">עברו</span>
+                  <span className="text-[11px] font-black uppercase text-gray-400 mb-0.5">עברו</span>
                   <span className="text-xl font-black text-teal-600">{preview.data.passed}</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-black uppercase text-gray-400 mb-0.5">ועדות</span>
+                  <span className="text-[11px] font-black uppercase text-gray-400 mb-0.5">ועדות</span>
                   <span className="text-xl font-black text-blue-700">{preview.data.committeeSessions}</span>
                 </div>
               </div>
@@ -139,11 +139,11 @@ export default function EntityTooltip({ href, type, id, children, className }: P
               <p className="text-sm font-black leading-snug mb-3">{preview.data.name}</p>
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-black uppercase text-gray-400 mb-0.5">ישיבות</span>
+                  <span className="text-[11px] font-black uppercase text-gray-400 mb-0.5">ישיבות</span>
                   <span className="text-xl font-black">{preview.data.sessionCount.toLocaleString('he-IL')}</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-black uppercase text-gray-400 mb-0.5">חברים</span>
+                  <span className="text-[11px] font-black uppercase text-gray-400 mb-0.5">חברים</span>
                   <span className="text-xl font-black">{preview.data.memberCount}</span>
                 </div>
               </div>

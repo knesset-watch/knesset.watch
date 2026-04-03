@@ -335,7 +335,7 @@ export default function AllianceGraph({ data }: NetworkGraphProps) {
         <div className="flex items-center gap-8 flex-wrap">
           {/* Legend */}
           <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">מקרא</span>
+            <span className="text-[11px] font-black uppercase text-gray-400 tracking-widest">מקרא</span>
             <div className="flex gap-4">
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#16a34a] shrink-0"></span>
@@ -356,7 +356,7 @@ export default function AllianceGraph({ data }: NetworkGraphProps) {
 
           {/* Search */}
           <form onSubmit={onSearch} className="flex flex-col gap-1">
-            <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">חפש ח"כ</span>
+            <span className="text-[11px] font-black uppercase text-gray-400 tracking-widest">חפש ח"כ</span>
             <input
               type="text"
               value={searchQuery}
@@ -601,7 +601,7 @@ export default function AllianceGraph({ data }: NetworkGraphProps) {
             <div>
               <p className="font-black text-sm text-black leading-tight">{selectedNode.name}</p>
               <p className="text-[11px] text-gray-500 mt-0.5">{selectedNode.faction}</p>
-              <span className={`inline-block mt-1.5 text-[10px] font-black px-2 py-0.5 rounded-full ${selectedNode.isCoalition ? 'bg-[#16a34a] text-white' : 'bg-[#2563EB] text-white'}`}>
+              <span className={`inline-block mt-1.5 text-[11px] font-black px-2 py-0.5 rounded-full ${selectedNode.isCoalition ? 'bg-[#16a34a] text-white' : 'bg-[#2563EB] text-white'}`}>
                 {selectedNode.isCoalition ? 'קואליציה' : 'אופוזיציה'}
               </span>
             </div>
@@ -622,9 +622,9 @@ export default function AllianceGraph({ data }: NetworkGraphProps) {
               )}
               {selectedStats.strongestPartner && (
                 <div className="border-t border-black/5 pt-2">
-                  <p className="text-[10px] text-gray-400 uppercase font-black tracking-wide mb-1">שיתוף הפעולה החזק ביותר</p>
+                  <p className="text-[11px] text-gray-500 uppercase font-black tracking-wide mb-1">שיתוף הפעולה החזק ביותר</p>
                   <p className="text-[11px] font-bold text-black">{selectedStats.strongestPartner.name}</p>
-                  <p className="text-[10px] text-gray-400">{selectedStats.strongestCount} הצ"ח משותפות</p>
+                  <p className="text-[11px] text-gray-500">{selectedStats.strongestCount} הצ"ח משותפות</p>
                 </div>
               )}
             </div>
@@ -635,12 +635,12 @@ export default function AllianceGraph({ data }: NetworkGraphProps) {
             <div>
               <p className="font-black text-sm text-black leading-tight">{hoverNode.name}</p>
               <p className="text-[11px] text-gray-500 mt-0.5">{hoverNode.faction}</p>
-              <span className={`inline-block mt-1.5 text-[10px] font-black px-2 py-0.5 rounded-full ${hoverNode.isCoalition ? 'bg-[#16a34a] text-white' : 'bg-[#2563EB] text-white'}`}>
+              <span className={`inline-block mt-1.5 text-[11px] font-black px-2 py-0.5 rounded-full ${hoverNode.isCoalition ? 'bg-[#16a34a] text-white' : 'bg-[#2563EB] text-white'}`}>
                 {hoverNode.isCoalition ? 'קואליציה' : 'אופוזיציה'}
               </span>
             </div>
             <div className="border-t border-black/5 pt-3 space-y-1.5">
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-wide mb-2">הצעות חוק</p>
+              <p className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-2">הצעות חוק</p>
               <div className="flex justify-between items-center">
                 <span className="text-[11px] text-gray-600">הוגשו</span>
                 <span className="text-[11px] font-black text-black">{hoverNode.billCount}</span>
@@ -651,7 +651,7 @@ export default function AllianceGraph({ data }: NetworkGraphProps) {
               </div>
             </div>
             <div className="border-t border-black/5 pt-3 space-y-1.5">
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-wide mb-2">שיתופי חקיקה</p>
+              <p className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-2">שיתופי חקיקה</p>
               <div className="flex justify-between items-center">
                 <span className="flex items-center gap-1.5 text-[11px] text-gray-600">
                   <span className="w-2 h-2 rounded-full bg-[#16a34a] shrink-0"></span>עם קואליציה
@@ -667,7 +667,7 @@ export default function AllianceGraph({ data }: NetworkGraphProps) {
             </div>
             {hoverStats.top5.length > 0 && (
               <div className="border-t border-black/5 pt-3">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-wide mb-2">שותפי חקיקה מובילים</p>
+                <p className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-2">שותפי חקיקה מובילים</p>
                 <div className="space-y-1">
                   {hoverStats.top5.map((c, i) => c.partner && (
                     <div key={c.partner.id} className="flex justify-between items-center">
@@ -675,7 +675,7 @@ export default function AllianceGraph({ data }: NetworkGraphProps) {
                         <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${c.partner.isCoalition ? 'bg-[#16a34a]' : 'bg-[#2563EB]'}`}></span>
                         {c.partner.name}
                       </span>
-                      <span className="text-[10px] text-gray-400 shrink-0 mr-1">{c.value}</span>
+                      <span className="text-[11px] text-gray-500 shrink-0 mr-1">{c.value}</span>
                     </div>
                   ))}
                 </div>

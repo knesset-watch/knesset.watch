@@ -23,10 +23,10 @@ function SessionCard({ s }: { s: SessionSource }) {
     <Link href={`/session/${s.sessionId}`} className="block border border-gray-200 rounded-lg px-4 py-3 hover:border-blue-400 hover:bg-blue-50/40 transition-colors">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-xs text-gray-400 mb-0.5">{s.committeeName}</p>
+          <p className="text-xs text-gray-500 mb-0.5">{s.committeeName}</p>
           <p className="text-sm font-medium text-gray-800 truncate">{s.title || 'פרוטוקול ועדה'}</p>
         </div>
-        <span className="text-xs text-gray-400 whitespace-nowrap">{date}</span>
+        <span className="text-xs text-gray-500 whitespace-nowrap">{date}</span>
       </div>
     </Link>
   );
@@ -39,7 +39,7 @@ function VoteCard({ v }: { v: VoteSource }) {
       <div className="flex items-start justify-between gap-2">
         <p className="text-sm font-medium text-gray-800 line-clamp-2 min-w-0">{v.title}</p>
         <div className="flex flex-col items-end gap-1 shrink-0">
-          <span className="text-xs text-gray-400">{date}</span>
+          <span className="text-xs text-gray-500">{date}</span>
           <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${v.isPassed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
             {v.isPassed ? 'עבר' : 'לא עבר'}
           </span>
@@ -54,7 +54,7 @@ function BillCard({ b }: { b: BillSource }) {
     <Link href={`/bill/${b.billId}`} className="block border border-gray-200 rounded-lg px-4 py-3 hover:border-blue-400 hover:bg-blue-50/40 transition-colors">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          {b.committeeName && <p className="text-xs text-gray-400 mb-0.5">{b.committeeName}</p>}
+          {b.committeeName && <p className="text-xs text-gray-500 mb-0.5">{b.committeeName}</p>}
           <p className="text-sm font-medium text-gray-800 line-clamp-2">{b.title}</p>
         </div>
         {b.isPassed && (
@@ -71,10 +71,10 @@ function QueryCard({ q }: { q: QuerySource }) {
     <div className="border border-gray-200 rounded-lg px-4 py-3">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-xs text-gray-400 mb-0.5">שאילתה — {q.mkName}</p>
+          <p className="text-xs text-gray-500 mb-0.5">שאילתה — {q.mkName}</p>
           <p className="text-sm font-medium text-gray-800 line-clamp-2">{q.title}</p>
         </div>
-        <span className="text-xs text-gray-400 whitespace-nowrap">{date}</span>
+        <span className="text-xs text-gray-500 whitespace-nowrap">{date}</span>
       </div>
     </div>
   );
@@ -114,7 +114,7 @@ function AnswerText({ text, sources }: { text: string; sources: Source[] }) {
     if (url) {
       parts.push(
         <Link key={m.index} href={url}
-          className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 text-[9px] font-black align-super mx-0.5 transition-colors"
+          className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 text-[11px] font-black align-super mx-0.5 transition-colors"
           title="פתח מקור">
           ↗
         </Link>

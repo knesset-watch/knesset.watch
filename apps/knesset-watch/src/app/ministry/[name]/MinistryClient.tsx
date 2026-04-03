@@ -25,19 +25,19 @@ export default function MinistryClient({ data }: { data: MinistryDetail }) {
         {/* Stats row */}
         <div className="flex flex-wrap gap-6 rounded-xl bg-gray-50 px-6 py-4 mb-8">
           <div className="flex flex-col">
-            <span className="text-[9px] font-black uppercase text-gray-400 mb-0.5">שרים נוכחיים</span>
+            <span className="text-[11px] font-black uppercase text-gray-400 mb-0.5">שרים נוכחיים</span>
             <span className="text-3xl font-black">{currentMinisters.length}</span>
           </div>
           <div className="flex flex-col border-r border-black/8 pr-6">
-            <span className="text-[9px] font-black uppercase text-gray-400 mb-0.5">הצעות חוק</span>
+            <span className="text-[11px] font-black uppercase text-gray-400 mb-0.5">הצעות חוק</span>
             <span className="text-3xl font-black">{billCount}</span>
           </div>
           <div className="flex flex-col border-r border-black/8 pr-6">
-            <span className="text-[9px] font-black uppercase text-gray-400 mb-0.5">חוקים שעברו</span>
+            <span className="text-[11px] font-black uppercase text-gray-400 mb-0.5">חוקים שעברו</span>
             <span className="text-3xl font-black text-teal-600">{passedCount}</span>
           </div>
           <div className="flex flex-col border-r border-black/8 pr-6">
-            <span className="text-[9px] font-black uppercase text-gray-400 mb-0.5">יחס מעבר</span>
+            <span className="text-[11px] font-black uppercase text-gray-400 mb-0.5">יחס מעבר</span>
             <span className="text-3xl font-black">{billCount > 0 ? `${passRatio}%` : '—'}</span>
           </div>
         </div>
@@ -59,7 +59,7 @@ export default function MinistryClient({ data }: { data: MinistryDetail }) {
                     <span className="font-black text-sm">{m.name}</span>
                     <span className="text-[11px] text-gray-500">{m.role}</span>
                     {m.factionName && (
-                      <span className="text-[10px] text-gray-400">{m.factionName}</span>
+                      <span className="text-[11px] text-gray-500">{m.factionName}</span>
                     )}
                   </div>
                   <svg className="w-3.5 h-3.5 text-gray-300 shrink-0 rotate-180" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -86,7 +86,7 @@ export default function MinistryClient({ data }: { data: MinistryDetail }) {
                 >
                   <div className="flex flex-col flex-1 min-w-0">
                     <span className="font-black text-sm text-gray-500">{m.name}</span>
-                    <span className="text-[11px] text-gray-400">{m.role}</span>
+                    <span className="text-[11px] text-gray-500">{m.role}</span>
                   </div>
                   <svg className="w-3.5 h-3.5 text-gray-300 shrink-0 rotate-180" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <path d="m6 3 5 5-5 5"/>

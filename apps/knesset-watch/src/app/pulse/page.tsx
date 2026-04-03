@@ -43,7 +43,7 @@ export default function PulsePOC() {
             
             {data.latestBills && data.latestBills.length > 0 && (
               <div className="pt-8 border-t-2 border-black/10 mt-8">
-                <div className="text-[10px] font-black uppercase mb-4 text-gray-400">חקיקה אחרונה:</div>
+                <div className="text-[11px] font-black uppercase mb-4 text-gray-400">חקיקה אחרונה:</div>
                 <ul className="space-y-3">
                   {data.latestBills.map((bill: string, i: number) => (
                     <li key={i} className="text-sm font-bold leading-tight">

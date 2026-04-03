@@ -58,7 +58,7 @@ export default function AgendasClient() {
           </button>
           <div>
             <h1 className="text-2xl font-black leading-tight">אג&apos;נדות מדיניות</h1>
-            <p className="text-xs text-gray-400 mt-0.5 font-medium">
+            <p className="text-xs text-gray-500 mt-0.5 font-medium">
               מיקוד החקיקה וההצבעות לפי תחומי עניין — כנסת 25
             </p>
           </div>
@@ -90,7 +90,7 @@ export default function AgendasClient() {
                   <span className="text-xs font-black text-gray-700">
                     {agenda.billCount} הצעות חוק
                   </span>
-                  <span className="text-[10px] text-gray-400 font-medium">
+                  <span className="text-[11px] text-gray-500 font-medium">
                     · {agenda.voteCount} הצבעות
                   </span>
                 </div>

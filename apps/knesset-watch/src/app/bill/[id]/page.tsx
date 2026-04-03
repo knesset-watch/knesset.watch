@@ -57,13 +57,13 @@ export default async function BillPage({ params }: { params: Promise<{ id: strin
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
-            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+            <span className={`text-[11px] font-black px-2 py-0.5 rounded-full ${
               bill.is_passed ? 'bg-teal-50 text-teal-700 border border-teal-200' : 'bg-gray-100 text-gray-600'
             }`}>
               {bill.is_passed ? 'עבר' : bill.status_desc ?? 'בתהליך'}
             </span>
             {bill.subtype && (
-              <span className="text-[10px] font-black text-gray-400 uppercase tracking-wide">
+              <span className="text-[11px] font-black text-gray-400 uppercase tracking-wide">
                 {SUBTYPE_LABEL[bill.subtype] ?? bill.subtype}
               </span>
             )}
@@ -78,7 +78,7 @@ export default async function BillPage({ params }: { params: Promise<{ id: strin
             {timeline.map((step, i) => (
               <div key={step.label} className="flex-1 flex items-center">
                 <div className="flex flex-col items-center flex-1">
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black border-2 ${
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black border-2 ${
                     step.done
                       ? 'bg-teal-600 border-teal-600 text-white'
                       : 'bg-white border-gray-200 text-gray-300'
@@ -86,7 +86,7 @@ export default async function BillPage({ params }: { params: Promise<{ id: strin
                     {step.done ? '✓' : String(i + 1)}
                   </div>
                   <div className="text-[11px] font-black mt-1 text-center">{step.label}</div>
-                  {step.date && <div className="text-[10px] text-gray-400 text-center mt-0.5">{step.date}</div>}
+                  {step.date && <div className="text-[11px] text-gray-500 text-center mt-0.5">{step.date}</div>}
                 </div>
                 {i < timeline.length - 1 && (
                   <div className={`h-0.5 flex-1 -mt-5 ${step.done ? 'bg-teal-400' : 'bg-gray-100'}`} />
@@ -100,7 +100,7 @@ export default async function BillPage({ params }: { params: Promise<{ id: strin
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           {bill.committee_name && (
             <div className="rounded-2xl border border-black/8 p-4">
-              <div className="text-[10px] font-black text-gray-400 uppercase tracking-wide mb-1">ועדה</div>
+              <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-1">ועדה</div>
               <Link
                 href={`/committee/${encodeURIComponent(bill.committee_name)}`}
                 className="text-sm font-black text-teal-700 hover:text-teal-900 transition-colors"
@@ -111,13 +111,13 @@ export default async function BillPage({ params }: { params: Promise<{ id: strin
           )}
           {bill.macro_agenda && (
             <div className="rounded-2xl border border-black/8 p-4">
-              <div className="text-[10px] font-black text-gray-400 uppercase tracking-wide mb-1">תחום</div>
+              <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-1">תחום</div>
               <div className="text-sm font-black">{bill.macro_agenda}</div>
             </div>
           )}
           {bill.micro_agenda && (
             <div className="rounded-2xl border border-black/8 p-4 sm:col-span-2">
-              <div className="text-[10px] font-black text-gray-400 uppercase tracking-wide mb-1">נושא</div>
+              <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-1">נושא</div>
               <div className="text-sm font-black">{bill.micro_agenda}</div>
             </div>
           )}

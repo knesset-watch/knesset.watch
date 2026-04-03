@@ -133,6 +133,8 @@ export async function searchProtocols(
   query: string,
   committee: string | null,
   page: number,
+  from?: string | null,
+  to?: string | null,
 ): Promise<ProtocolSearchResponse> {
   const client = getTurso();
   if (!client || !query.trim()) return { results: [], total: 0, page };
@@ -140,11 +142,17 @@ export async function searchProtocols(
   const pageSize = 20;
   const offset = (page - 1) * pageSize;
 
+  // Build optional date filter fragment
+  const dateFilter = [
+    from ? 'AND cs.date >= ?' : '',
+    to   ? 'AND cs.date <= ?' : '',
+  ].join(' ');
+  const dateArgs = [from, to].filter(Boolean) as string[];
+
   // Embed the query for vector search
   const embedding = await embedQuery(query);
 
   if (embedding) {
-    // Vector search path — semantically find matching sessions
     const vecRes = await client.execute({
       sql: `
         SELECT cs.id, cs.committee_id, cs.committee_name, cs.date, cs.rag_card,
@@ -152,12 +160,16 @@ export async function searchProtocols(
         FROM committee_session cs
         WHERE cs.embedding IS NOT NULL
           ${committee ? 'AND cs.committee_name = ?' : ''}
+          ${dateFilter}
         ORDER BY distance ASC
         LIMIT ? OFFSET ?
       `,
-      args: committee
-        ? [JSON.stringify(embedding), committee, pageSize, offset]
-        : [JSON.stringify(embedding), pageSize, offset],
+      args: [
+        JSON.stringify(embedding),
+        ...(committee ? [committee] : []),
+        ...dateArgs,
+        pageSize, offset,
+      ],
     });
 
     const results: ProtocolSearchResult[] = vecRes.rows.map(r => ({
@@ -171,35 +183,41 @@ export async function searchProtocols(
       snippet: String(r['rag_card'] ?? '').slice(0, 300),
     }));
 
-    // Approximate total — vector search doesn't give exact counts cheaply
     const totalRes = await client.execute({
-      sql: `SELECT COUNT(*) as cnt FROM committee_session WHERE embedding IS NOT NULL
-            ${committee ? 'AND committee_name = ?' : ''}`,
-      args: committee ? [committee] : [],
+      sql: `SELECT COUNT(*) as cnt FROM committee_session cs
+            WHERE embedding IS NOT NULL
+            ${committee ? 'AND committee_name = ?' : ''}
+            ${from ? 'AND cs.date >= ?' : ''}
+            ${to   ? 'AND cs.date <= ?' : ''}`,
+      args: [...(committee ? [committee] : []), ...dateArgs],
     });
     const total = Math.min(Number(totalRes.rows[0]['cnt'] ?? 0), 200);
 
     return { results, total, page };
   }
 
-  // Fallback: simple LIKE search on rag_card (no embedding available)
+  // Fallback: LIKE search on rag_card
   const term = `%${query}%`;
-  const whereClause = committee
+  const baseWhere = committee
     ? 'WHERE rag_card LIKE ? AND committee_name = ?'
     : 'WHERE rag_card LIKE ?';
-  const args = committee ? [term, committee] : [term];
+  const baseArgs: (string | number)[] = committee ? [term, committee] : [term];
+  const fullWhere = baseWhere
+    + (from ? ' AND date >= ?' : '')
+    + (to   ? ' AND date <= ?' : '');
+  const fullArgs = [...baseArgs, ...dateArgs];
 
   const countRes = await client.execute({
-    sql: `SELECT COUNT(*) as cnt FROM committee_session ${whereClause}`,
-    args,
+    sql: `SELECT COUNT(*) as cnt FROM committee_session ${fullWhere}`,
+    args: fullArgs,
   });
   const total = Number(countRes.rows[0]['cnt'] ?? 0);
 
   const rowsRes = await client.execute({
     sql: `SELECT id, committee_id, committee_name, date, rag_card
-          FROM committee_session ${whereClause}
+          FROM committee_session ${fullWhere}
           ORDER BY date DESC LIMIT ? OFFSET ?`,
-    args: [...args, pageSize, offset],
+    args: [...fullArgs, pageSize, offset],
   });
 
   const results: ProtocolSearchResult[] = rowsRes.rows.map(r => ({

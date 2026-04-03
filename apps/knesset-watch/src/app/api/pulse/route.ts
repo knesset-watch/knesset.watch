@@ -14,17 +14,27 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Database not available' }, { status: 503 });
   }
 
+  const url = new URL(request.url);
+  const from = url.searchParams.get('from') ?? null;
+  const to   = url.searchParams.get('to')   ?? null;
+
   const db = new Database(DB_PATH, { readonly: true });
 
   try {
-    // Fetch the 8 most recently passed bills regardless of date window
+    const dateFilter = from && to
+      ? 'AND publication_date >= ? AND publication_date <= ?'
+      : from ? 'AND publication_date >= ?'
+      : to   ? 'AND publication_date <= ?'
+      : '';
+    const dateArgs = [from, to].filter(Boolean) as string[];
+
     const bills = db.prepare(`
       SELECT id, title, publication_date, macro_agenda, micro_agenda
       FROM bill
-      WHERE is_passed = 1 AND publication_date IS NOT NULL
+      WHERE is_passed = 1 AND publication_date IS NOT NULL ${dateFilter}
       ORDER BY publication_date DESC, id DESC
       LIMIT 8
-    `).all() as any[];
+    `).all(...dateArgs) as any[];
 
     return NextResponse.json({
       count: bills.length,

@@ -276,7 +276,7 @@ function CoalitionTimeline({ segments }: {
                   <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: PERIOD_COLOR[seg.state] ?? '#eee' }} />
                   <div className="flex flex-col min-w-0">
                     <span className="text-[11px] font-black text-gray-700 whitespace-nowrap">{PERIOD_LABEL[seg.state]}</span>
-                    <span className="text-[10px] text-gray-400 whitespace-nowrap">{fmtMonthYear(seg.startDate)} – {endLabel}</span>
+                    <span className="text-[11px] text-gray-500 whitespace-nowrap">{fmtMonthYear(seg.startDate)} – {endLabel}</span>
                   </div>
                 </div>
               );
@@ -319,14 +319,14 @@ function PartyCoalitionHint({ pct }: { pct: number | null }) {
               <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: '#16A34A' }} />
               <div className="flex flex-col">
                 <span className="text-[11px] font-black text-gray-700 whitespace-nowrap">קואליציה</span>
-                <span className="text-[10px] text-gray-400 whitespace-nowrap">כ-{c}% מזמן הכנסת</span>
+                <span className="text-[11px] text-gray-500 whitespace-nowrap">כ-{c}% מזמן הכנסת</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: '#2563EB' }} />
               <div className="flex flex-col">
                 <span className="text-[11px] font-black text-gray-700 whitespace-nowrap">אופוזיציה</span>
-                <span className="text-[10px] text-gray-400 whitespace-nowrap">כ-{o}% מזמן הכנסת</span>
+                <span className="text-[11px] text-gray-500 whitespace-nowrap">כ-{o}% מזמן הכנסת</span>
               </div>
             </div>
           </div>
@@ -763,7 +763,7 @@ export default function KnessetWatchPage() {
         
         <nav className="flex-1 overflow-y-auto p-4 space-y-8 mt-4">
           <div className="space-y-1">
-            <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest px-4">סקירה</span>
+            <span className="text-[11px] font-black uppercase text-gray-400 tracking-widest px-4">סקירה</span>
             <button onClick={() => setGroupBy('mk')} className={`w-full text-right px-4 py-2 text-sm font-black rounded-lg transition-colors ${groupBy === 'mk' ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'}`}>חברי כנסת</button>
             <Link href="/ministers" className="block w-full text-right px-4 py-2 text-sm font-black rounded-lg transition-colors text-gray-600 hover:bg-gray-200">שרים</Link>
             <button onClick={() => setGroupBy('party-total')} className={`w-full text-right px-4 py-2 text-sm font-black rounded-lg transition-colors ${groupBy.startsWith('party') ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'}`}>מפלגות</button>
@@ -771,14 +771,14 @@ export default function KnessetWatchPage() {
           </div>
 
           <div className="space-y-1">
-            <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest px-4">חקירה</span>
+            <span className="text-[11px] font-black uppercase text-gray-400 tracking-widest px-4">חקירה</span>
             <button onClick={() => setGroupBy('rebels')} className={`w-full text-right px-4 py-2 text-sm font-black rounded-lg transition-colors ${groupBy === 'rebels' ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'}`}>מדד המורדים</button>
             <button onClick={() => setGroupBy('alliances')} className={`w-full text-right px-4 py-2 text-sm font-black rounded-lg transition-colors ${groupBy === 'alliances' ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'}`}>רשת קשרים</button>
             <button onClick={() => setGroupBy('committee')} className={`w-full text-right px-4 py-2 text-sm font-black rounded-lg transition-colors ${groupBy === 'committee' ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'}`}>ועדות</button>
           </div>
 
           <div className="space-y-1">
-            <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest px-4">נתונים</span>
+            <span className="text-[11px] font-black uppercase text-gray-400 tracking-widest px-4">נתונים</span>
             <Link href="/bills" className="block w-full text-right px-4 py-2 text-sm font-black rounded-lg transition-colors text-gray-600 hover:bg-gray-200">ספר החוקים</Link>
             <Link href="/protocols" className="block w-full text-right px-4 py-2 text-sm font-black rounded-lg transition-colors text-gray-600 hover:bg-gray-200">פרוטוקולים</Link>
             <button onClick={() => setGroupBy('agenda')} className={`w-full text-right px-4 py-2 text-sm font-black rounded-lg transition-colors ${groupBy === 'agenda' ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'}`}>אג'נדות</button>
@@ -788,7 +788,7 @@ export default function KnessetWatchPage() {
         <div className="p-8 border-t border-black/5">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Live Data</span>
+            <span className="text-[11px] font-black uppercase tracking-widest text-gray-400">Live Data</span>
           </div>
         </div>
       </aside>
@@ -831,20 +831,20 @@ export default function KnessetWatchPage() {
             </div>
             <nav className="flex-1 overflow-y-auto p-4 space-y-6 mt-2">
               <div className="space-y-1">
-                <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest px-3">סקירה</span>
+                <span className="text-[11px] font-black uppercase text-gray-400 tracking-widest px-3">סקירה</span>
                 <button onClick={() => { setGroupBy('mk'); setMobileMenuOpen(false); }} className={`w-full text-right px-3 py-2.5 text-sm font-black rounded-lg transition-colors ${groupBy === 'mk' ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'}`}>חברי כנסת</button>
                 <Link href="/ministers" onClick={() => setMobileMenuOpen(false)} className="block w-full text-right px-3 py-2.5 text-sm font-black rounded-lg transition-colors text-gray-700 hover:bg-gray-100">שרים</Link>
                 <button onClick={() => { setGroupBy('party-total'); setMobileMenuOpen(false); }} className={`w-full text-right px-3 py-2.5 text-sm font-black rounded-lg transition-colors ${groupBy.startsWith('party') ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'}`}>מפלגות</button>
                 <button onClick={() => { setGroupBy('timeline'); setMobileMenuOpen(false); }} className={`w-full text-right px-3 py-2.5 text-sm font-black rounded-lg transition-colors ${groupBy === 'timeline' ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'}`}>ציר זמן חקיקתי</button>
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest px-3">חקירה</span>
+                <span className="text-[11px] font-black uppercase text-gray-400 tracking-widest px-3">חקירה</span>
                 <button onClick={() => { setGroupBy('rebels'); setMobileMenuOpen(false); }} className={`w-full text-right px-3 py-2.5 text-sm font-black rounded-lg transition-colors ${groupBy === 'rebels' ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'}`}>מדד המורדים</button>
                 <button onClick={() => { setGroupBy('alliances'); setMobileMenuOpen(false); }} className={`w-full text-right px-3 py-2.5 text-sm font-black rounded-lg transition-colors ${groupBy === 'alliances' ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'}`}>רשת קשרים</button>
                 <button onClick={() => { setGroupBy('committee'); setMobileMenuOpen(false); }} className={`w-full text-right px-3 py-2.5 text-sm font-black rounded-lg transition-colors ${groupBy === 'committee' ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'}`}>ועדות</button>
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest px-3">נתונים</span>
+                <span className="text-[11px] font-black uppercase text-gray-400 tracking-widest px-3">נתונים</span>
                 <Link href="/bills" onClick={() => setMobileMenuOpen(false)} className="block w-full text-right px-3 py-2.5 text-sm font-black rounded-lg transition-colors text-gray-700 hover:bg-gray-100">ספר החוקים</Link>
                 <Link href="/protocols" onClick={() => setMobileMenuOpen(false)} className="block w-full text-right px-3 py-2.5 text-sm font-black rounded-lg transition-colors text-gray-700 hover:bg-gray-100">פרוטוקולים</Link>
                 <button onClick={() => { setGroupBy('agenda'); setMobileMenuOpen(false); }} className={`w-full text-right px-3 py-2.5 text-sm font-black rounded-lg transition-colors ${groupBy === 'agenda' ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'}`}>אג&apos;נדות</button>
@@ -853,7 +853,7 @@ export default function KnessetWatchPage() {
             <div className="p-6 border-t border-black/5">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Live Data</span>
+                <span className="text-[11px] font-black uppercase tracking-widest text-gray-400">Live Data</span>
               </div>
             </div>
           </div>
@@ -891,7 +891,7 @@ export default function KnessetWatchPage() {
 
             {/* Timeframe dropdown */}
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">טווח זמן</span>
+              <span className="text-[11px] font-black uppercase text-gray-400 tracking-widest">טווח זמן</span>
               <div className="flex items-baseline gap-3 border-b-2 border-black py-1">
                 <select
                   value={timeframeVal}
@@ -903,7 +903,7 @@ export default function KnessetWatchPage() {
                   ))}
                 </select>
                 {dateRangeLabel && timeframeVal !== 'custom' && (
-                  <span className="text-[11px] text-gray-400 font-mono">{dateRangeLabel}</span>
+                  <span className="text-[11px] text-gray-500 font-mono">{dateRangeLabel}</span>
                 )}
               </div>
               {timeframeVal === 'custom' && (
@@ -927,7 +927,7 @@ export default function KnessetWatchPage() {
 
             {/* Sort dropdown */}
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">מיון</span>
+              <span className="text-[11px] font-black uppercase text-gray-400 tracking-widest">מיון</span>
               <select
                 value={sortBy}
                 onChange={e => setSortBy(e.target.value as SortOption)}
@@ -942,7 +942,7 @@ export default function KnessetWatchPage() {
             {/* Group-by options (Sub-tabs) */}
             {groupBy.startsWith('party') && (
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">חישוב</span>
+                <span className="text-[11px] font-black uppercase text-gray-400 tracking-widest">חישוב</span>
                 <div className="flex gap-2 border-b-2 border-black py-1">
                   <button 
                     onClick={() => setGroupBy('party-total')}
@@ -962,7 +962,7 @@ export default function KnessetWatchPage() {
 
             {/* Search */}
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">חיפוש</span>
+              <span className="text-[11px] font-black uppercase text-gray-400 tracking-widest">חיפוש</span>
               <input
                 type="text"
                 value={search}
@@ -974,7 +974,7 @@ export default function KnessetWatchPage() {
 
             {/* Coalition filter — only meaningful for K25/all */}
             {(timeframeVal === 'k25' || timeframeVal === 'all') && <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">מחנה</span>
+              <span className="text-[11px] font-black uppercase text-gray-400 tracking-widest">מחנה</span>
               <select
                 value={coalitionFilter}
                 onChange={e => setCoalitionFilter(e.target.value as CoalitionFilter)}
@@ -989,7 +989,7 @@ export default function KnessetWatchPage() {
             {/* Bill type filter */}
             {groupBy === 'bill' && (
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">סוג חקיקה</span>
+                <span className="text-[11px] font-black uppercase text-gray-400 tracking-widest">סוג חקיקה</span>
                 <select
                   value={billTypeFilter}
                   onChange={e => setBillTypeFilter(e.target.value as any)}
@@ -1004,7 +1004,7 @@ export default function KnessetWatchPage() {
 
             {/* Display toggles */}
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">הצגה</span>
+              <span className="text-[11px] font-black uppercase text-gray-400 tracking-widest">הצגה</span>
               <div className="flex flex-col gap-1">
                 <label className="flex items-center gap-2 cursor-pointer select-none py-0.5">
                   <input
@@ -1033,7 +1033,7 @@ export default function KnessetWatchPage() {
             {/* Count display */}
             {!loading && !error && (
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">נמצאו</span>
+                <span className="text-[11px] font-black uppercase text-gray-400 tracking-widest">נמצאו</span>
                 <div className="flex items-baseline gap-1 font-mono border-b-2 border-black py-1">
                   <span className="text-sm font-black text-black">
                     {filtersActive ? visibleCount : totalCount}
@@ -1045,7 +1045,7 @@ export default function KnessetWatchPage() {
 
             {/* View toggle — leftmost */}
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">תצוגה</span>
+              <span className="text-[11px] font-black uppercase text-gray-400 tracking-widest">תצוגה</span>
               <div className="flex gap-2 border-b-2 border-black py-1">
                 <button
                   onClick={() => setViewMode('card')}
@@ -1117,7 +1117,7 @@ export default function KnessetWatchPage() {
                 </div>
                 <div className="text-center bg-orange-50 px-6 py-3 rounded-xl border border-orange-100">
                   <span className="block text-2xl font-black text-orange-600">{r.rebellionCount}</span>
-                  <span className="text-[10px] font-black uppercase text-orange-400">הצבעות נגד הסיעה</span>
+                  <span className="text-[11px] font-black uppercase text-orange-400">הצבעות נגד הסיעה</span>
                 </div>
               </div>
             ))}
@@ -1130,11 +1130,11 @@ export default function KnessetWatchPage() {
                 <span className="text-lg font-black text-gray-200">{i + 1}</span>
                 <div className="flex-1">
                   <Link href={`/mk/${a.id}`} className="font-black hover:underline">{a.name}</Link>
-                  <p className="text-xs text-gray-400">{a.faction}</p>
+                  <p className="text-xs text-gray-500">{a.faction}</p>
                 </div>
                 <div className="text-right">
                   <span className="text-lg font-black">{a.attendedCount}</span>
-                  <span className="text-[10px] text-gray-400 mr-1">ישיבות</span>
+                  <span className="text-[11px] text-gray-500 mr-1">ישיבות</span>
                 </div>
               </div>
             ))}
@@ -1171,7 +1171,7 @@ export default function KnessetWatchPage() {
                   <span className="text-xs font-black text-gray-700">
                     {agenda.billCount} הצעות חוק
                   </span>
-                  <span className="text-[10px] text-gray-400 font-medium">
+                  <span className="text-[11px] text-gray-500 font-medium">
                     · {agenda.voteCount} הצבעות
                   </span>
                 </div>
@@ -1192,7 +1192,7 @@ export default function KnessetWatchPage() {
                 key={b.id}
                 className="flex items-start gap-4 p-6 rounded-2xl border border-black/[0.03] bg-white hover:bg-gray-50 transition-colors"
               >
-                <span className={`shrink-0 text-[10px] font-black px-2 py-1 rounded-full ${b.is_passed ? 'bg-[#16A34A] text-white' : 'bg-gray-200 text-gray-500'}`}>
+                <span className={`shrink-0 text-[11px] font-black px-2 py-1 rounded-full ${b.is_passed ? 'bg-[#16A34A] text-white' : 'bg-gray-200 text-gray-500'}`}>
                   {b.status_desc || (b.is_passed ? 'עבר' : 'הוגש')}
                 </span>
                 <div className="flex-1 min-w-0">
@@ -1203,7 +1203,7 @@ export default function KnessetWatchPage() {
                         <Link 
                           key={init.person_id} 
                           href={`/mk/${init.person_id}`}
-                          className="text-[10px] font-bold text-teal-700 hover:underline"
+                          className="text-[11px] font-bold text-teal-700 hover:underline"
                         >
                           {init.first_name} {init.last_name}
                         </Link>
@@ -1215,16 +1215,16 @@ export default function KnessetWatchPage() {
                   )}
                   <div className="flex gap-2 flex-wrap items-center">
                     {b.macro_agenda && (
-                      <span className="text-[10px] font-black text-white bg-black px-2 py-0.5 rounded-full">{b.macro_agenda}</span>
+                      <span className="text-[11px] font-black text-white bg-black px-2 py-0.5 rounded-full">{b.macro_agenda}</span>
                     )}
                     {b.micro_agenda && (
-                      <span className="text-[10px] font-bold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">#{b.micro_agenda}</span>
+                      <span className="text-[11px] font-bold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">#{b.micro_agenda}</span>
                     )}
                     {b.committee_name && (
-                      <span className="text-[10px] font-medium text-gray-400 border border-gray-100 px-2 py-0.5 rounded-full">{b.committee_name}</span>
+                      <span className="text-[11px] font-medium text-gray-400 border border-gray-100 px-2 py-0.5 rounded-full">{b.committee_name}</span>
                     )}
                     {b.publication_date && (
-                      <span className="text-[10px] text-gray-400 tabular-nums">
+                      <span className="text-[11px] text-gray-500 tabular-nums">
                         {new Date(b.publication_date).toLocaleDateString('he-IL')}
                       </span>
                     )}
@@ -1235,7 +1235,7 @@ export default function KnessetWatchPage() {
                     href={b.doc_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="shrink-0 text-[10px] font-black text-gray-400 hover:text-black transition-colors border border-gray-200 hover:border-gray-400 px-2 py-1 rounded"
+                    className="shrink-0 text-[11px] font-black text-gray-400 hover:text-black transition-colors border border-gray-200 hover:border-gray-400 px-2 py-1 rounded"
                   >
                     PDF
                   </a>
@@ -1260,7 +1260,7 @@ export default function KnessetWatchPage() {
                   </h3>
                   <div className="flex items-center gap-2 mb-6 min-h-[1.5rem] flex-wrap">
                     <span className="text-xs text-gray-500 font-medium">{f.currentMemberCount} ח"כים פעילים</span>
-                    <span className={`shrink-0 text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full tracking-wider ${
+                    <span className={`shrink-0 text-[11px] font-black uppercase px-1.5 py-0.5 rounded-full tracking-wider ${
                       f.isCoalition ? 'bg-[#16A34A] text-white' : 'bg-[#2563EB] text-white'
                     }`}>
                       {f.isCoalition ? 'קואליציה' : 'אופוזיציה'}
@@ -1269,15 +1269,15 @@ export default function KnessetWatchPage() {
                   <div className="mt-auto pt-6">
                     <div className="grid grid-cols-3 gap-3">
                       <div className="flex flex-col">
-                        <span className="text-[9px] font-black uppercase text-gray-400 mb-1">הצעות</span>
+                        <span className="text-[11px] font-black uppercase text-gray-400 mb-1">הצעות</span>
                         <span className="text-3xl font-black">{f.billCount}</span>
                       </div>
                       <div className="flex flex-col border-r border-black/5 pr-3">
-                        <span className="text-[9px] font-black uppercase text-gray-400 mb-1">עברו</span>
+                        <span className="text-[11px] font-black uppercase text-gray-400 mb-1">עברו</span>
                         <span className="text-3xl font-black text-teal-600">{f.passedCount}</span>
                       </div>
                       <div className="flex flex-col border-r border-black/5 pr-3">
-                        <span className="text-[9px] font-black uppercase text-rose-400 mb-1">מורדות</span>
+                        <span className="text-[11px] font-black uppercase text-rose-400 mb-1">מורדות</span>
                         <span className="text-3xl font-black text-rose-600">{f.totalRebels || 0}</span>
                       </div>
                     </div>
@@ -1312,7 +1312,7 @@ export default function KnessetWatchPage() {
                     <div className="flex items-center gap-2 mb-6 min-h-[1.5rem] flex-wrap">
                       <span className="text-xs text-gray-500 font-medium">{c.memberCount} חברים</span>
                       {c.primaryAgenda && (
-                        <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full bg-black text-white">
+                        <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded-full bg-black text-white">
                           {c.primaryAgenda}
                         </span>
                       )}
@@ -1320,21 +1320,21 @@ export default function KnessetWatchPage() {
                     <div className="mt-auto pt-6">
                       <div className="grid grid-cols-3 gap-3">
                         <div className="flex flex-col">
-                          <span className="text-[9px] font-black uppercase text-gray-400 mb-1">הצעות</span>
+                          <span className="text-[11px] font-black uppercase text-gray-400 mb-1">הצעות</span>
                           <span className="text-3xl font-black">{c.billCount}</span>
                         </div>
                         <div className="flex flex-col border-r border-black/5 pr-3">
-                          <span className="text-[9px] font-black uppercase text-gray-400 mb-1">עברו</span>
+                          <span className="text-[11px] font-black uppercase text-gray-400 mb-1">עברו</span>
                           <span className="text-3xl font-black text-teal-600">{c.passedCount}</span>
                         </div>
                         <div className="flex flex-col border-r border-black/5 pr-3">
-                          <span className="text-[9px] font-black uppercase text-gray-400 mb-1">יחס</span>
+                          <span className="text-[11px] font-black uppercase text-gray-400 mb-1">יחס</span>
                           <span className="text-3xl font-black text-gray-900">{ratio}%</span>
                         </div>
                       </div>
                       <button
                         onClick={toggleExpand}
-                        className="mt-4 w-full text-[10px] font-black text-gray-400 hover:text-black transition-colors text-center py-1 border-t border-black/5"
+                        className="mt-4 w-full text-[11px] font-black text-gray-400 hover:text-black transition-colors text-center py-1 border-t border-black/5"
                       >
                         {isExpanded ? 'סגור ▲' : 'פרטים ▼'}
                       </button>
@@ -1347,13 +1347,13 @@ export default function KnessetWatchPage() {
                       {/* Members */}
                       {c.members?.length > 0 && (
                         <div>
-                          <div className="text-[9px] font-black uppercase text-gray-400 tracking-widest mb-2">חברים</div>
+                          <div className="text-[11px] font-black uppercase text-gray-400 tracking-widest mb-2">חברים</div>
                           <div className="flex flex-wrap gap-1">
                             {c.members.map((m: any) => (
                               <a
                                 key={m.id}
                                 href={`${BASE_PATH}/mk/${m.slug ?? m.id}`}
-                                className={`text-[10px] font-bold px-2 py-0.5 rounded-full border transition-colors hover:opacity-80 ${
+                                className={`text-[11px] font-bold px-2 py-0.5 rounded-full border transition-colors hover:opacity-80 ${
                                   m.isCoalition === true ? 'bg-green-50 border-green-200 text-green-800' :
                                   m.isCoalition === false ? 'bg-blue-50 border-blue-200 text-blue-800' :
                                   'bg-gray-100 border-gray-200 text-gray-700'
@@ -1368,7 +1368,7 @@ export default function KnessetWatchPage() {
                       {/* Top passed bills */}
                       {c.topPassedBills?.length > 0 && (
                         <div>
-                          <div className="text-[9px] font-black uppercase text-gray-400 tracking-widest mb-2">חוקים שעברו (אחרונים)</div>
+                          <div className="text-[11px] font-black uppercase text-gray-400 tracking-widest mb-2">חוקים שעברו (אחרונים)</div>
                           <div className="flex flex-col gap-1.5">
                             {c.topPassedBills.map((b: any) => (
                               <div key={b.id} className="flex items-start gap-1.5">
@@ -1376,7 +1376,7 @@ export default function KnessetWatchPage() {
                                 <div>
                                   <span className="text-xs font-medium text-gray-800 leading-snug">{b.title}</span>
                                   {b.initDate && (
-                                    <span className="block text-[10px] text-gray-400">{b.initDate}</span>
+                                    <span className="block text-[11px] text-gray-500">{b.initDate}</span>
                                   )}
                                 </div>
                               </div>
@@ -1417,7 +1417,7 @@ export default function KnessetWatchPage() {
                     <div className="flex items-center gap-2 mb-6 min-h-[1.5rem] flex-wrap">
                       <span className="text-xs text-gray-500 font-medium">{party.mkCount} חברי כנסת</span>
                       {party.IsCoalition !== null && (
-                        <span className={`shrink-0 text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full tracking-wider ${
+                        <span className={`shrink-0 text-[11px] font-black uppercase px-1.5 py-0.5 rounded-full tracking-wider ${
                           party.IsCoalition ? 'bg-[#16A34A] text-white' : 'bg-[#2563EB] text-white'
                         }`}>
                           {party.IsCoalition ? 'קואליציה' : 'אופוזיציה'}
@@ -1433,10 +1433,10 @@ export default function KnessetWatchPage() {
                                       {/* Top Agendas */}
                                       {party.topAgendas && party.topAgendas.length > 0 && (
                                         <div className="flex flex-col gap-1.5 mb-6">
-                                          <span className="text-[9px] font-black uppercase text-gray-400 tracking-widest">מיקוד מרכזי</span>
+                                          <span className="text-[11px] font-black uppercase text-gray-400 tracking-widest">מיקוד מרכזי</span>
                                           <div className="flex flex-wrap gap-1">
                                             {party.topAgendas.map(a => (
-                                              <span key={a.macro} className="text-[10px] font-black px-2 py-0.5 rounded-full bg-black/5 text-black/60 border border-black/5">
+                                              <span key={a.macro} className="text-[11px] font-black px-2 py-0.5 rounded-full bg-black/5 text-black/60 border border-black/5">
                                                 {a.macro}
                                               </span>
                                             ))}
@@ -1446,7 +1446,7 @@ export default function KnessetWatchPage() {
                   
                                       <div className="mt-auto pt-6">                      <div className="grid grid-cols-3 gap-3">
                         <div className="flex flex-col">
-                          <span className="text-[9px] font-black uppercase text-gray-400 mb-1">
+                          <span className="text-[11px] font-black uppercase text-gray-400 mb-1">
                             הצעות{groupBy === 'party-avg' ? ' (ממוצע)' : ''}
                           </span>
                           <span className={`text-3xl font-black transition-opacity ${pulse ? 'opacity-30 animate-pulse' : ''}`}>
@@ -1454,7 +1454,7 @@ export default function KnessetWatchPage() {
                           </span>
                         </div>
                         <div className="flex flex-col border-r border-black/5 pr-3">
-                          <span className="text-[9px] font-black uppercase text-gray-400 mb-1">
+                          <span className="text-[11px] font-black uppercase text-gray-400 mb-1">
                             עברו{groupBy === 'party-avg' ? ' (ממוצע)' : ''}
                           </span>
                           <span className={`text-3xl font-black text-teal-600 transition-opacity ${pulse ? 'opacity-30 animate-pulse' : ''}`}>
@@ -1462,7 +1462,7 @@ export default function KnessetWatchPage() {
                           </span>
                         </div>
                         <div className="flex flex-col border-r border-black/5 pr-3">
-                          <span className="text-[9px] font-black uppercase text-gray-400 mb-1">יחס</span>
+                          <span className="text-[11px] font-black uppercase text-gray-400 mb-1">יחס</span>
                           <span className={`text-3xl font-black text-gray-900 transition-opacity ${pulse ? 'opacity-30 animate-pulse' : ''}`}>
                             {ratioDisplay !== null ? `${ratioDisplay}%` : '—'}
                           </span>
@@ -1476,7 +1476,7 @@ export default function KnessetWatchPage() {
           ) : (
             /* ── Party list view ── */
             <div className="flex flex-col gap-1.5">
-              <div className="grid grid-cols-[1fr_6rem_6rem_6rem] gap-4 py-2 px-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
+              <div className="grid grid-cols-[1fr_6rem_6rem_6rem] gap-4 py-2 px-4 text-[11px] font-black uppercase tracking-widest text-gray-400">
                 <span>מפלגה</span>
                 <span>הצעות{groupBy === 'party-avg' ? ' (ממוצע)' : ''}</span>
                 <span>עברו{groupBy === 'party-avg' ? ' (ממוצע)' : ''}</span>
@@ -1506,14 +1506,14 @@ export default function KnessetWatchPage() {
                       <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                         <span className="text-[11px] text-gray-500">{party.mkCount} חברי כנסת</span>
                         {party.IsCoalition !== null && (
-                          <span className={`text-[9px] font-black uppercase px-1 py-0.5 rounded tracking-wider ${
+                          <span className={`text-[11px] font-black uppercase px-1 py-0.5 rounded tracking-wider ${
                             party.IsCoalition ? 'bg-[#16A34A] text-white' : 'bg-[#2563EB] text-white'
                           }`}>
                             {party.IsCoalition ? 'קואליציה' : 'אופוזיציה'}
                           </span>
                         )}
                         {party.topAgendas?.slice(0, 1).map(a => (
-                          <span key={a.macro} className="text-[9px] font-bold text-black/40 border border-black/5 px-1 py-0.5 rounded">
+                          <span key={a.macro} className="text-[11px] font-bold text-black/40 border border-black/5 px-1 py-0.5 rounded">
                             {a.macro}
                           </span>
                         ))}
@@ -1592,19 +1592,19 @@ export default function KnessetWatchPage() {
                       <span className="text-xs text-gray-600 font-medium truncate">{item.FactionName}</span>
                     )}
                     {item.IsCoalition !== null && item.IsCoalition !== undefined && (
-                      <span className={`shrink-0 text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full tracking-wider ${
+                      <span className={`shrink-0 text-[11px] font-black uppercase px-1.5 py-0.5 rounded-full tracking-wider ${
                         item.IsCoalition ? 'bg-[#16A34A] text-white' : 'bg-[#2563EB] text-white'
                       }`}>
                         {item.IsCoalition ? 'קואליציה' : 'אופוזיציה'}
                       </span>
                     )}
                     {item.ministerRole && (
-                      <span className="shrink-0 text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full tracking-wider bg-amber-400 text-white" title={item.ministerRole}>
+                      <span className="shrink-0 text-[11px] font-black uppercase px-1.5 py-0.5 rounded-full tracking-wider bg-amber-400 text-white" title={item.ministerRole}>
                         {item.ministerRole.startsWith('סגן') || item.ministerRole.startsWith('סגנית') ? 'סגן שר' : 'שר'}
                       </span>
                     )}
                     {isFormer && (
-                      <span className="shrink-0 text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full tracking-wider bg-zinc-100 text-zinc-400">
+                      <span className="shrink-0 text-[11px] font-black uppercase px-1.5 py-0.5 rounded-full tracking-wider bg-zinc-100 text-zinc-400">
                         לשעבר
                       </span>
                     )}
@@ -1614,7 +1614,7 @@ export default function KnessetWatchPage() {
                   {topAgendas.length > 0 && (
                     <div className="flex flex-wrap gap-1 mb-6">
                       {topAgendas.map(a => (
-                        <span key={a.macro} className="text-[9px] font-black px-2 py-0.5 rounded-full bg-black/5 text-black/50 border border-black/5">
+                        <span key={a.macro} className="text-[11px] font-black px-2 py-0.5 rounded-full bg-black/5 text-black/50 border border-black/5">
                           {a.macro}
                         </span>
                       ))}
@@ -1629,25 +1629,25 @@ export default function KnessetWatchPage() {
                   <div className="mt-auto pt-6">
                     <div className="grid grid-cols-4 gap-2">
                       <div className="flex flex-col">
-                        <span className="text-[9px] font-black uppercase text-gray-400 mb-1">הצעות</span>
+                        <span className="text-[11px] font-black uppercase text-gray-400 mb-1">הצעות</span>
                         <span className={`text-2xl font-black transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
                           {item.stats?.proposed ?? 0}
                         </span>
                       </div>
                       <div className="flex flex-col border-r border-black/5 pr-2">
-                        <span className="text-[9px] font-black uppercase text-gray-400 mb-1">עברו</span>
+                        <span className="text-[11px] font-black uppercase text-gray-400 mb-1">עברו</span>
                         <span className={`text-2xl font-black text-teal-600 transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
                           {item.stats?.passed ?? 0}
                         </span>
                       </div>
                       <div className="flex flex-col border-r border-black/5 pr-2">
-                        <span className="text-[9px] font-black uppercase text-gray-400 mb-1">יחס</span>
+                        <span className="text-[11px] font-black uppercase text-gray-400 mb-1">יחס</span>
                         <span className={`text-2xl font-black text-gray-900 transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
                           {item.stats ? (ratio !== null ? `${ratio}%` : '—') : 0}
                         </span>
                       </div>
                       <div className="flex flex-col border-r border-black/5 pr-2">
-                        <span className="text-[9px] font-black uppercase text-gray-400 mb-1">ועדות</span>
+                        <span className="text-[11px] font-black uppercase text-gray-400 mb-1">ועדות</span>
                         <span className={`text-2xl font-black text-blue-700 transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
                           {item.stats?.committeeSessions ?? 0}
                         </span>
@@ -1661,7 +1661,7 @@ export default function KnessetWatchPage() {
         ) : (
           /* ── MK list view ── */
           <div className="flex flex-col gap-1.5">
-            <div className="grid grid-cols-[1fr_6rem_6rem_6rem_6rem] gap-4 py-2 px-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
+            <div className="grid grid-cols-[1fr_6rem_6rem_6rem_6rem] gap-4 py-2 px-4 text-[11px] font-black uppercase tracking-widest text-gray-400">
               <span>שם</span>
               <span>הצעות</span>
               <span>עברו</span>
@@ -1704,24 +1704,24 @@ export default function KnessetWatchPage() {
                         <span className="text-[11px] text-gray-500">{item.FactionName}</span>
                       )}
                       {item.IsCoalition !== null && item.IsCoalition !== undefined && (
-                        <span className={`text-[9px] font-black uppercase px-1 py-0.5 rounded tracking-wider ${
+                        <span className={`text-[11px] font-black uppercase px-1 py-0.5 rounded tracking-wider ${
                           item.IsCoalition ? 'bg-[#16A34A] text-white' : 'bg-[#2563EB] text-white'
                         }`}>
                           {item.IsCoalition ? 'קואליציה' : 'אופוזיציה'}
                         </span>
                       )}
                       {item.ministerRole && (
-                        <span className="text-[9px] font-black uppercase px-1 py-0.5 rounded bg-amber-400 text-white" title={item.ministerRole}>
+                        <span className="text-[11px] font-black uppercase px-1 py-0.5 rounded bg-amber-400 text-white" title={item.ministerRole}>
                           {item.ministerRole.startsWith('סגן') || item.ministerRole.startsWith('סגנית') ? 'סגן שר' : 'שר'}
                         </span>
                       )}
                       {(item.stats?.rebellions ?? 0) > 0 && (
-                        <span className="text-[9px] font-black uppercase px-1 py-0.5 rounded bg-orange-100 text-orange-700">
+                        <span className="text-[11px] font-black uppercase px-1 py-0.5 rounded bg-orange-100 text-orange-700">
                           {item.stats.rebellions} מורדות
                         </span>
                       )}
                       {topAgendas.slice(0, 1).map(a => (
-                        <span key={a.macro} className="text-[9px] font-bold text-black/40 border border-black/5 px-1 py-0.5 rounded">
+                        <span key={a.macro} className="text-[11px] font-bold text-black/40 border border-black/5 px-1 py-0.5 rounded">
                           {a.macro}
                         </span>
                       ))}

@@ -178,7 +178,7 @@ function VoteBreakdownBar({ stats }: { stats: VoteStats }) {
             {s.count.toLocaleString()} <span className="font-bold opacity-80">{s.label}</span>
           </span>
         ))}
-        <span className="text-xs text-gray-400 font-medium">סה"כ {total.toLocaleString()} הצבעות</span>
+        <span className="text-xs text-gray-500 font-medium">סה"כ {total.toLocaleString()} הצבעות</span>
       </div>
     </div>
   );
@@ -195,7 +195,7 @@ function AlignmentCard({ pct, total }: { pct: number; total: number }) {
       <div className="mt-3 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
         <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: color }} />
       </div>
-      <div className="text-[11px] text-gray-400 mt-1.5 tabular-nums">
+      <div className="text-[11px] text-gray-500 mt-1.5 tabular-nums">
         מתוך {total.toLocaleString()} הצבעות בעד/נגד
       </div>
     </div>
@@ -256,7 +256,7 @@ function AgendaFingerprint({ stats }: { stats: AgendaStat[] }) {
           <div key={s.macroAgenda}>
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-sm font-black text-gray-800">{s.macroAgenda}</span>
-              <div className="flex gap-2 text-[10px] font-bold uppercase">
+              <div className="flex gap-2 text-[11px] font-bold uppercase">
                 {s.pushedCount > 0 && (
                   <span className="text-teal-600">דוחף ({s.pushedCount})</span>
                 )}
@@ -278,7 +278,7 @@ function AgendaFingerprint({ stats }: { stats: AgendaStat[] }) {
           </div>
         ))}
       </div>
-      <div className="mt-4 flex gap-4 text-[10px] font-black text-gray-400 uppercase">
+      <div className="mt-4 flex gap-4 text-[11px] font-black text-gray-400 uppercase">
         <div className="flex items-center gap-1">
           <div className="w-2 h-2 rounded-full bg-teal-500" />
           <span>דחיפה (הצעות חוק)</span>
@@ -320,16 +320,16 @@ function ForensicInsightsCard({
       <div className="grid grid-cols-2 gap-6 text-right">
         <div>
           <span className="block text-3xl font-black text-orange-600">{rebellions}</span>
-          <span className="text-[10px] font-black text-orange-400 uppercase leading-tight block mt-1">הצבעות נגד הסיעה</span>
+          <span className="text-[11px] font-black text-orange-400 uppercase leading-tight block mt-1">הצבעות נגד הסיעה</span>
           {rebellionRate !== null && (
-            <p className="text-[10px] text-orange-400 mt-1 font-black">
+            <p className="text-[11px] text-orange-400 mt-1 font-black">
               {rebellionRate}% מתוך {totalPartisanVotes.toLocaleString()} הצבעות בעד/נגד
             </p>
           )}
           {rebelledVotes.length > 0 && (
             <button
               onClick={() => setShowRebelled(v => !v)}
-              className="text-[10px] font-black text-orange-500 hover:text-orange-700 mt-2 underline underline-offset-2"
+              className="text-[11px] font-black text-orange-500 hover:text-orange-700 mt-2 underline underline-offset-2"
             >
               {showRebelled ? '▲ הסתר' : `▼ הצג הצבעות (${rebelledVotes.length})`}
             </button>
@@ -337,13 +337,13 @@ function ForensicInsightsCard({
         </div>
         <div className="border-r border-orange-100 pr-6">
           <span className="block text-3xl font-black text-gray-900">{attendance}</span>
-          <span className="text-[10px] font-black text-gray-400 uppercase leading-tight block mt-1">נוכחות בוועדות</span>
+          <span className="text-[11px] font-black text-gray-400 uppercase leading-tight block mt-1">נוכחות בוועדות</span>
           {attendanceRate !== null ? (
-            <p className="text-[10px] text-gray-400 mt-1 font-black">
+            <p className="text-[11px] text-gray-500 mt-1 font-black">
               {attendanceRate}% מתוך {totalRelevantSessions} ישיבות
             </p>
           ) : (
-            <p className="text-[10px] text-gray-400 mt-1 font-medium">ישיבות שתועדה בהן נוכחות</p>
+            <p className="text-[11px] text-gray-500 mt-1 font-medium">ישיבות שתועדה בהן נוכחות</p>
           )}
         </div>
       </div>
@@ -352,12 +352,12 @@ function ForensicInsightsCard({
           {rebelledVotes.map(v => (
             <Link key={v.voteId} href={`/vote/${v.voteId}`}
               className="flex items-start gap-2 px-3 py-2 rounded-xl bg-white hover:bg-orange-50 transition-colors">
-              <span className={`shrink-0 mt-0.5 text-[10px] font-black px-2 py-0.5 rounded-full ${RESULT_COLORS[CODE_TO_LABEL[v.resultCode]] ?? 'bg-zinc-100 text-zinc-500'}`}>
+              <span className={`shrink-0 mt-0.5 text-[11px] font-black px-2 py-0.5 rounded-full ${RESULT_COLORS[CODE_TO_LABEL[v.resultCode]] ?? 'bg-zinc-100 text-zinc-500'}`}>
                 {CODE_TO_LABEL[v.resultCode]}
               </span>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-bold text-gray-800 leading-snug line-clamp-2">{v.title}</p>
-                <span className="text-[10px] text-gray-400">{v.date?.slice(0, 10)}</span>
+                <span className="text-[11px] text-gray-500">{v.date?.slice(0, 10)}</span>
               </div>
             </Link>
           ))}
@@ -394,7 +394,7 @@ function BillTopicsCard({ topics, accentColor, onNavigate }: {
           <div key={t.committeeName}>
             <div className="flex items-center justify-between mb-0.5">
               <span className="text-sm font-bold text-gray-800">{t.committeeName}</span>
-              <span className="text-xs text-gray-400 tabular-nums">
+              <span className="text-xs text-gray-500 tabular-nums">
                 {t.total}
                 {t.passed > 0 && (
                   <span className="text-teal-600 font-black"> · {t.passed} עברו</span>
@@ -643,7 +643,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                 )}
                 {isCoalition !== null && isCoalition !== undefined && (
                   <span
-                    className="text-[10px] font-black px-2.5 py-0.5 rounded-full"
+                    className="text-[11px] font-black px-2.5 py-0.5 rounded-full"
                     style={{ backgroundColor: accentColor, color: '#fff' }}
                   >
                     {isCoalition ? 'קואליציה' : 'אופוזיציה'}
@@ -653,7 +653,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
 
               {/* Quick stats */}
               {profile && (
-                <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-xs text-gray-400 font-medium">
+                <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-xs text-gray-500 font-medium">
                   {profile.voteStats && (
                     <span className="tabular-nums">{profile.voteStats.total.toLocaleString()} הצבעות</span>
                   )}
@@ -789,7 +789,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                         >
                           {item.committeeName}
                         </Link>
-                        <span className="text-xs text-gray-400 tabular-nums font-bold">{item.sessionCount} ישיבות</span>
+                        <span className="text-xs text-gray-500 tabular-nums font-bold">{item.sessionCount} ישיבות</span>
                       </div>
                       {item.recentSessions.length > 0 && (
                         <div className="flex flex-col gap-1 mr-1">
@@ -859,17 +859,17 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                               <span className="text-sm font-bold text-gray-800 leading-snug">{b.title}</span>
                               <div className="flex items-center gap-1 shrink-0">
                                 {b.docUrl && (
-                                  <a href={b.docUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] font-black text-gray-400 hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">PDF</a>
+                                  <a href={b.docUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] font-black text-gray-400 hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">PDF</a>
                                 )}
                                 {b.summary && (
-                                  <button onClick={toggleExpand} className="text-[10px] font-black text-gray-400 hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">
+                                  <button onClick={toggleExpand} className="text-[11px] font-black text-gray-400 hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">
                                     {isExpanded ? '▲' : '▼'}
                                   </button>
                                 )}
                               </div>
                             </div>
                             {b.initDate && (
-                              <span className="text-[10px] text-gray-400">{b.initDate}</span>
+                              <span className="text-[11px] text-gray-500">{b.initDate}</span>
                             )}
                           </div>
                         </div>
@@ -899,7 +899,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                     הצג הכל ←
                   </button>
                 </div>
-                <p className="text-xs text-gray-400 mb-4">
+                <p className="text-xs text-gray-500 mb-4">
                   {profile.isCoalition === false
                     ? `${profile.withMajorityVotes.length} פעמים הצביע${profile.firstName.endsWith('ה') ? 'ה' : ''} עם הצד המנצח — בעד כשעבר, נגד כשנכשל`
                     : `${profile.withMajorityVotes.length} הצבעות עם הרוב`}
@@ -907,21 +907,21 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                 <div className="flex flex-col gap-1.5">
                   {profile.withMajorityVotes.slice(0, 5).map(v => (
                     <div key={v.voteId} className="flex items-start gap-3 px-3 py-2.5 rounded-xl bg-gray-50">
-                      <span className={`shrink-0 mt-0.5 text-[10px] font-black px-2 py-0.5 rounded-full ${RESULT_COLORS[CODE_TO_LABEL[v.resultCode]] ?? 'bg-zinc-100 text-zinc-500'}`}>
+                      <span className={`shrink-0 mt-0.5 text-[11px] font-black px-2 py-0.5 rounded-full ${RESULT_COLORS[CODE_TO_LABEL[v.resultCode]] ?? 'bg-zinc-100 text-zinc-500'}`}>
                         {CODE_TO_LABEL[v.resultCode]}
                       </span>
                       <div className="flex-1 min-w-0">
                         <span className="text-sm font-bold text-gray-800 leading-snug">{v.title}</span>
                         <div className="flex gap-2 mt-1 flex-wrap">
                           {v.macroAgenda && (
-                            <span className="text-[9px] font-black text-white bg-black/60 px-1.5 py-0.5 rounded-full">{v.macroAgenda}</span>
+                            <span className="text-[11px] font-black text-white bg-black/60 px-1.5 py-0.5 rounded-full">{v.macroAgenda}</span>
                           )}
                           {v.microAgenda && (
-                            <span className="text-[9px] font-bold text-gray-500 bg-gray-200/50 px-1.5 py-0.5 rounded-full">#{v.microAgenda}</span>
+                            <span className="text-[11px] font-bold text-gray-500 bg-gray-200/50 px-1.5 py-0.5 rounded-full">#{v.microAgenda}</span>
                           )}
                         </div>
                       </div>
-                      <span className="shrink-0 text-[11px] text-gray-400 tabular-nums">
+                      <span className="shrink-0 text-[11px] text-gray-500 tabular-nums">
                         {new Date(v.date).toLocaleDateString('he-IL', { month: 'short', year: '2-digit' })}
                       </span>
                     </div>
@@ -1012,7 +1012,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                         className="flex items-start gap-3 py-3 px-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
                       >
                         {/* MK's vote result */}
-                        <span className={`shrink-0 mt-0.5 text-[10px] font-black px-2 py-1 rounded-full ${RESULT_COLORS[label] ?? 'bg-zinc-100 text-zinc-500'}`}>
+                        <span className={`shrink-0 mt-0.5 text-[11px] font-black px-2 py-1 rounded-full ${RESULT_COLORS[label] ?? 'bg-zinc-100 text-zinc-500'}`}>
                           {label}
                         </span>
 
@@ -1027,10 +1027,10 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                           </Link>
                           <div className="flex gap-2 mt-1.5 flex-wrap">
                             {v.macroAgenda && (
-                              <span className="text-[9px] font-black text-white bg-black/60 px-1.5 py-0.5 rounded-full">{v.macroAgenda}</span>
+                              <span className="text-[11px] font-black text-white bg-black/60 px-1.5 py-0.5 rounded-full">{v.macroAgenda}</span>
                             )}
                             {v.microAgenda && (
-                              <span className="text-[9px] font-bold text-gray-500 bg-gray-200/50 px-1.5 py-0.5 rounded-full">#{v.microAgenda}</span>
+                              <span className="text-[11px] font-bold text-gray-500 bg-gray-200/50 px-1.5 py-0.5 rounded-full">#{v.microAgenda}</span>
                             )}
                           </div>
                         </div>
@@ -1038,11 +1038,11 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                         {/* Vote outcome + date */}
                         <div className="shrink-0 flex flex-col items-end gap-0.5">
                           {v.isPassed !== null && (
-                            <span className={`text-[10px] font-black ${v.isPassed ? 'text-teal-600' : 'text-rose-500'}`}>
+                            <span className={`text-[11px] font-black ${v.isPassed ? 'text-teal-600' : 'text-rose-500'}`}>
                               {v.isPassed ? 'עבר' : 'נכשל'}
                             </span>
                           )}
-                          <span className="text-[11px] text-gray-400 font-medium tabular-nums">
+                          <span className="text-[11px] text-gray-500 font-medium tabular-nums">
                             {formatDate(v.date)}
                           </span>
                         </div>
@@ -1125,7 +1125,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                   </div>
                 )}
 
-                <div className="text-xs text-gray-400 font-medium mb-3">
+                <div className="text-xs text-gray-500 font-medium mb-3">
                   {filteredBills.length.toLocaleString()} מתוך {(profile?.bills.length ?? 0).toLocaleString()} הצ"ח
                 </div>
 
@@ -1142,7 +1142,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                     return (
                     <div key={b.billId} className="rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
                       <div className="flex items-start gap-3 px-4 py-3">
-                        <span className={`shrink-0 mt-0.5 text-[10px] font-black px-2 py-0.5 rounded-full ${b.isPassed ? 'bg-[#16A34A] text-white' : 'bg-gray-200 text-gray-500'}`}>
+                        <span className={`shrink-0 mt-0.5 text-[11px] font-black px-2 py-0.5 rounded-full ${b.isPassed ? 'bg-[#16A34A] text-white' : 'bg-gray-200 text-gray-500'}`}>
                           {b.isPassed ? 'עבר' : 'הוגש'}
                         </span>
                         <div className="flex-1 min-w-0">
@@ -1154,7 +1154,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                                   href={b.docUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-[10px] font-black text-gray-400 hover:text-black transition-colors border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded"
+                                  className="text-[11px] font-black text-gray-400 hover:text-black transition-colors border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded"
                                 >
                                   PDF
                                 </a>
@@ -1162,7 +1162,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                               {b.summary && (
                                 <button
                                   onClick={toggleExpand}
-                                  className="text-[10px] font-black text-gray-400 hover:text-black transition-colors border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded"
+                                  className="text-[11px] font-black text-gray-400 hover:text-black transition-colors border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded"
                                 >
                                   {isExpanded ? '▲' : '▼'}
                                 </button>
@@ -1171,22 +1171,22 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                           </div>
                           <div className="flex items-center gap-2 mt-1 flex-wrap">
                             {b.initDate && (
-                              <span className="text-[10px] text-gray-400">{b.initDate}</span>
+                              <span className="text-[11px] text-gray-500">{b.initDate}</span>
                             )}
                             {b.macroAgenda && (
-                              <span className="text-[10px] font-black text-white bg-black px-1.5 py-0.5 rounded-full">{b.macroAgenda}</span>
+                              <span className="text-[11px] font-black text-white bg-black px-1.5 py-0.5 rounded-full">{b.macroAgenda}</span>
                             )}
                             {b.microAgenda && (
-                              <span className="text-[10px] font-bold text-gray-700 bg-gray-200 px-1.5 py-0.5 rounded-full">#{b.microAgenda}</span>
+                              <span className="text-[11px] font-bold text-gray-700 bg-gray-200 px-1.5 py-0.5 rounded-full">#{b.microAgenda}</span>
                             )}
                             {b.committeeName && (
                               <Link href={`/committee/${encodeURIComponent(b.committeeName)}`}
-                                className="text-[10px] font-black text-gray-400 border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded-full transition-colors">
+                                className="text-[11px] font-black text-gray-400 border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded-full transition-colors">
                                 {b.committeeName}
                               </Link>
                             )}
                             {b.subtype && (
-                              <span className="text-xs text-gray-400">{b.subtype}</span>
+                              <span className="text-xs text-gray-500">{b.subtype}</span>
                             )}
                           </div>
                         </div>
@@ -1226,7 +1226,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                           className="text-sm font-bold px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
                         >
                           {word}
-                          <span className="text-xs text-gray-400 font-medium mr-1">×{count}</span>
+                          <span className="text-xs text-gray-500 font-medium mr-1">×{count}</span>
                         </button>
                       ))}
                     </div>
@@ -1241,7 +1241,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                   className="w-full mb-4 px-4 py-2 text-sm border border-black/10 rounded-lg bg-gray-50 focus:outline-none focus:ring-1 focus:ring-black/20"
                 />
 
-                <div className="text-xs text-gray-400 font-medium mb-3">
+                <div className="text-xs text-gray-500 font-medium mb-3">
                   {filteredQueries.length.toLocaleString()} שאילתות
                 </div>
 
@@ -1253,7 +1253,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-bold leading-snug text-gray-900">{q.title}</p>
                       </div>
-                      <span className="shrink-0 text-[11px] text-gray-400 font-medium tabular-nums">
+                      <span className="shrink-0 text-[11px] text-gray-500 font-medium tabular-nums">
                         {formatDate(q.submitDate)}
                       </span>
                     </div>
@@ -1288,11 +1288,11 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                         return (
                           <div key={p.id} className="px-4 py-3 rounded-xl border border-black/8 bg-white">
                             <div className="flex items-start gap-3">
-                              <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-black text-white shrink-0 mt-0.5">נוכחי</span>
+                              <span className="text-[11px] font-black px-2 py-0.5 rounded-full bg-black text-white shrink-0 mt-0.5">נוכחי</span>
                               <div>
                                 {role && <p className="text-sm font-black leading-snug">{role}</p>}
                                 {org && <p className={`text-sm ${role ? 'text-gray-600 font-medium' : 'font-black'} leading-snug`}>{org}</p>}
-                                <p className="text-xs text-gray-400 mt-0.5">
+                                <p className="text-xs text-gray-500 mt-0.5">
                                   מ-{formatDate(p.startDate)}
                                 </p>
                               </div>
@@ -1319,7 +1319,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                                 {role && <p className="text-sm font-bold leading-snug">{role}</p>}
                                 {org && <p className={`text-sm ${role ? 'text-gray-600' : 'font-bold'} leading-snug`}>{org}</p>}
                               </div>
-                              <span className="text-[11px] text-gray-400 font-medium tabular-nums shrink-0">
+                              <span className="text-[11px] text-gray-500 font-medium tabular-nums shrink-0">
                                 {formatYear(p.startDate)}
                                 {p.finishDate ? `–${formatYear(p.finishDate)}` : ''}
                               </span>

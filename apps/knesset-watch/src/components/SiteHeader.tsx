@@ -102,7 +102,7 @@ function GlobalSearch() {
               onClick={() => navigate(hit.url)}
               className="w-full text-right flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 transition-colors"
             >
-              <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 w-7 shrink-0 text-center">
+              <span className="text-[11px] font-black uppercase tracking-widest text-gray-400 w-7 shrink-0 text-center">
                 {TYPE_LABEL[hit.type] ?? hit.type}
               </span>
               <div className="min-w-0 flex-1">
@@ -120,7 +120,7 @@ function GlobalSearch() {
         </div>
       )}
       {open && results.length === 0 && !loading && query.length >= 2 && (
-        <div className="absolute top-full mt-1 right-0 w-64 bg-white border border-black/10 rounded-xl shadow-xl p-3 text-xs text-gray-400 text-center z-50">
+        <div className="absolute top-full mt-1 right-0 w-64 bg-white border border-black/10 rounded-xl shadow-xl p-3 text-xs text-gray-500 text-center z-50">
           לא נמצאו תוצאות
         </div>
       )}
@@ -223,7 +223,7 @@ function PeriodSelector() {
               <button
                 key={p.value}
                 onClick={() => { setPeriod(p.value); setOpen(false); setRangeStart(null); }}
-                className={`text-[10px] font-black px-2 py-0.5 rounded-full transition-colors ${
+                className={`text-[11px] font-black px-2 py-0.5 rounded-full transition-colors ${
                   period === p.value
                     ? 'bg-black text-white'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -239,9 +239,9 @@ function PeriodSelector() {
 
           {/* Range picking hint */}
           {rangeStart ? (
-            <p className="text-[10px] text-blue-600 mb-2 text-center">בחר תאריך סיום</p>
+            <p className="text-[11px] text-blue-600 mb-2 text-center">בחר תאריך סיום</p>
           ) : (
-            <p className="text-[10px] text-gray-400 mb-2 text-center">בחר טווח תאריכים</p>
+            <p className="text-[11px] text-gray-500 mb-2 text-center">בחר טווח תאריכים</p>
           )}
 
           {/* Month header */}
@@ -258,7 +258,7 @@ function PeriodSelector() {
           {/* Day of week header */}
           <div className="grid grid-cols-7 mb-1">
             {HE_DOW.map(d => (
-              <div key={d} className="text-[9px] font-black text-gray-400 text-center py-0.5">{d}</div>
+              <div key={d} className="text-[11px] font-black text-gray-400 text-center py-0.5">{d}</div>
             ))}
           </div>
 
@@ -277,7 +277,7 @@ function PeriodSelector() {
                   onClick={() => handleDayClick(dateStr)}
                   onMouseEnter={() => rangeStart && setHoverDate(dateStr)}
                   onMouseLeave={() => setHoverDate(null)}
-                  className={`text-[10px] font-black h-6 w-full flex items-center justify-center rounded transition-colors
+                  className={`text-[11px] font-black h-6 w-full flex items-center justify-center rounded transition-colors
                     ${isStart ? 'bg-black text-white' : ''}
                     ${!isStart && inRng ? 'bg-blue-100 text-blue-800' : ''}
                     ${!isStart && !inRng ? 'hover:bg-gray-100 text-gray-700' : ''}

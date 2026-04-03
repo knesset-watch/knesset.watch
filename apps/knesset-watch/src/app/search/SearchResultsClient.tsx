@@ -122,7 +122,7 @@ export default function SearchResultsClient({ initialQ }: { initialQ: string }) 
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-black text-gray-900 truncate">{hit.title}</div>
                       {hit.subtitle && (
-                        <div className="text-[11px] text-gray-400 mt-0.5 truncate">{hit.subtitle}</div>
+                        <div className="text-[11px] text-gray-500 mt-0.5 truncate">{hit.subtitle}</div>
                       )}
                     </div>
                     <svg className="w-3.5 h-3.5 text-gray-300 shrink-0 rotate-180" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5">
