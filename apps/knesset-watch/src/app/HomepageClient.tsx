@@ -66,7 +66,7 @@ export default function HomepageClient() {
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     const q = query.trim();
-    if (q.length >= 2) router.push(`/search?q=${encodeURIComponent(q)}`);
+    if (q.length >= 2) router.push(`/ask?q=${encodeURIComponent(q)}`);
   }
 
   return (
@@ -89,7 +89,7 @@ export default function HomepageClient() {
               type="text"
               value={query}
               onChange={e => setQuery(e.target.value)}
-              placeholder="חפשו ח&quot;כ, ועדה, חוק..."
+              placeholder="שאלו שאלה על פעילות הכנסת..."
               className="flex-1 bg-transparent text-sm font-black outline-none placeholder:text-gray-400 placeholder:font-normal"
               dir="rtl"
               autoFocus
@@ -100,7 +100,7 @@ export default function HomepageClient() {
             disabled={query.trim().length < 2}
             className="px-5 py-3 rounded-xl bg-black text-white text-sm font-black disabled:opacity-30 hover:bg-gray-800 transition-colors shrink-0"
           >
-            חיפוש
+            שאל
           </button>
         </form>
       </div>
