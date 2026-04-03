@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     const results = searchAll(q);
 
     // Add session title matches from local SQLite
-    const sessionRows = searchSessions(q, 10);
+    const sessionRows = searchSessions(q, 200);
     const seenSessionIds = new Set<string>(results.filter(r => r.type === 'session').map(r => r.id));
     for (const s of sessionRows) {
       if (seenSessionIds.has(String(s.id))) continue;
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
     }
 
     // Add sessions where this name appeared as a speaker in the transcript
-    const speakerRows = searchSessionsBySpeaker(q, 15);
+    const speakerRows = searchSessionsBySpeaker(q);
     for (const s of speakerRows) {
       if (seenSessionIds.has(String(s.id))) continue;
       seenSessionIds.add(String(s.id));
@@ -53,7 +53,7 @@ export async function GET(request: Request) {
     if (protocolsDbAvailable()) {
       try {
         const proto = await searchProtocols(q, null, 1);
-        for (const r of proto.results.slice(0, 10)) {
+        for (const r of proto.results) {
           if (seenSessionIds.has(String(r.sessionId))) continue;
           seenSessionIds.add(String(r.sessionId));
           results.push({

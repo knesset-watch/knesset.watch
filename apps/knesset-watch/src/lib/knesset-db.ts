@@ -1670,7 +1670,6 @@ export function searchSessions(q: string, limit = 10): Array<{ id: number; title
 // Find sessions where a speaker with a matching name appeared in the transcript
 export function searchSessionsBySpeaker(
   q: string,
-  limit = 10,
 ): Array<{ id: number; title: string | null; committeeName: string | null; date: string; speakerName: string }> {
   const db = getDb();
   if (!db) return [];
@@ -1683,8 +1682,7 @@ export function searchSessionsBySpeaker(
       WHERE sst.raw_name LIKE ?
       GROUP BY cs.id
       ORDER BY cs.date DESC
-      LIMIT ?
-    `).all(`%${q}%`, limit) as Array<{ id: number; title: string | null; committee_name: string | null; date: string; speaker_name: string }>)
+    `).all(`%${q}%`) as Array<{ id: number; title: string | null; committee_name: string | null; date: string; speaker_name: string }>)
     .map(r => ({ id: r.id, title: r.title, committeeName: r.committee_name, date: r.date, speakerName: r.speaker_name }));
   } catch {
     return [];
