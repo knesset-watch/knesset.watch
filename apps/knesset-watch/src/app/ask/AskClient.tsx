@@ -18,16 +18,15 @@ interface AskResult {
 }
 
 function SessionCard({ s }: { s: SessionSource }) {
-  const date = s.date.slice(0, 10);
+  const date = new Date(s.date).toLocaleDateString('he-IL', { year: 'numeric', month: 'short', day: 'numeric' });
   return (
-    <Link href={`/session/${s.sessionId}`} className="block border border-gray-200 rounded-lg px-4 py-3 hover:border-blue-400 hover:bg-blue-50/40 transition-colors">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-xs text-gray-500 mb-0.5">{s.committeeName}</p>
-          <p className="text-sm font-medium text-gray-800 truncate">{s.title || 'פרוטוקול ועדה'}</p>
-        </div>
-        <span className="text-xs text-gray-500 whitespace-nowrap">{date}</span>
+    <Link href={`/session/${s.sessionId}`} className="flex items-center justify-between gap-3 border border-gray-200 rounded-lg px-4 py-3 hover:border-blue-400 hover:bg-blue-50/40 transition-colors group">
+      <div className="min-w-0">
+        <p className="text-sm font-bold text-gray-800 truncate">{s.committeeName || 'ועדה'}</p>
+        {s.title && <p className="text-xs text-gray-500 mt-0.5 truncate">{s.title}</p>}
+        <p className="text-xs text-gray-400 mt-0.5">{date}</p>
       </div>
+      <span className="text-gray-300 group-hover:text-blue-400 transition-colors shrink-0 text-lg">←</span>
     </Link>
   );
 }

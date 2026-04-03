@@ -340,13 +340,19 @@ export default function SessionClient({
             <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-3">חקיקה</div>
             <div className="flex flex-col gap-1">
               {session.bills.map(b => (
-                <Link
-                  key={b.billId}
-                  href={`/bill/${b.billId}`}
-                  className="text-sm text-gray-700 hover:text-teal-700 transition-colors font-bold"
-                >
-                  {b.title ?? `הצ"ח ${b.billId}`}
-                </Link>
+                b.title ? (
+                  <Link
+                    key={b.billId}
+                    href={`/bill/${b.billId}`}
+                    className="text-sm text-gray-700 hover:text-teal-700 transition-colors font-bold"
+                  >
+                    {b.title}
+                  </Link>
+                ) : (
+                  <span key={b.billId} className="text-sm text-gray-500 font-bold">
+                    {`הצ"ח ${b.billId}`}
+                  </span>
+                )
               ))}
             </div>
           </div>
