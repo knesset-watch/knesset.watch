@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { validateApiAuth } from '@/lib/ui/auth-utils';
-import { dbAvailable, searchAll, searchSessions } from '@/lib/knesset-db';
+import { dbAvailable, searchAll, searchSessions, searchSessionsBySpeaker } from '@/lib/knesset-db';
 import { searchProtocols, protocolsDbAvailable } from '@/lib/protocols-db';
 
 export async function GET(request: Request) {
@@ -22,7 +22,10 @@ export async function GET(request: Request) {
 
     // Add session title matches from local SQLite
     const sessionRows = searchSessions(q, 10);
+    const seenSessionIds = new Set<string>(results.filter(r => r.type === 'session').map(r => r.id));
     for (const s of sessionRows) {
+      if (seenSessionIds.has(String(s.id))) continue;
+      seenSessionIds.add(String(s.id));
       results.push({
         type: 'session',
         id: String(s.id),
@@ -32,21 +35,34 @@ export async function GET(request: Request) {
       });
     }
 
+    // Add sessions where this name appeared as a speaker in the transcript
+    const speakerRows = searchSessionsBySpeaker(q, 15);
+    for (const s of speakerRows) {
+      if (seenSessionIds.has(String(s.id))) continue;
+      seenSessionIds.add(String(s.id));
+      results.push({
+        type: 'session',
+        id: String(s.id),
+        title: s.committeeName ?? `ישיבה ${s.id}`,
+        subtitle: s.date.slice(0, 10),
+        url: `/session/${s.id}`,
+      });
+    }
+
     // Add protocol text matches from Turso if available
     if (protocolsDbAvailable()) {
       try {
         const proto = await searchProtocols(q, null, 1);
-        for (const r of proto.results.slice(0, 5)) {
-          // Avoid duplicating sessions already found by title search
-          if (!results.find(x => x.type === 'session' && x.id === String(r.sessionId))) {
-            results.push({
-              type: 'session',
-              id: String(r.sessionId),
-              title: r.title ?? r.committeeName ?? `ישיבה ${r.sessionId}`,
-              subtitle: r.committeeName ?? null,
-              url: `/session/${r.sessionId}`,
-            });
-          }
+        for (const r of proto.results.slice(0, 10)) {
+          if (seenSessionIds.has(String(r.sessionId))) continue;
+          seenSessionIds.add(String(r.sessionId));
+          results.push({
+            type: 'session',
+            id: String(r.sessionId),
+            title: r.title ?? r.committeeName ?? `ישיבה ${r.sessionId}`,
+            subtitle: r.committeeName ?? null,
+            url: `/session/${r.sessionId}`,
+          });
         }
       } catch {
         // Protocol search failure is non-fatal
