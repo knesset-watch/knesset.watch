@@ -1007,6 +1007,49 @@ export function getVoteMeta(
   };
 }
 
+// ── Coalition/opposition vote breakdown ───────────────────────────────────────
+
+export interface VoteCoalitionBreakdown {
+  coalition: { for: number; against: number; abstain: number };
+  opposition: { for: number; against: number; abstain: number };
+}
+
+export function getVoteCoalitionBreakdown(voteId: number): VoteCoalitionBreakdown | null {
+  const db = getDb();
+  if (!db) return null;
+
+  const rows = db.prepare(`
+    SELECT
+      mp.is_coalition,
+      mvr.result_code,
+      COUNT(*) as cnt
+    FROM mk_vote_result mvr
+    JOIN mk_person mp ON mp.person_id = mvr.mk_id
+    WHERE mvr.vote_id = ? AND mp.is_coalition IS NOT NULL AND mvr.result_code IN (7, 8, 6)
+    GROUP BY mp.is_coalition, mvr.result_code
+  `).all(voteId) as Array<{ is_coalition: number; result_code: number; cnt: number }>;
+
+  const result: VoteCoalitionBreakdown = {
+    coalition: { for: 0, against: 0, abstain: 0 },
+    opposition: { for: 0, against: 0, abstain: 0 },
+  };
+
+  for (const r of rows) {
+    const side = r.is_coalition === 1 ? 'coalition' : 'opposition';
+    if (r.result_code === 7) result[side].for += r.cnt;
+    else if (r.result_code === 8) result[side].against += r.cnt;
+    else if (r.result_code === 6) result[side].abstain += r.cnt;
+  }
+
+  // Return null if no meaningful data
+  if (
+    result.coalition.for + result.coalition.against +
+    result.opposition.for + result.opposition.against === 0
+  ) return null;
+
+  return result;
+}
+
 // ── Bills browser ─────────────────────────────────────────────────────────────
 
 export interface BillRow {

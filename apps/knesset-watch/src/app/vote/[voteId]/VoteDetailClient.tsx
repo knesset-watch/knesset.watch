@@ -19,6 +19,39 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
+interface CoalitionBarProps {
+  label: string;
+  data: { for: number; against: number; abstain: number };
+  colorFor: string;
+  colorAgainst: string;
+  labelClass: string;
+}
+
+function CoalitionBar({ label, data, colorFor, colorAgainst, labelClass }: CoalitionBarProps) {
+  const total = data.for + data.against + data.abstain;
+  const active = data.for + data.against;
+  const forPct = active > 0 ? Math.round((data.for / active) * 100) : 0;
+  const againstPct = active > 0 ? 100 - forPct : 0;
+
+  return (
+    <div className="flex items-center gap-3">
+      <span className={`w-16 shrink-0 text-[11px] font-black ${labelClass}`}>{label}</span>
+      <div className="flex-1 flex h-2 rounded-full overflow-hidden bg-black/8 min-w-0">
+        <div className={`${colorFor} h-full transition-all`} style={{ width: `${forPct}%` }} />
+        <div className={`${colorAgainst} h-full transition-all`} style={{ width: `${againstPct}%` }} />
+      </div>
+      <span className="shrink-0 text-[11px] font-medium text-gray-500 whitespace-nowrap">
+        <span className="text-teal-700 font-black">{data.for}</span>
+        {' בעד · '}
+        <span className="text-rose-600 font-black">{data.against}</span>
+        {' נגד'}
+        {data.abstain > 0 && <span className="text-gray-400"> · {data.abstain} נמנע</span>}
+        {total === 0 && <span className="text-gray-400">אין נתונים</span>}
+      </span>
+    </div>
+  );
+}
+
 export default function VoteDetailClient({ voteId }: { voteId: string }) {
   const router = useRouter();
   const [title, setTitle] = useState('');
@@ -64,6 +97,24 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
       if (r.result in c) c[r.result]++;
     }
     return c;
+  }, [mkResults]);
+
+  const coalitionBreakdown = useMemo(() => {
+    const coal = { for: 0, against: 0, abstain: 0 };
+    const oppo = { for: 0, against: 0, abstain: 0 };
+    for (const r of mkResults) {
+      if (r.isCoalition === true) {
+        if (r.result === 'בעד') coal.for++;
+        else if (r.result === 'נגד') coal.against++;
+        else if (r.result === 'נמנע') coal.abstain++;
+      } else if (r.isCoalition === false) {
+        if (r.result === 'בעד') oppo.for++;
+        else if (r.result === 'נגד') oppo.against++;
+        else if (r.result === 'נמנע') oppo.abstain++;
+      }
+    }
+    const hasData = coal.for + coal.against + oppo.for + oppo.against > 0;
+    return hasData ? { coalition: coal, opposition: oppo } : null;
   }, [mkResults]);
 
   const filtered = useMemo(() => {
@@ -159,13 +210,33 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
         {!loading && !error && (
           <>
             {/* Summary badges */}
-            <div className="flex flex-wrap gap-2 mb-6">
+            <div className="flex flex-wrap gap-2 mb-4">
               {(['בעד', 'נגד', 'נמנע', 'נוכח'] as const).map(r => (
                 <span key={r} className={`text-xs font-black px-3 py-1.5 rounded-full ${RESULT_COLORS[r]}`}>
                   {r} ({counts[r]})
                 </span>
               ))}
             </div>
+
+            {/* Coalition / opposition breakdown */}
+            {coalitionBreakdown && (
+              <div className="mb-6 rounded-xl border border-black/8 bg-gray-50 px-4 py-3 flex flex-col gap-2.5">
+                <CoalitionBar
+                  label="קואליציה"
+                  data={coalitionBreakdown.coalition}
+                  colorFor="bg-teal-500"
+                  colorAgainst="bg-rose-400"
+                  labelClass="text-teal-800"
+                />
+                <CoalitionBar
+                  label="אופוזיציה"
+                  data={coalitionBreakdown.opposition}
+                  colorFor="bg-teal-500"
+                  colorAgainst="bg-rose-400"
+                  labelClass="text-slate-600"
+                />
+              </div>
+            )}
 
             {/* Controls */}
             <div className="flex flex-wrap gap-3 items-center mb-4">
