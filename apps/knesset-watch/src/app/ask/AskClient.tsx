@@ -86,6 +86,46 @@ const SOURCE_GROUPS: Array<{ type: Source['type']; label: string }> = [
   { type: 'query',   label: 'שאילתות' },
 ];
 
+// Parse inline [SESSION:id], [VOTE:id], [BILL:id] tags from LLM answer and render as superscript links
+const REF_RE = /\[(SESSION|VOTE|BILL):(\d+)\]/g;
+
+function AnswerText({ text, sources }: { text: string; sources: Source[] }) {
+  const sessionMap = new Map(
+    sources.filter((s): s is SessionSource => s.type === 'session').map(s => [s.sessionId, `/session/${s.sessionId}`])
+  );
+  const voteMap = new Map(
+    sources.filter((s): s is VoteSource => s.type === 'vote').map(s => [s.voteId, `/vote/${s.voteId}`])
+  );
+  const billMap = new Map(
+    sources.filter((s): s is BillSource => s.type === 'bill').map(s => [s.billId, `/bill/${s.billId}`])
+  );
+
+  const parts: React.ReactNode[] = [];
+  let last = 0;
+  let m: RegExpExecArray | null;
+  REF_RE.lastIndex = 0;
+  while ((m = REF_RE.exec(text)) !== null) {
+    if (m.index > last) parts.push(<span key={last}>{text.slice(last, m.index)}</span>);
+    const id = Number(m[2]);
+    const url = m[1] === 'SESSION' ? sessionMap.get(id)
+              : m[1] === 'VOTE'    ? voteMap.get(id)
+              : billMap.get(id);
+    if (url) {
+      parts.push(
+        <Link key={m.index} href={url}
+          className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 text-[9px] font-black align-super mx-0.5 transition-colors"
+          title="פתח מקור">
+          ↗
+        </Link>
+      );
+    }
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) parts.push(<span key={last}>{text.slice(last)}</span>);
+
+  return <p className="text-gray-900 text-sm leading-relaxed whitespace-pre-wrap" dir="rtl">{parts}</p>;
+}
+
 export default function AskClient({ initialQ }: { initialQ: string }) {
   const [query, setQuery]           = useState(initialQ);
   const [submittedQ, setSubmittedQ] = useState(initialQ);
@@ -180,7 +220,7 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
 
             <div className="bg-gray-50 border border-gray-200 rounded-xl px-5 py-4">
               <p className="text-sm font-semibold text-gray-500 mb-2">תשובה</p>
-              <p className="text-gray-900 text-sm leading-relaxed whitespace-pre-wrap">{result.answer}</p>
+              <AnswerText text={result.answer} sources={result.sources} />
             </div>
 
             {hasAnySources && (
