@@ -89,23 +89,37 @@ export async function getTursoCommitteeSessions(
 
 // ── All committee activity ────────────────────────────────────────────────────
 
-export async function getTursoAllCommitteeActivity(): Promise<CommitteeActivity[]> {
+export async function getTursoAllCommitteeActivity(
+  from?: string,
+  to?: string,
+): Promise<CommitteeActivity[]> {
   const client = getTursoClient();
   if (!client) return [];
 
-  const res = await client.execute(`
-    SELECT c.id as committee_id, c.name,
-           COUNT(cs.id) as session_count,
-           MAX(cs.date) as last_session_date,
-           (SELECT MAX(cs2.date) FROM committee_session cs2
-            WHERE cs2.committee_id = c.id
-            AND EXISTS (SELECT 1 FROM session_speaker_turn sst WHERE sst.session_id = cs2.id)) as last_protocol_date
-    FROM committee c
-    JOIN committee_session cs ON cs.committee_id = c.id
-    GROUP BY c.id
-    HAVING session_count > 0
-    ORDER BY session_count DESC
-  `);
+  const dateFilter = from && to
+    ? 'AND cs.date >= ? AND cs.date <= ?'
+    : from ? 'AND cs.date >= ?'
+    : to   ? 'AND cs.date <= ?'
+    : '';
+  const args: string[] = [from, to].filter(Boolean) as string[];
+
+  const res = await client.execute({
+    sql: `
+      SELECT c.id as committee_id, c.name,
+             COUNT(cs.id) as session_count,
+             MAX(cs.date) as last_session_date,
+             (SELECT MAX(cs2.date) FROM committee_session cs2
+              WHERE cs2.committee_id = c.id ${dateFilter}
+              AND EXISTS (SELECT 1 FROM session_speaker_turn sst WHERE sst.session_id = cs2.id)) as last_protocol_date
+      FROM committee c
+      JOIN committee_session cs ON cs.committee_id = c.id
+      WHERE 1=1 ${dateFilter}
+      GROUP BY c.id
+      HAVING session_count > 0
+      ORDER BY session_count DESC
+    `,
+    args: [...args, ...args],  // args used twice (subquery + main WHERE)
+  });
 
   return res.rows
     .reduce((acc, r) => {

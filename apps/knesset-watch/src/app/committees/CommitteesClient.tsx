@@ -1,8 +1,11 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import type { CommitteeActivity } from '@/lib/knesset-db';
+import { usePeriod, periodToDateRange } from '@/lib/period-context';
+
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
 type SortOption = 'sessions' | 'recent' | 'name';
 type ViewMode = 'cards' | 'list';
@@ -12,12 +15,16 @@ function formatDate(iso: string) {
 }
 
 export default function CommitteesClient({
-  committees,
-  totalSessions,
+  committees: initialCommittees,
+  totalSessions: initialTotal,
 }: {
   committees: CommitteeActivity[];
   totalSessions: number;
 }) {
+  const { period } = usePeriod();
+  const [committees, setCommittees] = useState(initialCommittees);
+  const [totalSessions, setTotalSessions] = useState(initialTotal);
+  const [loading, setLoading] = useState(false);
   const [sort, setSort] = useState<SortOption>('sessions');
   const [view, setView] = useState<ViewMode>('cards');
   const [search, setSearch] = useState('');
@@ -31,6 +38,25 @@ export default function CommitteesClient({
   useEffect(() => {
     if (didMount.current) localStorage.setItem('kw-view-committees', view);
   }, [view]);
+
+  const fetchActivity = useCallback(async () => {
+    setLoading(true);
+    const params = new URLSearchParams();
+    const dateRange = periodToDateRange(period);
+    if (dateRange) { params.set('from', dateRange.from); params.set('to', dateRange.to); }
+    try {
+      const res = await fetch(`${BASE_PATH}/api/committees/activity?${params}`);
+      if (!res.ok) return;
+      const data = await res.json() as { committees?: CommitteeActivity[]; totalSessions?: number };
+      setCommittees(data.committees ?? []);
+      setTotalSessions(data.totalSessions ?? 0);
+    } catch { /* keep current data */ }
+    setLoading(false);
+  }, [period]);
+
+  useEffect(() => {
+    fetchActivity();
+  }, [fetchActivity]);
 
   const sorted = useMemo(() => {
     const filtered = search.trim()
@@ -60,6 +86,7 @@ export default function CommitteesClient({
         <h1 className="text-3xl font-black leading-tight mb-1">ועדות הכנסת</h1>
         <p className="text-sm text-gray-400 font-medium mb-6">
           {committees.length} ועדות · {totalSessions.toLocaleString('he-IL')} ישיבות מתועדות
+          {loading && <span className="mr-2 opacity-50">…</span>}
         </p>
 
         {/* Controls */}
@@ -124,7 +151,7 @@ export default function CommitteesClient({
 
         {/* Cards view */}
         {view === 'cards' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 transition-opacity ${loading ? 'opacity-40' : ''}`}>
             {sorted.map(c => {
               const lastDate = c.lastProtocolDate ?? c.lastSessionDate;
               const hasProtocol = !!c.lastProtocolDate;
@@ -161,7 +188,7 @@ export default function CommitteesClient({
 
         {/* List view */}
         {view === 'list' && (
-          <div className="flex flex-col gap-px">
+          <div className={`flex flex-col gap-px transition-opacity ${loading ? 'opacity-40' : ''}`}>
             <div className="grid grid-cols-[1fr_6rem_10rem] gap-4 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-gray-400">
               <span>ועדה</span>
               <span className="text-center">ישיבות</span>

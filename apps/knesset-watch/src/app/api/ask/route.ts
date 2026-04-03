@@ -45,10 +45,11 @@ async function setCached(key: string, value: AskResponse): Promise<void> {
 
 const SYSTEM_PROMPT = `אתה אנליסט נתוני הכנסת הישראלית. ענה בעברית בלבד, בצורה ממוקדת ואנליטית.
 נתח את המקורות שסופקו: פרוטוקולים, הצבעות, הצעות חוק ושאילתות פרלמנטריות.
-- כשנשאלים על ח"כ ספציפי: סכם את עמדותיו, מה יזם, כיצד הצביע, ומה השיג בפועל.
-- כשנשאלים שאלה אנליטית: הסק מסקנות מבוססות-נתונים ממה שמופיע במקורות.
-- ציין תאריכים, שמות ועדות, תוצאות הצבעות (בעד/נגד/עבר/נכשל) ושמות ח"כים.
-- הסתמך אך ורק על המקורות שסופקו. אל תמציא. אם אין מידע מספיק — אמור זאת.`;
+כשנשאלים על ח"כ ספציפי: סכם את עמדותיו, מה יזם, כיצד הצביע, ומה השיג בפועל.
+כשנשאלים שאלה אנליטית: הסק מסקנות מבוססות-נתונים ממה שמופיע במקורות.
+ציין תאריכים, שמות ועדות, תוצאות הצבעות ושמות ח"כים.
+הסתמך אך ורק על המקורות שסופקו. אל תמציא. אם אין מידע מספיק — אמור זאת.
+כתוב טקסט רגיל בלבד — ללא markdown, ללא כוכביות, ללא hashtag.`;
 
 async function callGemini(userMessage: string): Promise<string> {
   const key = process.env.GEMINI_API_KEY;
@@ -62,7 +63,7 @@ async function callGemini(userMessage: string): Promise<string> {
       body: JSON.stringify({
         system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
         contents: [{ role: 'user', parts: [{ text: userMessage }] }],
-        generationConfig: { maxOutputTokens: 1200 },
+        generationConfig: { maxOutputTokens: 2048, thinkingConfig: { thinkingBudget: 0 } },
       }),
     },
   );
@@ -117,7 +118,7 @@ export async function GET(req: NextRequest) {
   if (q.length > 500)      return NextResponse.json({ error: 'שאלה ארוכה מדי' }, { status: 400 });
 
   // 1. Check cache
-  const cacheKey = `ask:v1:${q}`;
+  const cacheKey = `ask:v2:${q}`;
   const cached = await getCached(cacheKey);
   if (cached) return NextResponse.json(cached);
 
