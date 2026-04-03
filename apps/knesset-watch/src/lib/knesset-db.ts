@@ -947,7 +947,18 @@ export function getMinisters(): MinisterInfo[] {
       mp.slug,
       mp.is_coalition as isCoalition,
       mp.faction_name as factionName,
-      pos.duty_desc as ministerRole,
+      -- Pick primary role by priority: PM > minister (שר/שרת) > minister (השר/השרה) > deputy PM > deputy minister > additional minister
+      MIN(CASE
+        WHEN pos.duty_desc LIKE 'ראש הממשלה%'    THEN '1:' || pos.duty_desc
+        WHEN pos.duty_desc LIKE 'שר %'            THEN '2:' || pos.duty_desc
+        WHEN pos.duty_desc LIKE 'שרת %'           THEN '2:' || pos.duty_desc
+        WHEN pos.duty_desc LIKE 'השר %'           THEN '3:' || pos.duty_desc
+        WHEN pos.duty_desc LIKE 'השרה %'          THEN '3:' || pos.duty_desc
+        WHEN pos.duty_desc LIKE 'סגן ראש הממשלה%' THEN '4:' || pos.duty_desc
+        WHEN pos.duty_desc LIKE 'סגן שר%'         THEN '5:' || pos.duty_desc
+        WHEN pos.duty_desc LIKE 'סגנית שר%'       THEN '5:' || pos.duty_desc
+        ELSE '6:' || pos.duty_desc
+      END) as roleKey,
       pos.ministry,
       (SELECT COUNT(*) FROM bill_initiator WHERE mk_id = mp.person_id) as billCount,
       (SELECT COUNT(DISTINCT bi.bill_id) FROM bill_initiator bi JOIN bill b ON b.id = bi.bill_id WHERE bi.mk_id = mp.person_id AND b.is_passed = 1) as passedCount,
@@ -961,10 +972,11 @@ export function getMinisters(): MinisterInfo[] {
         OR pos.duty_desc LIKE 'ראש הממשלה%'
         OR pos.duty_desc LIKE 'סגן שר%' OR pos.duty_desc LIKE 'סגנית שר%')
     GROUP BY mp.person_id
-    ORDER BY committeeSessionCount DESC
-  `).all() as Array<{ id: number; name: string; slug: string | null; isCoalition: number | null; factionName: string | null; ministerRole: string; ministry: string | null; billCount: number; passedCount: number; committeeSessionCount: number }>)
+    ORDER BY roleKey, mp.last_name
+  `).all() as Array<{ id: number; name: string; slug: string | null; isCoalition: number | null; factionName: string | null; roleKey: string; ministry: string | null; billCount: number; passedCount: number; committeeSessionCount: number }>)
   .map(r => ({
     ...r,
+    ministerRole: r.roleKey.replace(/^\d:/, ''),
     isCoalition: r.isCoalition === null ? null : r.isCoalition === 1,
   }));
 }
