@@ -177,12 +177,31 @@ async function main() {
         return acc + t.text.split(/\s+/).filter(Boolean).length;
       }, 0);
 
-      // 5. Upsert session metadata into Turso
+      // 5. Delete existing turns (safe re-run)
       await turso.execute({
-        sql: `INSERT INTO plenary_session (id, session_number, knesset_num, name, start_date, protocol_url, speaker_count, word_count, last_scraped)
+        sql: 'DELETE FROM plenary_speaker_turn WHERE session_id = ?',
+        args: [session.id],
+      });
+
+      // 6. Insert turns in batches (Turso has statement limits)
+      const INSERT_BATCH = 50;
+      for (let j = 0; j < turns.length; j += INSERT_BATCH) {
+        const slice = turns.slice(j, j + INSERT_BATCH);
+        const stmts = slice.map(t => ({
+          sql: `INSERT INTO plenary_speaker_turn (session_id, speaker_name, role, mk_id, text, turn_index)
+                VALUES (?, ?, ?, NULL, ?, ?)`,
+          args: [session.id, t.speakerName, t.role, t.text, t.turnIndex] as (string | number | null)[],
+        }));
+        await turso.batch(stmts, 'write');
+      }
+
+      // 7. Upsert session metadata into Turso — done AFTER turns are written so
+      //    last_scraped is only stamped when the session is fully committed.
+      await turso.execute({
+        sql: `INSERT INTO plenary_session (id, session_number, knesset_num, name, start_date, protocol_url, turn_count, word_count, last_scraped)
               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
               ON CONFLICT(id) DO UPDATE SET
-                speaker_count = excluded.speaker_count,
+                turn_count = excluded.turn_count,
                 word_count = excluded.word_count,
                 last_scraped = excluded.last_scraped`,
         args: [
@@ -197,24 +216,6 @@ async function main() {
           new Date().toISOString(),
         ],
       });
-
-      // 6. Delete existing turns (safe re-run)
-      await turso.execute({
-        sql: 'DELETE FROM plenary_speaker_turn WHERE session_id = ?',
-        args: [session.id],
-      });
-
-      // 7. Insert turns in batches (Turso has statement limits)
-      const INSERT_BATCH = 50;
-      for (let j = 0; j < turns.length; j += INSERT_BATCH) {
-        const slice = turns.slice(j, j + INSERT_BATCH);
-        const stmts = slice.map(t => ({
-          sql: `INSERT INTO plenary_speaker_turn (session_id, speaker_name, role, mk_id, text, turn_index)
-                VALUES (?, ?, ?, NULL, ?, ?)`,
-          args: [session.id, t.speakerName, t.role, t.text, t.turnIndex] as (string | number | null)[],
-        }));
-        await turso.batch(stmts, 'write');
-      }
     } catch (err) {
       errors++;
       console.error(`\n  Error processing session ${session.id}: ${(err as Error).message}`);

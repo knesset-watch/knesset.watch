@@ -15,6 +15,16 @@ async function main() {
     authToken: process.env.TURSO_TOKEN,
   });
 
+  // One-off migration: rename speaker_count → turn_count on existing tables.
+  // Safe to re-run; Turso returns an error if the column doesn't exist, which
+  // we swallow so the rest of the script can proceed on a fresh DB.
+  try {
+    await client.execute('ALTER TABLE plenary_session RENAME COLUMN speaker_count TO turn_count');
+    console.log('Renamed speaker_count → turn_count on existing table.');
+  } catch {
+    // Column already renamed or table doesn't exist yet — nothing to do.
+  }
+
   console.log('Creating plenary_session table...');
   await client.execute(`
     CREATE TABLE IF NOT EXISTS plenary_session (
@@ -24,7 +34,7 @@ async function main() {
       name TEXT,
       start_date TEXT,
       protocol_url TEXT,
-      speaker_count INTEGER DEFAULT 0,
+      turn_count INTEGER DEFAULT 0,
       word_count INTEGER DEFAULT 0,
       last_scraped TEXT
     )
