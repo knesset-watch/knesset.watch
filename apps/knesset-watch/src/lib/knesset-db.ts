@@ -1841,7 +1841,7 @@ export function searchVotesByKeyword(keyword: string | string[], mkId?: number, 
   try {
     const keywords = (Array.isArray(keyword) ? keyword : [keyword]).filter(k => k.length >= 2);
     if (keywords.length === 0) return [];
-    const VOTE_LABEL: Record<number, string> = { 7: 'בעד', 8: 'נגד', 6: 'נמנע', 9: 'נעדר' };
+    const VOTE_LABEL: Record<number, string> = { 7: 'בעד', 8: 'נגד', 9: 'נמנע', 6: 'נוכח' };
     type Row = { id: number; title: string; date: string; micro_agenda: string | null; macro_agenda: string | null; is_passed: number; total_for: number; total_against: number; result_code?: number };
     const map = (r: Row): VoteSearchResult => ({
       voteId: r.id, title: r.title, date: r.date,

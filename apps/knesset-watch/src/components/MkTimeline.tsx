@@ -53,10 +53,10 @@ export function MkTimeline({ query, topicKeywords }: { query: string; topicKeywo
     <div className="mt-6 border-t pt-4">
       <h3 className="text-sm font-semibold text-gray-600 mb-3">פעילות {mkName} בנושא</h3>
       <div className="space-y-2">
-        {events.map((event, i) => {
+        {events.map((event) => {
           const href = TYPE_LINKS[event.type](event.sourceId);
           const row = (
-            <div key={i} className="flex items-start gap-3 text-sm">
+            <div key={`${event.type}-${event.sourceId}`} className="flex items-start gap-3 text-sm">
               <span className="text-gray-400 w-20 shrink-0 tabular-nums">{event.date}</span>
               <span className={`text-xs px-1.5 py-0.5 rounded font-medium shrink-0 ${TYPE_COLORS[event.type]}`}>
                 {TYPE_LABELS[event.type]}
@@ -69,7 +69,7 @@ export function MkTimeline({ query, topicKeywords }: { query: string; topicKeywo
           );
           if (href) {
             return (
-              <a key={i} href={href} className="block hover:bg-gray-50 rounded -mx-1 px-1 transition-colors">
+              <a key={`${event.type}-${event.sourceId}`} href={href} className="block hover:bg-gray-50 rounded -mx-1 px-1 transition-colors">
                 {row}
               </a>
             );

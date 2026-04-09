@@ -348,7 +348,7 @@ export async function GET(req: NextRequest) {
     }
 
     if (context.trim().length < 50) {
-      return NextResponse.json({ answer: 'לא נמצא מידע רלוונטי לשאלה זו בנתוני הכנסת.', sources: [], detectedMk });
+      return NextResponse.json({ answer: 'לא נמצא מידע רלוונטי לשאלה זו בנתוני הכנסת.', sources: [], detectedMk, topicKeywords: [] });
     }
 
     // 7. Call Gemini — select prompt and inject news context when available
