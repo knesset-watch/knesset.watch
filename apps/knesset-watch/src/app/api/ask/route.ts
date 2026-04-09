@@ -11,6 +11,7 @@ import {
   searchBillsByKeyword,
   searchQueriesByKeyword,
 } from '@/lib/knesset-db';
+import { MK_NICKNAMES } from '@/lib/nicknames';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,16 +44,30 @@ async function setCached(key: string, value: AskResponse): Promise<void> {
 
 // ── Gemini call ───────────────────────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `אתה אנליסט נתוני הכנסת הישראלית. ענה בעברית בלבד, בצורה ממוקדת ואנליטית.
+// Used for general (non-MK) queries
+const SYSTEM_PROMPT_GENERAL = `אתה אנליסט נתוני הכנסת הישראלית. ענה בעברית בלבד, בצורה ממוקדת ואנליטית.
 נתח את המקורות שסופקו: פרוטוקולים, הצבעות, הצעות חוק ושאילתות פרלמנטריות.
-כשנשאלים על ח"כ ספציפי: סכם את עמדותיו, מה יזם, כיצד הצביע, ומה השיג בפועל.
 כשנשאלים שאלה אנליטית: הסק מסקנות מבוססות-נתונים ממה שמופיע במקורות.
 ציין תאריכים, שמות ועדות, תוצאות הצבעות ושמות ח"כים.
 הסתמך אך ורק על המקורות שסופקו. אל תמציא. אם אין מידע מספיק — אמור זאת.
 כתוב טקסט רגיל בלבד — ללא markdown, ללא כוכביות, ללא hashtag.
 כשמזכירים אירוע, הצבעה, ישיבה או הצ"ח ממקור נתון: הוסף מיד לאחר הציון את תגית המקור המלאה (SESSION:id, VOTE:id, או BILL:id) בסוגריים מרובעים — לדוגמה: "ב-24.1.2025 [SESSION:1234] הוא הציע...". השתמש בתגית שמופיעה בכותרת הקטע הרלוונטי.`;
 
-async function callGemini(userMessage: string): Promise<string> {
+// Used when both an MK and a topic are detected — journalist briefing format
+const SYSTEM_PROMPT_MK_TOPIC = `אתה עוזר מחקר לעיתונאי נתונים פרלמנטרי. תפקידך: לחבר בין נתוני הכנסת לסיפור העיתונאי הרחב.
+ענה בעברית בלבד. כתוב בצורה ברורה וממוקדת, כאילו אתה מבריף כתב פרלמנטרי לפני כתבה.
+
+בנה את התשובה לפי הסדר הזה (דלג על קטגוריה אם אין עליה מידע):
+1. רקע: מה הנושא ומה ההקשר הציבורי שלו? (משפט-שניים בלבד)
+2. עמדת הח"כ: מה עמדתו — האם הוביל, תמך, התנגד?
+3. פעולות: מה יזם / הגיש / אמר — ציין תאריכים ספציפיים.
+4. הצבעות: כיצד הצביע בהצבעות הרלוונטיות?
+5. תוצאה: מה השיג בפועל? חוק שעבר? שינוי מדיניות? פעולה ממשלתית?
+
+הסתמך אך ורק על המקורות שסופקו. אל תמציא. כתוב טקסט רגיל ללא markdown.
+כשמזכירים אירוע ממקור: הוסף [SESSION:id], [VOTE:id], [BILL:id] מיד אחרי הציון.`;
+
+async function callGemini(userMessage: string, systemPrompt: string): Promise<string> {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error('GEMINI_API_KEY not set');
 
@@ -62,7 +77,7 @@ async function callGemini(userMessage: string): Promise<string> {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        system_instruction: { parts: [{ text: systemPrompt }] },
         contents: [{ role: 'user', parts: [{ text: userMessage }] }],
         generationConfig: { maxOutputTokens: 2048, thinkingConfig: { thinkingBudget: 0 } },
       }),
@@ -82,8 +97,41 @@ async function callGemini(userMessage: string): Promise<string> {
   return data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
 }
 
+// Fetches a brief news context summary using Gemini's Google Search grounding.
+// Returns empty string on any failure — always non-blocking.
+async function fetchNewsContext(topic: string, mkName?: string): Promise<string> {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key || !topic) return '';
+  const searchQuery = mkName ? `${mkName} ${topic}` : topic;
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text:
+            `חפש ידיעות עדכניות בעברית על: "${searchQuery}". ` +
+            `סכם ב-3-4 משפטים בלבד: מה הנושא, מה עמד על הפרק בציבור, ומה ההקשר הרלוונטי. ` +
+            `אל תוסיף מידע מדויק שאינך בטוח בו.`,
+          }] }],
+          tools: [{ googleSearch: {} }],
+          generationConfig: { maxOutputTokens: 300, thinkingConfig: { thinkingBudget: 0 } },
+        }),
+      },
+    );
+    if (!res.ok) return '';
+    const data = await res.json() as {
+      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+    };
+    return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? '';
+  } catch {
+    return '';
+  }
+}
+
 // ── Topic keyword extraction ─────────────────────────────────────────────────
-// Strips question/stop words and MK name to get a meaningful topic term for DB search.
+// Strips question/stop words and MK name to get the meaningful topic for DB search.
 const HE_STOP = new Set([
   'מה','מי','איך','כיצד','מדוע','למה','מתי','האם','כמה',
   'עשה','עשתה','עשו','אמר','אמרה','הצביע','הצביעה','הגיש','הגישה',
@@ -92,20 +140,32 @@ const HE_STOP = new Set([
   'ה','ש','ו',
 ]);
 
-// Returns top 3 meaningful topic keywords, longest first.
-function extractTopicKeywords(query: string, mkName?: string): string[] {
-  let text = mkName ? query.replace(mkName, '') : query;
+// Returns top 3 meaningful topic keywords (longest first) and the raw topic phrase.
+// The phrase preserves multi-word topics like "יוקר המחיה" for LIKE searches.
+function extractTopicKeywords(query: string, mkName?: string): { keywords: string[]; phrase: string } {
+  let text = query;
   if (mkName) {
-    for (const part of mkName.split(' ')) text = text.replace(part, '');
+    for (const part of mkName.split(' ')) {
+      text = text.replace(new RegExp(part, 'g'), '');
+    }
   }
+  // Also strip any nickname that appears (so "ביבי" doesn't become a keyword)
+  for (const nickname of Object.keys(MK_NICKNAMES)) {
+    text = text.replace(new RegExp(nickname, 'g'), '');
+  }
+  text = text.trim();
+  const phrase = text.replace(/\s+/g, ' ').trim();
+
   const seen = new Set<string>();
-  return text
+  const keywords = text
     .split(/\s+/)
     .map(w => w.replace(/^[הוש]/, ''))   // strip ה/ו/ש prefix
     .filter(w => w.length >= 3 && !HE_STOP.has(w))
     .sort((a, b) => b.length - a.length)
     .filter(w => { if (seen.has(w)) return false; seen.add(w); return true; })
     .slice(0, 3);
+
+  return { keywords, phrase };
 }
 
 // ── Route handler ─────────────────────────────────────────────────────────────
@@ -119,7 +179,7 @@ export async function GET(req: NextRequest) {
   if (q.length > 500)      return NextResponse.json({ error: 'שאלה ארוכה מדי' }, { status: 400 });
 
   // 1. Check cache
-  const cacheKey = `ask:v3:${q}`;
+  const cacheKey = `ask:v5:${q}`;
   const cached = await getCached(cacheKey);
   if (cached) return NextResponse.json(cached);
 
@@ -131,28 +191,34 @@ export async function GET(req: NextRequest) {
     ]);
 
     const mkId = detectedMk?.mkId;
-    // Extract topic keywords (top 3 meaningful words, MK name removed)
-    const topicKeywords = extractTopicKeywords(q, detectedMk?.fullName);
-    const primaryKeyword = topicKeywords[0] ?? '';
+    // Extract topic keywords + phrase (MK name and nicknames removed)
+    const { keywords: topicKeywords, phrase: topicPhrase } = extractTopicKeywords(q, detectedMk?.fullName);
+    const searchTerm = topicPhrase || topicKeywords[0] || '';
 
     // 3. Run all searches in parallel:
-    //    - Speaker turns (MK + topic): targeted speech excerpts
+    //    - Speaker turns (MK + topic phrase): targeted speech excerpts
     //    - Vector search: semantic session search (always run when embedding available)
     //    - Structured data: votes, bills, queries
+    //    - News context: Gemini-grounded summary of recent news (non-blocking)
     const vectorSearchPromise: Promise<ProtocolSearchResult[]> = embedding
       ? searchProtocolsVec(embedding, null, 40).catch((e: unknown) => { console.error('vec search error:', e); return []; })
       : searchProtocols(q, null, 1).then((r: { results: ProtocolSearchResult[] }) => r.results).catch((e: unknown) => { console.error('text search error:', e); return []; });
 
-    const speakerTurnsPromise: Promise<MkSpeakerTurn[]> = mkId && primaryKeyword.length >= 2
-      ? searchMkSpeakerTurns(mkId, primaryKeyword, 6)
+    const speakerTurnsPromise: Promise<MkSpeakerTurn[]> = mkId && searchTerm.length >= 2
+      ? searchMkSpeakerTurns(mkId, searchTerm, 6)
       : Promise.resolve([]);
 
-    const [speakerTurns, vectorResults, votes, bills, queries] = await Promise.all([
+    const newsContextPromise: Promise<string> = topicPhrase.length >= 2
+      ? fetchNewsContext(topicPhrase, detectedMk?.fullName).catch(() => '')
+      : Promise.resolve('');
+
+    const [speakerTurns, vectorResults, votes, bills, queries, newsContext] = await Promise.all([
       speakerTurnsPromise,
       vectorSearchPromise,
       Promise.resolve(searchVotesByKeyword(topicKeywords.length > 0 ? topicKeywords : [q], mkId, 15)),
       Promise.resolve(searchBillsByKeyword(topicKeywords.length > 0 ? topicKeywords : [q], mkId, 8)),
       Promise.resolve(searchQueriesByKeyword(topicKeywords.length > 0 ? topicKeywords : [q], mkId, 8)),
+      newsContextPromise,
     ]);
 
     // 4. Build LLM context + collect sources
@@ -230,7 +296,9 @@ export async function GET(req: NextRequest) {
       context += '\n[שאילתות פרלמנטריות]\n';
       for (const qr of queries.slice(0, 5)) {
         sources.push({ type: 'query', queryId: qr.queryId, title: qr.title, submitDate: qr.submitDate, mkName: qr.mkName });
-        context += `• ${qr.submitDate} — ${qr.title}\n`;
+        const bodyExcerpt = qr.body ? `\n  תוכן: ${qr.body.slice(0, 250)}` : '';
+        const responseNote = qr.ministryResponse ? `\n  תשובה: ${qr.ministryResponse.slice(0, 150)}` : '';
+        context += `• ${qr.submitDate} — ${qr.title}${bodyExcerpt}${responseNote}\n`;
       }
     }
 
@@ -238,10 +306,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ answer: 'לא נמצא מידע רלוונטי לשאלה זו בנתוני הכנסת.', sources: [], detectedMk });
     }
 
-    // 7. Call Gemini
+    // 7. Call Gemini — select prompt and inject news context when available
+    const systemPrompt = detectedMk ? SYSTEM_PROMPT_MK_TOPIC : SYSTEM_PROMPT_GENERAL;
+    const newsSection = newsContext ? `[הקשר עיתונאי]\n${newsContext}\n\n` : '';
     let answer: string;
     try {
-      answer = await callGemini(`שאלה: ${q}\n\nמקורות:\n${context}`);
+      answer = await callGemini(`שאלה: ${q}\n\n${newsSection}[נתוני כנסת]\n${context}`, systemPrompt);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       const userMsg = msg === 'RATE_LIMIT'

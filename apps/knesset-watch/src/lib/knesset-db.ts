@@ -11,6 +11,7 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
+import { MK_NICKNAMES } from './nicknames';
 
 const DB_PATH = path.join(process.cwd(), 'knesset.db');
 
@@ -1770,22 +1771,47 @@ export function getAllCommitteeActivity(): CommitteeActivity[] {
 // ── AI Search helpers ────────────────────────────────────────────────────────
 
 /**
- * Scans all MKs to find one whose full name ("first last") appears in the query text.
- * Returns the first match, or null if no MK name is found.
+ * Scans all MKs to find one whose name appears in the query text.
+ * Three-pass strategy:
+ *   1. Full name match ("first last") — most precise
+ *   2. Last name only — word-boundary match, skips names < 3 chars
+ *   3. Nickname lookup — checks MK_NICKNAMES map for informal aliases (ביבי, etc.)
  */
 export function findMkInText(query: string): { mkId: number; fullName: string } | null {
   const db = getDb();
   if (!db) return null;
   try {
     const mks = db.prepare(
-      `SELECT person_id, first_name, last_name FROM mk_person`,
+      `SELECT person_id, first_name, last_name FROM mk_person ORDER BY person_id`,
     ).all() as Array<{ person_id: number; first_name: string; last_name: string }>;
+
+    // Pass 1: full name match
     for (const mk of mks) {
       const fullName = `${mk.first_name} ${mk.last_name}`;
       if (query.includes(fullName)) {
         return { mkId: mk.person_id, fullName };
       }
     }
+
+    // Pass 2: last name only (word boundary, ≥3 chars)
+    for (const mk of mks) {
+      if (mk.last_name.length < 3) continue;
+      // Escape any regex special chars in the last name
+      const escaped = mk.last_name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const pattern = new RegExp(`(^|\\s)${escaped}(\\s|$)`);
+      if (pattern.test(query)) {
+        return { mkId: mk.person_id, fullName: `${mk.first_name} ${mk.last_name}` };
+      }
+    }
+
+    // Pass 3: nickname / alias lookup
+    for (const [nickname, fullName] of Object.entries(MK_NICKNAMES)) {
+      if (query.includes(nickname)) {
+        const mk = mks.find(m => `${m.first_name} ${m.last_name}` === fullName);
+        if (mk) return { mkId: mk.person_id, fullName };
+      }
+    }
+
     return null;
   } catch {
     return null;
@@ -1911,11 +1937,13 @@ export interface QuerySearchResult {
   submitDate: string;
   mkId: number;
   mkName: string;
+  body: string | null;
+  ministryResponse: string | null;
 }
 
 /**
  * For a specific MK: returns their recent parliamentary queries.
- * Without an MK: keyword search on query title.
+ * Without an MK: keyword search on query title or body.
  * Accepts a single keyword or array of keywords (OR-matched).
  */
 export function searchQueriesByKeyword(keyword: string | string[], mkId?: number, limit = 8): QuerySearchResult[] {
@@ -1924,31 +1952,32 @@ export function searchQueriesByKeyword(keyword: string | string[], mkId?: number
   try {
     const keywords = (Array.isArray(keyword) ? keyword : [keyword]).filter(k => k.length >= 2);
     if (keywords.length === 0) return [];
-    type Row = { id: number; title: string; submit_date: string; mk_id: number; first_name: string; last_name: string };
+    type Row = { id: number; title: string; submit_date: string; mk_id: number; first_name: string; last_name: string; body: string | null; ministry_response: string | null };
     const map = (r: Row): QuerySearchResult => ({
       queryId: r.id, title: r.title, submitDate: r.submit_date,
       mkId: r.mk_id, mkName: `${r.first_name} ${r.last_name}`,
+      body: r.body, ministryResponse: r.ministry_response,
     });
-    const cond = keywords.map(() => 'q.title LIKE ?').join(' OR ');
-    const kArgs = keywords.map(k => `%${k}%`);
+    const cond = keywords.map(() => '(q.title LIKE ? OR q.body LIKE ?)').join(' OR ');
+    const kArgs = keywords.flatMap(k => [`%${k}%`, `%${k}%`]);
 
     if (mkId !== undefined) {
       const filtered = (db.prepare(`
-        SELECT q.id, q.title, q.submit_date, q.mk_id, p.first_name, p.last_name
+        SELECT q.id, q.title, q.submit_date, q.mk_id, p.first_name, p.last_name, q.body, q.ministry_response
         FROM mk_query q JOIN mk_person p ON p.person_id = q.mk_id
         WHERE q.mk_id = ? AND (${cond})
         ORDER BY q.submit_date DESC LIMIT ?
       `).all(mkId, ...kArgs, limit) as Row[]).map(map);
       if (filtered.length > 0) return filtered;
       return (db.prepare(`
-        SELECT q.id, q.title, q.submit_date, q.mk_id, p.first_name, p.last_name
+        SELECT q.id, q.title, q.submit_date, q.mk_id, p.first_name, p.last_name, q.body, q.ministry_response
         FROM mk_query q JOIN mk_person p ON p.person_id = q.mk_id
         WHERE q.mk_id = ?
         ORDER BY q.submit_date DESC LIMIT ?
       `).all(mkId, limit) as Row[]).map(map);
     }
     return (db.prepare(`
-      SELECT q.id, q.title, q.submit_date, q.mk_id, p.first_name, p.last_name
+      SELECT q.id, q.title, q.submit_date, q.mk_id, p.first_name, p.last_name, q.body, q.ministry_response
       FROM mk_query q JOIN mk_person p ON p.person_id = q.mk_id
       WHERE ${cond}
       ORDER BY q.submit_date DESC LIMIT ?
