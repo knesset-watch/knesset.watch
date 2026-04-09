@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import EntityTooltip from '@/components/EntityTooltip';
 import { MkTimeline } from '@/components/MkTimeline';
+import { VoteCoalition } from '@/components/VoteCoalition';
 
 type SessionSource = { type: 'session'; sessionId: number; committeeName: string; date: string; title: string };
 type VoteSource   = { type: 'vote';    voteId: number;    title: string; date: string; isPassed: boolean };
@@ -257,6 +258,10 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
 
             {result.detectedMk && (result.topicKeywords ?? []).length > 0 && (
               <MkTimeline query={submittedQ} topicKeywords={result.topicKeywords} />
+            )}
+
+            {votes.length === 1 && (
+              <VoteCoalition voteId={votes[0].voteId} />
             )}
           </div>
         )}

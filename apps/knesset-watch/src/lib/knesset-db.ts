@@ -2083,3 +2083,85 @@ export function searchQueriesByKeyword(keyword: string | string[], mkId?: number
     return [];
   }
 }
+
+// ── Vote coalition breakdown ─────────────────────────────────────────────────
+
+export interface FactionVoteBreakdown {
+  factionName: string;
+  forCount: number;
+  againstCount: number;
+  abstainCount: number;
+  presentCount: number;
+}
+
+export interface VoteCoalitionData {
+  voteId: number;
+  voteTitle: string;
+  voteDate: string;
+  totalFor: number;
+  totalAgainst: number;
+  totalAbstain: number;
+  isPassed: boolean;
+  factions: FactionVoteBreakdown[];
+}
+
+/**
+ * Get a per-faction vote breakdown for a single plenary vote.
+ * Uses mk_person.faction_name to group MKs (the faction recorded at sync time).
+ * result_code: 7=בעד, 8=נגד, 9=נמנע, 6=נוכח
+ */
+export function getVoteCoalition(voteId: number): VoteCoalitionData | null {
+  const db = getDb();
+  if (!db) return null;
+
+  const vote = db
+    .prepare(
+      `SELECT id, title, date, total_for, total_against, total_abstain, is_passed
+       FROM plenary_vote WHERE id = ?`,
+    )
+    .get(voteId) as {
+      id: number; title: string; date: string;
+      total_for: number; total_against: number; total_abstain: number; is_passed: number;
+    } | undefined;
+
+  if (!vote) return null;
+
+  const rows = db
+    .prepare(
+      `SELECT p.faction_name, r.result_code, COUNT(*) as cnt
+       FROM mk_vote_result r
+       JOIN mk_person p ON p.person_id = r.mk_id
+       WHERE r.vote_id = ?
+       GROUP BY p.faction_name, r.result_code`,
+    )
+    .all(voteId) as Array<{ faction_name: string | null; result_code: number; cnt: number }>;
+
+  // Aggregate per faction
+  const factionMap = new Map<string, FactionVoteBreakdown>();
+  for (const row of rows) {
+    const name = row.faction_name?.trim() || 'לא ידוע';
+    if (!factionMap.has(name)) {
+      factionMap.set(name, { factionName: name, forCount: 0, againstCount: 0, abstainCount: 0, presentCount: 0 });
+    }
+    const f = factionMap.get(name)!;
+    if (row.result_code === 7) f.forCount += row.cnt;
+    else if (row.result_code === 8) f.againstCount += row.cnt;
+    else if (row.result_code === 9) f.abstainCount += row.cnt;
+    else if (row.result_code === 6) f.presentCount += row.cnt;
+  }
+
+  const factions = Array.from(factionMap.values()).sort(
+    (a, b) => (b.forCount + b.againstCount) - (a.forCount + a.againstCount),
+  );
+
+  return {
+    voteId: vote.id,
+    voteTitle: vote.title,
+    voteDate: vote.date.slice(0, 10),
+    totalFor: vote.total_for,
+    totalAgainst: vote.total_against,
+    totalAbstain: vote.total_abstain,
+    isPassed: vote.is_passed === 1,
+    factions,
+  };
+}
