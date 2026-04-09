@@ -12,7 +12,7 @@
  * If it fails (Turso diskann needs at least one row), run manually:
  *   CREATE INDEX idx_plenary_turn_embedding ON plenary_speaker_turn(libsql_vector_idx(embedding))
  */
-import dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
 import { createClient } from '@libsql/client';
@@ -67,6 +67,14 @@ async function ensureVectorIndex() {
 }
 
 async function main() {
+  // Ensure embedding column exists (idempotent)
+  try {
+    await db.execute(`ALTER TABLE plenary_speaker_turn ADD COLUMN embedding F32_BLOB(768)`);
+    console.log('Added embedding column (F32_BLOB(768)).');
+  } catch {
+    // Column already exists — fine
+  }
+
   const countRes = await db.execute(
     'SELECT COUNT(*) as n FROM plenary_speaker_turn WHERE embedding IS NULL AND text IS NOT NULL'
   );
