@@ -290,6 +290,77 @@ export async function searchMkSpeakerTurns(
   }
 }
 
+export interface MkSpeakerTurnVec {
+  turnId: number;
+  sessionId: number;
+  committeeName: string;
+  date: string;
+  text: string;
+  score: number; // cosine distance — lower = more similar
+}
+
+/**
+ * Finds speaker turns semantically similar to the given query embedding.
+ * When mkId is provided, restricts to that MK's turns only.
+ * Falls back to empty array if no embeddings exist yet (background job still running).
+ */
+export async function searchSpeakerTurnsByVector(
+  embedding: number[],
+  mkId: number | null,
+  limit = 6,
+): Promise<MkSpeakerTurnVec[]> {
+  const client = getTurso();
+  if (!client) return [];
+
+  const vec = `[${embedding.join(',')}]`;
+
+  const mkFilter = mkId !== null ? 'AND sst.mk_id = ?' : '';
+  const args: (string | number)[] = [vec];
+  if (mkId !== null) args.push(mkId);
+  args.push(limit * 3); // fetch extra for deduplication
+
+  const sql = `
+    SELECT sst.id as turn_id,
+           sst.session_id,
+           cs.committee_name,
+           cs.date,
+           sst.text,
+           vector_distance_cos(sst.embedding, vector32(?)) as score
+    FROM session_speaker_turn sst
+    JOIN committee_session cs ON cs.id = sst.session_id
+    WHERE sst.embedding IS NOT NULL
+      ${mkFilter}
+    ORDER BY score ASC
+    LIMIT ?
+  `;
+
+  try {
+    const result = await client.execute({ sql, args });
+    // Deduplicate: keep only the best-scoring turn per session
+    const seen = new Map<number, MkSpeakerTurnVec>();
+    for (const row of result.rows) {
+      const sessionId = Number(row.session_id);
+      const entry: MkSpeakerTurnVec = {
+        turnId: Number(row.turn_id),
+        sessionId,
+        committeeName: String(row.committee_name ?? ''),
+        date: String(row.date ?? ''),
+        text: String(row.text ?? ''),
+        score: Number(row.score ?? 1),
+      };
+      if (!seen.has(sessionId) || entry.score < seen.get(sessionId)!.score) {
+        seen.set(sessionId, entry);
+      }
+    }
+    return [...seen.values()]
+      .sort((a, b) => a.score - b.score)
+      .slice(0, limit);
+  } catch (e) {
+    console.error('searchSpeakerTurnsByVector error:', e);
+    return [];
+  }
+}
+
 // ── Session + turns for RAG context ──────────────────────────────────────────
 
 export interface ProtocolSession {
