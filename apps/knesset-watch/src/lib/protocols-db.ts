@@ -361,6 +361,127 @@ export async function searchSpeakerTurnsByVector(
   }
 }
 
+// ── Plenary speaker turn search ───────────────────────────────────────────────
+
+export interface PlenaryMkTurn {
+  sessionId: number;
+  sessionName: string;
+  date: string;
+  speakerName: string;
+  text: string;
+}
+
+/**
+ * Keyword-based search for a specific MK's speech turns in plenary sessions.
+ * Filters by speaker_name LIKE mkName AND text LIKE searchTerm.
+ */
+export async function searchPlenaryMkTurns(
+  mkName: string,
+  searchTerm: string,
+  limit = 6,
+): Promise<PlenaryMkTurn[]> {
+  const client = getTurso();
+  if (!client || !searchTerm.trim()) return [];
+  try {
+    const res = await client.execute({
+      sql: `
+        SELECT pst.session_id, ps.name, ps.start_date, pst.speaker_name, pst.text
+        FROM plenary_speaker_turn pst
+        JOIN plenary_session ps ON ps.id = pst.session_id
+        WHERE pst.speaker_name LIKE ? AND pst.text LIKE ?
+        ORDER BY ps.start_date DESC, LENGTH(pst.text) DESC
+        LIMIT ?
+      `,
+      args: [`%${mkName}%`, `%${searchTerm}%`, limit * 3],
+    });
+
+    // Deduplicate: keep one (longest) turn per session
+    const seen = new Set<number>();
+    const results: PlenaryMkTurn[] = [];
+    for (const r of res.rows) {
+      const sid = Number(r['session_id']);
+      if (seen.has(sid)) continue;
+      seen.add(sid);
+      results.push({
+        sessionId: sid,
+        sessionName: String(r['name'] ?? ''),
+        date: String(r['start_date'] ?? '').slice(0, 10),
+        speakerName: String(r['speaker_name'] ?? ''),
+        text: String(r['text'] ?? '').slice(0, 600),
+      });
+      if (results.length >= limit) break;
+    }
+    return results;
+  } catch {
+    return [];
+  }
+}
+
+export interface PlenaryMkTurnVec extends PlenaryMkTurn {
+  score: number;
+}
+
+/**
+ * Vector search for plenary speaker turns semantically similar to the given embedding.
+ * When mkName is provided, restricts to that speaker only.
+ * Deduplicates to best turn per session.
+ */
+export async function searchPlenaryTurnsByVector(
+  embedding: number[],
+  mkName: string | null,
+  limit = 6,
+): Promise<PlenaryMkTurnVec[]> {
+  const client = getTurso();
+  if (!client) return [];
+
+  const vec = `[${embedding.join(',')}]`;
+  const mkFilter = mkName ? 'AND pst.speaker_name LIKE ?' : '';
+  const args: (string | number)[] = [vec];
+  if (mkName) args.push(`%${mkName}%`);
+  args.push(limit * 3);
+
+  const sql = `
+    SELECT pst.session_id,
+           ps.name,
+           ps.start_date,
+           pst.speaker_name,
+           pst.text,
+           vector_distance_cos(pst.embedding, vector32(?)) as score
+    FROM plenary_speaker_turn pst
+    JOIN plenary_session ps ON ps.id = pst.session_id
+    WHERE pst.embedding IS NOT NULL
+      ${mkFilter}
+    ORDER BY score ASC
+    LIMIT ?
+  `;
+
+  try {
+    const result = await client.execute({ sql, args });
+    // Deduplicate: keep only the best-scoring turn per session
+    const seen = new Map<number, PlenaryMkTurnVec>();
+    for (const row of result.rows) {
+      const sessionId = Number(row['session_id']);
+      const entry: PlenaryMkTurnVec = {
+        sessionId,
+        sessionName: String(row['name'] ?? ''),
+        date: String(row['start_date'] ?? '').slice(0, 10),
+        speakerName: String(row['speaker_name'] ?? ''),
+        text: String(row['text'] ?? ''),
+        score: Number(row['score'] ?? 1),
+      };
+      if (!seen.has(sessionId) || entry.score < seen.get(sessionId)!.score) {
+        seen.set(sessionId, entry);
+      }
+    }
+    return [...seen.values()]
+      .sort((a, b) => a.score - b.score)
+      .slice(0, limit);
+  } catch (e) {
+    console.error('searchPlenaryTurnsByVector error:', e);
+    return [];
+  }
+}
+
 // ── Session + turns for RAG context ──────────────────────────────────────────
 
 export interface ProtocolSession {

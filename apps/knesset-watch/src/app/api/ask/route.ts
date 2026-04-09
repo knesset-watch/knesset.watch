@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { kv } from '@vercel/kv';
 import { validateApiAuth } from '@/lib/ui/auth-utils';
-import { embedQueryPublic, searchProtocolsVec, searchProtocols, getProtocolSession, searchMkSpeakerTurns, searchSpeakerTurnsByVector } from '@/lib/protocols-db';
-import type { ProtocolSearchResult, MkSpeakerTurn, MkSpeakerTurnVec } from '@/lib/protocols-db';
+import { embedQueryPublic, searchProtocolsVec, searchProtocols, getProtocolSession, searchMkSpeakerTurns, searchSpeakerTurnsByVector, searchPlenaryMkTurns, searchPlenaryTurnsByVector } from '@/lib/protocols-db';
+import type { ProtocolSearchResult, MkSpeakerTurn, MkSpeakerTurnVec, PlenaryMkTurn } from '@/lib/protocols-db';
 import {
   findMkInText,
   getMkPerson,
@@ -179,7 +179,7 @@ export async function GET(req: NextRequest) {
   if (q.length > 500)      return NextResponse.json({ error: 'שאלה ארוכה מדי' }, { status: 400 });
 
   // 1. Check cache
-  const cacheKey = `ask:v6:${q}`;
+  const cacheKey = `ask:v7:${q}`;
   const cached = await getCached(cacheKey);
   if (cached) return NextResponse.json(cached);
 
@@ -229,12 +229,28 @@ export async function GET(req: NextRequest) {
           ? searchMkSpeakerTurns(mkId, searchTerm, 6)
           : Promise.resolve([]);
 
+    const plenaryTurnsPromise: Promise<PlenaryMkTurn[]> =
+      mkId && embedding
+        ? searchPlenaryTurnsByVector(embedding, detectedMk!.fullName, 4)
+            .then(turns =>
+              turns.map(t => ({ ...t }))
+            )
+            .catch(() =>
+              mkId && searchTerm.length >= 2
+                ? searchPlenaryMkTurns(detectedMk!.fullName, searchTerm, 4)
+                : Promise.resolve([])
+            )
+        : mkId && searchTerm.length >= 2
+          ? searchPlenaryMkTurns(detectedMk!.fullName, searchTerm, 4)
+          : Promise.resolve([]);
+
     const newsContextPromise: Promise<string> = topicPhrase.length >= 2
       ? fetchNewsContext(topicPhrase, detectedMk?.fullName).catch(() => '')
       : Promise.resolve('');
 
-    const [speakerTurns, vectorResults, votes, bills, queries, newsContext] = await Promise.all([
+    const [speakerTurns, plenaryTurns, vectorResults, votes, bills, queries, newsContext] = await Promise.all([
       speakerTurnsPromise,
+      plenaryTurnsPromise,
       vectorSearchPromise,
       Promise.resolve(searchVotesByKeyword(topicKeywords.length > 0 ? topicKeywords : [q], mkId, 15)),
       Promise.resolve(searchBillsByKeyword(topicKeywords.length > 0 ? topicKeywords : [q], mkId, 8)),
@@ -292,6 +308,13 @@ export async function GET(req: NextRequest) {
         }
         context += '\n';
         if (context.length > 5000) break;
+      }
+    }
+
+    if (plenaryTurns.length > 0) {
+      context += `\n## דברי ח"כ במליאה\n`;
+      for (const t of plenaryTurns) {
+        context += `• ${t.date} — ${t.sessionName}\n  ${t.text.slice(0, 400)}\n`;
       }
     }
 
