@@ -25,6 +25,7 @@ interface AskResponse {
   answer: string;
   sources: Source[];
   detectedMk: { mkId: number; fullName: string } | null;
+  topicKeywords: string[];
 }
 
 // ── KV cache helpers ──────────────────────────────────────────────────────────
@@ -179,7 +180,7 @@ export async function GET(req: NextRequest) {
   if (q.length > 500)      return NextResponse.json({ error: 'שאלה ארוכה מדי' }, { status: 400 });
 
   // 1. Check cache
-  const cacheKey = `ask:v7:${q}`;
+  const cacheKey = `ask:v8:${q}`;
   const cached = await getCached(cacheKey);
   if (cached) return NextResponse.json(cached);
 
@@ -364,7 +365,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: userMsg }, { status: 502 });
     }
 
-    const response: AskResponse = { answer, sources, detectedMk: detectedMk ?? null };
+    const response: AskResponse = { answer, sources, detectedMk: detectedMk ?? null, topicKeywords };
 
     // 8. Cache and return
     await setCached(cacheKey, response);

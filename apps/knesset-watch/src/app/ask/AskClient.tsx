@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import EntityTooltip from '@/components/EntityTooltip';
+import { MkTimeline } from '@/components/MkTimeline';
 
 type SessionSource = { type: 'session'; sessionId: number; committeeName: string; date: string; title: string };
 type VoteSource   = { type: 'vote';    voteId: number;    title: string; date: string; isPassed: boolean };
@@ -15,6 +16,7 @@ interface AskResult {
   answer: string;
   sources: Source[];
   detectedMk: { mkId: number; fullName: string } | null;
+  topicKeywords: string[];
 }
 
 function SessionCard({ s }: { s: SessionSource }) {
@@ -251,6 +253,10 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
                   })}
                 </div>
               </div>
+            )}
+
+            {result.detectedMk && (result.topicKeywords ?? []).length > 0 && (
+              <MkTimeline query={submittedQ} topicKeywords={result.topicKeywords} />
             )}
           </div>
         )}

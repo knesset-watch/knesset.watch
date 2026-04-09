@@ -1931,6 +1931,103 @@ export function searchBillsByKeyword(keyword: string | string[], mkId?: number, 
   }
 }
 
+// ── MK Topic Timeline ──────────────────────────────────────────────────────────
+
+export interface TimelineEvent {
+  type: 'bill' | 'vote' | 'query';
+  date: string;
+  title: string;
+  detail: string;   // bill status_desc, vote stance (בעד/נגד/נמנע), or empty
+  sourceId: number; // bill id, plenary_vote id, or mk_query id
+}
+
+/**
+ * Build a chronological activity timeline for a given MK on a topic.
+ * Searches bills (by initiator), plenary votes, and parliamentary queries using
+ * LIKE matching against the first (most specific) keyword.
+ * Returns up to `limit` events sorted newest-first.
+ */
+export function getMkTopicTimeline(
+  mkId: number,
+  keywords: string[],
+  limit = 20,
+): TimelineEvent[] {
+  const db = getDb();
+  if (!db || keywords.length === 0) return [];
+
+  // Use the first keyword (longest/most specific after caller sorts them)
+  const kw = `%${keywords[0]}%`;
+  const events: TimelineEvent[] = [];
+
+  try {
+    // Bills: bill table joined with bill_initiator
+    const bills = db.prepare(`
+      SELECT b.id, b.title, b.init_date, b.status_desc, b.is_passed
+      FROM bill b
+      JOIN bill_initiator bi ON bi.bill_id = b.id
+      WHERE bi.mk_id = ? AND b.title LIKE ?
+      ORDER BY b.init_date DESC
+      LIMIT ?
+    `).all(mkId, kw, limit) as Array<{ id: number; title: string; init_date: string | null; status_desc: string | null; is_passed: number }>;
+
+    for (const b of bills) {
+      events.push({
+        type: 'bill',
+        date: b.init_date?.slice(0, 10) ?? '',
+        title: b.title,
+        detail: b.status_desc ?? (b.is_passed ? 'עבר' : ''),
+        sourceId: b.id,
+      });
+    }
+
+    // Votes: plenary_vote joined with mk_vote_result
+    const VOTE_LABEL: Record<number, string> = { 7: 'בעד', 8: 'נגד', 9: 'נמנע', 6: 'נוכח' };
+    const votes = db.prepare(`
+      SELECT pv.id, pv.title, pv.date, mvr.result_code
+      FROM plenary_vote pv
+      JOIN mk_vote_result mvr ON mvr.vote_id = pv.id AND mvr.mk_id = ?
+      WHERE pv.title LIKE ? OR pv.micro_agenda LIKE ?
+      ORDER BY pv.date DESC
+      LIMIT ?
+    `).all(mkId, kw, kw, limit) as Array<{ id: number; title: string; date: string; result_code: number }>;
+
+    for (const v of votes) {
+      events.push({
+        type: 'vote',
+        date: v.date?.slice(0, 10) ?? '',
+        title: v.title,
+        detail: VOTE_LABEL[v.result_code] ?? '',
+        sourceId: v.id,
+      });
+    }
+
+    // Queries: mk_query
+    const queries = db.prepare(`
+      SELECT id, title, submit_date
+      FROM mk_query
+      WHERE mk_id = ? AND (title LIKE ? OR body LIKE ?)
+      ORDER BY submit_date DESC
+      LIMIT ?
+    `).all(mkId, kw, kw, limit) as Array<{ id: number; title: string; submit_date: string }>;
+
+    for (const q of queries) {
+      events.push({
+        type: 'query',
+        date: q.submit_date?.slice(0, 10) ?? '',
+        title: q.title,
+        detail: '',
+        sourceId: q.id,
+      });
+    }
+  } catch (e) {
+    console.error('getMkTopicTimeline error:', e);
+  }
+
+  // Sort all events by date descending and cap at limit
+  events.sort((a, b) => b.date.localeCompare(a.date));
+  return events.slice(0, limit);
+}
+
 export interface QuerySearchResult {
   queryId: number;
   title: string;
