@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { kv } from '@vercel/kv';
 import { validateApiAuth } from '@/lib/ui/auth-utils';
-import { embedQueryPublic, searchProtocolsVec, searchProtocols, getProtocolSession, searchMkSpeakerTurns } from '@/lib/protocols-db';
-import type { ProtocolSearchResult, MkSpeakerTurn } from '@/lib/protocols-db';
+import { embedQueryPublic, searchProtocolsVec, searchProtocols, getProtocolSession, searchMkSpeakerTurns, searchSpeakerTurnsByVector } from '@/lib/protocols-db';
+import type { ProtocolSearchResult, MkSpeakerTurn, MkSpeakerTurnVec } from '@/lib/protocols-db';
 import {
   findMkInText,
   getMkPerson,
@@ -179,7 +179,7 @@ export async function GET(req: NextRequest) {
   if (q.length > 500)      return NextResponse.json({ error: 'שאלה ארוכה מדי' }, { status: 400 });
 
   // 1. Check cache
-  const cacheKey = `ask:v5:${q}`;
+  const cacheKey = `ask:v6:${q}`;
   const cached = await getCached(cacheKey);
   if (cached) return NextResponse.json(cached);
 
@@ -204,9 +204,30 @@ export async function GET(req: NextRequest) {
       ? searchProtocolsVec(embedding, null, 40).catch((e: unknown) => { console.error('vec search error:', e); return []; })
       : searchProtocols(q, null, 1).then((r: { results: ProtocolSearchResult[] }) => r.results).catch((e: unknown) => { console.error('text search error:', e); return []; });
 
-    const speakerTurnsPromise: Promise<MkSpeakerTurn[]> = mkId && searchTerm.length >= 2
-      ? searchMkSpeakerTurns(mkId, searchTerm, 6)
-      : Promise.resolve([]);
+    const speakerTurnsPromise: Promise<MkSpeakerTurn[]> =
+      mkId && embedding
+        ? searchSpeakerTurnsByVector(embedding, mkId, 6)
+            .then((turns: MkSpeakerTurnVec[]) =>
+              turns.length > 0
+                ? turns.map(t => ({
+                    sessionId: t.sessionId,
+                    committeeName: t.committeeName,
+                    date: t.date,
+                    text: t.text,
+                  }))
+                // Fall back to keyword search if vector search returns nothing (embeddings not ready yet)
+                : searchTerm.length >= 2
+                  ? searchMkSpeakerTurns(mkId, searchTerm, 6)
+                  : []
+            )
+            .catch(() =>
+              searchTerm.length >= 2
+                ? searchMkSpeakerTurns(mkId, searchTerm, 6)
+                : Promise.resolve([])
+            )
+        : mkId && searchTerm.length >= 2
+          ? searchMkSpeakerTurns(mkId, searchTerm, 6)
+          : Promise.resolve([]);
 
     const newsContextPromise: Promise<string> = topicPhrase.length >= 2
       ? fetchNewsContext(topicPhrase, detectedMk?.fullName).catch(() => '')
