@@ -472,8 +472,14 @@ async function sync() {
   }
 
   // ── Queries ───────────────────────────────────────────────────────────────
+  // Ensure mk_query table has the enrichment columns
+  const queryCols = (db.prepare(`PRAGMA table_info(mk_query)`).all() as { name: string }[]).map(r => r.name);
+  if (!queryCols.includes('body'))              db.exec(`ALTER TABLE mk_query ADD COLUMN body TEXT`);
+  if (!queryCols.includes('ministry_response')) db.exec(`ALTER TABLE mk_query ADD COLUMN ministry_response TEXT`);
+  if (!queryCols.includes('enriched_at'))       db.exec(`ALTER TABLE mk_query ADD COLUMN enriched_at TEXT`);
+
   const insertQuery = db.prepare(
-    'INSERT OR REPLACE INTO mk_query (id, mk_id, title, submit_date) VALUES (?, ?, ?, ?)',
+    'INSERT INTO mk_query (id, mk_id, title, submit_date) VALUES (?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET mk_id = excluded.mk_id, title = excluded.title, submit_date = excluded.submit_date',
   );
   const insertQueriesBatch = db.transaction((rows: any[]) => {
     for (const r of rows) {
