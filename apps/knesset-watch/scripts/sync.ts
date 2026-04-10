@@ -472,25 +472,56 @@ async function sync() {
   }
 
   // ── Queries ───────────────────────────────────────────────────────────────
-  // Ensure mk_query table has the enrichment columns
+  // Ensure mk_query table has all columns
   const queryCols = (db.prepare(`PRAGMA table_info(mk_query)`).all() as { name: string }[]).map(r => r.name);
-  if (!queryCols.includes('body'))              db.exec(`ALTER TABLE mk_query ADD COLUMN body TEXT`);
-  if (!queryCols.includes('ministry_response')) db.exec(`ALTER TABLE mk_query ADD COLUMN ministry_response TEXT`);
-  if (!queryCols.includes('enriched_at'))       db.exec(`ALTER TABLE mk_query ADD COLUMN enriched_at TEXT`);
+  if (!queryCols.includes('body'))                   db.exec(`ALTER TABLE mk_query ADD COLUMN body TEXT`);
+  if (!queryCols.includes('ministry_response'))      db.exec(`ALTER TABLE mk_query ADD COLUMN ministry_response TEXT`);
+  if (!queryCols.includes('enriched_at'))            db.exec(`ALTER TABLE mk_query ADD COLUMN enriched_at TEXT`);
+  if (!queryCols.includes('source_url'))             db.exec(`ALTER TABLE mk_query ADD COLUMN source_url TEXT`);
+  if (!queryCols.includes('ministry_response_url'))  db.exec(`ALTER TABLE mk_query ADD COLUMN ministry_response_url TEXT`);
+  if (!queryCols.includes('gov_ministry_id'))        db.exec(`ALTER TABLE mk_query ADD COLUMN gov_ministry_id INTEGER`);
+  if (!queryCols.includes('gov_ministry_name'))      db.exec(`ALTER TABLE mk_query ADD COLUMN gov_ministry_name TEXT`);
+  if (!queryCols.includes('query_number'))           db.exec(`ALTER TABLE mk_query ADD COLUMN query_number INTEGER`);
+  if (!queryCols.includes('type_desc'))              db.exec(`ALTER TABLE mk_query ADD COLUMN type_desc TEXT`);
+  if (!queryCols.includes('reply_date'))             db.exec(`ALTER TABLE mk_query ADD COLUMN reply_date TEXT`);
+
+  // Fetch ministry names for gov_ministry_name lookup
+  const ministryRows = await fetchAll(`${API}/KNS_GovMinistry?$select=Id,Name`);
+  const ministryMap = new Map<number, string>();
+  for (const m of ministryRows) {
+    if (m.Id != null && m.Name) ministryMap.set(m.Id, m.Name);
+  }
 
   const insertQuery = db.prepare(
-    'INSERT INTO mk_query (id, mk_id, title, submit_date) VALUES (?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET mk_id = excluded.mk_id, title = excluded.title, submit_date = excluded.submit_date',
+    `INSERT INTO mk_query (id, mk_id, title, submit_date, gov_ministry_id, gov_ministry_name, query_number, type_desc, reply_date)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET
+       mk_id             = excluded.mk_id,
+       title             = excluded.title,
+       submit_date       = excluded.submit_date,
+       gov_ministry_id   = excluded.gov_ministry_id,
+       gov_ministry_name = excluded.gov_ministry_name,
+       query_number      = excluded.query_number,
+       type_desc         = excluded.type_desc,
+       reply_date        = excluded.reply_date`,
   );
   const insertQueriesBatch = db.transaction((rows: any[]) => {
     for (const r of rows) {
-      if (r.PersonID) insertQuery.run(r.Id, r.PersonID, r.Name ?? '', r.SubmitDate ?? '');
+      if (r.PersonID) {
+        const ministryId = r.GovMinistryID ?? null;
+        const ministryName = ministryId != null ? (ministryMap.get(ministryId) ?? null) : null;
+        insertQuery.run(
+          r.Id, r.PersonID, r.Name ?? '', r.SubmitDate ?? '',
+          ministryId, ministryName,
+          r.Number ?? null, r.TypeDesc ?? null, r.ReplyMinisterDate ?? null,
+        );
+      }
     }
   });
 
   const queries = await fetchAll(
     `${API}/KNS_Query` +
-    `?$filter=${encodeURIComponent(`KnessetNum eq 25 and LastUpdatedDate ge ${sinceStr}`)}` +
-    `&$select=Id,PersonID,Name,SubmitDate`,
+    `?$filter=${encodeURIComponent(`KnessetNum eq 25 and LastUpdatedDate ge ${sinceStr}`)}`,
   );
   insertQueriesBatch(queries);
 

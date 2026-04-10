@@ -17,7 +17,7 @@ const CONCURRENCY = 5;
 const DELAY_MS = 300;
 
 const update = db.prepare(
-  `UPDATE mk_query SET body = ?, ministry_response = ?, enriched_at = ? WHERE id = ?`
+  `UPDATE mk_query SET body = ?, ministry_response = ?, enriched_at = ?, source_url = ?, ministry_response_url = ? WHERE id = ?`
 );
 
 async function fetchDocList(queryId: number): Promise<Array<{ GroupTypeID: number; FilePath: string; ApplicationID: number }>> {
@@ -43,7 +43,7 @@ async function downloadDocx(filePath: string): Promise<string> {
   return value.trim();
 }
 
-async function enrichQuery(id: number): Promise<{ body: string | null; ministryResponse: string | null }> {
+async function enrichQuery(id: number): Promise<{ body: string | null; ministryResponse: string | null; bodyUrl: string | null; responseUrl: string | null }> {
   const docs = await fetchDocList(id);
   // Prefer DOC (ApplicationID=1) over PDF; pick first match per GroupTypeID
   const pick = (groupTypeId: number) =>
@@ -53,23 +53,26 @@ async function enrichQuery(id: number): Promise<{ body: string | null; ministryR
   const bodyDoc = pick(38);
   const responseDoc = pick(142);
 
+  const bodyUrl = bodyDoc?.FilePath ?? null;
+  const responseUrl = responseDoc?.FilePath ?? null;
+
   let body: string | null = null;
   let ministryResponse: string | null = null;
 
-  if (bodyDoc?.FilePath) {
-    try { body = await downloadDocx(bodyDoc.FilePath); } catch { /* leave null */ }
+  if (bodyUrl) {
+    try { body = await downloadDocx(bodyUrl); } catch { /* leave null */ }
   }
-  if (responseDoc?.FilePath) {
-    try { ministryResponse = await downloadDocx(responseDoc.FilePath); } catch { /* leave null */ }
+  if (responseUrl) {
+    try { ministryResponse = await downloadDocx(responseUrl); } catch { /* leave null */ }
   }
-  return { body, ministryResponse };
+  return { body, ministryResponse, bodyUrl, responseUrl };
 }
 
 async function processChunk(chunk: Array<{ id: number; title: string }>) {
   await Promise.all(chunk.map(async (row) => {
     try {
-      const { body, ministryResponse } = await enrichQuery(row.id);
-      update.run(body, ministryResponse, new Date().toISOString(), row.id);
+      const { body, ministryResponse, bodyUrl, responseUrl } = await enrichQuery(row.id);
+      update.run(body, ministryResponse, new Date().toISOString(), bodyUrl, responseUrl, row.id);
     } catch (e) {
       console.error(`  Error id=${row.id}: ${e}`);
     }
