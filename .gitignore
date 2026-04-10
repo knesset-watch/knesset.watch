@@ -15,6 +15,7 @@ apps/knesset-watch/protocols/
 
 # Script run logs
 apps/knesset-watch/overnight*.log
+apps/knesset-watch/*.log
 
 # macOS artifacts
 .DS_Store
