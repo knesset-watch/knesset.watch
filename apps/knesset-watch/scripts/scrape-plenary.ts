@@ -26,7 +26,10 @@ const DB_PATH = path.join(process.cwd(), 'knesset.db');
 // ---------------------------------------------------------------------------
 // Speaker turn parsing
 // ---------------------------------------------------------------------------
-const SPEAKER_MARKER_RE = /<<\s*(יור|דובר)\s*>>/;
+// Only << יור >> and << דובר >> start a new speaker turn
+const NEW_TURN_RE = /<<\s*(יור|דובר)\s*>>/;
+// Strip ALL << ... >> markers — note: \w doesn't match Hebrew, so use [^>] instead
+const STRIP_MARKERS_RE = /<<[^>]*>>/g;
 
 interface SpeakerTurn {
   role: string;
@@ -56,18 +59,23 @@ function parseSpeakerTurns(text: string): SpeakerTurn[] {
   };
 
   for (const line of lines) {
-    const m = line.match(SPEAKER_MARKER_RE);
-    if (m) {
+    const newTurn = line.match(NEW_TURN_RE);
+    if (newTurn) {
+      // << יור >> or << דובר >> — start a fresh speaker turn
       flush();
-      currentRole = m[1]; // 'יור' or 'דובר'
+      currentRole = newTurn[1];
       currentName = '';
       currentLines = [];
       expectingName = true;
-    } else if (expectingName && line.trim()) {
-      currentName = line.trim();
-      expectingName = false;
-    } else if (!expectingName && currentRole) {
-      currentLines.push(line);
+    } else {
+      // Strip all << ... >> markers from the line, then process the remainder
+      const cleaned = line.replace(STRIP_MARKERS_RE, '').trim();
+      if (expectingName && cleaned) {
+        currentName = cleaned;
+        expectingName = false;
+      } else if (!expectingName && currentRole) {
+        currentLines.push(line.replace(STRIP_MARKERS_RE, ''));
+      }
     }
   }
   flush();
