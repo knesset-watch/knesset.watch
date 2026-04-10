@@ -206,11 +206,12 @@ async function main() {
       // 7. Upsert session metadata into Turso — done AFTER turns are written so
       //    last_scraped is only stamped when the session is fully committed.
       await turso.execute({
-        sql: `INSERT INTO plenary_session (id, session_number, knesset_num, name, start_date, protocol_url, turn_count, word_count, last_scraped)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        sql: `INSERT INTO plenary_session (id, session_number, knesset_num, name, start_date, protocol_url, turn_count, word_count, raw_text, last_scraped)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
               ON CONFLICT(id) DO UPDATE SET
                 turn_count = excluded.turn_count,
                 word_count = excluded.word_count,
+                raw_text = excluded.raw_text,
                 last_scraped = excluded.last_scraped`,
         args: [
           session.id,
@@ -221,6 +222,7 @@ async function main() {
           session.protocol_url,
           turns.length,
           wordCount,
+          text,
           new Date().toISOString(),
         ],
       });
