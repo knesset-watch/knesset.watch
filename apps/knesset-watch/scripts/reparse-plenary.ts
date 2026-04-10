@@ -6,10 +6,9 @@
  *   'heckle'   — collective interruption (קריאה/קריאות)
  *   'unknown'  — unnamed/unresolvable
  *
- * Does NOT re-download any files — reads raw_text from Turso.
- *
- * Run (test, 3 sessions): npx tsx scripts/reparse-plenary.ts
- * Run (full):             npx tsx scripts/reparse-plenary.ts --all
+ * ONE SESSION PER INVOCATION — exit 0 = session done, exit 42 = all done.
+ * Run via: bash scripts/run-reparse-plenary.sh
+ * Tracks progress via reparsed_at column on plenary_session.
  */
 import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
@@ -269,15 +268,21 @@ function buildMkIndex(): Map<string, number> {
 // ---------------------------------------------------------------------------
 
 async function ensureColumns() {
-  const cols = ['topic TEXT', 'faction TEXT', 'speaker_type TEXT'];
-  for (const col of cols) {
+  const turnCols = ['topic TEXT', 'faction TEXT', 'speaker_type TEXT'];
+  for (const col of turnCols) {
     const [name, type] = col.split(' ');
     try {
       await turso.execute(`ALTER TABLE plenary_speaker_turn ADD COLUMN ${name} ${type}`);
-      console.log(`Added column: ${name}`);
+      console.log(`Added column to plenary_speaker_turn: ${name}`);
     } catch {
       // already exists
     }
+  }
+  try {
+    await turso.execute('ALTER TABLE plenary_session ADD COLUMN reparsed_at TEXT');
+    console.log('Added column to plenary_session: reparsed_at');
+  } catch {
+    // already exists
   }
 }
 
@@ -286,76 +291,68 @@ async function ensureColumns() {
 // ---------------------------------------------------------------------------
 
 async function main() {
-  const runAll = process.argv.includes('--all');
-  const limit = runAll ? '' : 'LIMIT 3';
-
   await ensureColumns();
 
   const mkIndex = buildMkIndex();
-  console.log(`MK index: ${mkIndex.size} entries`);
 
-  const sessionsRes = await turso.execute(
-    `SELECT id FROM plenary_session WHERE raw_text IS NOT NULL ORDER BY id ${limit}`
+  // Find the first un-reparsed session
+  const nextRes = await turso.execute(
+    `SELECT id FROM plenary_session WHERE raw_text IS NOT NULL AND reparsed_at IS NULL ORDER BY id ASC LIMIT 1`
   );
-  console.log(`Sessions to re-parse: ${sessionsRes.rows.length}`);
 
-  let done = 0;
-  let totalTurns = 0;
-  let byType: Record<string, number> = { mk: 0, official: 0, heckle: 0, unknown: 0 };
-  let errors = 0;
-
-  for (const row of sessionsRes.rows) {
-    const sessionId = Number(row.id);
-    try {
-      const textRes = await turso.execute({
-        sql: 'SELECT raw_text FROM plenary_session WHERE id = ?',
-        args: [sessionId],
-      });
-      const rawText = String(textRes.rows[0]?.raw_text ?? '');
-      if (!rawText) { console.warn(`  Session ${sessionId}: no raw_text`); continue; }
-
-      const turns = parseTurns(rawText, mkIndex);
-      for (const t of turns) byType[t.speakerType] = (byType[t.speakerType] ?? 0) + 1;
-
-      await turso.execute({
-        sql: 'DELETE FROM plenary_speaker_turn WHERE session_id = ?',
-        args: [sessionId],
-      });
-
-      for (let j = 0; j < turns.length; j += BATCH) {
-        const slice = turns.slice(j, j + BATCH);
-        await turso.batch(slice.map(t => ({
-          sql: `INSERT INTO plenary_speaker_turn
-                  (session_id, speaker_name, speaker_type, role, faction, mk_id, topic, text, turn_index)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          args: [
-            sessionId, t.speakerName, t.speakerType, t.role,
-            t.faction, t.mkId, t.topic, t.text, t.turnIndex,
-          ] as (string | number | null)[],
-        })), 'write');
-      }
-
-      await turso.execute({
-        sql: 'UPDATE plenary_session SET turn_count = ? WHERE id = ?',
-        args: [turns.length, sessionId],
-      });
-
-      totalTurns += turns.length;
-      done++;
-      if (done % 10 === 0 || !runAll) {
-        const pct = ((done / sessionsRes.rows.length) * 100).toFixed(1);
-        console.log(`[${pct}%] ${done}/${sessionsRes.rows.length} | ${totalTurns.toLocaleString()} turns | mk:${byType.mk} official:${byType.official} heckle:${byType.heckle} unknown:${byType.unknown}`);
-      }
-    } catch (err) {
-      errors++;
-      console.error(`  Error session ${sessionId}: ${(err as Error).message}`);
-    }
+  if (nextRes.rows.length === 0) {
+    console.log('All plenary sessions reparsed.');
+    process.exit(42);
   }
 
-  const identified = totalTurns - (byType.unknown ?? 0);
-  console.log(`\nDone. ${done} sessions, ${totalTurns.toLocaleString()} turns`);
-  console.log(`  mk: ${byType.mk} | official: ${byType.official} | heckle: ${byType.heckle} | unknown: ${byType.unknown}`);
-  console.log(`  Identified: ${((identified / totalTurns) * 100).toFixed(1)}%`);
+  const sessionId = Number(nextRes.rows[0].id);
+
+  const textRes = await turso.execute({
+    sql: 'SELECT raw_text FROM plenary_session WHERE id = ?',
+    args: [sessionId],
+  });
+  const rawText = String(textRes.rows[0]?.raw_text ?? '');
+  if (!rawText) {
+    console.warn(`Session ${sessionId}: no raw_text, skipping`);
+    await turso.execute({
+      sql: 'UPDATE plenary_session SET reparsed_at = ? WHERE id = ?',
+      args: [new Date().toISOString(), sessionId],
+    });
+    process.exit(0);
+  }
+
+  const turns = parseTurns(rawText, mkIndex);
+
+  await turso.execute({
+    sql: 'DELETE FROM plenary_speaker_turn WHERE session_id = ?',
+    args: [sessionId],
+  });
+
+  for (let j = 0; j < turns.length; j += BATCH) {
+    const slice = turns.slice(j, j + BATCH);
+    await turso.batch(slice.map(t => ({
+      sql: `INSERT INTO plenary_speaker_turn
+              (session_id, speaker_name, speaker_type, role, faction, mk_id, topic, text, turn_index)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        sessionId, t.speakerName, t.speakerType, t.role,
+        t.faction, t.mkId, t.topic, t.text, t.turnIndex,
+      ] as (string | number | null)[],
+    })), 'write');
+  }
+
+  // Mark session as done and update turn count
+  await turso.execute({
+    sql: 'UPDATE plenary_session SET turn_count = ?, reparsed_at = ? WHERE id = ?',
+    args: [turns.length, new Date().toISOString(), sessionId],
+  });
+
+  const byType = turns.reduce((acc, t) => {
+    acc[t.speakerType] = (acc[t.speakerType] ?? 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  console.log(`Session ${sessionId}: ${turns.length} turns (mk:${byType.mk ?? 0} official:${byType.official ?? 0} heckle:${byType.heckle ?? 0} unknown:${byType.unknown ?? 0})`);
 }
 
-main().catch(e => { console.error(e); process.exit(1); });
+main().catch(e => { console.error(e.message ?? e); process.exit(1); });

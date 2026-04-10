@@ -1,10 +1,14 @@
 /**
  * Batch-embeds session_speaker_turn rows in Turso using Jina AI.
- * Processes turns without embeddings, in batches of 50.
- * Checkpointed: safe to kill and resume (skips rows where embedding IS NOT NULL).
+ * Processes ONE batch per invocation, then exits 0.
+ * Exit code 42 = nothing left in this shard (wrapper stops).
  *
- * Run: cd apps/knesset-watch && npx tsx scripts/embed-speaker-turns.ts
- * Monitor: tail -f embed-turns.log
+ * Supports sharding for parallel workers:
+ *   --shard 0 --shards 3   (process rows where id % 3 = 0)
+ *   --shard 1 --shards 3
+ *   --shard 2 --shards 3
+ *
+ * Run via wrapper: bash scripts/run-embed-speaker-turns.sh [shard] [total-shards]
  */
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
@@ -20,12 +24,15 @@ const db = createClient({
   authToken: process.env.TURSO_TOKEN ?? '',
 });
 
-const BATCH = 50;
-const DELAY_MS = 600;
+const BATCH = 200;
+
+// Parse shard args: --asc (default) or --desc (process from highest id)
+const args = process.argv.slice(2);
+const direction = args.includes('--desc') ? 'DESC' : 'ASC';
 
 async function embedBatch(texts: string[]): Promise<(number[] | null)[]> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30_000); // 30s timeout
+  const timeout = setTimeout(() => controller.abort(), 60_000);
   try {
     const res = await fetch('https://api.jina.ai/v1/embeddings', {
       method: 'POST',
@@ -59,48 +66,38 @@ async function embedBatch(texts: string[]): Promise<(number[] | null)[]> {
 }
 
 async function main() {
-  const countRes = await db.execute(
-    'SELECT COUNT(*) as n FROM session_speaker_turn WHERE embedding IS NULL AND text IS NOT NULL'
+  const batch = await db.execute(
+    `SELECT id, text FROM session_speaker_turn
+     WHERE embedding IS NULL AND text IS NOT NULL
+     ORDER BY id ${direction} LIMIT ${BATCH}`
   );
-  const total = Number(countRes.rows[0]?.n ?? 0);
-  console.log(`Total unembedded turns: ${total.toLocaleString()}`);
-  if (total === 0) { console.log('Nothing to do.'); return; }
 
-  let processed = 0;
-  let errors = 0;
-
-  while (true) {
-    const batch = await db.execute(
-      `SELECT id, text FROM session_speaker_turn
-       WHERE embedding IS NULL AND text IS NOT NULL
-       ORDER BY id ASC LIMIT ${BATCH}`
-    );
-    if (batch.rows.length === 0) break;
-
-    const ids = batch.rows.map(r => Number(r.id));
-    const texts = batch.rows.map(r => String(r.text ?? '').slice(0, 8192));
-    const embeddings = await embedBatch(texts);
-
-    for (let i = 0; i < ids.length; i++) {
-      const emb = embeddings[i];
-      if (!emb) { errors++; continue; }
-      const vec = `[${emb.join(',')}]`;
-      await db.execute({
-        sql: 'UPDATE session_speaker_turn SET embedding = vector32(?) WHERE id = ?',
-        args: [vec, ids[i]],
-      });
-    }
-
-    processed += ids.length;
-    if (processed % 500 === 0 || processed <= BATCH) {
-      const pct = ((processed / total) * 100).toFixed(1);
-      console.log(`[${pct}%] ${processed.toLocaleString()} / ${total.toLocaleString()} done (errors: ${errors})`);
-    }
-
-    await new Promise(r => setTimeout(r, DELAY_MS));
+  if (batch.rows.length === 0) {
+    console.log(`[${direction}] Nothing left.`);
+    process.exit(42);
   }
 
-  console.log(`Complete. Processed: ${processed.toLocaleString()}, Errors: ${errors}`);
+  const ids = batch.rows.map(r => Number(r.id));
+  const texts = batch.rows.map(r => String(r.text ?? '').slice(0, 8192));
+  const embeddings = await embedBatch(texts);
+
+  let errors = 0;
+  const updates = ids
+    .map((id, i) => embeddings[i] ? { id, vec: `[${embeddings[i]!.join(',')}]` } : null)
+    .filter((x): x is { id: number; vec: string } => x !== null);
+  errors = ids.length - updates.length;
+
+  if (updates.length > 0) {
+    await db.batch(
+      updates.map(({ id, vec }) => ({
+        sql: 'UPDATE session_speaker_turn SET embedding = vector32(?) WHERE id = ?',
+        args: [vec, id] as (string | number)[],
+      })),
+      'write',
+    );
+  }
+
+  console.log(`[${direction}] ${ids.length} embedded (errors: ${errors})`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); });

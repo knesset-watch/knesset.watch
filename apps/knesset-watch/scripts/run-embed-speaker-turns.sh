@@ -1,23 +1,29 @@
 #!/bin/bash
-# Auto-restarts embed-speaker-turns.ts until completion.
-# Safe: the script skips already-embedded rows on each run.
+# Runs embed-speaker-turns.ts in a tight loop — one batch per invocation.
+# Usage: bash run-embed-speaker-turns.sh [--asc|--desc]
+# Two workers can run in parallel: one --asc (bottom up), one --desc (top down)
+# Exit 42 = shard complete; anything else = retry.
 cd "$(dirname "$0")/.."
 
-LOGFILE="embed-turns.log"
-MAX_RESTARTS=500
-restart=0
+DIR=${1:---asc}
+LOGFILE="embed-turns-${DIR//-/}.log"  # embed-turns-asc.log or embed-turns-desc.log
 
-while [ $restart -lt $MAX_RESTARTS ]; do
-  echo "[restart #$restart @ $(date '+%H:%M:%S')] Starting embed-speaker-turns..." >> "$LOGFILE"
-  npx tsx scripts/embed-speaker-turns.ts >> "$LOGFILE" 2>&1
+echo "[start ${DIR} @ $(date '+%H:%M:%S')]" >> "$LOGFILE"
+
+while true; do
+  node scripts/embed-speaker-turns.js "$DIR" >> "$LOGFILE" 2>&1
   EXIT=$?
-  if [ $EXIT -eq 0 ]; then
-    echo "[DONE @ $(date '+%H:%M:%S')] Embedding complete." >> "$LOGFILE"
+
+  if [ $EXIT -eq 42 ]; then
+    echo "[DONE ${DIR} @ $(date '+%H:%M:%S')]" >> "$LOGFILE"
     exit 0
   fi
-  restart=$((restart + 1))
-  echo "[restart #$restart] Exit code $EXIT, sleeping 10s..." >> "$LOGFILE"
-  sleep 10
-done
 
-echo "Max restarts reached." >> "$LOGFILE"
+  if [ $EXIT -ne 0 ]; then
+    echo "[error ${DIR} @ $(date '+%H:%M:%S')] Exit $EXIT, retrying in 5s..." >> "$LOGFILE"
+    sleep 5
+  else
+    # Small pause between batches to allow Turso WAL checkpointing
+    sleep 2
+  fi
+done
