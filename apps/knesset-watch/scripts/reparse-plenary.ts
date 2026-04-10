@@ -88,6 +88,11 @@ function parseTurns(rawText: string, mkIndex: Map<string, number>): SpeakerTurn[
   let currentLines: string[] = [];
   let turnIndex = 0;
 
+  // Track known identities across the session so unnamed turns can be resolved
+  let sessionChairMkId: number | null = null;   // mk_id of the session's chairperson
+  let sessionChairName = '';
+  let sessionChairFaction: string | null = null;
+
   const flush = () => {
     const text = currentLines.join('\n').trim();
     if (currentRole && text) {
@@ -125,18 +130,31 @@ function parseTurns(rawText: string, mkIndex: Map<string, number>): SpeakerTurn[
           currentName = name;
           currentFaction = faction;
           currentMkId = mkIndex.get(name) ?? null;
+          // Remember chairperson identity for the rest of this session
+          if (tag === 'יור' && currentMkId) {
+            sessionChairMkId = currentMkId;
+            sessionChairName = name;
+            sessionChairFaction = faction;
+          }
         } else {
-          // No name in tag line — unknown speaker; content is first speech line
-          currentRawName = '';
-          currentName = '';
-          currentFaction = null;
-          currentMkId = null;
-          if (content) currentLines.push(content);
+          // No name in tag line — fall back to known session identity
+          if (tag === 'יור' && sessionChairMkId) {
+            currentRawName = '';
+            currentName = sessionChairName;
+            currentFaction = sessionChairFaction;
+            currentMkId = sessionChairMkId;
+          } else {
+            // Truly unknown speaker; treat content as first speech line
+            currentRawName = '';
+            currentName = '';
+            currentFaction = null;
+            currentMkId = null;
+            if (content) currentLines.push(content);
+          }
         }
         // currentTopic carries forward
       } else if (CONTINUE_TAGS.has(tag)) {
-        // Same speaker continues — just keep accumulating lines, don't flush
-        // (name/faction/mkId unchanged)
+        // Same speaker continues — name/faction/mkId all carry forward unchanged
       }
       // IGNORE_TAGS (סיום) and unknowns: do nothing
     } else {
