@@ -15,6 +15,7 @@ import { createClient } from '@libsql/client';
 import Database from 'better-sqlite3';
 import mammoth from 'mammoth';
 import path from 'path';
+import fs from 'fs';
 
 // ---------------------------------------------------------------------------
 // Config
@@ -22,6 +23,7 @@ import path from 'path';
 const CONCURRENCY = 3;
 const BATCH_DELAY_MS = 500;
 const DB_PATH = path.join(process.cwd(), 'knesset.db');
+const PROTOCOLS_DIR = path.join(process.cwd(), 'protocols', 'plenary');
 
 // ---------------------------------------------------------------------------
 // Speaker turn parsing
@@ -164,11 +166,18 @@ async function main() {
     session: LocalSession
   ) {
     try {
-      // 1. Download DOCX
-      const res = await fetch(session.protocol_url);
-      if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${session.protocol_url}`);
-      const arrayBuffer = await res.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
+      // 1. Download DOCX — save original file locally, reuse if already present
+      const ext = session.protocol_url.split('.').pop() ?? 'doc';
+      const localPath = path.join(PROTOCOLS_DIR, `${session.id}.${ext}`);
+      let buffer: Buffer;
+      if (fs.existsSync(localPath)) {
+        buffer = fs.readFileSync(localPath);
+      } else {
+        const res = await fetch(session.protocol_url);
+        if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${session.protocol_url}`);
+        buffer = Buffer.from(await res.arrayBuffer());
+        fs.writeFileSync(localPath, buffer);
+      }
 
       // 2. Extract text via mammoth
       const { value: text } = await mammoth.extractRawText({ buffer });
