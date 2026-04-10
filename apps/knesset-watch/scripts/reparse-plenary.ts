@@ -1,6 +1,11 @@
 /**
  * Re-parses plenary_speaker_turn from stored raw_text in Turso.
- * Fixes: speaker name extraction, faction, topic tagging, mk_id linkage.
+ * Every turn gets a speaker_type so all speakers are identified entities:
+ *   'mk'       — matched to mk_person (mk_id set)
+ *   'official' — named non-MK (Knesset secretary, president, minister-only, etc.)
+ *   'heckle'   — collective interruption (קריאה/קריאות)
+ *   'unknown'  — unnamed/unresolvable
+ *
  * Does NOT re-download any files — reads raw_text from Turso.
  *
  * Run (test, 3 sessions): npx tsx scripts/reparse-plenary.ts
@@ -21,7 +26,7 @@ const turso = createClient({
 });
 
 const DB_PATH = path.join(process.cwd(), 'knesset.db');
-const BATCH = 50; // turns per Turso batch insert
+const BATCH = 50;
 
 // ---------------------------------------------------------------------------
 // Tag parsing
@@ -34,10 +39,15 @@ const TURN_START_TAGS = new Set(['דובר', 'יור', 'קריאה']);
 const CONTINUE_TAGS = new Set(['דובר_המשך']);
 const TOPIC_TAGS = new Set(['נושא']);
 
+// Collective interruptions — not a speaker entity
+const HECKLE_NAMES = new Set(['קריאה', 'קריאות', 'רעש', 'מחיאות כפיים', 'צחוק']);
+
+type SpeakerType = 'mk' | 'official' | 'heckle' | 'unknown';
+
 interface SpeakerTurn {
   role: string;
-  rawName: string;
   speakerName: string;
+  speakerType: SpeakerType;
   faction: string | null;
   mkId: number | null;
   topic: string | null;
@@ -45,8 +55,14 @@ interface SpeakerTurn {
   turnIndex: number;
 }
 
+// ---------------------------------------------------------------------------
+// Name extraction
+// ---------------------------------------------------------------------------
+
+// Strip "שר [MINISTRY] " prefix — handles patterns like "שר התקשורת שלמה קרעי"
+const MINISTER_PREFIX_RE = /^ש(?:ר|רת)\s+ה?[\w\s"״'׳-]{1,20}?\s+(?=[א-ת])/;
+
 function extractNameAndFaction(content: string): { name: string; faction: string | null } {
-  // Strip trailing colon
   let raw = content.replace(/:$/, '').trim();
 
   // Extract faction: "NAME (FACTION)" → name, faction
@@ -57,13 +73,18 @@ function extractNameAndFaction(content: string): { name: string; faction: string
     faction = factionMatch[2].trim();
   }
 
-  // Strip honorific prefixes (order matters — longer first)
+  // Strip honorific prefixes (longer first to avoid partial matches)
   const prefixes = [
     'חברת הכנסת ', 'חבר הכנסת ',
-    'נשיא המדינה ', 'מזכיר הכנסת ', 'ראש הממשלה ',
-    'ראש האופוזיציה ', 'שר האוצר ', 'שר הביטחון ',
-    'השרה ', 'השר ', 'היו"ר ', 'היו״ר ',
-    'ח"כ ', 'ח״כ ', 'סגן ', 'הרב ', "פרופ' ", 'ד"ר ', 'ד״ר ',
+    'נשיא המדינה ', 'נשיאת המדינה ',
+    'מזכיר הכנסת ', 'מזכירת הכנסת ',
+    'ראש הממשלה ', 'ראש האופוזיציה ',
+    'ממלא מקום ראש הממשלה ',
+    'היו"ר ', 'היו״ר ', 'יו"ר ', 'יו״ר ',
+    'השרה ', 'השר ',
+    'ח"כ ', 'ח״כ ',
+    'סגן ', 'סגנית ',
+    'הרב ', "פרופ' ", 'ד"ר ', 'ד״ר ',
   ];
   for (const prefix of prefixes) {
     if (raw.startsWith(prefix)) {
@@ -72,34 +93,60 @@ function extractNameAndFaction(content: string): { name: string; faction: string
     }
   }
 
+  // Handle "שר [MINISTRY] NAME" format (no ה prefix): "שר התקשורת שלמה קרעי"
+  const ministerMatch = raw.match(MINISTER_PREFIX_RE);
+  if (ministerMatch) {
+    raw = raw.slice(ministerMatch[0].length).trim();
+  }
+
   return { name: raw, faction };
 }
+
+function classifySpeaker(
+  tag: string,
+  name: string,
+  rawContent: string,
+  mkId: number | null,
+): SpeakerType {
+  if (!name && !rawContent) return 'unknown';
+  // Collective interruptions
+  if (HECKLE_NAMES.has(name) || tag === 'קריאה' && !rawContent.endsWith(':')) return 'heckle';
+  // Matched MK
+  if (mkId !== null) return 'mk';
+  // Named but not in mk_person → official/guest
+  if (name) return 'official';
+  return 'unknown';
+}
+
+// ---------------------------------------------------------------------------
+// Parser
+// ---------------------------------------------------------------------------
 
 function parseTurns(rawText: string, mkIndex: Map<string, number>): SpeakerTurn[] {
   const lines = rawText.split('\n');
   const turns: SpeakerTurn[] = [];
 
   let currentRole = '';
-  let currentRawName = '';
   let currentName = '';
+  let currentSpeakerType: SpeakerType = 'unknown';
   let currentFaction: string | null = null;
   let currentMkId: number | null = null;
   let currentTopic: string | null = null;
   let currentLines: string[] = [];
   let turnIndex = 0;
 
-  // Track known identities across the session so unnamed turns can be resolved
-  let sessionChairMkId: number | null = null;   // mk_id of the session's chairperson
+  // Track known identities for the session
+  let sessionChairMkId: number | null = null;
   let sessionChairName = '';
   let sessionChairFaction: string | null = null;
 
   const flush = () => {
     const text = currentLines.join('\n').trim();
-    if (currentRole && text) {
+    if (currentRole && (text || currentSpeakerType === 'heckle')) {
       turns.push({
         role: currentRole,
-        rawName: currentRawName,
         speakerName: currentName,
+        speakerType: currentSpeakerType,
         faction: currentFaction,
         mkId: currentMkId,
         topic: currentTopic,
@@ -108,6 +155,18 @@ function parseTurns(rawText: string, mkIndex: Map<string, number>): SpeakerTurn[
       });
     }
     currentLines = [];
+  };
+
+  const applyIdentity = (name: string, faction: string | null, mkId: number | null, tag: string, rawContent: string) => {
+    currentName = name;
+    currentFaction = faction;
+    currentMkId = mkId;
+    currentSpeakerType = classifySpeaker(tag, name, rawContent, mkId);
+    if (tag === 'יור' && mkId) {
+      sessionChairMkId = mkId;
+      sessionChairName = name;
+      sessionChairFaction = faction;
+    }
   };
 
   for (const line of lines) {
@@ -120,49 +179,54 @@ function parseTurns(rawText: string, mkIndex: Map<string, number>): SpeakerTurn[
 
       if (TOPIC_TAGS.has(tag)) {
         currentTopic = content.replace(/:$/, '').trim() || null;
+
       } else if (TURN_START_TAGS.has(tag)) {
         flush();
         currentRole = tag;
-        // Speaker names end with ':' and are short — if not, content is speech
-        if (content.endsWith(':') && content.length < 100) {
+
+        if (content.endsWith(':') && content.length < 120) {
+          // Named speaker line: extract name and resolve
           const { name, faction } = extractNameAndFaction(content);
-          currentRawName = content;
-          currentName = name;
-          currentFaction = faction;
-          currentMkId = mkIndex.get(name) ?? null;
-          // Remember chairperson identity for the rest of this session
-          if (tag === 'יור' && currentMkId) {
-            sessionChairMkId = currentMkId;
-            sessionChairName = name;
-            sessionChairFaction = faction;
-          }
+          const mkId = mkIndex.get(name) ?? null;
+          applyIdentity(name, faction, mkId, tag, content);
+
+        } else if (tag === 'יור' && sessionChairMkId) {
+          // Unnamed יור turn — resolve to known session chairperson
+          applyIdentity(sessionChairName, sessionChairFaction, sessionChairMkId, tag, '');
+          if (content) currentLines.push(content);
+
+        } else if (tag === 'קריאה' && content && !content.endsWith(':')) {
+          // Inline heckle content — content IS the text
+          currentName = content.length < 30 ? content : '';
+          currentFaction = null;
+          currentMkId = null;
+          currentSpeakerType = 'heckle';
+          if (content) currentLines.push(content);
+
         } else {
-          // No name in tag line — fall back to known session identity
-          if (tag === 'יור' && sessionChairMkId) {
-            currentRawName = '';
-            currentName = sessionChairName;
-            currentFaction = sessionChairFaction;
-            currentMkId = sessionChairMkId;
-          } else {
-            // Truly unknown speaker; treat content as first speech line
-            currentRawName = '';
-            currentName = '';
-            currentFaction = null;
-            currentMkId = null;
-            if (content) currentLines.push(content);
-          }
+          // Unknown/unnamed speaker
+          currentName = '';
+          currentFaction = null;
+          currentMkId = null;
+          currentSpeakerType = 'unknown';
+          if (content) currentLines.push(content);
         }
-        // currentTopic carries forward
+
       } else if (CONTINUE_TAGS.has(tag)) {
-        // Same speaker continues — name/faction/mkId all carry forward unchanged
+        // Same speaker continues — all identity fields carry forward unchanged
+        if (content.endsWith(':') && content.length < 120) {
+          // Occasionally the continuation names the speaker explicitly — update if better
+          const { name, faction } = extractNameAndFaction(content);
+          const mkId = mkIndex.get(name) ?? null;
+          if (mkId && !currentMkId) applyIdentity(name, faction, mkId, tag, content);
+        }
       }
-      // IGNORE_TAGS (סיום) and unknowns: do nothing
+      // סיום and unknowns: do nothing
+
     } else {
-      // Regular speech line — strip any stray << >> markers
+      // Regular speech line
       const cleaned = trimmed.replace(/<<[^>]*>>/g, '').trim();
-      if (currentRole) {
-        currentLines.push(cleaned);
-      }
+      if (currentRole) currentLines.push(cleaned);
     }
   }
 
@@ -171,7 +235,7 @@ function parseTurns(rawText: string, mkIndex: Map<string, number>): SpeakerTurn[
 }
 
 // ---------------------------------------------------------------------------
-// MK index: full name → person_id
+// MK index
 // ---------------------------------------------------------------------------
 
 function buildMkIndex(): Map<string, number> {
@@ -182,17 +246,21 @@ function buildMkIndex(): Map<string, number> {
   localDb.close();
 
   const index = new Map<string, number>();
+  const lastNameCount = new Map<string, number>();
+
   for (const mk of mks) {
     const full = `${mk.first_name} ${mk.last_name}`;
     index.set(full, mk.person_id);
-    // Also index last name alone (for single-name references), but only if unique
-    if (!index.has(mk.last_name)) {
+    lastNameCount.set(mk.last_name, (lastNameCount.get(mk.last_name) ?? 0) + 1);
+  }
+
+  // Add unique last-name entries for single-name references
+  for (const mk of mks) {
+    if ((lastNameCount.get(mk.last_name) ?? 0) === 1) {
       index.set(mk.last_name, mk.person_id);
-    } else {
-      // Ambiguous last name — remove it so we don't make wrong matches
-      index.delete(mk.last_name);
     }
   }
+
   return index;
 }
 
@@ -201,7 +269,8 @@ function buildMkIndex(): Map<string, number> {
 // ---------------------------------------------------------------------------
 
 async function ensureColumns() {
-  for (const col of ['topic TEXT', 'faction TEXT']) {
+  const cols = ['topic TEXT', 'faction TEXT', 'speaker_type TEXT'];
+  for (const col of cols) {
     const [name, type] = col.split(' ');
     try {
       await turso.execute(`ALTER TABLE plenary_speaker_turn ADD COLUMN ${name} ${type}`);
@@ -226,55 +295,46 @@ async function main() {
   console.log(`MK index: ${mkIndex.size} entries`);
 
   const sessionsRes = await turso.execute(
-    `SELECT id, name FROM plenary_session WHERE raw_text IS NOT NULL ORDER BY id ${limit}`
+    `SELECT id FROM plenary_session WHERE raw_text IS NOT NULL ORDER BY id ${limit}`
   );
   console.log(`Sessions to re-parse: ${sessionsRes.rows.length}`);
 
   let done = 0;
   let totalTurns = 0;
-  let matched = 0;
+  let byType: Record<string, number> = { mk: 0, official: 0, heckle: 0, unknown: 0 };
   let errors = 0;
 
   for (const row of sessionsRes.rows) {
     const sessionId = Number(row.id);
     try {
-      // Fetch raw_text for this session (avoid loading all at once)
       const textRes = await turso.execute({
         sql: 'SELECT raw_text FROM plenary_session WHERE id = ?',
         args: [sessionId],
       });
       const rawText = String(textRes.rows[0]?.raw_text ?? '');
-      if (!rawText) {
-        console.warn(`  Session ${sessionId}: no raw_text`);
-        continue;
-      }
+      if (!rawText) { console.warn(`  Session ${sessionId}: no raw_text`); continue; }
 
       const turns = parseTurns(rawText, mkIndex);
-      const sessionMatched = turns.filter(t => t.mkId !== null).length;
-      matched += sessionMatched;
+      for (const t of turns) byType[t.speakerType] = (byType[t.speakerType] ?? 0) + 1;
 
-      // Delete existing turns
       await turso.execute({
         sql: 'DELETE FROM plenary_speaker_turn WHERE session_id = ?',
         args: [sessionId],
       });
 
-      // Insert new turns in batches
       for (let j = 0; j < turns.length; j += BATCH) {
         const slice = turns.slice(j, j + BATCH);
-        const stmts = slice.map(t => ({
+        await turso.batch(slice.map(t => ({
           sql: `INSERT INTO plenary_speaker_turn
-                  (session_id, speaker_name, role, faction, mk_id, topic, text, turn_index)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                  (session_id, speaker_name, speaker_type, role, faction, mk_id, topic, text, turn_index)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           args: [
-            sessionId, t.speakerName, t.role, t.faction, t.mkId,
-            t.topic, t.text, t.turnIndex,
+            sessionId, t.speakerName, t.speakerType, t.role,
+            t.faction, t.mkId, t.topic, t.text, t.turnIndex,
           ] as (string | number | null)[],
-        }));
-        await turso.batch(stmts, 'write');
+        })), 'write');
       }
 
-      // Update session turn_count
       await turso.execute({
         sql: 'UPDATE plenary_session SET turn_count = ? WHERE id = ?',
         args: [turns.length, sessionId],
@@ -284,7 +344,7 @@ async function main() {
       done++;
       if (done % 10 === 0 || !runAll) {
         const pct = ((done / sessionsRes.rows.length) * 100).toFixed(1);
-        console.log(`[${pct}%] ${done}/${sessionsRes.rows.length} sessions | ${totalTurns.toLocaleString()} turns | ${matched} mk-matched`);
+        console.log(`[${pct}%] ${done}/${sessionsRes.rows.length} | ${totalTurns.toLocaleString()} turns | mk:${byType.mk} official:${byType.official} heckle:${byType.heckle} unknown:${byType.unknown}`);
       }
     } catch (err) {
       errors++;
@@ -292,7 +352,10 @@ async function main() {
     }
   }
 
-  console.log(`\nDone. ${done} sessions, ${totalTurns.toLocaleString()} turns, ${matched} mk-matched turns, ${errors} errors`);
+  const identified = totalTurns - (byType.unknown ?? 0);
+  console.log(`\nDone. ${done} sessions, ${totalTurns.toLocaleString()} turns`);
+  console.log(`  mk: ${byType.mk} | official: ${byType.official} | heckle: ${byType.heckle} | unknown: ${byType.unknown}`);
+  console.log(`  Identified: ${((identified / totalTurns) * 100).toFixed(1)}%`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); });
