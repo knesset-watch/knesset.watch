@@ -24,29 +24,38 @@ const BATCH = 50;
 const DELAY_MS = 600;
 
 async function embedBatch(texts: string[]): Promise<(number[] | null)[]> {
-  const res = await fetch('https://api.jina.ai/v1/embeddings', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${JINA_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: 'jina-embeddings-v3',
-      task: 'retrieval.passage',
-      late_chunking: false,
-      dimensions: 768,
-      input: texts,
-    }),
-  });
-  if (!res.ok) {
-    const err = await res.text();
-    console.error('Jina error:', res.status, err.slice(0, 200));
-    // On rate limit, wait longer
-    if (res.status === 429) await new Promise(r => setTimeout(r, 5000));
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30_000); // 30s timeout
+  try {
+    const res = await fetch('https://api.jina.ai/v1/embeddings', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${JINA_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'jina-embeddings-v3',
+        task: 'retrieval.passage',
+        late_chunking: false,
+        dimensions: 768,
+        input: texts,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      console.error('Jina error:', res.status, err.slice(0, 200));
+      if (res.status === 429) await new Promise(r => setTimeout(r, 10_000));
+      return texts.map(() => null);
+    }
+    const data = await res.json() as { data: Array<{ embedding: number[] }> };
+    return data.data.map(d => d.embedding);
+  } catch (e: any) {
+    console.error('Jina fetch error:', e.name, e.message?.slice(0, 100));
     return texts.map(() => null);
+  } finally {
+    clearTimeout(timeout);
   }
-  const data = await res.json() as { data: Array<{ embedding: number[] }> };
-  return data.data.map(d => d.embedding);
 }
 
 async function main() {
