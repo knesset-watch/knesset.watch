@@ -2165,3 +2165,38 @@ export function getVoteCoalition(voteId: number): VoteCoalitionData | null {
     factions,
   };
 }
+
+// ── Faction vote context ─────────────────────────────────────────────────────────
+
+export interface FactionVoteContext {
+  voteId: number;
+  totalFor: number;
+  totalAgainst: number;
+  majorityCode: number; // 7=for, 8=against, 6=abstain
+  rebelCount: number;
+}
+
+export function getMkFactionId(mkId: number): number | null {
+  const db = getDb();
+  if (!db) return null;
+  const r = db.prepare('SELECT faction_id FROM mk_person WHERE person_id = ?').get(mkId) as { faction_id: number } | undefined;
+  return r?.faction_id ?? null;
+}
+
+export function getVoteFactionContext(voteIds: number[], factionId: number): Map<number, FactionVoteContext> {
+  const db = getDb();
+  if (!db || voteIds.length === 0) return new Map();
+  const placeholders = voteIds.map(() => '?').join(',');
+  const rows = db.prepare(`
+    SELECT vote_id, total_for, total_against, majority_code, rebel_count
+    FROM vote_faction_stats
+    WHERE vote_id IN (${placeholders}) AND faction_id = ?
+  `).all(...voteIds, factionId) as Array<{ vote_id: number; total_for: number; total_against: number; majority_code: number; rebel_count: number }>;
+  return new Map(rows.map(r => [r.vote_id, {
+    voteId: r.vote_id,
+    totalFor: r.total_for,
+    totalAgainst: r.total_against,
+    majorityCode: r.majority_code,
+    rebelCount: r.rebel_count,
+  }]));
+}
