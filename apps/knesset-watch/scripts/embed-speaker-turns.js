@@ -18,7 +18,7 @@ function newDb() {
   return createClient({ url: process.env.TURSO_URL, authToken: process.env.TURSO_TOKEN ?? '' });
 }
 
-const BATCH = 50; // smaller to avoid WAL pressure on Turso
+const BATCH = 50;
 const direction = process.argv.includes('--desc') ? 'DESC' : 'ASC';
 
 async function embedBatch(texts) {
@@ -29,7 +29,7 @@ async function embedBatch(texts) {
       method: 'POST',
       signal: controller.signal,
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${JINA_API_KEY}` },
-      body: JSON.stringify({ model: 'jina-embeddings-v3', task: 'retrieval.passage', late_chunking: false, dimensions: 768, input: texts }),
+      body: JSON.stringify({ model: 'jina-embeddings-v3', task: 'retrieval.passage', late_chunking: false, dimensions: 256, input: texts }),
     });
     if (!res.ok) {
       const err = await res.text();
@@ -89,4 +89,13 @@ async function main() {
   console.log(`[${direction}] ${ids.length} embedded (errors: ${errors})`);
 }
 
-main().catch(e => { console.error(e.message); process.exit(1); });
+// Bail out if DB connection is saturated — wrapper will retry in 5s
+const GLOBAL_TIMEOUT = setTimeout(() => {
+  console.error('Timeout: retrying...');
+  process.exit(1);
+}, 180_000);
+GLOBAL_TIMEOUT.unref();
+
+main()
+  .then(() => clearTimeout(GLOBAL_TIMEOUT))
+  .catch(e => { console.error(e.message); process.exit(1); });

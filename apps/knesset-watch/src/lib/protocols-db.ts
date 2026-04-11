@@ -2,7 +2,7 @@
 // Data access layer for protocol search and RAG.
 //
 // Search strategy:
-//   1. Embed the query once with Jina AI (jina-embeddings-v3, 768 dims)
+//   1. Embed the query once with Jina AI (jina-embeddings-v3, 256 dims)
 //   2. Vector ANN search on committee_session.embedding in Turso
 //   3. Return session-level results (rag_card as snippet)
 //
@@ -11,7 +11,7 @@
 
 import { createClient, type Client } from '@libsql/client/http';
 
-const DIMS = 768;
+const DIMS = 256;
 
 // ── Clients (singletons) ──────────────────────────────────────────────────────
 
