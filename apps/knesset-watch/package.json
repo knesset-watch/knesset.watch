@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@libsql/client": "^0.17.2",
+    "@upstash/redis": "^1.37.0",
     "@vercel/kv": "^3.0.0",
     "axios": "^1.13.5",
     "better-sqlite3": "^12.6.2",

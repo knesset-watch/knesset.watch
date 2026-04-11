@@ -280,7 +280,7 @@ export async function searchMkSpeakerTurns(
         sessionId: sid,
         committeeName: String(r['committee_name'] ?? ''),
         date: String(r['date'] ?? '').slice(0, 10),
-        text: String(r['text'] ?? '').slice(0, 600),
+        text: String(r['text'] ?? '').slice(0, 1500),
       });
       if (results.length >= limit) break;
     }
@@ -407,7 +407,7 @@ export async function searchPlenaryMkTurns(
         sessionName: String(r['name'] ?? ''),
         date: String(r['start_date'] ?? '').slice(0, 10),
         speakerName: String(r['speaker_name'] ?? ''),
-        text: String(r['text'] ?? '').slice(0, 600),
+        text: String(r['text'] ?? '').slice(0, 1500),
       });
       if (results.length >= limit) break;
     }

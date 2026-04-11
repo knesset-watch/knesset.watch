@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { kv } from '@vercel/kv';
+import { Redis } from '@upstash/redis';
 import { validateApiAuth } from '@/lib/ui/auth-utils';
 import { embedQueryPublic, searchProtocolsVec, searchProtocols, getProtocolSession, searchMkSpeakerTurns, searchSpeakerTurnsByVector, searchPlenaryMkTurns, searchPlenaryTurnsByVector } from '@/lib/protocols-db';
 import type { ProtocolSearchResult, MkSpeakerTurn, MkSpeakerTurnVec, PlenaryMkTurn } from '@/lib/protocols-db';
@@ -30,17 +30,25 @@ interface AskResponse {
 
 // ── KV cache helpers ──────────────────────────────────────────────────────────
 
-const kvEnabled = () => !!process.env.KV_REST_API_URL && !!process.env.KV_REST_API_TOKEN;
 const TTL_ASK = 2 * 60 * 60; // 2 hours
+let _redis: Redis | null = null;
+
+function getRedis(): Redis | null {
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) return null;
+  if (!_redis) _redis = Redis.fromEnv();
+  return _redis;
+}
 
 async function getCached(key: string): Promise<AskResponse | null> {
-  if (!kvEnabled()) return null;
-  try { return await kv.get<AskResponse>(key); } catch { return null; }
+  const redis = getRedis();
+  if (!redis) return null;
+  try { return await redis.get<AskResponse>(key); } catch { return null; }
 }
 
 async function setCached(key: string, value: AskResponse): Promise<void> {
-  if (!kvEnabled()) return;
-  try { await kv.set(key, value, { ex: TTL_ASK }); } catch { /* best-effort */ }
+  const redis = getRedis();
+  if (!redis) return;
+  try { await redis.set(key, value, { ex: TTL_ASK }); } catch { /* best-effort */ }
 }
 
 // ── Gemini call ───────────────────────────────────────────────────────────────
@@ -139,6 +147,8 @@ const HE_STOP = new Set([
   'על','של','ל','ב','מ','את','עם','ו','או','אל','כ','מי',
   'למען','בעד','נגד','לגבי','בנושא','בעניין','בכנסת','הכנסת','כנסת',
   'ה','ש','ו',
+  // Exclusion / scope words (not topic content)
+  'למעט','פרט','חוץ','מלבד','נוסף','גם','רק','אך','אלא','ביחס','לגבי',
 ]);
 
 // Returns top 3 meaningful topic keywords (longest first) and the raw topic phrase.
@@ -207,7 +217,7 @@ export async function GET(req: NextRequest) {
 
     const speakerTurnsPromise: Promise<MkSpeakerTurn[]> =
       mkId && embedding
-        ? searchSpeakerTurnsByVector(embedding, mkId, 6)
+        ? searchSpeakerTurnsByVector(embedding, mkId, 15)
             .then((turns: MkSpeakerTurnVec[]) =>
               turns.length > 0
                 ? turns.map(t => ({
@@ -218,31 +228,31 @@ export async function GET(req: NextRequest) {
                   }))
                 // Fall back to keyword search if vector search returns nothing (embeddings not ready yet)
                 : searchTerm.length >= 2
-                  ? searchMkSpeakerTurns(mkId, searchTerm, 6)
+                  ? searchMkSpeakerTurns(mkId, searchTerm, 15)
                   : []
             )
             .catch(() =>
               searchTerm.length >= 2
-                ? searchMkSpeakerTurns(mkId, searchTerm, 6)
+                ? searchMkSpeakerTurns(mkId, searchTerm, 15)
                 : Promise.resolve([])
             )
         : mkId && searchTerm.length >= 2
-          ? searchMkSpeakerTurns(mkId, searchTerm, 6)
+          ? searchMkSpeakerTurns(mkId, searchTerm, 15)
           : Promise.resolve([]);
 
     const plenaryTurnsPromise: Promise<PlenaryMkTurn[]> =
       mkId && embedding
-        ? searchPlenaryTurnsByVector(embedding, detectedMk!.fullName, 4)
+        ? searchPlenaryTurnsByVector(embedding, detectedMk!.fullName, 8)
             .then(turns =>
               turns.map(t => ({ ...t }))
             )
             .catch(() =>
               mkId && searchTerm.length >= 2
-                ? searchPlenaryMkTurns(detectedMk!.fullName, searchTerm, 4)
+                ? searchPlenaryMkTurns(detectedMk!.fullName, searchTerm, 8)
                 : Promise.resolve([])
             )
         : mkId && searchTerm.length >= 2
-          ? searchPlenaryMkTurns(detectedMk!.fullName, searchTerm, 4)
+          ? searchPlenaryMkTurns(detectedMk!.fullName, searchTerm, 8)
           : Promise.resolve([]);
 
     const newsContextPromise: Promise<string> = topicPhrase.length >= 2
@@ -283,7 +293,7 @@ export async function GET(req: NextRequest) {
       for (const t of speakerTurns) {
         sources.push({ type: 'session', sessionId: t.sessionId, committeeName: t.committeeName, date: t.date, title: '' });
         context += `[SESSION:${t.sessionId}] [נאום ${detectedMk!.fullName} | ${t.date} | ${t.committeeName}]\n${t.text}\n\n`;
-        if (context.length > 5000) break;
+        if (context.length > 20000) break;
       }
     } else {
       // Generic session path: fetch full protocol sessions from vector results
@@ -293,7 +303,7 @@ export async function GET(req: NextRequest) {
         if (!seen.has(r.sessionId)) {
           seen.add(r.sessionId);
           topSessionIds.push(r.sessionId);
-          if (topSessionIds.length === 5) break;
+          if (topSessionIds.length === 8) break;
         }
       }
       const sessionResults = await Promise.all(topSessionIds.map(id => getProtocolSession(id)));
@@ -303,19 +313,19 @@ export async function GET(req: NextRequest) {
         sources.push({ type: 'session', sessionId: session.sessionId, committeeName: session.committeeName ?? '', date: session.date, title: session.title ?? '' });
         context += `[SESSION:${session.sessionId}] [פרוטוקול | ${session.date} | ${session.committeeName ?? 'ועדה'}]\n`;
         if (session.title) context += `${session.title}\n`;
-        for (const chunk of chunks.slice(0, 40)) {
+        for (const chunk of chunks.slice(0, 60)) {
           if (chunk.speaker) context += `${chunk.speaker}: `;
           context += chunk.text.trim().replace(/\n{3,}/g, '\n') + '\n';
         }
         context += '\n';
-        if (context.length > 5000) break;
+        if (context.length > 20000) break;
       }
     }
 
     if (plenaryTurns.length > 0) {
       context += `\n## דברי ח"כ במליאה\n`;
       for (const t of plenaryTurns) {
-        context += `• ${t.date} — ${t.sessionName}\n  ${t.text.slice(0, 400)}\n`;
+        context += `• ${t.date} — ${t.sessionName}\n  ${t.text.slice(0, 1000)}\n`;
       }
     }
 
