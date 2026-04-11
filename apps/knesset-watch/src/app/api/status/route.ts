@@ -26,7 +26,8 @@ export async function GET() {
     plenaryTurnsWithMk,
     plenaryTurnsEmbedded,
     committeeTurns,
-    committeeTurnsEmbedded,
+    // Count IS NULL (uses partial index) instead of IS NOT NULL (full blob scan)
+    committeeTurnsNull,
   ] = await Promise.all([
     db.execute('SELECT COUNT(*) as n FROM plenary_session'),
     db.execute('SELECT COUNT(*) as n FROM plenary_session WHERE last_scraped IS NOT NULL'),
@@ -35,8 +36,11 @@ export async function GET() {
     db.execute('SELECT COUNT(*) as n FROM plenary_speaker_turn WHERE mk_id IS NOT NULL'),
     db.execute('SELECT COUNT(*) as n FROM plenary_speaker_turn WHERE embedding IS NOT NULL'),
     db.execute('SELECT COUNT(*) as n FROM session_speaker_turn'),
-    db.execute('SELECT COUNT(*) as n FROM session_speaker_turn WHERE embedding IS NOT NULL'),
+    db.execute('SELECT COUNT(*) as n FROM session_speaker_turn WHERE embedding IS NULL'),
   ]);
+
+  const committeeTurnsTotal = n(committeeTurns);
+  const committeeTurnsEmbedded = committeeTurnsTotal - n(committeeTurnsNull);
 
   return NextResponse.json({
     plenary: {
@@ -53,8 +57,8 @@ export async function GET() {
     },
     committee: {
       turns: {
-        total: n(committeeTurns),
-        embedded: n(committeeTurnsEmbedded),
+        total: committeeTurnsTotal,
+        embedded: committeeTurnsEmbedded,
       },
     },
     timestamp: new Date().toISOString(),
