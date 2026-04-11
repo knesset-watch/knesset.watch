@@ -139,6 +139,18 @@ async function fetchNewsContext(topic: string, mkName?: string): Promise<string>
   }
 }
 
+// ── Hebrew morphological stemmer ─────────────────────────────────────────────
+// Strips common plural/gender suffixes so LIKE '%stem%' matches more word forms.
+// "חטופים" → "חטוף" → matches חטוף/החטופים/לחטופים/חטופה etc.
+// Intentionally conservative: only strip clear suffixes to avoid false truncations.
+function stemHebrew(word: string): string {
+  if (word.length <= 3) return word;
+  if (word.endsWith('ים') && word.length > 4) return word.slice(0, -2); // masc plural
+  if (word.endsWith('ות') && word.length > 4) return word.slice(0, -2); // fem plural
+  if (word.endsWith('ה') && word.length > 4)  return word.slice(0, -1); // fem singular (careful)
+  return word;
+}
+
 // ── Topic keyword extraction ─────────────────────────────────────────────────
 // Strips question/stop words and MK name to get the meaningful topic for DB search.
 const HE_STOP = new Set([
@@ -153,7 +165,7 @@ const HE_STOP = new Set([
 
 // Returns top 3 meaningful topic keywords (longest first) and the raw topic phrase.
 // The phrase preserves multi-word topics like "יוקר המחיה" for LIKE searches.
-function extractTopicKeywords(query: string, mkName?: string): { keywords: string[]; phrase: string } {
+function extractTopicKeywords(query: string, mkName?: string): { keywords: string[]; stemmedKeywords: string[]; phrase: string } {
   let text = query;
   if (mkName) {
     for (const part of mkName.split(' ')) {
@@ -176,7 +188,11 @@ function extractTopicKeywords(query: string, mkName?: string): { keywords: strin
     .filter(w => { if (seen.has(w)) return false; seen.add(w); return true; })
     .slice(0, 3);
 
-  return { keywords, phrase };
+  // Stemmed keywords: used for LIKE searches so morphological variants are matched.
+  // e.g. "חטופים" → "חטוף" catches חטוף/החטופים/לחטופים/חטופה
+  const stemmedKeywords = keywords.map(stemHebrew);
+
+  return { keywords, stemmedKeywords, phrase };
 }
 
 // ── Route handler ─────────────────────────────────────────────────────────────
@@ -203,7 +219,10 @@ export async function GET(req: NextRequest) {
 
     const mkId = detectedMk?.mkId;
     // Extract topic keywords + phrase (MK name and nicknames removed)
-    const { keywords: topicKeywords, phrase: topicPhrase } = extractTopicKeywords(q, detectedMk?.fullName);
+    const { keywords: topicKeywords, stemmedKeywords, phrase: topicPhrase } = extractTopicKeywords(q, detectedMk?.fullName);
+    // stemmedTerm: used for LIKE '%x%' speaker-turn search — catches morphological variants
+    // e.g. "חטופים" → "חטוף" matches חטוף/החטופים/לחטופים/חטופה
+    const stemmedTerm = stemmedKeywords[0] || topicPhrase || topicKeywords[0] || '';
     const searchTerm = topicPhrase || topicKeywords[0] || '';
 
     // 3. Run all searches in parallel:
@@ -226,18 +245,18 @@ export async function GET(req: NextRequest) {
                     date: t.date,
                     text: t.text,
                   }))
-                // Fall back to keyword search if vector search returns nothing (embeddings not ready yet)
-                : searchTerm.length >= 2
-                  ? searchMkSpeakerTurns(mkId, searchTerm, 15)
+                // Fall back to stemmed keyword search (catches morphological variants)
+                : stemmedTerm.length >= 2
+                  ? searchMkSpeakerTurns(mkId, stemmedTerm, 15)
                   : []
             )
             .catch(() =>
-              searchTerm.length >= 2
-                ? searchMkSpeakerTurns(mkId, searchTerm, 15)
+              stemmedTerm.length >= 2
+                ? searchMkSpeakerTurns(mkId, stemmedTerm, 15)
                 : Promise.resolve([])
             )
-        : mkId && searchTerm.length >= 2
-          ? searchMkSpeakerTurns(mkId, searchTerm, 15)
+        : mkId && stemmedTerm.length >= 2
+          ? searchMkSpeakerTurns(mkId, stemmedTerm, 15)
           : Promise.resolve([]);
 
     const plenaryTurnsPromise: Promise<PlenaryMkTurn[]> =
@@ -247,12 +266,12 @@ export async function GET(req: NextRequest) {
               turns.map(t => ({ ...t }))
             )
             .catch(() =>
-              mkId && searchTerm.length >= 2
-                ? searchPlenaryMkTurns(detectedMk!.fullName, searchTerm, 8)
+              mkId && stemmedTerm.length >= 2
+                ? searchPlenaryMkTurns(detectedMk!.fullName, stemmedTerm, 8)
                 : Promise.resolve([])
             )
-        : mkId && searchTerm.length >= 2
-          ? searchPlenaryMkTurns(detectedMk!.fullName, searchTerm, 8)
+        : mkId && stemmedTerm.length >= 2
+          ? searchPlenaryMkTurns(detectedMk!.fullName, stemmedTerm, 8)
           : Promise.resolve([]);
 
     const newsContextPromise: Promise<string> = topicPhrase.length >= 2
@@ -263,9 +282,9 @@ export async function GET(req: NextRequest) {
       speakerTurnsPromise,
       plenaryTurnsPromise,
       vectorSearchPromise,
-      Promise.resolve(searchVotesByKeyword(topicKeywords.length > 0 ? topicKeywords : [q], mkId, 15)),
-      Promise.resolve(searchBillsByKeyword(topicKeywords.length > 0 ? topicKeywords : [q], mkId, 8)),
-      Promise.resolve(searchQueriesByKeyword(topicKeywords.length > 0 ? topicKeywords : [q], mkId, 8)),
+      Promise.resolve(searchVotesByKeyword(stemmedKeywords.length > 0 ? stemmedKeywords : [q], mkId, 15)),
+      Promise.resolve(searchBillsByKeyword(stemmedKeywords.length > 0 ? stemmedKeywords : [q], mkId, 8)),
+      Promise.resolve(searchQueriesByKeyword(stemmedKeywords.length > 0 ? stemmedKeywords : [q], mkId, 8)),
       newsContextPromise,
     ]);
 
