@@ -1628,27 +1628,27 @@ export default function KnessetWatchPage() {
                   )}
                   <div className="mt-auto pt-6">
                     <div className="grid grid-cols-4 gap-2">
-                      <div className="flex flex-col">
+                      <div className="flex flex-col min-w-0">
                         <span className="text-[11px] font-black uppercase text-gray-400 mb-1">הצעות</span>
-                        <span className={`text-2xl font-black transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
+                        <span className={`text-lg font-black tabular-nums transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
                           {item.stats?.proposed ?? 0}
                         </span>
                       </div>
-                      <div className="flex flex-col border-r border-black/5 pr-2">
+                      <div className="flex flex-col border-r border-black/5 pr-2 min-w-0">
                         <span className="text-[11px] font-black uppercase text-gray-400 mb-1">עברו</span>
-                        <span className={`text-2xl font-black text-teal-600 transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
+                        <span className={`text-lg font-black tabular-nums text-teal-600 transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
                           {item.stats?.passed ?? 0}
                         </span>
                       </div>
-                      <div className="flex flex-col border-r border-black/5 pr-2">
+                      <div className="flex flex-col border-r border-black/5 pr-2 min-w-0">
                         <span className="text-[11px] font-black uppercase text-gray-400 mb-1">יחס</span>
-                        <span className={`text-2xl font-black text-gray-900 transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
+                        <span className={`text-lg font-black tabular-nums text-gray-900 transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
                           {item.stats ? (ratio !== null ? `${ratio}%` : '—') : 0}
                         </span>
                       </div>
-                      <div className="flex flex-col border-r border-black/5 pr-2">
+                      <div className="flex flex-col border-r border-black/5 pr-2 min-w-0">
                         <span className="text-[11px] font-black uppercase text-gray-400 mb-1">ועדות</span>
-                        <span className={`text-2xl font-black text-blue-700 transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
+                        <span className={`text-lg font-black tabular-nums text-blue-700 transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
                           {item.stats?.committeeSessions ?? 0}
                         </span>
                       </div>

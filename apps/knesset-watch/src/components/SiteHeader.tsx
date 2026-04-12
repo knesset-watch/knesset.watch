@@ -305,6 +305,8 @@ const NAV_LINKS: Array<{ href: string; label: string; highlight?: boolean }> = [
   { href: '/ask', label: 'שאל AI', highlight: true },
 ];
 
+// NAV_LINKS kept for mobile hamburger menu — desktop nav moved to AppSidebar
+
 export default function SiteHeader() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -323,27 +325,14 @@ export default function SiteHeader() {
       className="sticky top-0 z-30 w-full bg-white/90 backdrop-blur border-b border-black/8"
       dir="rtl"
     >
-      <div className="max-w-6xl mx-auto px-4 h-11 flex items-center justify-between gap-4">
-        <Link href="/" className="text-base font-black tracking-tighter hover:opacity-70 transition-opacity shrink-0">
+      <div className="px-4 h-11 flex items-center gap-4">
+        {/* Logo — mobile only (desktop shows in sidebar) */}
+        <Link href="/" className="md:hidden text-base font-black tracking-tighter hover:opacity-70 transition-opacity shrink-0">
           כנסת ווטש
         </Link>
+        <div className="flex-1" />
         <PeriodSelector />
         <GlobalSearch />
-        <nav className="hidden md:flex items-center gap-1 text-xs font-black text-gray-500 shrink-0">
-          {NAV_LINKS.map(link => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`px-2 py-2 rounded transition-colors ${
-                link.highlight
-                  ? 'bg-blue-50 text-blue-700 hover:bg-blue-100'
-                  : 'hover:bg-gray-100'
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
         {/* Hamburger button — mobile only */}
         <button
           onClick={() => setMenuOpen(o => !o)}
