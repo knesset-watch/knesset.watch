@@ -137,18 +137,20 @@ export function getMkResultsForVotes(
  */
 export function getVoteResults(
   voteId: number,
-): Array<{ mkId: number; resultCode: number; slug: string | null }> {
+): Array<{ mkId: number; resultCode: number; slug: string | null; firstName: string; lastName: string; factionName: string | null; isCoalition: number | null }> {
   const db = getDb();
   if (!db) return [];
 
   return db
     .prepare(
-      `SELECT r.mk_id AS mkId, r.result_code AS resultCode, p.slug
+      `SELECT r.mk_id AS mkId, r.result_code AS resultCode, p.slug,
+              p.first_name AS firstName, p.last_name AS lastName,
+              p.faction_name AS factionName, p.is_coalition AS isCoalition
        FROM mk_vote_result r
        LEFT JOIN mk_person p ON p.person_id = r.mk_id
        WHERE r.vote_id = ?`,
     )
-    .all(voteId) as Array<{ mkId: number; resultCode: number; slug: string | null }>;
+    .all(voteId) as Array<{ mkId: number; resultCode: number; slug: string | null; firstName: string; lastName: string; factionName: string | null; isCoalition: number | null }>;
 }
 
 export interface BillSummary {
@@ -1509,11 +1511,14 @@ export function getFactionDetail(name: string): FactionDetail | null {
   const db = getDb();
   if (!db) return null;
 
+  // DB stores faction names with trailing spaces (e.g. "הליכוד ") — normalise
+  const trimmed = name.trim();
+
   const mks = (db.prepare(`
     SELECT person_id, first_name, last_name, slug, is_current, is_coalition
-    FROM mk_person WHERE faction_name = ?
+    FROM mk_person WHERE TRIM(faction_name) = ?
     ORDER BY is_current DESC, last_name ASC
-  `).all(name) as Array<{
+  `).all(trimmed) as Array<{
     person_id: number; first_name: string; last_name: string;
     slug: string | null; is_current: number; is_coalition: number | null;
   }>);
@@ -1527,14 +1532,14 @@ export function getFactionDetail(name: string): FactionDetail | null {
     FROM bill b
     JOIN bill_initiator i ON i.bill_id = b.id
     JOIN mk_person p ON p.person_id = i.mk_id
-    WHERE p.faction_name = ?
-  `).get(name) as { billCount: number; passedCount: number } | undefined;
+    WHERE TRIM(p.faction_name) = ?
+  `).get(trimmed) as { billCount: number; passedCount: number } | undefined;
 
   const rebelStats = db.prepare(`
     SELECT SUM(rebel_count) as totalRebels, COUNT(*) as totalVotes
     FROM vote_faction_stats
-    WHERE faction_id = (SELECT faction_id FROM mk_person WHERE faction_name = ? AND faction_id IS NOT NULL LIMIT 1)
-  `).get(name) as { totalRebels: number; totalVotes: number } | undefined;
+    WHERE faction_id = (SELECT faction_id FROM mk_person WHERE TRIM(faction_name) = ? AND faction_id IS NOT NULL LIMIT 1)
+  `).get(trimmed) as { totalRebels: number; totalVotes: number } | undefined;
 
   const rebellionRate =
     rebelStats && rebelStats.totalVotes > 0
@@ -1542,7 +1547,7 @@ export function getFactionDetail(name: string): FactionDetail | null {
       : null;
 
   return {
-    name,
+    name: trimmed,
     isCoalition,
     mks: mks.map(r => ({
       personId: r.person_id,

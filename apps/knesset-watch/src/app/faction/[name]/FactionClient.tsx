@@ -15,7 +15,7 @@ export default function FactionClient({ data }: { data: FactionDetail }) {
 
   return (
     <div className="min-h-screen bg-white" dir="rtl">
-      <div className="max-w-3xl mx-auto px-6 py-8">
+      <div className="max-w-4xl mx-auto px-6 py-8">
         <nav className="flex items-center gap-1 text-sm text-gray-400 mb-6">
           <Link href="/" className="font-black hover:text-black transition-colors">ראשי</Link>
           <span className="mx-1">›</span>

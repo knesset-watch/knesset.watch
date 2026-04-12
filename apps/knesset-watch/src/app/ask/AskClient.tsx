@@ -132,6 +132,15 @@ function AnswerText({ text, sources }: { text: string; sources: Source[] }) {
   return <p className="text-gray-900 text-sm leading-relaxed whitespace-pre-wrap" dir="rtl">{parts}</p>;
 }
 
+const SUGGESTED_QUESTIONS = [
+  { label: 'על ח"כ', q: 'מה עשה איתמר בן גביר בנושא הביטחון?' },
+  { label: 'על ח"כ', q: 'כיצד הצביע יאיר לפיד בנושא השכר המינימלי?' },
+  { label: 'הצבעות', q: 'מהן ההצבעות הצמודות ביותר השנה?' },
+  { label: 'הצבעות', q: 'אלו חוקים עברו בתמיכת האופוזיציה?' },
+  { label: 'חוקים', q: 'מהם החוקים שעברו בתחום החינוך?' },
+  { label: 'ועדות', q: 'מה דנה ועדת הכספים לאחרונה?' },
+];
+
 export default function AskClient({ initialQ }: { initialQ: string }) {
   const [query, setQuery]           = useState(initialQ);
   const [submittedQ, setSubmittedQ] = useState(initialQ);
@@ -156,13 +165,17 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
       .finally(() => setLoading(false));
   }, [submittedQ]);
 
+  function submitQuery(q: string) {
+    if (q.trim().length >= 2) {
+      setQuery(q.trim());
+      setSubmittedQ(q.trim());
+      router.replace(`/ask?q=${encodeURIComponent(q.trim())}`);
+    }
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const q = query.trim();
-    if (q.length >= 2) {
-      setSubmittedQ(q);
-      router.replace(`/ask?q=${encodeURIComponent(q)}`);
-    }
+    submitQuery(query);
   }
 
   const sessions = result?.sources.filter((s): s is SessionSource => s.type === 'session') ?? [];
@@ -201,6 +214,24 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
             {loading ? 'מחפש…' : 'שאל'}
           </button>
         </form>
+
+        {!loading && !result && !error && submittedQ.length < 2 && (
+          <div className="mt-2">
+            <p className="text-xs font-medium text-gray-400 mb-3">שאלות לדוגמה</p>
+            <div className="flex flex-wrap gap-2">
+              {SUGGESTED_QUESTIONS.map(({ label, q }) => (
+                <button
+                  key={q}
+                  onClick={() => submitQuery(q)}
+                  className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-colors text-gray-700 hover:text-blue-700"
+                >
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-wide">{label}</span>
+                  <span>{q}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {loading && (
           <div className="flex items-center gap-3 text-gray-500 text-sm py-8 justify-center">

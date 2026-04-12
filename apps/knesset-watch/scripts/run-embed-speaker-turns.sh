@@ -20,10 +20,10 @@ while true; do
   fi
 
   if [ $EXIT -ne 0 ]; then
-    echo "[error ${DIR} @ $(date '+%H:%M:%S')] Exit $EXIT, retrying in 5s..." >> "$LOGFILE"
-    sleep 5
+    JITTER=$((5 + RANDOM % 15))
+    echo "[error ${DIR} @ $(date '+%H:%M:%S')] Exit $EXIT, retrying in ${JITTER}s..." >> "$LOGFILE"
+    sleep $JITTER
   else
-    # Small pause between batches to allow Turso WAL checkpointing
     sleep 2
   fi
 done

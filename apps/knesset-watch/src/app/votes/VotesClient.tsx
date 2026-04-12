@@ -207,20 +207,20 @@ export default function VotesClient() {
         {/* List view — desktop only (hidden on mobile) */}
         {!loading && view === 'list' && (
           <div className="hidden sm:block">
-            <div className="grid grid-cols-[1fr_5rem_4rem_4rem_4rem_3rem] gap-4 py-2 px-4 text-[11px] font-black uppercase tracking-widest text-gray-400 mb-1">
+            <div className="grid grid-cols-[1fr_5rem_4rem_4rem_4rem_4.5rem] gap-4 py-2 px-4 text-[11px] font-black uppercase tracking-widest text-gray-400 mb-1">
               <span>נושא</span>
               <span>תאריך</span>
               <span className="text-center">בעד</span>
               <span className="text-center">נגד</span>
               <span className="text-center">הפרש</span>
-              <span></span>
+              <span className="text-center">סטטוס</span>
             </div>
             <div className="flex flex-col gap-1.5">
               {votes.map(v => (
                 <Link
                   key={v.voteId}
                   href={`/vote/${v.voteId}`}
-                  className={`grid grid-cols-[1fr_5rem_4rem_4rem_4rem_3rem] gap-4 py-3 px-4 rounded-xl items-center transition-colors ${v.isPassed ? 'bg-[#F0FDF4] hover:bg-green-100' : 'bg-gray-50 hover:bg-gray-100'}`}
+                  className="grid grid-cols-[1fr_5rem_4rem_4rem_4rem_4.5rem] gap-4 py-3 px-4 rounded-xl items-center transition-colors bg-gray-50 hover:bg-gray-100"
                 >
                   <div className="min-w-0">
                     <div className="text-sm font-black text-gray-900 line-clamp-2 leading-snug">{v.title}</div>
@@ -239,9 +239,9 @@ export default function VotesClient() {
                   <span className="text-base font-black text-teal-700 text-center">{v.totalFor}</span>
                   <span className="text-base font-black text-blue-700 text-center">{v.totalAgainst}</span>
                   <span className="text-base font-black text-center">{v.margin}</span>
-                  <svg className="w-3.5 h-3.5 text-gray-300 shrink-0 justify-self-end rotate-180" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path d="m6 3 5 5-5 5"/>
-                  </svg>
+                  <span className={`text-[11px] font-black px-2 py-1 rounded-full text-center justify-self-center ${v.isPassed ? 'bg-teal-100 text-teal-700' : 'bg-red-50 text-red-500'}`}>
+                    {v.isPassed ? 'עבר' : 'לא עבר'}
+                  </span>
                 </Link>
               ))}
             </div>

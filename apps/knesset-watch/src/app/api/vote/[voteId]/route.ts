@@ -39,11 +39,11 @@ export async function GET(
         return {
           mkId: r.mkId,
           slug: r.slug ?? null,
-          firstName: info?.name?.split(' ')[0] ?? '',
-          lastName:  info?.name?.split(' ').slice(1).join(' ') ?? '',
+          firstName: r.firstName ?? info?.name?.split(' ')[0] ?? '',
+          lastName:  r.lastName  ?? info?.name?.split(' ').slice(1).join(' ') ?? '',
           result: CODE_TO_DESC[r.resultCode] ?? 'נוכח',
-          party: info?.party,
-          isCoalition: info?.isCoalition,
+          party: info?.party ?? r.factionName ?? undefined,
+          isCoalition: info?.isCoalition ?? (r.isCoalition === null ? undefined : r.isCoalition === 1),
         };
       });
 

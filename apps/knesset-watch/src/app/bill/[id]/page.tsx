@@ -43,7 +43,7 @@ export default async function BillPage({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="min-h-screen bg-white" dir="rtl">
-      <div className="max-w-3xl mx-auto px-6 py-8">
+      <div className="max-w-4xl mx-auto px-6 py-8">
 
         {/* Breadcrumb */}
         <nav className="flex items-center gap-1 text-sm text-gray-400 mb-6">

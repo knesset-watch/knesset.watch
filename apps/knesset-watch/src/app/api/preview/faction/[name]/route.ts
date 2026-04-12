@@ -13,7 +13,7 @@ export async function GET(
   if (authError) return authError;
 
   const { name } = await params;
-  const factionName = decodeURIComponent(name);
+  const factionName = decodeURIComponent(name).trim();
 
   let db: InstanceType<typeof Database> | null = null;
   try {
@@ -23,7 +23,7 @@ export async function GET(
       SELECT MAX(is_coalition) as is_coalition,
              COUNT(*) as member_count,
              MIN(faction_id) as faction_id
-      FROM mk_person WHERE faction_name = ? AND is_current = 1
+      FROM mk_person WHERE TRIM(faction_name) = ? AND is_current = 1
     `).get(factionName) as { is_coalition: number | null; member_count: number; faction_id: number | null } | undefined;
 
     if (!base || base.member_count === 0) return NextResponse.json({ error: 'not found' }, { status: 404 });
@@ -34,7 +34,7 @@ export async function GET(
       FROM bill b
       JOIN bill_initiator bi ON bi.bill_id = b.id
       JOIN mk_person p ON p.person_id = bi.mk_id
-      WHERE p.faction_name = ?
+      WHERE TRIM(p.faction_name) = ?
     `).get(factionName) as { proposed: number; passed: number };
 
     let rebelRate: number | null = null;
