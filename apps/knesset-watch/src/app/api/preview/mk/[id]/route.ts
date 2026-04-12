@@ -49,6 +49,14 @@ export async function GET(
       LIMIT 1
     `).get(person.person_id) as { duty_desc: string } | undefined)?.duty_desc ?? null;
 
+    const totalVoted = (db.prepare(
+      'SELECT COUNT(*) as cnt FROM mk_vote_result WHERE mk_id = ?'
+    ).get(person.person_id) as { cnt: number }).cnt;
+    const totalPlenary = (db.prepare(
+      'SELECT COUNT(*) as cnt FROM plenary_vote'
+    ).get() as { cnt: number }).cnt;
+    const attendanceRate = totalPlenary > 0 ? Math.round((totalVoted / totalPlenary) * 100) : null;
+
     return NextResponse.json({
       id: person.person_id,
       name: person.name,
@@ -58,6 +66,7 @@ export async function GET(
       proposed: billStats?.proposed ?? 0,
       passed: billStats?.passed ?? 0,
       committeeSessions,
+      attendanceRate,
     });
   } catch (e: unknown) {
     return NextResponse.json({ error: String(e) }, { status: 500 });

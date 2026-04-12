@@ -89,37 +89,18 @@ const SOURCE_GROUPS: Array<{ type: Source['type']; label: string }> = [
   { type: 'query',   label: 'שאילתות' },
 ];
 
-// Parse inline [SESSION:id], [VOTE:id], [BILL:id] tags from LLM answer and render as superscript links
+// Parse inline [SESSION:id], [VOTE:id], [BILL:id] tags from LLM answer and render as entity hover cards
 const REF_RE = /\[(SESSION|VOTE|BILL):(\d+)\]/g;
-
-function makeTooltip(s: Source): [string, string] {
-  if (s.type === 'session') return [
-    `ישיבת ועדה — ${s.committeeName}`,
-    `${s.date}${s.title ? ' | ' + s.title.slice(0, 40) : ''}`,
-  ];
-  if (s.type === 'vote') return [
-    `הצבעה — ${s.date}`,
-    `${s.title.slice(0, 40)} — ${s.isPassed ? 'עבר ✓' : 'לא עבר ✗'}`,
-  ];
-  if (s.type === 'bill') return [
-    'הצעת חוק',
-    `${s.title.slice(0, 40)} — ${s.isPassed ? 'עברה ✓' : 'בהליך'}`,
-  ];
-  return ['מקור', ''];
-}
 
 function AnswerText({ text, sources }: { text: string; sources: Source[] }) {
   const sessionMap = new Map(
-    sources.filter((s): s is SessionSource => s.type === 'session')
-      .map(s => [s.sessionId, { url: `/session/${s.sessionId}`, tooltip: makeTooltip(s) }])
+    sources.filter((s): s is SessionSource => s.type === 'session').map(s => [s.sessionId, `/session/${s.sessionId}`])
   );
   const voteMap = new Map(
-    sources.filter((s): s is VoteSource => s.type === 'vote')
-      .map(s => [s.voteId, { url: `/vote/${s.voteId}`, tooltip: makeTooltip(s) }])
+    sources.filter((s): s is VoteSource => s.type === 'vote').map(s => [s.voteId, `/vote/${s.voteId}`])
   );
   const billMap = new Map(
-    sources.filter((s): s is BillSource => s.type === 'bill')
-      .map(s => [s.billId, { url: `/bill/${s.billId}`, tooltip: makeTooltip(s) }])
+    sources.filter((s): s is BillSource => s.type === 'bill').map(s => [s.billId, `/bill/${s.billId}`])
   );
 
   const parts: React.ReactNode[] = [];
@@ -129,25 +110,19 @@ function AnswerText({ text, sources }: { text: string; sources: Source[] }) {
   while ((m = REF_RE.exec(text)) !== null) {
     if (m.index > last) parts.push(<span key={last}>{text.slice(last, m.index)}</span>);
     const id = Number(m[2]);
-    const entry = m[1] === 'SESSION' ? sessionMap.get(id)
-                : m[1] === 'VOTE'    ? voteMap.get(id)
-                : billMap.get(id);
-    if (entry) {
-      const [line1, line2] = entry.tooltip;
+    const type = m[1] === 'SESSION' ? 'session' : m[1] === 'VOTE' ? 'vote' : 'bill';
+    const url = type === 'session' ? sessionMap.get(id) : type === 'vote' ? voteMap.get(id) : billMap.get(id);
+    if (url) {
       parts.push(
-        <span key={m.index} className="relative inline-block group align-super mx-0.5">
-          <Link href={entry.url}
-            className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 text-[11px] font-black transition-colors">
-            ↗
-          </Link>
-          <span
-            className="absolute bottom-full mb-1 right-0 hidden group-hover:block z-50 w-max max-w-[220px] rounded-lg bg-gray-900 text-white text-[11px] leading-snug px-2.5 py-1.5 shadow-lg pointer-events-none"
-            dir="rtl"
-          >
-            <span className="block font-semibold">{line1}</span>
-            {line2 && <span className="block text-gray-300 mt-0.5">{line2}</span>}
-          </span>
-        </span>
+        <EntityTooltip
+          key={m.index}
+          href={url}
+          type={type}
+          id={id}
+          className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 text-[11px] font-black align-super mx-0.5 transition-colors"
+        >
+          ↗
+        </EntityTooltip>
       );
     }
     last = m.index + m[0].length;
