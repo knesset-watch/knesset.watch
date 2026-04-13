@@ -186,7 +186,7 @@ function extractTopicKeywords(query: string, mkName?: string): { keywords: strin
   const seen = new Set<string>();
   const keywords = text
     .split(/\s+/)
-    .map(w => w.replace(/^[הוש]/, ''))   // strip ה/ו/ש prefix
+    .map(w => w.replace(/^[הוש]/, '').replace(/[^א-ת\d]+$/, '').replace(/^[^א-ת\d]+/, ''))   // strip ה/ו/ש prefix + trailing/leading punctuation
     .filter(w => w.length >= 3 && !HE_STOP.has(w))
     .sort((a, b) => b.length - a.length)
     .filter(w => { if (seen.has(w)) return false; seen.add(w); return true; })
