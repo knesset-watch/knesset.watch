@@ -47,9 +47,12 @@ function protocolLabel(ragCard: unknown): string | null {
 
 async function embedQuery(text: string): Promise<number[] | null> {
   if (!process.env.JINA_API_KEY) return null;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 10_000);
   try {
     const res = await fetch('https://api.jina.ai/v1/embeddings', {
       method: 'POST',
+      signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${process.env.JINA_API_KEY}`,
@@ -66,6 +69,8 @@ async function embedQuery(text: string): Promise<number[] | null> {
     return Array.isArray(emb) && emb.length === DIMS ? emb : null;
   } catch {
     return null;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
