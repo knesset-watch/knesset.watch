@@ -1927,14 +1927,28 @@ export function searchBillsByKeyword(keyword: string | string[], mkId?: number, 
     const plainCond = keywords.map(() => 'title LIKE ?').join(' OR ');
     const kArgs = keywords.map(k => `%${k}%`);
 
+    // Inverse-frequency weighting: rare keyword matches rank above common ones.
+    const kWeights = keywords.map(k => {
+      const cnt = (db.prepare('SELECT COUNT(*) as cnt FROM bill WHERE title LIKE ?').get(`%${k}%`) as { cnt: number }).cnt;
+      return cnt > 0 ? 1 / cnt : 1;
+    });
+    const scoreRows = <T extends Record<string, unknown>>(rows: T[]): T[] =>
+      rows
+        .map(r => {
+          const score = keywords.reduce((s, k, i) => s + ((r['title'] as string)?.includes(k) ? kWeights[i] : 0), 0);
+          return { ...r, _score: score };
+        })
+        .sort((a, b) => (b._score as number) - (a._score as number))
+        .slice(0, limit) as T[];
+
     if (mkId !== undefined) {
-      const filtered = (db.prepare(`
+      const filtered = scoreRows(db.prepare(`
         SELECT b.id, b.title, b.committee_name, b.is_passed
         FROM bill b
         JOIN bill_initiator i ON i.bill_id = b.id AND i.mk_id = ?
         WHERE ${mkCond}
-        ORDER BY b.id DESC LIMIT ?
-      `).all(mkId, ...kArgs, limit) as Row[]).map(map);
+        ORDER BY b.id DESC LIMIT 100
+      `).all(mkId, ...kArgs) as Row[]).map(map);
       if (filtered.length > 0) return filtered;
       return (db.prepare(`
         SELECT b.id, b.title, b.committee_name, b.is_passed
@@ -1943,11 +1957,11 @@ export function searchBillsByKeyword(keyword: string | string[], mkId?: number, 
         ORDER BY b.id DESC LIMIT ?
       `).all(mkId, limit) as Row[]).map(map);
     }
-    return (db.prepare(`
+    return scoreRows(db.prepare(`
       SELECT id, title, committee_name, is_passed
       FROM bill WHERE ${plainCond}
-      ORDER BY id DESC LIMIT ?
-    `).all(...kArgs, limit) as Row[]).map(map);
+      ORDER BY id DESC LIMIT 100
+    `).all(...kArgs) as Row[]).map(map);
   } catch {
     return [];
   }

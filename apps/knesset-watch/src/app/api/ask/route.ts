@@ -190,7 +190,7 @@ function extractTopicKeywords(query: string, mkName?: string): { keywords: strin
     .filter(w => w.length >= 3 && !HE_STOP.has(w))
     .sort((a, b) => b.length - a.length)
     .filter(w => { if (seen.has(w)) return false; seen.add(w); return true; })
-    .slice(0, 3);
+    .slice(0, 5);
 
   // Stemmed keywords: used for LIKE searches so morphological variants are matched.
   // e.g. "חטופים" → "חטוף" catches חטוף/החטופים/לחטופים/חטופה
