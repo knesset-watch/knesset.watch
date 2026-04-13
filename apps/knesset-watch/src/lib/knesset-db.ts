@@ -1858,14 +1858,31 @@ export function searchVotesByKeyword(keyword: string | string[], mkId?: number, 
     const plainCond = keywords.map(() => '(title LIKE ? OR micro_agenda LIKE ? OR macro_agenda LIKE ?)').join(' OR ');
     const kArgs = keywords.flatMap(k => [`%${k}%`, `%${k}%`, `%${k}%`]);
 
+    // Compute per-keyword match counts so rarer keywords get higher weight.
+    // A vote matching "סביר" (2 total matches) ranks above one matching only "ביטול" (100+ matches).
+    const kWeights = keywords.map(k => {
+      const cnt = (db.prepare('SELECT COUNT(*) as cnt FROM plenary_vote WHERE title LIKE ? OR micro_agenda LIKE ? OR macro_agenda LIKE ?').get(`%${k}%`, `%${k}%`, `%${k}%`) as { cnt: number }).cnt;
+      return cnt > 0 ? 1 / cnt : 1;
+    });
+
+    const scoreRows = <T extends Record<string, unknown>>(rows: T[]): T[] =>
+      rows
+        .map(r => {
+          const fields = [r['title'] as string, r['micro_agenda'] as string, r['macro_agenda'] as string];
+          const score = keywords.reduce((s, k, i) => s + (fields.some(f => f?.includes(k)) ? kWeights[i] : 0), 0);
+          return { ...r, _score: score };
+        })
+        .sort((a, b) => (b._score as number) - (a._score as number) || (String(b['date'] ?? '') > String(a['date'] ?? '') ? 1 : -1))
+        .slice(0, limit) as T[];
+
     if (mkId !== undefined) {
-      const filtered = (db.prepare(`
+      const filtered = scoreRows(db.prepare(`
         SELECT pv.id, pv.title, pv.date, pv.micro_agenda, pv.macro_agenda, pv.is_passed, pv.total_for, pv.total_against, mvr.result_code
         FROM plenary_vote pv
         JOIN mk_vote_result mvr ON mvr.vote_id = pv.id AND mvr.mk_id = ?
         WHERE ${mkCond}
-        ORDER BY pv.date DESC LIMIT ?
-      `).all(mkId, ...kArgs, limit) as Row[]).map(map);
+        ORDER BY pv.date DESC LIMIT 100
+      `).all(mkId, ...kArgs) as Row[]).map(map);
       if (filtered.length > 0) return filtered;
       return (db.prepare(`
         SELECT pv.id, pv.title, pv.date, pv.micro_agenda, pv.macro_agenda, pv.is_passed, pv.total_for, pv.total_against, mvr.result_code
@@ -1874,11 +1891,11 @@ export function searchVotesByKeyword(keyword: string | string[], mkId?: number, 
         ORDER BY pv.date DESC LIMIT ?
       `).all(mkId, limit) as Row[]).map(map);
     }
-    return (db.prepare(`
+    return scoreRows(db.prepare(`
       SELECT id, title, date, micro_agenda, macro_agenda, is_passed, total_for, total_against
       FROM plenary_vote WHERE ${plainCond}
-      ORDER BY date DESC LIMIT ?
-    `).all(...kArgs, limit) as Row[]).map(map);
+      ORDER BY date DESC LIMIT 100
+    `).all(...kArgs) as Row[]).map(map);
   } catch {
     return [];
   }
