@@ -145,9 +145,20 @@ export function getVoteResults(
     .prepare(
       `SELECT r.mk_id AS mkId, r.result_code AS resultCode, p.slug,
               p.first_name AS firstName, p.last_name AS lastName,
-              p.faction_name AS factionName, p.is_coalition AS isCoalition
+              p.faction_name AS factionName,
+              COALESCE(
+                (SELECT fch.is_coalition
+                 FROM faction_coalition_history fch
+                 WHERE fch.faction_id = p.faction_id
+                   AND fch.from_date <= date(pv.date)
+                   AND (fch.to_date IS NULL OR fch.to_date > date(pv.date))
+                 ORDER BY fch.from_date DESC
+                 LIMIT 1),
+                p.is_coalition
+              ) AS isCoalition
        FROM mk_vote_result r
        LEFT JOIN mk_person p ON p.person_id = r.mk_id
+       JOIN plenary_vote pv ON pv.id = r.vote_id
        WHERE r.vote_id = ?`,
     )
     .all(voteId) as Array<{ mkId: number; resultCode: number; slug: string | null; firstName: string; lastName: string; factionName: string | null; isCoalition: number | null }>;
@@ -1021,15 +1032,28 @@ export function getVoteCoalitionBreakdown(voteId: number): VoteCoalitionBreakdow
   const db = getDb();
   if (!db) return null;
 
+  // Use faction_coalition_history for historical accuracy (e.g. parties that
+  // joined/left the coalition mid-term). Falls back to mk_person.is_coalition
+  // for factions not recorded in the history table.
   const rows = db.prepare(`
     SELECT
-      mp.is_coalition,
+      COALESCE(
+        (SELECT fch.is_coalition
+         FROM faction_coalition_history fch
+         WHERE fch.faction_id = mp.faction_id
+           AND fch.from_date <= date(pv.date)
+           AND (fch.to_date IS NULL OR fch.to_date > date(pv.date))
+         ORDER BY fch.from_date DESC
+         LIMIT 1),
+        mp.is_coalition
+      ) AS is_coalition,
       mvr.result_code,
       COUNT(*) as cnt
     FROM mk_vote_result mvr
     JOIN mk_person mp ON mp.person_id = mvr.mk_id
+    JOIN plenary_vote pv ON pv.id = mvr.vote_id
     WHERE mvr.vote_id = ? AND mp.is_coalition IS NOT NULL AND mvr.result_code IN (7, 8, 6)
-    GROUP BY mp.is_coalition, mvr.result_code
+    GROUP BY is_coalition, mvr.result_code
   `).all(voteId) as Array<{ is_coalition: number; result_code: number; cnt: number }>;
 
   const result: VoteCoalitionBreakdown = {
