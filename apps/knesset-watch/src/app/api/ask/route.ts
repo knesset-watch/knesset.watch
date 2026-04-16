@@ -4,6 +4,7 @@ import { validateApiAuth } from '@/lib/ui/auth-utils';
 import {
   embedQueryPublic,
   searchProtocols,
+  searchProtocolsVec,
   getProtocolSession,
   searchMkSpeakerTurns,
   searchSpeakerTurnsByVector,
@@ -377,8 +378,13 @@ export async function GET(req: NextRequest) {
         ? searchPlenaryMkTurns(detectedMk!.fullName, stemmedTerm, 8)
         : Promise.resolve([]);
 
-    const sessionFallbackPromise: Promise<ProtocolSearchResult[]> = !embedding && !mkId
-      ? searchProtocols(q, null, 1).then(r => r.results).catch(() => [])
+    // Session-level fallback for all non-MK queries.
+    // Speaker turn embeddings are ~95% complete; session embeddings are 100%.
+    // When turn search returns nothing, this ensures sessions always appear.
+    const sessionFallbackPromise: Promise<ProtocolSearchResult[]> = !mkId
+      ? embedding
+        ? searchProtocolsVec(embedding, null, 8).catch(() => [])
+        : searchProtocols(q, null, 1).then(r => r.results).catch(() => [])
       : Promise.resolve([]);
 
     // Vote vector search + keyword search, merged by voteId
