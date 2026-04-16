@@ -1864,7 +1864,7 @@ export interface VoteSearchResult {
  * Without an MK: keyword search on title/micro_agenda/macro_agenda.
  * Accepts a single keyword or array of keywords (OR-matched).
  */
-export function searchVotesByKeyword(keyword: string | string[], mkId?: number, limit = 10): VoteSearchResult[] {
+export function searchVotesByKeyword(keyword: string | string[], mkId?: number, limit = 10, dateFrom?: string, dateTo?: string): VoteSearchResult[] {
   const db = getDb();
   if (!db) return [];
   try {
@@ -1882,8 +1882,13 @@ export function searchVotesByKeyword(keyword: string | string[], mkId?: number, 
     const plainCond = keywords.map(() => '(title LIKE ? OR micro_agenda LIKE ? OR macro_agenda LIKE ?)').join(' OR ');
     const kArgs = keywords.flatMap(k => [`%${k}%`, `%${k}%`, `%${k}%`]);
 
+    const dateSql = [dateFrom ? 'AND pv.date >= ?' : '', dateTo ? 'AND pv.date <= ?' : ''].filter(Boolean).join(' ');
+    const plainDateSql = [dateFrom ? 'AND date >= ?' : '', dateTo ? 'AND date <= ?' : ''].filter(Boolean).join(' ');
+    const dateArgs: string[] = [];
+    if (dateFrom) dateArgs.push(dateFrom);
+    if (dateTo)   dateArgs.push(dateTo);
+
     // Compute per-keyword match counts so rarer keywords get higher weight.
-    // A vote matching "סביר" (2 total matches) ranks above one matching only "ביטול" (100+ matches).
     const kWeights = keywords.map(k => {
       const cnt = (db.prepare('SELECT COUNT(*) as cnt FROM plenary_vote WHERE title LIKE ? OR micro_agenda LIKE ? OR macro_agenda LIKE ?').get(`%${k}%`, `%${k}%`, `%${k}%`) as { cnt: number }).cnt;
       return cnt > 0 ? 1 / cnt : 1;
@@ -1904,22 +1909,23 @@ export function searchVotesByKeyword(keyword: string | string[], mkId?: number, 
         SELECT pv.id, pv.title, pv.date, pv.micro_agenda, pv.macro_agenda, pv.is_passed, pv.total_for, pv.total_against, mvr.result_code
         FROM plenary_vote pv
         JOIN mk_vote_result mvr ON mvr.vote_id = pv.id AND mvr.mk_id = ?
-        WHERE ${mkCond}
+        WHERE ${mkCond} ${dateSql}
         ORDER BY pv.date DESC LIMIT 100
-      `).all(mkId, ...kArgs) as Row[]).map(map);
+      `).all(mkId, ...kArgs, ...dateArgs) as Row[]).map(map);
       if (filtered.length > 0) return filtered;
       return (db.prepare(`
         SELECT pv.id, pv.title, pv.date, pv.micro_agenda, pv.macro_agenda, pv.is_passed, pv.total_for, pv.total_against, mvr.result_code
         FROM plenary_vote pv
         JOIN mk_vote_result mvr ON mvr.vote_id = pv.id AND mvr.mk_id = ?
+        WHERE 1=1 ${dateSql}
         ORDER BY pv.date DESC LIMIT ?
-      `).all(mkId, limit) as Row[]).map(map);
+      `).all(mkId, ...dateArgs, limit) as Row[]).map(map);
     }
     return scoreRows(db.prepare(`
       SELECT id, title, date, micro_agenda, macro_agenda, is_passed, total_for, total_against
-      FROM plenary_vote WHERE ${plainCond}
+      FROM plenary_vote WHERE ${plainCond} ${plainDateSql}
       ORDER BY date DESC LIMIT 100
-    `).all(...kArgs) as Row[]).map(map);
+    `).all(...kArgs, ...dateArgs) as Row[]).map(map);
   } catch {
     return [];
   }
@@ -1937,7 +1943,7 @@ export interface BillSearchResult {
  * Without an MK: keyword search on bill title.
  * Accepts a single keyword or array of keywords (OR-matched).
  */
-export function searchBillsByKeyword(keyword: string | string[], mkId?: number, limit = 8): BillSearchResult[] {
+export function searchBillsByKeyword(keyword: string | string[], mkId?: number, limit = 8, dateFrom?: string, dateTo?: string): BillSearchResult[] {
   const db = getDb();
   if (!db) return [];
   try {
@@ -1950,6 +1956,12 @@ export function searchBillsByKeyword(keyword: string | string[], mkId?: number, 
     const mkCond = keywords.map(() => 'b.title LIKE ?').join(' OR ');
     const plainCond = keywords.map(() => 'title LIKE ?').join(' OR ');
     const kArgs = keywords.map(k => `%${k}%`);
+
+    const dateSql = [dateFrom ? 'AND b.init_date >= ?' : '', dateTo ? 'AND b.init_date <= ?' : ''].filter(Boolean).join(' ');
+    const plainDateSql = [dateFrom ? 'AND init_date >= ?' : '', dateTo ? 'AND init_date <= ?' : ''].filter(Boolean).join(' ');
+    const dateArgs: string[] = [];
+    if (dateFrom) dateArgs.push(dateFrom);
+    if (dateTo)   dateArgs.push(dateTo);
 
     // Inverse-frequency weighting: rare keyword matches rank above common ones.
     const kWeights = keywords.map(k => {
@@ -1970,22 +1982,23 @@ export function searchBillsByKeyword(keyword: string | string[], mkId?: number, 
         SELECT b.id, b.title, b.committee_name, b.is_passed
         FROM bill b
         JOIN bill_initiator i ON i.bill_id = b.id AND i.mk_id = ?
-        WHERE ${mkCond}
+        WHERE ${mkCond} ${dateSql}
         ORDER BY b.id DESC LIMIT 100
-      `).all(mkId, ...kArgs) as Row[]).map(map);
+      `).all(mkId, ...kArgs, ...dateArgs) as Row[]).map(map);
       if (filtered.length > 0) return filtered;
       return (db.prepare(`
         SELECT b.id, b.title, b.committee_name, b.is_passed
         FROM bill b
         JOIN bill_initiator i ON i.bill_id = b.id AND i.mk_id = ?
+        WHERE 1=1 ${dateSql}
         ORDER BY b.id DESC LIMIT ?
-      `).all(mkId, limit) as Row[]).map(map);
+      `).all(mkId, ...dateArgs, limit) as Row[]).map(map);
     }
     return scoreRows(db.prepare(`
       SELECT id, title, committee_name, is_passed
-      FROM bill WHERE ${plainCond}
+      FROM bill WHERE ${plainCond} ${plainDateSql}
       ORDER BY id DESC LIMIT 100
-    `).all(...kArgs) as Row[]).map(map);
+    `).all(...kArgs, ...dateArgs) as Row[]).map(map);
   } catch {
     return [];
   }
@@ -2103,7 +2116,7 @@ export interface QuerySearchResult {
  * Without an MK: keyword search on query title or body.
  * Accepts a single keyword or array of keywords (OR-matched).
  */
-export function searchQueriesByKeyword(keyword: string | string[], mkId?: number, limit = 8): QuerySearchResult[] {
+export function searchQueriesByKeyword(keyword: string | string[], mkId?: number, limit = 8, dateFrom?: string, dateTo?: string): QuerySearchResult[] {
   const db = getDb();
   if (!db) return [];
   try {
@@ -2118,27 +2131,32 @@ export function searchQueriesByKeyword(keyword: string | string[], mkId?: number
     const cond = keywords.map(() => '(q.title LIKE ? OR q.body LIKE ?)').join(' OR ');
     const kArgs = keywords.flatMap(k => [`%${k}%`, `%${k}%`]);
 
+    const dateSql = [dateFrom ? 'AND q.submit_date >= ?' : '', dateTo ? 'AND q.submit_date <= ?' : ''].filter(Boolean).join(' ');
+    const dateArgs: string[] = [];
+    if (dateFrom) dateArgs.push(dateFrom);
+    if (dateTo)   dateArgs.push(dateTo);
+
     if (mkId !== undefined) {
       const filtered = (db.prepare(`
         SELECT q.id, q.title, q.submit_date, q.mk_id, p.first_name, p.last_name, q.body, q.ministry_response
         FROM mk_query q JOIN mk_person p ON p.person_id = q.mk_id
-        WHERE q.mk_id = ? AND (${cond})
+        WHERE q.mk_id = ? AND (${cond}) ${dateSql}
         ORDER BY q.submit_date DESC LIMIT ?
-      `).all(mkId, ...kArgs, limit) as Row[]).map(map);
+      `).all(mkId, ...kArgs, ...dateArgs, limit) as Row[]).map(map);
       if (filtered.length > 0) return filtered;
       return (db.prepare(`
         SELECT q.id, q.title, q.submit_date, q.mk_id, p.first_name, p.last_name, q.body, q.ministry_response
         FROM mk_query q JOIN mk_person p ON p.person_id = q.mk_id
-        WHERE q.mk_id = ?
+        WHERE q.mk_id = ? ${dateSql}
         ORDER BY q.submit_date DESC LIMIT ?
-      `).all(mkId, limit) as Row[]).map(map);
+      `).all(mkId, ...dateArgs, limit) as Row[]).map(map);
     }
     return (db.prepare(`
       SELECT q.id, q.title, q.submit_date, q.mk_id, p.first_name, p.last_name, q.body, q.ministry_response
       FROM mk_query q JOIN mk_person p ON p.person_id = q.mk_id
-      WHERE ${cond}
+      WHERE ${cond} ${dateSql}
       ORDER BY q.submit_date DESC LIMIT ?
-    `).all(...kArgs, limit) as Row[]).map(map);
+    `).all(...kArgs, ...dateArgs, limit) as Row[]).map(map);
   } catch {
     return [];
   }

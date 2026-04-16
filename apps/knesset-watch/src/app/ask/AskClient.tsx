@@ -7,7 +7,7 @@ import EntityTooltip from '@/components/EntityTooltip';
 import { MkTimeline } from '@/components/MkTimeline';
 import { VoteCoalition } from '@/components/VoteCoalition';
 
-type SessionSource = { type: 'session'; sessionId: number; committeeName: string; date: string; title: string };
+type SessionSource = { type: 'session'; sessionId: number; committeeName: string; date: string; title: string; snippet?: string };
 type VoteSource   = { type: 'vote';    voteId: number;    title: string; date: string; isPassed: boolean };
 type BillSource   = { type: 'bill';    billId: number;    title: string; committeeName: string | null; isPassed: boolean };
 type QuerySource  = { type: 'query';   queryId: number;   title: string; submitDate: string; mkName: string };
@@ -18,18 +18,23 @@ interface AskResult {
   sources: Source[];
   detectedMk: { mkId: number; fullName: string } | null;
   topicKeywords: string[];
+  dateLabel?: string;      // e.g. "2024-01 – 2024-04" when query has temporal expression
+  hasPrevContext?: boolean;
 }
 
 function SessionCard({ s }: { s: SessionSource }) {
   const date = new Date(s.date).toLocaleDateString('he-IL', { year: 'numeric', month: 'short', day: 'numeric' });
   return (
-    <Link href={`/session/${s.sessionId}`} className="flex items-center justify-between gap-3 border border-gray-200 rounded-lg px-4 py-3 hover:border-blue-400 hover:bg-blue-50/40 transition-colors group">
+    <Link href={`/session/${s.sessionId}`} className="flex items-start justify-between gap-3 border border-gray-200 rounded-lg px-4 py-3 hover:border-blue-400 hover:bg-blue-50/40 transition-colors group">
       <div className="min-w-0">
         <p className="text-sm font-bold text-gray-800 truncate">{s.committeeName || 'ועדה'}</p>
-        {s.title && <p className="text-xs text-gray-500 mt-0.5 truncate">{s.title}</p>}
-        <p className="text-xs text-gray-400 mt-0.5">{date}</p>
+        {s.snippet
+          ? <p className="text-xs text-gray-600 mt-1 line-clamp-2 leading-relaxed">{s.snippet}</p>
+          : s.title && <p className="text-xs text-gray-500 mt-0.5 truncate">{s.title}</p>
+        }
+        <p className="text-xs text-gray-400 mt-1">{date}</p>
       </div>
-      <span className="text-gray-300 group-hover:text-blue-400 transition-colors shrink-0 text-lg">←</span>
+      <span className="text-gray-300 group-hover:text-blue-400 transition-colors shrink-0 text-lg mt-0.5">←</span>
     </Link>
   );
 }
@@ -142,11 +147,16 @@ const SUGGESTED_QUESTIONS = [
 ];
 
 export default function AskClient({ initialQ }: { initialQ: string }) {
-  const [query, setQuery]           = useState(initialQ);
-  const [submittedQ, setSubmittedQ] = useState(initialQ);
-  const [result, setResult]         = useState<AskResult | null>(null);
-  const [error, setError]           = useState<string | null>(null);
-  const [loading, setLoading]       = useState(false);
+  const [query, setQuery]                   = useState(initialQ);
+  const [submittedQ, setSubmittedQ]         = useState(initialQ);
+  const [result, setResult]                 = useState<AskResult | null>(null);
+  const [streamingAnswer, setStreamingAnswer] = useState('');
+  const [isStreaming, setIsStreaming]       = useState(false);
+  const [error, setError]                   = useState<string | null>(null);
+  const [loading, setLoading]               = useState(false);
+  const [suggestions, setSuggestions]       = useState<string[]>([]);
+  // Multi-turn: last completed Q+answer for conversation context
+  const [prevContext, setPrevContext]       = useState<{ q: string; a: string } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -155,20 +165,86 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
     setLoading(true);
     setError(null);
     setResult(null);
-    fetch(`/api/ask?q=${encodeURIComponent(submittedQ)}`)
-      .then(r => r.json())
-      .then((d: AskResult & { error?: string }) => {
-        if (d.error) { setError(d.error); return; }
-        setResult(d);
+    setStreamingAnswer('');
+    setIsStreaming(false);
+    setSuggestions([]);
+
+    const controller = new AbortController();
+
+    // Build URL — include previous context for multi-turn if available
+    const url = new URL('/api/ask', window.location.origin);
+    url.searchParams.set('q', submittedQ);
+    if (prevContext) {
+      url.searchParams.set('prev_q', prevContext.q);
+      url.searchParams.set('prev_a', prevContext.a.slice(0, 400));
+    }
+
+    fetch(url.toString(), { signal: controller.signal })
+      .then(async (res) => {
+        const ct = res.headers.get('content-type') ?? '';
+
+        if (ct.includes('application/json')) {
+          const d = await res.json() as AskResult & { error?: string };
+          if (d.error) { setError(d.error); return; }
+          setResult(d);
+          return;
+        }
+
+        setIsStreaming(true);
+        const reader = res.body!.getReader();
+        const decoder = new TextDecoder();
+        let buf = '';
+        let fullAnswer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+          const lines = buf.split('\n');
+          buf = lines.pop() ?? '';
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            try {
+              const ev = JSON.parse(line) as {
+                type: string; text?: string; message?: string; questions?: string[];
+                sources?: Source[]; detectedMk?: AskResult['detectedMk']; topicKeywords?: string[];
+                dateLabel?: string; hasPrevContext?: boolean;
+              };
+              if (ev.type === 'meta') {
+                setResult({ answer: '', sources: ev.sources ?? [], detectedMk: ev.detectedMk ?? null, topicKeywords: ev.topicKeywords ?? [], dateLabel: ev.dateLabel, hasPrevContext: ev.hasPrevContext });
+                setLoading(false);
+              } else if (ev.type === 'chunk') {
+                fullAnswer += ev.text ?? '';
+                setStreamingAnswer(fullAnswer);
+              } else if (ev.type === 'done') {
+                setResult(r => r ? { ...r, answer: fullAnswer } : null);
+                setStreamingAnswer('');
+                setIsStreaming(false);
+                // Save this turn as context for the next query
+                setPrevContext({ q: submittedQ, a: fullAnswer });
+              } else if (ev.type === 'suggestions') {
+                setSuggestions(ev.questions ?? []);
+              } else if (ev.type === 'error') {
+                setError(ev.message ?? 'שגיאה');
+                setIsStreaming(false);
+              }
+            } catch { /* skip */ }
+          }
+        }
       })
-      .catch(() => setError('אירעה שגיאה, נסה שוב'))
-      .finally(() => setLoading(false));
-  }, [submittedQ]);
+      .catch((e: unknown) => {
+        if (e instanceof Error && e.name !== 'AbortError') setError('אירעה שגיאה, נסה שוב');
+      })
+      .finally(() => { setLoading(false); setIsStreaming(false); });
+
+    return () => controller.abort();
+  }, [submittedQ]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function submitQuery(q: string) {
     if (q.trim().length >= 2) {
       setQuery(q.trim());
       setSubmittedQ(q.trim());
+      setSuggestions([]);
       router.replace(`/ask?q=${encodeURIComponent(q.trim())}`);
     }
   }
@@ -183,6 +259,7 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
   const bills    = result?.sources.filter((s): s is BillSource    => s.type === 'bill')    ?? [];
   const queries  = result?.sources.filter((s): s is QuerySource   => s.type === 'query')   ?? [];
   const hasAnySources = sessions.length + votes.length + bills.length + queries.length > 0;
+  const showResult = result !== null;
 
   return (
     <div className="min-h-screen bg-white" dir="rtl">
@@ -247,20 +324,48 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
           <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">{error}</div>
         )}
 
-        {result && !loading && (
+        {showResult && (
           <div className="space-y-8">
-            {result.detectedMk && (
-              <p className="text-xs text-blue-600 bg-blue-50 rounded-md px-3 py-2 inline-block">
-                חיפוש ממוקד עבור{' '}
-                <EntityTooltip href={`/mk/${result.detectedMk.mkId}`} type="mk" id={result.detectedMk.mkId} className="font-semibold underline">
-                  {result.detectedMk.fullName}
-                </EntityTooltip>
-              </p>
-            )}
+            <div className="flex flex-wrap gap-2">
+              {result!.detectedMk && (
+                <p className="text-xs text-blue-600 bg-blue-50 rounded-md px-3 py-2 inline-flex items-center gap-1">
+                  חיפוש ממוקד עבור{' '}
+                  <EntityTooltip href={`/mk/${result!.detectedMk.mkId}`} type="mk" id={result!.detectedMk.mkId} className="font-semibold underline">
+                    {result!.detectedMk.fullName}
+                  </EntityTooltip>
+                </p>
+              )}
+              {result!.dateLabel && (
+                <p className="text-xs text-amber-700 bg-amber-50 rounded-md px-3 py-2 inline-block">
+                  טווח זמן: {result!.dateLabel}
+                </p>
+              )}
+              {result!.hasPrevContext && (
+                <p className="text-xs text-purple-700 bg-purple-50 rounded-md px-3 py-2 inline-flex items-center gap-1">
+                  <span>↩</span> בהמשך לשאלה הקודמת
+                </p>
+              )}
+            </div>
 
+            {/* Answer — streams in while sources are already visible */}
             <div className="bg-gray-50 border border-gray-200 rounded-xl px-5 py-4">
               <p className="text-sm font-semibold text-gray-500 mb-2">תשובה</p>
-              <AnswerText text={result.answer} sources={result.sources} />
+              {isStreaming ? (
+                <p className="text-gray-900 text-sm leading-relaxed whitespace-pre-wrap" dir="rtl">
+                  {streamingAnswer}
+                  <span className="inline-block w-0.5 h-[1em] bg-blue-500 ml-0.5 animate-pulse align-text-bottom" />
+                </p>
+              ) : result!.answer ? (
+                <AnswerText text={result!.answer} sources={result!.sources} />
+              ) : (
+                <div className="flex items-center gap-2 text-gray-400 text-sm py-2">
+                  <svg className="animate-spin h-4 w-4 text-blue-400" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                  </svg>
+                  מנסח תשובה…
+                </div>
+              )}
             </div>
 
             {hasAnySources && (
@@ -290,11 +395,28 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
               </div>
             )}
 
-            {result.detectedMk && (result.topicKeywords ?? []).length > 0 && (
-              <MkTimeline query={submittedQ} topicKeywords={result.topicKeywords} />
+            {suggestions.length > 0 && !isStreaming && (
+              <div>
+                <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">שאלות המשך</p>
+                <div className="flex flex-col gap-2">
+                  {suggestions.map(sq => (
+                    <button
+                      key={sq}
+                      onClick={() => submitQuery(sq)}
+                      className="text-sm text-right px-4 py-2.5 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-colors text-gray-700 hover:text-blue-700 w-full"
+                    >
+                      {sq}
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
 
-            {votes.length === 1 && (
+            {result!.detectedMk && (result!.topicKeywords ?? []).length > 0 && !isStreaming && (
+              <MkTimeline query={submittedQ} topicKeywords={result!.topicKeywords} />
+            )}
+
+            {votes.length === 1 && !isStreaming && (
               <VoteCoalition voteId={votes[0].voteId} />
             )}
           </div>

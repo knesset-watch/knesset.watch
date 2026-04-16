@@ -302,6 +302,7 @@ export interface MkSpeakerTurnVec {
   date: string;
   text: string;
   score: number; // cosine distance — lower = more similar
+  speakerName: string; // raw speaker name from transcript (raw_name column)
 }
 
 /**
@@ -309,20 +310,35 @@ export interface MkSpeakerTurnVec {
  * When mkId is provided, restricts to that MK's turns only.
  * Falls back to empty array if no embeddings exist yet (background job still running).
  */
+// Cosine distance threshold — turns above this are likely off-topic.
+// Grace fallback: always return at least MIN_RELEVANT results.
+const SCORE_THRESHOLD = 0.45;
+const MIN_RELEVANT = 3;
+
 export async function searchSpeakerTurnsByVector(
   embedding: number[],
   mkId: number | null,
   limit = 6,
+  dateFrom?: string,
+  dateTo?: string,
 ): Promise<MkSpeakerTurnVec[]> {
   const client = getTurso();
   if (!client) return [];
 
   const vec = `[${embedding.join(',')}]`;
 
+  const topK = mkId !== null ? 400 : limit * 3;
   const mkFilter = mkId !== null ? 'AND sst.mk_id = ?' : '';
-  const args: (string | number)[] = [vec];
+  const dateFilter = [
+    dateFrom ? 'AND cs.date >= ?' : '',
+    dateTo   ? 'AND cs.date <= ?' : '',
+  ].filter(Boolean).join('\n      ');
+
+  const args: (string | number)[] = [vec, vec, topK];
   if (mkId !== null) args.push(mkId);
-  args.push(limit * 3); // fetch extra for deduplication
+  if (dateFrom) args.push(dateFrom);
+  if (dateTo)   args.push(dateTo);
+  args.push(limit * 3);
 
   const sql = `
     SELECT sst.id as turn_id,
@@ -330,18 +346,20 @@ export async function searchSpeakerTurnsByVector(
            cs.committee_name,
            cs.date,
            sst.text,
+           sst.raw_name as speaker_name,
            vector_distance_cos(sst.embedding, vector32(?)) as score
-    FROM session_speaker_turn sst
+    FROM vector_top_k('idx_turn_embedding_shadow_idx', vector32(?), ?) AS v
+    JOIN session_speaker_turn sst ON sst.rowid = v.id
     JOIN committee_session cs ON cs.id = sst.session_id
-    WHERE sst.embedding IS NOT NULL
+    WHERE sst.text IS NOT NULL
       ${mkFilter}
+      ${dateFilter}
     ORDER BY score ASC
     LIMIT ?
   `;
 
   try {
     const result = await client.execute({ sql, args });
-    // Deduplicate: keep only the best-scoring turn per session
     const seen = new Map<number, MkSpeakerTurnVec>();
     for (const row of result.rows) {
       const sessionId = Number(row.session_id);
@@ -352,14 +370,15 @@ export async function searchSpeakerTurnsByVector(
         date: String(row.date ?? ''),
         text: String(row.text ?? ''),
         score: Number(row.score ?? 1),
+        speakerName: String(row.speaker_name ?? ''),
       };
       if (!seen.has(sessionId) || entry.score < seen.get(sessionId)!.score) {
         seen.set(sessionId, entry);
       }
     }
-    return [...seen.values()]
-      .sort((a, b) => a.score - b.score)
-      .slice(0, limit);
+    const sorted = [...seen.values()].sort((a, b) => a.score - b.score);
+    const relevant = sorted.filter(t => t.score < SCORE_THRESHOLD);
+    return (relevant.length >= MIN_RELEVANT ? relevant : sorted).slice(0, limit);
   } catch (e) {
     console.error('searchSpeakerTurnsByVector error:', e);
     return [];
@@ -435,14 +454,25 @@ export async function searchPlenaryTurnsByVector(
   embedding: number[],
   mkName: string | null,
   limit = 6,
+  dateFrom?: string,
+  dateTo?: string,
 ): Promise<PlenaryMkTurnVec[]> {
   const client = getTurso();
   if (!client) return [];
 
   const vec = `[${embedding.join(',')}]`;
+
+  const topK = mkName ? 300 : limit * 3;
   const mkFilter = mkName ? 'AND pst.speaker_name LIKE ?' : '';
-  const args: (string | number)[] = [vec];
+  const dateFilter = [
+    dateFrom ? 'AND ps.start_date >= ?' : '',
+    dateTo   ? 'AND ps.start_date <= ?' : '',
+  ].filter(Boolean).join('\n      ');
+
+  const args: (string | number)[] = [vec, vec, topK];
   if (mkName) args.push(`%${mkName}%`);
+  if (dateFrom) args.push(dateFrom);
+  if (dateTo)   args.push(dateTo);
   args.push(limit * 3);
 
   const sql = `
@@ -452,17 +482,18 @@ export async function searchPlenaryTurnsByVector(
            pst.speaker_name,
            pst.text,
            vector_distance_cos(pst.embedding, vector32(?)) as score
-    FROM plenary_speaker_turn pst
+    FROM vector_top_k('idx_plenary_turn_embedding', vector32(?), ?) AS v
+    JOIN plenary_speaker_turn pst ON pst.rowid = v.id
     JOIN plenary_session ps ON ps.id = pst.session_id
-    WHERE pst.embedding IS NOT NULL
+    WHERE pst.text IS NOT NULL
       ${mkFilter}
+      ${dateFilter}
     ORDER BY score ASC
     LIMIT ?
   `;
 
   try {
     const result = await client.execute({ sql, args });
-    // Deduplicate: keep only the best-scoring turn per session
     const seen = new Map<number, PlenaryMkTurnVec>();
     for (const row of result.rows) {
       const sessionId = Number(row['session_id']);
@@ -478,9 +509,9 @@ export async function searchPlenaryTurnsByVector(
         seen.set(sessionId, entry);
       }
     }
-    return [...seen.values()]
-      .sort((a, b) => a.score - b.score)
-      .slice(0, limit);
+    const sorted = [...seen.values()].sort((a, b) => a.score - b.score);
+    const relevant = sorted.filter(t => t.score < SCORE_THRESHOLD);
+    return (relevant.length >= MIN_RELEVANT ? relevant : sorted).slice(0, limit);
   } catch (e) {
     console.error('searchPlenaryTurnsByVector error:', e);
     return [];
@@ -520,7 +551,8 @@ export async function getProtocolSession(
     client.execute({
       sql: `SELECT turn_number, text, raw_name
             FROM session_speaker_turn WHERE session_id = ?
-            ORDER BY turn_number ASC`,
+            ORDER BY turn_number ASC
+            LIMIT 100`,
       args: [sessionId],
     }),
   ]);
@@ -615,4 +647,57 @@ export async function getProtocolCommitteeNames(): Promise<CommitteeOption[]> {
   return res.rows
     .map(r => ({ name: String(r['committee_name'] ?? ''), sessionCount: Number(r['session_count'] ?? 0) }))
     .filter(c => c.name);
+}
+
+// ── Vote vector search ────────────────────────────────────────────────────────
+
+export interface VoteVecResult {
+  voteId: number;
+  score: number;
+}
+
+/**
+ * Semantic vote search using the vote_embedding table.
+ * Gracefully returns [] if the table doesn't exist yet (background job still running).
+ */
+export async function searchVotesByVector(
+  embedding: number[],
+  limit = 15,
+  dateFrom?: string,
+  dateTo?: string,
+): Promise<VoteVecResult[]> {
+  const client = getTurso();
+  if (!client) return [];
+
+  const vec = `[${embedding.join(',')}]`;
+  const dateFilter = [
+    dateFrom ? 'AND ve.date >= ?' : '',
+    dateTo   ? 'AND ve.date <= ?' : '',
+  ].filter(Boolean).join('\n    ');
+
+  const args: (string | number)[] = [vec, vec, limit * 3];
+  if (dateFrom) args.push(dateFrom);
+  if (dateTo)   args.push(dateTo);
+  args.push(limit);
+
+  const sql = `
+    SELECT ve.vote_id,
+           vector_distance_cos(ve.embedding, vector32(?)) as score
+    FROM vector_top_k('idx_vote_embedding', vector32(?), ?) AS v
+    JOIN vote_embedding ve ON ve.rowid = v.id
+    WHERE ve.embedding IS NOT NULL
+      ${dateFilter}
+    ORDER BY score ASC
+    LIMIT ?
+  `;
+
+  try {
+    const result = await client.execute({ sql, args });
+    return result.rows
+      .filter(r => Number(r['score'] ?? 1) < SCORE_THRESHOLD)
+      .map(r => ({ voteId: Number(r['vote_id']), score: Number(r['score'] ?? 1) }));
+  } catch {
+    // Table doesn't exist yet — embedding job hasn't run
+    return [];
+  }
 }
