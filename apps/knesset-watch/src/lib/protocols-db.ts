@@ -327,7 +327,8 @@ export async function searchSpeakerTurnsByVector(
 
   const vec = `[${embedding.join(',')}]`;
 
-  const topK = mkId !== null ? 400 : limit * 3;
+  // 80 candidates is enough for MK filtering — topK=400 caused Turso timeouts
+  const topK = mkId !== null ? 80 : limit * 3;
   const mkFilter = mkId !== null ? 'AND sst.mk_id = ?' : '';
   const dateFilter = [
     dateFrom ? 'AND cs.date >= ?' : '',
@@ -462,7 +463,8 @@ export async function searchPlenaryTurnsByVector(
 
   const vec = `[${embedding.join(',')}]`;
 
-  const topK = mkName ? 300 : limit * 3;
+  // 80 candidates is enough for speaker filtering — topK=300 caused Turso timeouts
+  const topK = mkName ? 80 : limit * 3;
   const mkFilter = mkName ? 'AND pst.speaker_name LIKE ?' : '';
   const dateFilter = [
     dateFrom ? 'AND ps.start_date >= ?' : '',

@@ -2128,8 +2128,12 @@ export function searchQueriesByKeyword(keyword: string | string[], mkId?: number
       mkId: r.mk_id, mkName: `${r.first_name} ${r.last_name}`,
       body: r.body, ministryResponse: r.ministry_response,
     });
-    const cond = keywords.map(() => '(q.title LIKE ? OR q.body LIKE ?)').join(' OR ');
-    const kArgs = keywords.flatMap(k => [`%${k}%`, `%${k}%`]);
+    // MK path: search title + body (result set is small due to mk_id filter)
+    const mkCond = keywords.map(() => '(q.title LIKE ? OR q.body LIKE ?)').join(' OR ');
+    const mkKArgs = keywords.flatMap(k => [`%${k}%`, `%${k}%`]);
+    // General path: title-only — body LIKE on full documents is too slow without FTS
+    const titleCond = keywords.map(() => 'q.title LIKE ?').join(' OR ');
+    const titleKArgs = keywords.map(k => `%${k}%`);
 
     const dateSql = [dateFrom ? 'AND q.submit_date >= ?' : '', dateTo ? 'AND q.submit_date <= ?' : ''].filter(Boolean).join(' ');
     const dateArgs: string[] = [];
@@ -2140,9 +2144,9 @@ export function searchQueriesByKeyword(keyword: string | string[], mkId?: number
       const filtered = (db.prepare(`
         SELECT q.id, q.title, q.submit_date, q.mk_id, p.first_name, p.last_name, q.body, q.ministry_response
         FROM mk_query q JOIN mk_person p ON p.person_id = q.mk_id
-        WHERE q.mk_id = ? AND (${cond}) ${dateSql}
+        WHERE q.mk_id = ? AND (${mkCond}) ${dateSql}
         ORDER BY q.submit_date DESC LIMIT ?
-      `).all(mkId, ...kArgs, ...dateArgs, limit) as Row[]).map(map);
+      `).all(mkId, ...mkKArgs, ...dateArgs, limit) as Row[]).map(map);
       if (filtered.length > 0) return filtered;
       return (db.prepare(`
         SELECT q.id, q.title, q.submit_date, q.mk_id, p.first_name, p.last_name, q.body, q.ministry_response
@@ -2154,9 +2158,9 @@ export function searchQueriesByKeyword(keyword: string | string[], mkId?: number
     return (db.prepare(`
       SELECT q.id, q.title, q.submit_date, q.mk_id, p.first_name, p.last_name, q.body, q.ministry_response
       FROM mk_query q JOIN mk_person p ON p.person_id = q.mk_id
-      WHERE ${cond} ${dateSql}
+      WHERE ${titleCond} ${dateSql}
       ORDER BY q.submit_date DESC LIMIT ?
-    `).all(...kArgs, ...dateArgs, limit) as Row[]).map(map);
+    `).all(...titleKArgs, ...dateArgs, limit) as Row[]).map(map);
   } catch {
     return [];
   }

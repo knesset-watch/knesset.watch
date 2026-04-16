@@ -354,38 +354,25 @@ export async function GET(req: NextRequest) {
 
     const { dateFrom, dateTo } = dateRange;
 
+    // Speaker turn vector search. When the ANN index errors (e.g. partial index from
+    // ongoing insert workers), do NOT fall back to slow Turso LIKE scans — let the
+    // session-level fallback below handle context instead.
     const committeeSearchPromise: Promise<Array<MkSpeakerTurnVec | MkSpeakerTurn>> = embedding
       ? searchSpeakerTurnsByVector(embedding, mkId ?? null, mkId ? 15 : 20, dateFrom, dateTo)
-          .then(turns =>
-            turns.length === 0 && mkId && stemmedTerm.length >= 2
-              ? searchMkSpeakerTurns(mkId, stemmedTerm, 15)
-              : turns,
-          )
-          .catch(() => mkId && stemmedTerm.length >= 2 ? searchMkSpeakerTurns(mkId, stemmedTerm, 15) : [])
-      : mkId && stemmedTerm.length >= 2
-        ? searchMkSpeakerTurns(mkId, stemmedTerm, 15)
-        : Promise.resolve([]);
+          .catch(() => [])
+      : Promise.resolve([]);
 
     const plenarySearchPromise: Promise<Array<PlenaryMkTurnVec | PlenaryMkTurn>> = embedding
       ? searchPlenaryTurnsByVector(embedding, mkId ? detectedMk!.fullName : null, mkId ? 8 : 12, dateFrom, dateTo)
-          .then(turns =>
-            turns.length === 0 && mkId && stemmedTerm.length >= 2
-              ? searchPlenaryMkTurns(detectedMk!.fullName, stemmedTerm, 8)
-              : turns,
-          )
-          .catch(() => mkId && stemmedTerm.length >= 2 ? searchPlenaryMkTurns(detectedMk!.fullName, stemmedTerm, 8) : [])
-      : mkId && stemmedTerm.length >= 2
-        ? searchPlenaryMkTurns(detectedMk!.fullName, stemmedTerm, 8)
-        : Promise.resolve([]);
-
-    // Session-level fallback for all non-MK queries.
-    // Speaker turn embeddings are ~95% complete; session embeddings are 100%.
-    // When turn search returns nothing, this ensures sessions always appear.
-    const sessionFallbackPromise: Promise<ProtocolSearchResult[]> = !mkId
-      ? embedding
-        ? searchProtocolsVec(embedding, null, 8).catch(() => [])
-        : searchProtocols(q, null, 1).then(r => r.results).catch(() => [])
+          .catch(() => [])
       : Promise.resolve([]);
+
+    // Session-level fallback for ALL queries (MK and general).
+    // Session embeddings are 100% complete and the index is stable.
+    // This is the reliable fallback when turn-level ANN index is unhealthy.
+    const sessionFallbackPromise: Promise<ProtocolSearchResult[]> = embedding
+      ? searchProtocolsVec(embedding, null, mkId ? 5 : 8).catch(() => [])
+      : searchProtocols(q, null, 1).then(r => r.results).catch(() => []);
 
     // Vote vector search + keyword search, merged by voteId
     const voteVecPromise = embedding
