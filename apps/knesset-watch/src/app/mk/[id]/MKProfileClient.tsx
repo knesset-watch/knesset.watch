@@ -180,6 +180,14 @@ function VoteBreakdownBar({ stats }: { stats: VoteStats }) {
         ))}
         <span className="text-xs text-gray-500 font-medium">סה"כ {total.toLocaleString()} הצבעות</span>
       </div>
+      <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-100 text-xs text-gray-700 leading-relaxed">
+        <p className="font-black text-blue-800 mb-2">ℹ️ כיצד מחושבים הנתונים:</p>
+        <p className="text-[11px]">
+          <span className="font-bold">בעד/נגד</span> — הצבעות שנספרות לקביעת זוכה/מפסיד<br/>
+          <span className="font-bold">נמנע/נוכח</span> — לא נספרות בחישוב התוצאה<br/>
+          זה מאפשר לראות בדיוק אם ח"כ תומך או מתנגד לעמדת הסיעה שלו
+        </p>
+      </div>
     </div>
   );
 }
