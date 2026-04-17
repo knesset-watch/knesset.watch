@@ -312,7 +312,7 @@ export default function AllianceGraph({ data }: NetworkGraphProps) {
       ctx.stroke();
     }
 
-    const shouldShowLabel = true;
+    const shouldShowLabel = isFocus || isNeighbor || isHovered;
     if (shouldShowLabel) {
       const label = node.name;
       const fontSize = (isFocus ? 14 : 10) / globalScale;
