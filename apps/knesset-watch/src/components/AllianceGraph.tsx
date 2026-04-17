@@ -297,6 +297,17 @@ export default function AllianceGraph({ data }: NetworkGraphProps) {
     const alpha = (isDimmed || isPartyDimmed) ? 0.4 : 1;
 
     const r = displayRadius(node) * (isFocus ? 1.4 : 1);
+
+    // Draw glow effect on hover/focus
+    if (isFocus || isHovered) {
+      const glowSize = isFocus ? 4 : 2.5;
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, r + glowSize, 0, 2 * Math.PI, false);
+      const glowColor = isFocus ? 'rgba(249, 115, 22, 0.3)' : 'rgba(255, 255, 255, 0.4)';
+      ctx.fillStyle = glowColor;
+      ctx.fill();
+    }
+
     ctx.beginPath();
     ctx.arc(node.x, node.y, r, 0, 2 * Math.PI, false);
     if (isFocus) {
@@ -693,6 +704,7 @@ export default function AllianceGraph({ data }: NetworkGraphProps) {
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shrink-0"></span>
               מדריך לחוקר
             </p>
+            <p className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0"></span>הניפו על ח"כ לראות את חברים שלו</p>
             <p className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0"></span>לחץ על ח"כ לבידוד הרשת שלו</p>
             <p className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-black/15 shrink-0"></span>גלגל עכבר לזום וניווט</p>
             <p className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: 'linear-gradient(to right, #16a34a, #2563EB)' }}></span>קו מדורג = קשר חוצי-מחנות</p>
