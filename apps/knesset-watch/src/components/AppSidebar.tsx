@@ -26,6 +26,7 @@ const NAV = [
       { href: '/pulse',        label: 'פולס בזמן אמת', prefixes: ['/pulse'] },
       { href: '/track-record', label: 'מעקב חקיקה',   prefixes: ['/track-record'] },
       { href: '/agendas',      label: 'אג\'נדות',     prefixes: ['/agendas', '/agenda/'] },
+      { href: '/?groupBy=alliances', label: 'רשת קשרים',  prefixes: ['/'] },
     ],
   },
 ];

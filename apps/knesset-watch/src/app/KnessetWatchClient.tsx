@@ -399,7 +399,7 @@ export default function KnessetWatchPage() {
   const [customStart, setCustomStart]   = useState('');
   const [customEnd, setCustomEnd]       = useState('');
   const [viewMode, setViewMode]         = useState<ViewMode>('card');
-  const [groupBy, setGroupBy]           = useState<GroupBy>('mk');
+  const [groupBy, setGroupBy]           = useState<GroupBy>((searchParams.get('groupBy') as GroupBy) || 'mk');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [committees, setCommittees]     = useState<any[]>([]);
   const [expandedCommittees, setExpandedCommittees] = useState<Set<string>>(new Set());
@@ -437,11 +437,12 @@ export default function KnessetWatchPage() {
       if (coalitionFilter !== 'all') params.set('coalition', coalitionFilter);
       if (activeOnly) params.set('activeOnly', 'true');
       if (search) params.set('search', search);
+      if (groupBy !== 'mk') params.set('groupBy', groupBy);
       const newUrl = params.toString() ? `?${params.toString()}` : '/';
       window.history.replaceState({}, '', newUrl);
     }, 300);
     return () => clearTimeout(timer);
-  }, [coalitionFilter, activeOnly, search]);
+  }, [coalitionFilter, activeOnly, search, groupBy]);
 
   useEffect(() => {
     if (groupBy === 'committee' && committees.length === 0) {
