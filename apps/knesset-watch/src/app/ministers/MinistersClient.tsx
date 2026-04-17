@@ -37,7 +37,7 @@ export default function MinistersClient({ ministers }: { ministers: MinisterInfo
   function MinisterRow({ m }: { m: MinisterInfo }) {
     return (
       <div
-        className={`grid grid-cols-[1fr_1fr_5rem_5rem_5rem] gap-4 py-3 px-4 rounded-xl items-center transition-colors ${
+        className={`grid grid-cols-[1fr_1fr_5rem_5rem_5rem] gap-4 py-3 px-4 rounded-xl items-center transition-all cursor-pointer border border-transparent hover:border-gray-300 ${
           m.isCoalition ? 'bg-[#F0FDF4] hover:bg-green-100' : 'bg-gray-50 hover:bg-gray-100'
         }`}
       >

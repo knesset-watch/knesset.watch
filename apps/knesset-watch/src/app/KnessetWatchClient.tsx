@@ -1298,7 +1298,7 @@ export default function KnessetWatchPage() {
               return (
                 <div
                   key={f.name}
-                  className={`relative group p-8 rounded-2xl border shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col min-h-[280px] ${
+                  className={`relative group p-8 rounded-2xl border shadow-sm hover:shadow-2xl hover:-translate-y-2 hover:border-gray-400 cursor-pointer transition-all flex flex-col min-h-[280px] ${
                     f.isCoalition ? 'bg-green-100 border-green-300/50' : 'bg-blue-100 border-blue-300/50'
                   }`}
                 >
@@ -1347,7 +1347,7 @@ export default function KnessetWatchPage() {
               return (
                 <div
                   key={c.name}
-                  className="relative bg-white rounded-2xl border border-black/[0.03] shadow-sm hover:shadow-xl transition-all flex flex-col"
+                  className="relative bg-white rounded-2xl border border-black/[0.03] shadow-sm hover:shadow-2xl hover:-translate-y-1 hover:border-gray-300 cursor-pointer transition-all flex flex-col"
                 >
                   {/* Card header — always visible */}
                   <div className="p-8 flex flex-col min-h-[280px]">
@@ -1455,7 +1455,7 @@ export default function KnessetWatchPage() {
                 return (
                   <div
                     key={party.FactionName}
-                    className={`relative group ${cardBg} p-8 rounded-2xl border shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col min-h-[280px]`}
+                    className={`relative group ${cardBg} p-8 rounded-2xl border shadow-sm hover:shadow-2xl hover:-translate-y-2 hover:border-gray-400 cursor-pointer transition-all flex flex-col min-h-[280px]`}
                     style={isMixed ? buildCardStyle(party.coalitionPct, party.IsCoalition, 1) : undefined}
                   >
                     <h3 className="text-2xl font-black leading-tight mb-2 group-hover:text-green-800 transition-colors">
@@ -1626,7 +1626,7 @@ export default function KnessetWatchPage() {
               return (
                 <div
                   key={item.Id}
-                  className={`relative group ${cardBg} p-8 rounded-2xl border shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col min-h-[280px] ${isStale && !statsLoading ? 'opacity-75' : ''}`}
+                  className={`relative group ${cardBg} p-8 rounded-2xl border shadow-sm hover:shadow-2xl hover:-translate-y-2 hover:border-gray-400 cursor-pointer transition-all flex flex-col min-h-[280px] ${isStale && !statsLoading ? 'opacity-75' : ''}`}
                   style={displaySegments?.length ? buildCardStyleFromSegments(displaySegments) : buildCardStyle(item.coalitionPct, item.IsCoalition, activeFrac)}
                 >
                   <h3 className="text-2xl font-black leading-tight mb-2 transition-colors">
