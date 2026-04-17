@@ -748,17 +748,28 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                     {profile.positions.filter(p => p.isCurrent).length} נוכחיים
                   </div>
                 </div>
-                {profile.voteStats && profile.voteStats.absenceCount > 0 && (
-                  <div className="rounded-2xl border border-black/8 p-5">
-                    <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-2">היעדרויות</div>
-                    <div className="text-4xl font-black tabular-nums leading-none text-rose-500">
-                      {profile.voteStats.absenceCount.toLocaleString()}
+                {profile.voteStats && profile.voteStats.absenceCount > 0 && (() => {
+                  const absenceRate = Math.round((profile.voteStats.absenceCount / (profile.voteStats.total + profile.voteStats.absenceCount)) * 100);
+                  const isHighAbsence = absenceRate > 50;
+                  return (
+                    <div className={`rounded-2xl border-2 p-5 transition-all ${isHighAbsence ? 'border-red-300 bg-red-50' : 'border-black/8'}`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide">היעדרויות</div>
+                        {isHighAbsence && (
+                          <span title="הח״כ חסר מחצי ההצבעות ויותר - נתוני אמינות נמוכים" className="inline-flex items-center gap-1 text-[10px] font-black uppercase px-2 py-1 rounded bg-red-200 text-red-800">
+                            ⚠ אזהרה
+                          </span>
+                        )}
+                      </div>
+                      <div className={`text-4xl font-black tabular-nums leading-none ${isHighAbsence ? 'text-red-600' : 'text-rose-500'}`}>
+                        {profile.voteStats.absenceCount.toLocaleString()}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {absenceRate}% מכל ההצבעות
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {Math.round((profile.voteStats.absenceCount / (profile.voteStats.total + profile.voteStats.absenceCount)) * 100)}% מכל ההצבעות
-                    </div>
-                  </div>
-                )}
+                  );
+                })()}
               </div>
             )}
 

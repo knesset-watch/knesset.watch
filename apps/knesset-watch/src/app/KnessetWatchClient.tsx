@@ -751,51 +751,7 @@ export default function KnessetWatchPage() {
   const totalCount    = baseCount;
 
   return (
-    <div className="min-h-screen bg-white text-black font-[family-name:var(--font-frank-ruhl)] flex" dir="rtl">
-      {/* ── Global Sidebar ── */}
-      <aside className="w-64 border-l border-black/10 flex flex-col h-screen sticky top-0 bg-gray-50/50 backdrop-blur-xl shrink-0 hidden md:flex">
-        <div className="p-8 border-b border-black/5 flex items-center gap-3">
-          <span className="text-2xl font-black tracking-tighter cursor-pointer" onClick={() => setGroupBy('mk')}>כנסת ווטש</span>
-          {isStale && (
-            <svg className="w-4 h-4 text-gray-400 animate-spin" viewBox="0 0 24 24" fill="none">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-            </svg>
-          )}
-        </div>
-        
-        <nav className="flex-1 overflow-y-auto p-4 space-y-8 mt-4">
-          <div className="space-y-1">
-            <span className="text-[11px] font-black uppercase text-gray-400 tracking-widest px-4">סקירה</span>
-            <button onClick={() => setGroupBy('mk')} className={`w-full text-right px-4 py-2 text-sm font-black rounded-lg transition-colors ${groupBy === 'mk' ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'}`}>חברי כנסת</button>
-            <Link href="/ministers" className="block w-full text-right px-4 py-2 text-sm font-black rounded-lg transition-colors text-gray-600 hover:bg-gray-200">שרים</Link>
-            <button onClick={() => setGroupBy('party-total')} className={`w-full text-right px-4 py-2 text-sm font-black rounded-lg transition-colors ${groupBy.startsWith('party') ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'}`}>מפלגות</button>
-            <button onClick={() => setGroupBy('timeline')} className={`w-full text-right px-4 py-2 text-sm font-black rounded-lg transition-colors ${groupBy === 'timeline' ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'}`}>ציר זמן חקיקתי</button>
-          </div>
-
-          <div className="space-y-1">
-            <span className="text-[11px] font-black uppercase text-gray-400 tracking-widest px-4">חקירה</span>
-            <button onClick={() => setGroupBy('rebels')} className={`w-full text-right px-4 py-2 text-sm font-black rounded-lg transition-colors ${groupBy === 'rebels' ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'}`}>מדד המורדים</button>
-            <button onClick={() => setGroupBy('alliances')} className={`w-full text-right px-4 py-2 text-sm font-black rounded-lg transition-colors ${groupBy === 'alliances' ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'}`}>רשת קשרים</button>
-            <button onClick={() => setGroupBy('committee')} className={`w-full text-right px-4 py-2 text-sm font-black rounded-lg transition-colors ${groupBy === 'committee' ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'}`}>ועדות</button>
-          </div>
-
-          <div className="space-y-1">
-            <span className="text-[11px] font-black uppercase text-gray-400 tracking-widest px-4">נתונים</span>
-            <Link href="/bills" className="block w-full text-right px-4 py-2 text-sm font-black rounded-lg transition-colors text-gray-600 hover:bg-gray-200">ספר החוקים</Link>
-            <Link href="/protocols" className="block w-full text-right px-4 py-2 text-sm font-black rounded-lg transition-colors text-gray-600 hover:bg-gray-200">פרוטוקולים</Link>
-            <button onClick={() => setGroupBy('agenda')} className={`w-full text-right px-4 py-2 text-sm font-black rounded-lg transition-colors ${groupBy === 'agenda' ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'}`}>אג'נדות</button>
-          </div>
-        </nav>
-
-        <div className="p-8 border-t border-black/5">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-[11px] font-black uppercase tracking-widest text-gray-400">Live Data</span>
-          </div>
-        </div>
-      </aside>
-
+    <div className="min-h-screen bg-white text-black font-[family-name:var(--font-frank-ruhl)]" dir="rtl">
       {/* ── Mobile top bar (hidden on md+) ── */}
       <div className="md:hidden fixed top-0 right-0 left-0 z-40 flex items-center justify-between px-4 py-3 bg-white border-b border-black/10">
         <button
