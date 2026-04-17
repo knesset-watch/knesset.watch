@@ -261,7 +261,23 @@ export default function VotesClient() {
         )}
 
         {!loading && votes.length === 0 && (
-          <div className="py-16 text-center text-gray-400">לא נמצאו הצבעות</div>
+          <div className="py-16 text-center">
+            <p className="text-gray-500 font-black mb-4">לא נמצאו הצבעות עם הפילטרים הנוכחיים</p>
+            {(submittedSearch || passedOnly || failedOnly || maxMargin) && (
+              <button
+                onClick={() => {
+                  setSearch('');
+                  setSubmittedSearch('');
+                  setPassedOnly(false);
+                  setFailedOnly(false);
+                  handleMarginChange('');
+                }}
+                className="text-sm font-black text-blue-600 hover:text-blue-800 underline"
+              >
+                הנקה את כל הפילטרים
+              </button>
+            )}
+          </div>
         )}
 
         {/* List view — desktop only (hidden on mobile) */}
