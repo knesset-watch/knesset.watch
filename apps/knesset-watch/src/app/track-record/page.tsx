@@ -27,39 +27,41 @@ interface TrackRecordData {
   error?: string;
 }
 
-export default function TrackRecordPOC() {
+export default function TrackRecordPage() {
   const [selectedMk, setSelectedMk] = useState(SAMPLE_MKS[0].id);
   const [data, setData] = useState<TrackRecordData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchTrackRecord() {
-      setLoading(true);
-      setError(null);
-      setData(null);
-      try {
-        const res = await fetch(`/knesset-watch/api/track-record?personId=${selectedMk}`);
-        const json = await res.json();
-        if (json.error) {
-          setError(json.error);
-        } else {
-          setData(json);
-        }
-      } catch (err) {
-        console.error(err);
-        setError('שגיאת תקשורת - נסו שנית בעוד רגע');
-      } finally {
-        setLoading(false);
+  const fetchTrackRecord = async (mkId: number = selectedMk) => {
+    setLoading(true);
+    setError(null);
+    setData(null);
+    try {
+      const res = await fetch(`/api/track-record?personId=${mkId}`);
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
+      const json = await res.json();
+      if (json.error) {
+        setError(json.error);
+      } else {
+        setData(json);
       }
+    } catch (err: any) {
+      console.error('Track Record fetch error:', err);
+      setError(err.message || 'שגיאה בטעינת הנתונים');
+    } finally {
+      setLoading(false);
     }
-    fetchTrackRecord();
+  };
+
+  useEffect(() => {
+    fetchTrackRecord(selectedMk);
   }, [selectedMk]);
 
   return (
     <div className="min-h-screen bg-white text-black p-8 font-[family-name:var(--font-frank-ruhl)]" dir="rtl">
       <header className="mb-12 border-b-4 border-black pb-4">
-        <h1 className="text-4xl font-black">POC: הוכחת פעילות חקיקה (Track Record)</h1>
+        <h1 className="text-4xl font-black">מעקב חקיקה (Track Record)</h1>
       </header>
 
       <div className="mb-8 flex items-center gap-4 bg-gray-50 p-4 rounded-lg">
@@ -80,14 +82,19 @@ export default function TrackRecordPOC() {
       )}
 
       {error && (
-        <div className="bg-red-50 border-2 border-red-600 p-6 text-red-600 font-bold mb-10">
-          שגיאה: {error}
-          <button 
-            onClick={() => window.location.reload()}
-            className="mr-4 underline"
-          >
-            נסו לרענן
-          </button>
+        <div className="bg-red-50 border-2 border-red-600 p-6 text-red-600 font-bold mb-10 rounded">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <div className="mb-1">⚠️ שגיאה בטעינת הנתונים</div>
+              <div className="text-sm text-red-500 mb-3">{error}</div>
+            </div>
+            <button
+              onClick={() => fetchTrackRecord(selectedMk)}
+              className="shrink-0 px-3 py-1 bg-red-600 text-white rounded text-sm font-bold hover:bg-red-700 transition-colors"
+            >
+              נסו שנית
+            </button>
+          </div>
         </div>
       )}
 

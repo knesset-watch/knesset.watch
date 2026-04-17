@@ -2,22 +2,28 @@
 
 import { useState, useEffect } from 'react';
 
-export default function PulsePOC() {
+export default function PulsePage() {
   const [data, setData] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchPulse() {
-      try {
-        const res = await fetch('/knesset-watch/api/pulse');
-        const json = await res.json();
-        setData(json);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
+  const fetchPulse = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/pulse');
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
+      const json = await res.json();
+      setData(json);
+    } catch (err: any) {
+      console.error('Pulse fetch error:', err);
+      setError(err.message || 'Failed to load data');
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
     fetchPulse();
   }, []);
 
@@ -33,21 +39,37 @@ export default function PulsePOC() {
           <div className="space-y-4">
             <div className="h-20 bg-gray-100 animate-pulse"></div>
             <div className="h-4 bg-gray-100 animate-pulse w-3/4"></div>
+            <div className="text-xs text-gray-400">טוען...</div>
           </div>
-        ) : data ? (
-          <div className="space-y-6">
-            <div className="text-sm font-bold text-gray-500">חוקים שעברו סופית ב-30 הימים האחרונים:</div>
-            <div className="text-[120px] font-black leading-none tracking-tighter">
-              {data.count}
+        ) : error ? (
+          <div className="space-y-4">
+            <div className="text-red-600 font-bold text-sm">
+              ⚠️ שגיאה בטעינת הנתונים
             </div>
-            
-            {data.latestBills && data.latestBills.length > 0 && (
+            <div className="text-xs text-gray-600 mb-4">
+              {error}
+            </div>
+            <button
+              onClick={() => fetchPulse()}
+              className="w-full px-4 py-2 bg-black text-white font-bold text-sm rounded hover:bg-gray-800 transition-colors"
+            >
+              נסו שנית
+            </button>
+          </div>
+        ) : data && (data.bills?.length > 0 || data.count >= 0) ? (
+          <div className="space-y-6">
+            <div className="text-sm font-bold text-gray-500">חוקים שעברו סופית:</div>
+            <div className="text-[120px] font-black leading-none tracking-tighter">
+              {data.count || data.bills?.length || 0}
+            </div>
+
+            {data.bills && data.bills.length > 0 && (
               <div className="pt-8 border-t-2 border-black/10 mt-8">
-                <div className="text-[11px] font-black uppercase mb-4 text-gray-400">חקיקה אחרונה:</div>
+                <div className="text-[11px] font-black uppercase mb-4 text-gray-400">אחרונות:</div>
                 <ul className="space-y-3">
-                  {data.latestBills.map((bill: string, i: number) => (
+                  {data.bills.slice(0, 3).map((bill: any, i: number) => (
                     <li key={i} className="text-sm font-bold leading-tight">
-                      {bill}
+                      {typeof bill === 'string' ? bill : bill.title}
                     </li>
                   ))}
                 </ul>
@@ -55,7 +77,17 @@ export default function PulsePOC() {
             )}
           </div>
         ) : (
-          <div className="text-red-600 font-bold">שגיאה בטעינת נתונים</div>
+          <div className="space-y-4">
+            <div className="text-gray-600 font-bold text-sm">
+              אין נתונים זמינים
+            </div>
+            <button
+              onClick={() => fetchPulse()}
+              className="w-full px-4 py-2 bg-black text-white font-bold text-sm rounded hover:bg-gray-800 transition-colors"
+            >
+              רענן
+            </button>
+          </div>
         )}
       </div>
     </div>
