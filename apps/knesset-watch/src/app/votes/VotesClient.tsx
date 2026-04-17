@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { usePeriod, periodToDateRange } from '@/lib/period-context';
 import FilterChips from '@/components/FilterChips';
@@ -27,6 +28,9 @@ type ViewMode = 'list' | 'cards';
 
 export default function VotesClient() {
   const { period } = usePeriod();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [votes, setVotes] = useState<VoteRow[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -45,12 +49,26 @@ export default function VotesClient() {
     if (didMount.current) localStorage.setItem('kw-view-votes', view);
   }, [view]);
 
-  // Filters
-  const [search, setSearch] = useState('');
-  const [submittedSearch, setSubmittedSearch] = useState('');
-  const [passedOnly, setPassedOnly] = useState(false);
-  const [failedOnly, setFailedOnly] = useState(false);
-  const [maxMargin, setMaxMargin] = useState('');
+  // Filters (init from URL)
+  const [search, setSearch] = useState(searchParams.get('q') || '');
+  const [submittedSearch, setSubmittedSearch] = useState(searchParams.get('q') || '');
+  const [passedOnly, setPassedOnly] = useState(searchParams.get('passed') === '1');
+  const [failedOnly, setFailedOnly] = useState(searchParams.get('failed') === '1');
+  const [maxMargin, setMaxMargin] = useState(searchParams.get('maxMargin') || '');
+
+  // Sync filters to URL (debounced)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams();
+      if (submittedSearch) params.set('q', submittedSearch);
+      if (passedOnly) params.set('passed', '1');
+      if (failedOnly) params.set('failed', '1');
+      if (maxMargin) params.set('maxMargin', maxMargin);
+      const newUrl = params.toString() ? `?${params.toString()}` : '/votes';
+      window.history.replaceState({}, '', newUrl);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [submittedSearch, passedOnly, failedOnly, maxMargin]);
 
   const fetchVotes = useCallback((p: number, q: string, passed: boolean, failed: boolean, margin: string, per: typeof period) => {
     setLoading(true);
@@ -249,7 +267,7 @@ export default function VotesClient() {
         {/* List view — desktop only (hidden on mobile) */}
         {!loading && view === 'list' && (
           <div className="hidden sm:block">
-            <div className="grid grid-cols-[1fr_5rem_4rem_4rem_4rem_4.5rem] gap-4 py-2 px-4 text-[11px] font-black uppercase tracking-widest text-gray-400 mb-1">
+            <div className="grid grid-cols-[1fr_5rem_4rem_4rem_4rem_4.5rem] gap-4 py-3 px-4 text-[11px] font-black uppercase tracking-widest text-gray-700 mb-2 bg-gray-100 rounded-lg border-b-2 border-gray-300">
               <span>נושא</span>
               <span>תאריך</span>
               <span className="text-center">בעד</span>
@@ -265,14 +283,14 @@ export default function VotesClient() {
                   className="grid grid-cols-[1fr_5rem_4rem_4rem_4rem_4.5rem] gap-4 py-3 px-4 rounded-xl items-center transition-colors bg-gray-50 hover:bg-gray-100"
                 >
                   <div className="min-w-0">
-                    <div className="text-sm font-black text-gray-900 line-clamp-2 leading-snug">{v.title}</div>
+                    <div title={v.title} className="text-sm font-black text-gray-900 line-clamp-2 leading-snug cursor-help">{v.title}</div>
                     {(v.macroAgenda || v.microAgenda) && (
                       <div className="flex gap-1.5 mt-1 flex-wrap">
                         {v.macroAgenda && (
                           <span className="text-[11px] font-black text-gray-500 bg-gray-200/60 px-1.5 py-0.5 rounded-full">{v.macroAgenda}</span>
                         )}
                         {v.microAgenda && (
-                          <span className="text-[11px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">#{v.microAgenda}</span>
+                          <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">#{v.microAgenda}</span>
                         )}
                       </div>
                     )}
@@ -281,7 +299,7 @@ export default function VotesClient() {
                   <span className="text-base font-black text-teal-700 text-center">{v.totalFor}</span>
                   <span className="text-base font-black text-blue-700 text-center">{v.totalAgainst}</span>
                   <span className="text-base font-black text-center">{v.margin}</span>
-                  <span className={`text-[11px] font-black px-2 py-1 rounded-full text-center justify-self-center ${v.isPassed ? 'bg-teal-100 text-teal-700' : 'bg-red-50 text-red-500'}`}>
+                  <span className={`text-[11px] font-black px-2 py-1 rounded-full text-center justify-self-center ${v.isPassed ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
                     {v.isPassed ? 'עבר' : 'לא עבר'}
                   </span>
                 </Link>
@@ -301,12 +319,12 @@ export default function VotesClient() {
                   className={`rounded-2xl border p-4 flex flex-col gap-2 transition-colors ${v.isPassed ? 'border-green-100 bg-[#F0FDF4] hover:bg-green-100' : 'border-black/8 hover:border-black/20 hover:bg-gray-50'}`}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className={`text-[11px] font-black px-2 py-0.5 rounded-full ${v.isPassed ? 'bg-[#16A34A] text-white' : 'bg-gray-200 text-gray-500'}`}>
+                    <span className={`text-[11px] font-black px-2 py-0.5 rounded-full ${v.isPassed ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
                       {v.isPassed ? 'עבר' : 'לא עבר'}
                     </span>
                     <span className="text-[11px] text-gray-500">{formatDate(v.date)}</span>
                   </div>
-                  <p className="text-sm font-bold leading-snug text-gray-900 line-clamp-3">{v.title}</p>
+                  <p title={v.title} className="text-sm font-bold leading-snug text-gray-900 line-clamp-3 cursor-help">{v.title}</p>
                   {v.macroAgenda && <span className="text-[11px] font-black text-gray-500 bg-gray-200/60 px-1.5 py-0.5 rounded-full self-start">{v.macroAgenda}</span>}
                   <div className="flex items-center gap-4 mt-auto pt-1 text-[11px]">
                     <span className="font-black text-teal-700">בעד {v.totalFor}</span>
@@ -321,23 +339,28 @@ export default function VotesClient() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex justify-center gap-2 mt-8">
+          <div className="flex justify-center gap-3 mt-10 items-center bg-blue-50 py-4 px-4 rounded-xl border border-blue-200">
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="text-xs font-black px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 disabled:opacity-30 transition-colors"
+              className="text-sm font-black px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-30 disabled:bg-gray-300 transition-colors"
             >
-              הקודם
+              ← הקודם
             </button>
-            <span className="text-xs font-black px-4 py-2.5 text-gray-500">
-              עמוד {page} מתוך {totalPages}
-            </span>
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-sm font-black text-gray-900">
+                עמוד {page} מתוך {totalPages}
+              </span>
+              <span className="text-[10px] text-gray-500">
+                {total.toLocaleString()} הצבעות בסך הכל
+              </span>
+            </div>
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="text-xs font-black px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 disabled:opacity-30 transition-colors"
+              className="text-sm font-black px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-30 disabled:bg-gray-300 transition-colors"
             >
-              הבא
+              הבא →
             </button>
           </div>
         )}
