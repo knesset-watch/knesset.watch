@@ -271,7 +271,8 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
         </nav>
 
         <h1 className="text-2xl font-bold text-gray-900 mb-2">שאל את הכנסת</h1>
-        <p className="text-sm text-gray-500 mb-6">חפש בפרוטוקולים, הצבעות, חוקים ושאילתות</p>
+        <p className="text-sm text-gray-600 mb-3">חפש אנליטיקה ותשובות על פעילות הכנסת — הצבעות, חוקים, דיונים וועדות</p>
+        <p className="text-xs text-gray-500 mb-6">שאל בעברית על כל נושא הקשור לפעילות הכנסת ה-25. מערכת AI תחפש בפרוטוקולים, הצבעות, חוקים ושאילתות.</p>
 
         <form onSubmit={handleSubmit} className="flex gap-2 mb-8">
           <input
@@ -279,31 +280,39 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="שאל שאלה על פעילות הכנסת..."
+            placeholder="לדוגמה: מה הצביע בן גביר על חוקי הביטחון?"
             className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             autoFocus
           />
           <button
             type="submit"
             disabled={loading || query.trim().length < 2}
-            className="px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            title={query.trim().length < 2 ? "הקלד לפחות 2 תווים כדי להתחיל חיפוש" : ""}
           >
             {loading ? 'מחפש…' : 'שאל'}
           </button>
         </form>
 
+        {query.trim().length < 2 && !loading && (
+          <div className="text-xs text-gray-500 mb-6 p-2 bg-blue-50 rounded border border-blue-100">
+            💡 <span className="font-medium">טיפ:</span> הקלדו את השאלה שלכם כדי להתחיל חיפוש
+          </div>
+        )}
+
         {!loading && !result && !error && submittedQ.length < 2 && (
-          <div className="mt-2">
-            <p className="text-xs font-medium text-gray-400 mb-3">שאלות לדוגמה</p>
-            <div className="flex flex-wrap gap-2">
+          <div className="mt-4 p-4 bg-gradient-to-br from-blue-50 to-transparent rounded-lg border border-blue-100">
+            <p className="text-xs font-black uppercase text-gray-500 mb-3 tracking-wide">📌 דוגמאות שתוכלו לנסות</p>
+            <p className="text-xs text-gray-600 mb-4">לחצו על אחת מהשאלות כדי לראות תשובה:</p>
+            <div className="flex flex-col gap-2">
               {SUGGESTED_QUESTIONS.map(({ label, q }) => (
                 <button
                   key={q}
                   onClick={() => submitQuery(q)}
-                  className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-colors text-gray-700 hover:text-blue-700"
+                  className="flex items-start gap-2 text-sm px-3 py-2 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-white transition-colors text-gray-700 hover:text-blue-700 text-right"
                 >
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-wide">{label}</span>
-                  <span>{q}</span>
+                  <span className="text-[10px] font-black text-blue-600 uppercase tracking-wide shrink-0 mt-0.5">{label}</span>
+                  <span className="flex-1">{q}</span>
                 </button>
               ))}
             </div>
