@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef, useTransition } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import TimelineChart from '@/components/TimelineChart';
 import AllianceGraph from '@/components/AllianceGraph';
@@ -387,6 +388,9 @@ function saveCache(key: string, data: any[]) {
 // ────────────────────────────────────────────────────────────────────────────
 
 export default function KnessetWatchPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [data, setData]                 = useState<any[]>(() => loadCache(getCacheKey('k25', '2022-11-15', '2026-12-31')) ?? []);
   const [loading, setLoading]           = useState<boolean>(() => loadCache(getCacheKey('k25', '2022-11-15', '2026-12-31')) === null);
   const [isStale, setIsStale]           = useState<boolean>(() => loadCache(getCacheKey('k25', '2022-11-15', '2026-12-31')) !== null);
@@ -408,10 +412,10 @@ export default function KnessetWatchPage() {
   const [timelineData, setTimelineData] = useState<any[]>([]);
   const [networkData, setNetworkData]   = useState<{ nodes: any[], links: any[] }>({ nodes: [], links: [] });
   const [networkLoading, setNetworkLoading] = useState(false);
-  const [coalitionFilter, setCoalitionFilter] = useState<CoalitionFilter>('all');
-  const [activeOnly, setActiveOnly]     = useState(false);
+  const [coalitionFilter, setCoalitionFilter] = useState<CoalitionFilter>((searchParams.get('coalition') as CoalitionFilter) || 'all');
+  const [activeOnly, setActiveOnly]     = useState(searchParams.get('activeOnly') === 'true');
   const [showDeparted, setShowDeparted] = useState(false);
-  const [search, setSearch]             = useState('');
+  const [search, setSearch]             = useState(searchParams.get('search') || '');
   const [billTypeFilter, setBillTypeFilter] = useState<'all' | 'private' | 'gov'>('all');
   const [error, setError]               = useState<string | null>(null);
   const [isPending, startTransition]   = useTransition();
@@ -425,6 +429,19 @@ export default function KnessetWatchPage() {
   // Whether card/row gradients should be clipped to the selected timeframe window.
   const useTimeframeSegments = (timeframeVal === '30d' || timeframeVal === 'custom') && !!resolvedStart;
   const segmentRangeEnd = resolvedEnd || new Date().toISOString().split('T')[0];
+
+  // Sync filters to URL params (debounced to avoid excessive updates)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams();
+      if (coalitionFilter !== 'all') params.set('coalition', coalitionFilter);
+      if (activeOnly) params.set('activeOnly', 'true');
+      if (search) params.set('search', search);
+      const newUrl = params.toString() ? `?${params.toString()}` : '/';
+      window.history.replaceState({}, '', newUrl);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [coalitionFilter, activeOnly, search]);
 
   useEffect(() => {
     if (groupBy === 'committee' && committees.length === 0) {
