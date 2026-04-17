@@ -1,22 +1,37 @@
 'use client';
 
+import FilterChips from '@/components/FilterChips';
 import { useState } from 'react';
 import Link from 'next/link';
 import type { MinisterInfo } from '@/lib/knesset-db';
 
 type SortCol = 'name' | 'sessions' | 'bills';
+type SortDir = 'asc' | 'desc';
 
 export default function MinistersClient({ ministers }: { ministers: MinisterInfo[] }) {
   const [sort, setSort] = useState<SortCol>('sessions');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
   const fullMinisters = ministers.filter(m => !m.ministerRole.startsWith('סגן') && !m.ministerRole.startsWith('סגנית'));
   const deputies = ministers.filter(m => m.ministerRole.startsWith('סגן') || m.ministerRole.startsWith('סגנית'));
 
+  function handleSort(col: SortCol) {
+    if (sort === col) {
+      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSort(col);
+      setSortDir('desc');
+    }
+  }
+
   function sortRows(rows: MinisterInfo[]) {
-    return [...rows].sort((a, b) => {
-      if (sort === 'name') return a.name.localeCompare(b.name, 'he');
-      if (sort === 'bills') return b.billCount - a.billCount;
-      return b.committeeSessionCount - a.committeeSessionCount;
+    const sorted = [...rows].sort((a, b) => {
+      let comparison = 0;
+      if (sort === 'name') comparison = a.name.localeCompare(b.name, 'he');
+      else if (sort === 'bills') comparison = b.billCount - a.billCount;
+      else comparison = b.committeeSessionCount - a.committeeSessionCount;
+      return sortDir === 'asc' ? -comparison : comparison;
     });
+    return sorted;
   }
 
   function MinisterRow({ m }: { m: MinisterInfo }) {
@@ -62,15 +77,16 @@ export default function MinistersClient({ ministers }: { ministers: MinisterInfo
   }
 
   function SortHeader({ col, label, className = '' }: { col: SortCol; label: string; className?: string }) {
+    const isActive = sort === col;
+    const arrow = isActive ? (sortDir === 'asc' ? ' ↑' : ' ↓') : '';
     return (
       <button
-        onClick={() => setSort(col)}
+        onClick={() => handleSort(col)}
         className={`text-[11px] font-black uppercase tracking-widest transition-colors flex items-center gap-1 ${className} ${
-          sort === col ? 'text-black' : 'text-gray-400 hover:text-gray-600'
+          isActive ? 'text-black bg-blue-50 px-2 py-1 rounded' : 'text-gray-400 hover:text-gray-600'
         }`}
       >
-        {label}
-        {sort === col && <span className="text-[8px]">▼</span>}
+        {label}{arrow}
       </button>
     );
   }

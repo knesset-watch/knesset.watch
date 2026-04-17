@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { usePeriod, periodToDateRange } from '@/lib/period-context';
+import FilterChips from '@/components/FilterChips';
 
 interface VoteRow {
   voteId: number;
@@ -189,6 +190,47 @@ export default function VotesClient() {
           </div>
         </div>
 
+
+        {/* ── Active Filters Display ── */}
+        {(() => {
+          const filterChips = [];
+          if (submittedSearch.trim()) {
+            filterChips.push({
+              label: `חיפוש: "${submittedSearch}"`,
+              onRemove: () => { setSubmittedSearch(''); setSearch(''); }
+            });
+          }
+          if (passedOnly) {
+            filterChips.push({
+              label: 'הצבעות שעברו',
+              onRemove: () => setPassedOnly(false)
+            });
+          }
+          if (failedOnly) {
+            filterChips.push({
+              label: 'הצבעות שלא עברו',
+              onRemove: () => setFailedOnly(false)
+            });
+          }
+          if (maxMargin) {
+            filterChips.push({
+              label: `הפרש ≤ ${maxMargin}`,
+              onRemove: () => handleMarginChange('')
+            });
+          }
+          return filterChips.length > 0 ? (
+            <FilterChips
+              chips={filterChips}
+              onClearAll={() => {
+                setSubmittedSearch('');
+                setSearch('');
+                setPassedOnly(false);
+                setFailedOnly(false);
+                handleMarginChange('');
+              }}
+            />
+          ) : null;
+        })()}
         {/* Total count */}
         {!loading && (
           <div className="text-[11px] text-gray-500 font-black uppercase mb-3">

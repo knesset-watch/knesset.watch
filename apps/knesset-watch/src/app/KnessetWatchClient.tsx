@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useTransition } from 'react';
 import Link from 'next/link';
 import TimelineChart from '@/components/TimelineChart';
 import AllianceGraph from '@/components/AllianceGraph';
+import FilterChips from '@/components/FilterChips';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
@@ -412,6 +413,7 @@ export default function KnessetWatchPage() {
   const [search, setSearch]             = useState('');
   const [billTypeFilter, setBillTypeFilter] = useState<'all' | 'private' | 'gov'>('all');
   const [error, setError]               = useState<string | null>(null);
+  const [isPending, startTransition]   = useTransition();
 
   const currentRequestId = useRef(0);
 
@@ -1075,6 +1077,39 @@ export default function KnessetWatchPage() {
 
           </div>
         </header>
+        {/* ── Active Filters Display ── */}
+        {(() => {
+          const filterChips = [];
+          if (coalitionFilter !== 'all') {
+            filterChips.push({
+              label: coalitionFilter === 'coalition' ? 'קואליציה' : 'אופוזיציה',
+              onRemove: () => setCoalitionFilter('all')
+            });
+          }
+          if (activeOnly) {
+            filterChips.push({
+              label: 'חברי כנסת פעילים בלבד',
+              onRemove: () => setActiveOnly(false)
+            });
+          }
+          if (search.trim()) {
+            filterChips.push({
+              label: `חיפוש: "${search}"`,
+              onRemove: () => setSearch('')
+            });
+          }
+          return filterChips.length > 0 ? (
+            <FilterChips
+              chips={filterChips}
+              onClearAll={() => {
+                setCoalitionFilter('all');
+                setActiveOnly(false);
+                setSearch('');
+              }}
+            />
+          ) : null;
+        })()}
+
 
         {/* ── Legend ── */}
         {!loading && !error && (timeframeVal === 'k25' || timeframeVal === 'all') && (
@@ -1093,6 +1128,13 @@ export default function KnessetWatchPage() {
                 <span className="text-[11px] font-black uppercase tracking-widest text-gray-400">לשעבר</span>
               </div>
             )}
+          </div>
+        )}
+
+        {isPending && (
+          <div className="fixed top-4 right-4 z-50 flex items-center gap-2 bg-black text-white px-4 py-2 rounded-full text-sm font-black">
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            טוען עמוד...
           </div>
         )}
 
