@@ -5,6 +5,7 @@ import Link from 'next/link';
 import TimelineChart from '@/components/TimelineChart';
 import AllianceGraph from '@/components/AllianceGraph';
 import FilterChips from '@/components/FilterChips';
+import GlossaryTooltip from '@/components/GlossaryTooltip';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
@@ -1114,14 +1115,18 @@ export default function KnessetWatchPage() {
         {/* ── Legend ── */}
         {!loading && !error && (timeframeVal === 'k25' || timeframeVal === 'all') && (
           <div className="flex items-center gap-5 flex-wrap mb-8">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-5 rounded-sm shrink-0" style={{ background: '#16A34A' }} />
-              <span className="text-[11px] font-black uppercase tracking-widest text-gray-400">קואליציה</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-5 rounded-sm shrink-0" style={{ background: '#2563EB' }} />
-              <span className="text-[11px] font-black uppercase tracking-widest text-gray-400">אופוזיציה</span>
-            </div>
+            <GlossaryTooltip term="coalition">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-5 rounded-sm shrink-0" style={{ background: '#16A34A' }} />
+                <span className="text-[11px] font-black uppercase tracking-widest text-gray-400">קואליציה</span>
+              </div>
+            </GlossaryTooltip>
+            <GlossaryTooltip term="opposition">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-5 rounded-sm shrink-0" style={{ background: '#2563EB' }} />
+                <span className="text-[11px] font-black uppercase tracking-widest text-gray-400">אופוזיציה</span>
+              </div>
+            </GlossaryTooltip>
             {showDeparted && (
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-5 rounded-sm shrink-0" style={{ background: '#6B7280' }} />
