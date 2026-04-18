@@ -208,9 +208,9 @@ async function sync() {
   console.log("  Updating Rebellion Stats...");
   const factions = db.prepare('SELECT DISTINCT faction_id FROM mk_person WHERE faction_id IS NOT NULL').all() as any[];
   const uncalculatedVotes = db.prepare(`
-    SELECT id FROM plenary_vote 
+    SELECT id FROM plenary_vote
     WHERE id NOT IN (SELECT DISTINCT vote_id FROM vote_faction_stats)
-    ORDER BY date DESC LIMIT 200
+    ORDER BY date DESC
   `).all() as any[];
 
   if (uncalculatedVotes.length > 0) {

@@ -317,9 +317,25 @@ export function getMkVoteStats(mkId: number): MkVoteStats | null {
     )
     .all(mkId) as Array<{ result_code: number; cnt: number }>;
 
+  // Get MK tenure dates to correctly calculate absence
+  const mkTenure = db
+    .prepare(
+      `SELECT MIN(start_date) as startDate, MAX(COALESCE(finish_date, datetime('now'))) as endDate
+       FROM mk_position
+       WHERE mk_id = ?`,
+    )
+    .get(mkId) as { startDate: string | null; endDate: string | null } | undefined;
+
+  const startDate = mkTenure?.startDate ?? '2022-11-15';
+  const endDate = mkTenure?.endDate ?? '9999-12-31';
+
+  // Count only votes within MK's tenure window
   const { totalVotes } = db
-    .prepare('SELECT COUNT(*) as totalVotes FROM plenary_vote')
-    .get() as { totalVotes: number };
+    .prepare(
+      `SELECT COUNT(*) as totalVotes FROM plenary_vote
+       WHERE date >= ? AND date <= ?`,
+    )
+    .get(startDate, endDate) as { totalVotes: number };
 
   const stats: MkVoteStats = {
     total: 0, forCount: 0, againstCount: 0, abstainCount: 0, presentCount: 0,
@@ -1623,11 +1639,15 @@ export function getMinistryDetail(name: string): MinistryDetail | null {
 
   if (ministers.length === 0) return null;
 
+  // Count bills initiated by ministers of this ministry
+  const ministerIds = ministers.map(m => m.person_id);
+  const placeholders = ministerIds.map(() => '?').join(',');
   const bills = db.prepare(`
-    SELECT COUNT(*) as billCount, SUM(is_passed) as passedCount
-    FROM bill
-    WHERE committee_name LIKE ? OR macro_agenda LIKE ?
-  `).get(`%${name}%`, `%${name}%`) as { billCount: number; passedCount: number } | undefined;
+    SELECT COUNT(DISTINCT b.id) as billCount, SUM(b.is_passed) as passedCount
+    FROM bill b
+    JOIN bill_initiator bi ON bi.bill_id = b.id
+    WHERE bi.mk_id IN (${placeholders})
+  `).get(...ministerIds) as { billCount: number; passedCount: number } | undefined;
 
   return {
     name,

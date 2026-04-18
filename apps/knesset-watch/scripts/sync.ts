@@ -204,14 +204,14 @@ async function sync() {
 
   const K25_START = new Date('2022-11-15');
   const K25_COALITION_PERIODS: Array<{ factionId: number; start: Date | null; end: Date | null }> = [
-    { factionId: 1095, start: null, end: null },  // ליכוד
-    { factionId: 1096, start: null, end: null },  // ש"ס
-    { factionId: 1101, start: null, end: null },  // יהדות התורה
-    { factionId: 1105, start: null, end: null },  // ציונות הדתית
-    { factionId: 1106, start: null, end: null },  // עוצמה יהודית
-    { factionId: 1107, start: null, end: null },  // נועם
-    { factionId: 1098, start: new Date('2023-10-12'), end: new Date('2024-06-09') },
-    { factionId: 1108, start: new Date('2024-09-29'), end: null },
+    { factionId: 1096, start: null, end: null },  // הליכוד (Likud)
+    { factionId: 1095, start: null, end: null },  // שס (Shas)
+    { factionId: 1101, start: null, end: null },  // יהדות התורה (UTJ)
+    { factionId: 1105, start: null, end: null },  // הציונות הדתית (Religious Zionism)
+    { factionId: 1106, start: null, end: null },  // עוצמה יהודית (Otzma)
+    { factionId: 1107, start: null, end: null },  // נעם (Noam)
+    { factionId: 1098, start: new Date('2023-10-12'), end: new Date('2024-06-09') },  // הציונות הדתית (temporary)
+    { factionId: 1108, start: new Date('2024-09-29'), end: null },  // לא מעורב (temporary)
   ];
 
   function isCoalitionAtTime(factionId: number, time: Date): boolean {
