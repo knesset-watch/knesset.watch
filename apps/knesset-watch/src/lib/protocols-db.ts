@@ -196,7 +196,7 @@ export async function searchProtocols(
             ${to   ? 'AND cs.date <= ?' : ''}`,
       args: [...(committee ? [committee] : []), ...dateArgs],
     });
-    const total = Math.min(Number(totalRes.rows[0]['cnt'] ?? 0), 200);
+    const total = Number(totalRes.rows[0]['cnt'] ?? 0);
 
     return { results, total, page };
   }
