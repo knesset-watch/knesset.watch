@@ -156,6 +156,7 @@ async function seed() {
   console.log('Step 3/5 — downloading K25 bills and initiators …');
 
   const PASSED_STATUS_IDS = new Set([118, 119, 6020, 6030, 6040]);
+  const seenStatusIds = new Map<number, number>();
 
   const insertBill = db.prepare(
     'INSERT OR REPLACE INTO bill (id, title, subtype, status_id, is_passed) VALUES (?, ?, ?, ?, ?)',
@@ -165,12 +166,14 @@ async function seed() {
   );
   const insertBillsBatch = db.transaction((rows: any[]) => {
     for (const r of rows) {
+      const statusId = r.StatusID ?? 0;
+      seenStatusIds.set(statusId, (seenStatusIds.get(statusId) ?? 0) + 1);
       insertBill.run(
         r.Id,
         r.Name ?? '',
         r.SubTypeDesc ?? '',
-        r.StatusID ?? 0,
-        PASSED_STATUS_IDS.has(r.StatusID) ? 1 : 0,
+        statusId,
+        PASSED_STATUS_IDS.has(statusId) ? 1 : 0,
       );
       for (const init of r.KNS_BillInitiator ?? []) {
         if (init.PersonID) insertInitiator.run(r.Id, init.PersonID);
@@ -193,6 +196,18 @@ async function seed() {
     url = next;
   }
   console.log(`\n  ✓ ${billCount.toLocaleString()} bills\n`);
+
+  // Warn about unknown bill status codes
+  const unknownStatuses = Array.from(seenStatusIds.entries())
+    .filter(([id]) => !PASSED_STATUS_IDS.has(id))
+    .sort((a, b) => b[1] - a[1]);
+  if (unknownStatuses.length > 0) {
+    console.log('  ⚠️  WARNING: Unknown bill status codes encountered:');
+    unknownStatuses.forEach(([id, count]) => {
+      console.log(`      StatusID ${id}: ${count.toLocaleString()} bills (treated as NOT PASSED)`);
+    });
+    console.log('  These bills may be miscategorized. See scripts/seed.ts to update PASSED_STATUS_IDS.\n');
+  }
 
   // ── Step 4: parliamentary queries (שאילתות) ───────────────────────────────
   console.log('Step 4/5 — downloading K25 parliamentary queries …');
