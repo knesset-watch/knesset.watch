@@ -1,0 +1,149 @@
+
+═══════════════════════════════════════════════════════════════
+MK PROFILE PAGES (5 random samples)
+═══════════════════════════════════════════════════════════════
+
+
+[1/5] MK ID 30558 — יוסף עטאונה
+  Expected: Bills=83, Queries=55, Positions=7, Votes=3413, Absence=2127
+  Page URL: /mk/30558
+  TEST STATUS: ⏳ Requires Playwright (will validate in browser)
+
+[2/5] MK ID 30849 — לימור סון הר מלך
+  Expected: Bills=249, Queries=3, Positions=47, Votes=4411, Absence=2313
+  Page URL: /mk/30849
+  TEST STATUS: ⏳ Requires Playwright (will validate in browser)
+
+[3/5] MK ID 30894 — סמיר בן סעיד
+  Expected: Bills=8, Queries=20, Positions=6, Votes=574, Absence=610
+  Page URL: /mk/30894
+  TEST STATUS: ⏳ Requires Playwright (will validate in browser)
+
+[4/5] MK ID 23594 — יאיר לפיד
+  Expected: Bills=85, Queries=0, Positions=4, Votes=3242, Absence=3482
+  Page URL: /mk/23594
+  TEST STATUS: ⏳ Requires Playwright (will validate in browser)
+
+[5/5] MK ID 30121 — עודד פורר
+  Expected: Bills=346, Queries=4, Positions=16, Votes=3720, Absence=3004
+  Page URL: /mk/30121
+  TEST STATUS: ⏳ Requires Playwright (will validate in browser)
+
+═══════════════════════════════════════════════════════════════
+VOTE DETAIL PAGES (5 random samples)
+═══════════════════════════════════════════════════════════════
+
+
+[1/5] Vote ID 40867
+  Title: הצעת חוק העונשין (תיקון מס' 149), התשפ"ד–2024
+  Expected: For=16, Against=0, Abstain=0, Present=0
+  Page URL: /vote/40867
+  TEST STATUS: ⏳ Requires Playwright (will validate in browser)
+
+[2/5] Vote ID 39381
+  Title: בחירת נציגי הכנסת לוועדות מינויים לנושאי משרה שיפוטית
+  Expected: For=0, Against=0, Abstain=0, Present=0
+  Page URL: /vote/39381
+  TEST STATUS: ⏳ Requires Playwright (will validate in browser)
+
+[3/5] Vote ID 42232
+  Title: הצעת חוק הדחת נציג ציבור התומך במאבק מזוין נגד מדינת ישראל (תיקוני חקיקה), התשפ"ד-2024
+  Expected: For=36, Against=10, Abstain=1, Present=0
+  Page URL: /vote/42232
+  TEST STATUS: ⏳ Requires Playwright (will validate in browser)
+
+[4/5] Vote ID 39003
+  Title: הצעת חוק ההתייעלות הכלכלית (תיקוני חקיקה להשגת יעדי התקציב לשנות התקציב 2023 ו-2024), התשפ"ג-2023
+  Expected: For=64, Against=55, Abstain=0, Present=0
+  Page URL: /vote/39003
+  TEST STATUS: ⏳ Requires Playwright (will validate in browser)
+
+[5/5] Vote ID 42293
+  Title: הצעת חוק אומנה לילדים (תיקון מס' 6) (הזכות לחינוך לילדים במסגרת השמה חוץ-ביתית), התשפ"ה-2004
+  Expected: For=14, Against=0, Abstain=0, Present=0
+  Page URL: /vote/42293
+  TEST STATUS: ⏳ Requires Playwright (will validate in browser)
+
+═══════════════════════════════════════════════════════════════
+COMMITTEE PAGES (5 random samples)
+═══════════════════════════════════════════════════════════════
+
+
+[1/5] Committee: הוועדה המשותפת של ועדת החוקה, חוק ומשפט והוועדה לקידום מעמד האישה לדיון בהצעת חוק לביטול ההתיישנות בעבירות מין (תיקוני חקיקה), התשפ"ג 2023 (פ/2559/25)
+  Expected: Members=12, Sessions=5
+  Page URL: /committee/%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%94%D7%9E%D7%A9%D7%95%D7%AA%D7%A4%D7%AA%20%D7%A9%D7%9C%20%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%97%D7%95%D7%A7%D7%94%2C%20%D7%97%D7%95%D7%A7%20%D7%95%D7%9E%D7%A9%D7%A4%D7%98%20%D7%95%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%9C%D7%A7%D7%99%D7%93%D7%95%D7%9D%20%D7%9E%D7%A2%D7%9E%D7%93%20%D7%94%D7%90%D7%99%D7%A9%D7%94%20%D7%9C%D7%93%D7%99%D7%95%D7%9F%20%D7%91%D7%94%D7%A6%D7%A2%D7%AA%20%D7%97%D7%95%D7%A7%20%D7%9C%D7%91%D7%99%D7%98%D7%95%D7%9C%20%D7%94%D7%94%D7%AA%D7%99%D7%99%D7%A9%D7%A0%D7%95%D7%AA%20%D7%91%D7%A2%D7%91%D7%99%D7%A8%D7%95%D7%AA%20%D7%9E%D7%99%D7%9F%20(%D7%AA%D7%99%D7%A7%D7%95%D7%A0%D7%99%20%D7%97%D7%A7%D7%99%D7%A7%D7%94)%2C%20%D7%94%D7%AA%D7%A9%D7%A4%22%D7%92%202023%20(%D7%A4%2F2559%2F25)
+  TEST STATUS: ⏳ Requires Playwright (will validate in browser)
+
+[2/5] Committee: הוועדה המשותפת של ועדת החוקה, חוק ומשפט ושל ועדת הכלכלה לדיון בהצעת חוק תובענות ייצוגיות (תיקון מס' 16) התשפ"ד-2024 (מ/1785) 
+  Expected: Members=13, Sessions=10
+  Page URL: /committee/%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%94%D7%9E%D7%A9%D7%95%D7%AA%D7%A4%D7%AA%20%D7%A9%D7%9C%20%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%97%D7%95%D7%A7%D7%94%2C%20%D7%97%D7%95%D7%A7%20%D7%95%D7%9E%D7%A9%D7%A4%D7%98%20%D7%95%D7%A9%D7%9C%20%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%9B%D7%9C%D7%9B%D7%9C%D7%94%20%D7%9C%D7%93%D7%99%D7%95%D7%9F%20%D7%91%D7%94%D7%A6%D7%A2%D7%AA%20%D7%97%D7%95%D7%A7%20%D7%AA%D7%95%D7%91%D7%A2%D7%A0%D7%95%D7%AA%20%D7%99%D7%99%D7%A6%D7%95%D7%92%D7%99%D7%95%D7%AA%20(%D7%AA%D7%99%D7%A7%D7%95%D7%9F%20%D7%9E%D7%A1'%2016)%20%D7%94%D7%AA%D7%A9%D7%A4%22%D7%93-2024%20(%D7%9E%2F1785)%20
+  TEST STATUS: ⏳ Requires Playwright (will validate in browser)
+
+[3/5] Committee: ועדת המשנה למודיעין, שירותים חשאיים ושו"ן
+  Expected: Members=11, Sessions=0
+  Page URL: /committee/%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%9E%D7%A9%D7%A0%D7%94%20%D7%9C%D7%9E%D7%95%D7%93%D7%99%D7%A2%D7%99%D7%9F%2C%20%D7%A9%D7%99%D7%A8%D7%95%D7%AA%D7%99%D7%9D%20%D7%97%D7%A9%D7%90%D7%99%D7%99%D7%9D%20%D7%95%D7%A9%D7%95%22%D7%9F
+  TEST STATUS: ⏳ Requires Playwright (will validate in browser)
+
+[4/5] Committee: הוועדה המשותפת של ועדת הכנסת וועדת הפנים והגנת הסביבה לדיון בהצעות חוק בנושא לביטול אזרחותו או תושבותו של פעיל טרור שמקבל תגמול עבור ביצוע מעשה הטרור 
+  Expected: Members=12, Sessions=7
+  Page URL: /committee/%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%94%D7%9E%D7%A9%D7%95%D7%AA%D7%A4%D7%AA%20%D7%A9%D7%9C%20%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%9B%D7%A0%D7%A1%D7%AA%20%D7%95%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%A4%D7%A0%D7%99%D7%9D%20%D7%95%D7%94%D7%92%D7%A0%D7%AA%20%D7%94%D7%A1%D7%91%D7%99%D7%91%D7%94%20%D7%9C%D7%93%D7%99%D7%95%D7%9F%20%D7%91%D7%94%D7%A6%D7%A2%D7%95%D7%AA%20%D7%97%D7%95%D7%A7%20%D7%91%D7%A0%D7%95%D7%A9%D7%90%20%D7%9C%D7%91%D7%99%D7%98%D7%95%D7%9C%20%D7%90%D7%96%D7%A8%D7%97%D7%95%D7%AA%D7%95%20%D7%90%D7%95%20%D7%AA%D7%95%D7%A9%D7%91%D7%95%D7%AA%D7%95%20%D7%A9%D7%9C%20%D7%A4%D7%A2%D7%99%D7%9C%20%D7%98%D7%A8%D7%95%D7%A8%20%D7%A9%D7%9E%D7%A7%D7%91%D7%9C%20%D7%AA%D7%92%D7%9E%D7%95%D7%9C%20%D7%A2%D7%91%D7%95%D7%A8%20%D7%91%D7%99%D7%A6%D7%95%D7%A2%20%D7%9E%D7%A2%D7%A9%D7%94%20%D7%94%D7%98%D7%A8%D7%95%D7%A8%20
+  TEST STATUS: ⏳ Requires Playwright (will validate in browser)
+
+[5/5] Committee: ועדת המשנה לקידום הבטיחות בדרכים
+  Expected: Members=5, Sessions=7
+  Page URL: /committee/%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%9E%D7%A9%D7%A0%D7%94%20%D7%9C%D7%A7%D7%99%D7%93%D7%95%D7%9D%20%D7%94%D7%91%D7%98%D7%99%D7%97%D7%95%D7%AA%20%D7%91%D7%93%D7%A8%D7%9B%D7%99%D7%9D
+  TEST STATUS: ⏳ Requires Playwright (will validate in browser)
+
+═══════════════════════════════════════════════════════════════
+FACTION PAGES (5 random samples)
+═══════════════════════════════════════════════════════════════
+
+
+[1/5] Faction: כחול לבן - המחנה הממלכתי
+  Expected: MKs=8, Bills=632
+  Page URL: /faction/%D7%9B%D7%97%D7%95%D7%9C%20%D7%9C%D7%91%D7%9F%20-%20%D7%94%D7%9E%D7%97%D7%A0%D7%94%20%D7%94%D7%9E%D7%9E%D7%9C%D7%9B%D7%AA%D7%99
+  TEST STATUS: ⏳ Requires Playwright (will validate in browser)
+
+[2/5] Faction: חה"כ עידן רול
+  Expected: MKs=1, Bills=92
+  Page URL: /faction/%D7%97%D7%94%22%D7%9B%20%D7%A2%D7%99%D7%93%D7%9F%20%D7%A8%D7%95%D7%9C
+  TEST STATUS: ⏳ Requires Playwright (will validate in browser)
+
+[3/5] Faction: הימין הממלכתי 
+  Expected: MKs=6, Bills=237
+  Page URL: /faction/%D7%94%D7%99%D7%9E%D7%99%D7%9F%20%D7%94%D7%9E%D7%9E%D7%9C%D7%9B%D7%AA%D7%99%20
+  TEST STATUS: ⏳ Requires Playwright (will validate in browser)
+
+[4/5] Faction: יהדות התורה
+  Expected: MKs=10, Bills=474
+  Page URL: /faction/%D7%99%D7%94%D7%93%D7%95%D7%AA%20%D7%94%D7%AA%D7%95%D7%A8%D7%94
+  TEST STATUS: ⏳ Requires Playwright (will validate in browser)
+
+[5/5] Faction: הליכוד 
+  Expected: MKs=43, Bills=1646
+  Page URL: /faction/%D7%94%D7%9C%D7%99%D7%9B%D7%95%D7%93%20
+  TEST STATUS: ⏳ Requires Playwright (will validate in browser)
+
+═══════════════════════════════════════════════════════════════
+MINISTRY PAGES (5 random samples)
+═══════════════════════════════════════════════════════════════
+
+
+/Users/dror/Documents/AI Experiments/Personal/knesset/node_modules/better-sqlite3/lib/methods/wrappers.js:5
+	return this[cppdb].prepare(sql, this, false);
+	                   ^
+SqliteError: no such column: p.ministry
+    at Database.prepare (/Users/dror/Documents/AI Experiments/Personal/knesset/node_modules/better-sqlite3/lib/methods/wrappers.js:5:21)
+    at /Users/dror/Documents/AI Experiments/Personal/knesset/apps/knesset-watch/scripts/comprehensive-audit.js:244:20
+    at Array.forEach (<anonymous>)
+    at Object.<anonymous> (/Users/dror/Documents/AI Experiments/Personal/knesset/apps/knesset-watch/scripts/comprehensive-audit.js:241:17)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24) {
+  code: 'SQLITE_ERROR'
+}
+
+Node.js v22.15.1
