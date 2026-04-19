@@ -79,18 +79,18 @@ async function auditMkPage(page, data, pageNum, total) {
 
   const stats = await page.evaluate(() => {
     const textContent = document.body.innerText;
-    const billsMatch = textContent.match(/(\d+)\s+הצ"ח/);
-    const queriesMatch = textContent.match(/(\d+)\s+שאילתות/);
-    const positionsMatch = textContent.match(/(\d+)\s+תפקידים/);
-    const votesMatch = textContent.match(/(\d+)\s+הצבעות/);
-    const absenceMatch = textContent.match(/(\d+)\s+היעדרויות/);
+    const billsMatch = textContent.match(/(\d+(?:,\d{3})*)\s+הצ"ח/);
+    const queriesMatch = textContent.match(/(\d+(?:,\d{3})*)\s+שאילתות/);
+    const positionsMatch = textContent.match(/(\d+(?:,\d{3})*)\s+תפקידים/);
+    const votesMatch = textContent.match(/(\d+(?:,\d{3})*)\s+הצבעות/);
+    const absenceMatch = textContent.match(/(\d+(?:,\d{3})*)\s+היעדרויות/);
 
     return {
-      bills: billsMatch ? parseInt(billsMatch[1]) : null,
-      queries: queriesMatch ? parseInt(queriesMatch[1]) : null,
-      positions: positionsMatch ? parseInt(positionsMatch[1]) : null,
-      votes: votesMatch ? parseInt(votesMatch[1]) : null,
-      absence: absenceMatch ? parseInt(absenceMatch[1]) : null
+      bills: billsMatch ? parseInt(billsMatch[1].replace(/,/g, '')) : null,
+      queries: queriesMatch ? parseInt(queriesMatch[1].replace(/,/g, '')) : null,
+      positions: positionsMatch ? parseInt(positionsMatch[1].replace(/,/g, '')) : null,
+      votes: votesMatch ? parseInt(votesMatch[1].replace(/,/g, '')) : null,
+      absence: absenceMatch ? parseInt(absenceMatch[1].replace(/,/g, '')) : null
     };
   });
 
@@ -146,9 +146,9 @@ async function auditVotePage(page, data, pageNum, total) {
 
   const stats = await page.evaluate(() => {
     const textContent = document.body.innerText;
-    const forMatch = textContent.match(/בעד:\s*(\d+)/);
-    const againstMatch = textContent.match(/נגד:\s*(\d+)/);
-    const abstainMatch = textContent.match(/נמנע:\s*(\d+)/);
+    const forMatch = textContent.match(/בעד\s*\((\d+)\)/);
+    const againstMatch = textContent.match(/נגד\s*\((\d+)\)/);
+    const abstainMatch = textContent.match(/נמנע\s*\((\d+)\)/);
 
     return {
       for: forMatch ? parseInt(forMatch[1]) : null,
