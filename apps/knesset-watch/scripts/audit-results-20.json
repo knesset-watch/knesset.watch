@@ -1,6 +1,69 @@
 [
   {
     "type": "mk",
+    "mkId": 30832,
+    "url": "/mk/30832",
+    "expected": {
+      "bills": 162,
+      "queries": 0,
+      "positions": 18,
+      "votes": 4088,
+      "absence": 2636
+    },
+    "actual": {
+      "bills": 162,
+      "queries": 0,
+      "positions": 18,
+      "votes": 4088,
+      "absence": 2636
+    },
+    "status": "PASS",
+    "mismatches": []
+  },
+  {
+    "type": "mk",
+    "mkId": 30780,
+    "url": "/mk/30780",
+    "expected": {
+      "bills": 276,
+      "queries": 7,
+      "positions": 22,
+      "votes": 4065,
+      "absence": 2659
+    },
+    "actual": {
+      "bills": 276,
+      "queries": 7,
+      "positions": 22,
+      "votes": 4065,
+      "absence": 2659
+    },
+    "status": "PASS",
+    "mismatches": []
+  },
+  {
+    "type": "mk",
+    "mkId": 30861,
+    "url": "/mk/30861",
+    "expected": {
+      "bills": 137,
+      "queries": 0,
+      "positions": 25,
+      "votes": 4242,
+      "absence": 2482
+    },
+    "actual": {
+      "bills": 137,
+      "queries": 0,
+      "positions": 25,
+      "votes": 4242,
+      "absence": 2482
+    },
+    "status": "PASS",
+    "mismatches": []
+  },
+  {
+    "type": "mk",
     "mkId": 12937,
     "url": "/mk/12937",
     "expected": {
@@ -16,363 +79,6 @@
       "positions": 2,
       "votes": 329,
       "absence": 2359
-    },
-    "status": "PASS",
-    "mismatches": []
-  },
-  {
-    "type": "mk",
-    "mkId": 30852,
-    "url": "/mk/30852",
-    "expected": {
-      "bills": 160,
-      "queries": 5,
-      "positions": 20,
-      "votes": 4403,
-      "absence": 2321
-    },
-    "actual": {
-      "bills": 160,
-      "queries": 5,
-      "positions": 20,
-      "votes": 4403,
-      "absence": 2321
-    },
-    "status": "PASS",
-    "mismatches": []
-  },
-  {
-    "type": "mk",
-    "mkId": 30749,
-    "url": "/mk/30749",
-    "expected": {
-      "bills": 11,
-      "queries": 1,
-      "positions": 10,
-      "votes": 4440,
-      "absence": 2284
-    },
-    "actual": {
-      "bills": 11,
-      "queries": 1,
-      "positions": 10,
-      "votes": 4440,
-      "absence": 2284
-    },
-    "status": "PASS",
-    "mismatches": []
-  },
-  {
-    "type": "mk",
-    "mkId": 30558,
-    "url": "/mk/30558",
-    "expected": {
-      "bills": 83,
-      "queries": 55,
-      "positions": 7,
-      "votes": 3413,
-      "absence": 2127
-    },
-    "actual": {
-      "bills": 83,
-      "queries": 55,
-      "positions": 7,
-      "votes": 3413,
-      "absence": 2127
-    },
-    "status": "PASS",
-    "mismatches": []
-  },
-  {
-    "type": "mk",
-    "mkId": 30671,
-    "url": "/mk/30671",
-    "expected": {
-      "bills": 2,
-      "queries": 0,
-      "positions": 6,
-      "votes": 3418,
-      "absence": 3306
-    },
-    "actual": {
-      "bills": 2,
-      "queries": 0,
-      "positions": 6,
-      "votes": 3418,
-      "absence": 3306
-    },
-    "status": "PASS",
-    "mismatches": []
-  },
-  {
-    "type": "mk",
-    "mkId": 30710,
-    "url": "/mk/30710",
-    "expected": {
-      "bills": 155,
-      "queries": 7,
-      "positions": 21,
-      "votes": 4537,
-      "absence": 1975
-    },
-    "actual": {
-      "bills": 155,
-      "queries": 7,
-      "positions": 21,
-      "votes": 4537,
-      "absence": 1975
-    },
-    "status": "PASS",
-    "mismatches": []
-  },
-  {
-    "type": "mk",
-    "mkId": 30768,
-    "url": "/mk/30768",
-    "expected": {
-      "bills": 32,
-      "queries": 21,
-      "positions": 16,
-      "votes": 3197,
-      "absence": 2091
-    },
-    "actual": {
-      "bills": 32,
-      "queries": 21,
-      "positions": 16,
-      "votes": 3197,
-      "absence": 2091
-    },
-    "status": "PASS",
-    "mismatches": []
-  },
-  {
-    "type": "mk",
-    "mkId": 30875,
-    "url": "/mk/30875",
-    "expected": {
-      "bills": 105,
-      "queries": 3,
-      "positions": 14,
-      "votes": 4686,
-      "absence": 1649
-    },
-    "actual": {
-      "bills": 105,
-      "queries": 3,
-      "positions": 14,
-      "votes": 4686,
-      "absence": 1649
-    },
-    "status": "PASS",
-    "mismatches": []
-  },
-  {
-    "type": "mk",
-    "mkId": 30683,
-    "url": "/mk/30683",
-    "expected": {
-      "bills": 36,
-      "queries": 1,
-      "positions": 12,
-      "votes": 3836,
-      "absence": 2888
-    },
-    "actual": {
-      "bills": 36,
-      "queries": 1,
-      "positions": 12,
-      "votes": 3836,
-      "absence": 2888
-    },
-    "status": "PASS",
-    "mismatches": []
-  },
-  {
-    "type": "mk",
-    "mkId": 30836,
-    "url": "/mk/30836",
-    "expected": {
-      "bills": 5,
-      "queries": 0,
-      "positions": 12,
-      "votes": 2769,
-      "absence": 2817
-    },
-    "actual": {
-      "bills": 5,
-      "queries": 0,
-      "positions": 12,
-      "votes": 2769,
-      "absence": 2817
-    },
-    "status": "PASS",
-    "mismatches": []
-  },
-  {
-    "type": "mk",
-    "mkId": 1057,
-    "url": "/mk/1057",
-    "expected": {
-      "bills": 36,
-      "queries": 1,
-      "positions": 20,
-      "votes": 3329,
-      "absence": 3395
-    },
-    "actual": {
-      "bills": 36,
-      "queries": 1,
-      "positions": 20,
-      "votes": 3329,
-      "absence": 3395
-    },
-    "status": "PASS",
-    "mismatches": []
-  },
-  {
-    "type": "mk",
-    "mkId": 30686,
-    "url": "/mk/30686",
-    "expected": {
-      "bills": 149,
-      "queries": 67,
-      "positions": 7,
-      "votes": 4141,
-      "absence": 2583
-    },
-    "actual": {
-      "bills": 149,
-      "queries": 67,
-      "positions": 7,
-      "votes": 4141,
-      "absence": 2583
-    },
-    "status": "PASS",
-    "mismatches": []
-  },
-  {
-    "type": "mk",
-    "mkId": 30055,
-    "url": "/mk/30055",
-    "expected": {
-      "bills": 0,
-      "queries": 0,
-      "positions": 2,
-      "votes": 326,
-      "absence": 6398
-    },
-    "actual": {
-      "bills": 0,
-      "queries": 0,
-      "positions": 2,
-      "votes": 326,
-      "absence": 6398
-    },
-    "status": "PASS",
-    "mismatches": []
-  },
-  {
-    "type": "mk",
-    "mkId": 30876,
-    "url": "/mk/30876",
-    "expected": {
-      "bills": 127,
-      "queries": 2,
-      "positions": 14,
-      "votes": 4499,
-      "absence": 1728
-    },
-    "actual": {
-      "bills": 127,
-      "queries": 2,
-      "positions": 14,
-      "votes": 4499,
-      "absence": 1728
-    },
-    "status": "PASS",
-    "mismatches": []
-  },
-  {
-    "type": "mk",
-    "mkId": 30057,
-    "url": "/mk/30057",
-    "expected": {
-      "bills": 1,
-      "queries": 0,
-      "positions": 4,
-      "votes": 441,
-      "absence": 6283
-    },
-    "actual": {
-      "bills": 1,
-      "queries": 0,
-      "positions": 4,
-      "votes": 441,
-      "absence": 6283
-    },
-    "status": "PASS",
-    "mismatches": []
-  },
-  {
-    "type": "mk",
-    "mkId": 30820,
-    "url": "/mk/30820",
-    "expected": {
-      "bills": 171,
-      "queries": 6,
-      "positions": 14,
-      "votes": 4259,
-      "absence": 2465
-    },
-    "actual": {
-      "bills": 171,
-      "queries": 6,
-      "positions": 14,
-      "votes": 4259,
-      "absence": 2465
-    },
-    "status": "PASS",
-    "mismatches": []
-  },
-  {
-    "type": "mk",
-    "mkId": 30722,
-    "url": "/mk/30722",
-    "expected": {
-      "bills": 383,
-      "queries": 1,
-      "positions": 14,
-      "votes": 3799,
-      "absence": 2925
-    },
-    "actual": {
-      "bills": 383,
-      "queries": 1,
-      "positions": 14,
-      "votes": 3799,
-      "absence": 2925
-    },
-    "status": "PASS",
-    "mismatches": []
-  },
-  {
-    "type": "mk",
-    "mkId": 30880,
-    "url": "/mk/30880",
-    "expected": {
-      "bills": 139,
-      "queries": 4,
-      "positions": 25,
-      "votes": 3655,
-      "absence": 2297
-    },
-    "actual": {
-      "bills": 139,
-      "queries": 4,
-      "positions": 25,
-      "votes": 3655,
-      "absence": 2297
     },
     "status": "PASS",
     "mismatches": []
@@ -400,6 +106,90 @@
   },
   {
     "type": "mk",
+    "mkId": 30852,
+    "url": "/mk/30852",
+    "expected": {
+      "bills": 160,
+      "queries": 5,
+      "positions": 20,
+      "votes": 4403,
+      "absence": 2321
+    },
+    "actual": {
+      "bills": 160,
+      "queries": 5,
+      "positions": 20,
+      "votes": 4403,
+      "absence": 2321
+    },
+    "status": "PASS",
+    "mismatches": []
+  },
+  {
+    "type": "mk",
+    "mkId": 30871,
+    "url": "/mk/30871",
+    "expected": {
+      "bills": 143,
+      "queries": 39,
+      "positions": 7,
+      "votes": 4105,
+      "absence": 2275
+    },
+    "actual": {
+      "bills": 143,
+      "queries": 39,
+      "positions": 7,
+      "votes": 4105,
+      "absence": 2275
+    },
+    "status": "PASS",
+    "mismatches": []
+  },
+  {
+    "type": "mk",
+    "mkId": 30686,
+    "url": "/mk/30686",
+    "expected": {
+      "bills": 149,
+      "queries": 67,
+      "positions": 7,
+      "votes": 4141,
+      "absence": 2583
+    },
+    "actual": {
+      "bills": 149,
+      "queries": 67,
+      "positions": 7,
+      "votes": 4141,
+      "absence": 2583
+    },
+    "status": "PASS",
+    "mismatches": []
+  },
+  {
+    "type": "mk",
+    "mkId": 30849,
+    "url": "/mk/30849",
+    "expected": {
+      "bills": 249,
+      "queries": 3,
+      "positions": 47,
+      "votes": 4411,
+      "absence": 2313
+    },
+    "actual": {
+      "bills": 249,
+      "queries": 3,
+      "positions": 47,
+      "votes": 4411,
+      "absence": 2313
+    },
+    "status": "PASS",
+    "mismatches": []
+  },
+  {
+    "type": "mk",
     "mkId": 30840,
     "url": "/mk/30840",
     "expected": {
@@ -420,9 +210,235 @@
     "mismatches": []
   },
   {
+    "type": "mk",
+    "mkId": 30300,
+    "url": "/mk/30300",
+    "expected": {
+      "bills": 2,
+      "queries": 0,
+      "positions": 0,
+      "votes": 3445,
+      "absence": 3279
+    },
+    "actual": {
+      "bills": 2,
+      "queries": 0,
+      "positions": 0,
+      "votes": 3445,
+      "absence": 3279
+    },
+    "status": "PASS",
+    "mismatches": []
+  },
+  {
+    "type": "mk",
+    "mkId": 30809,
+    "url": "/mk/30809",
+    "expected": {
+      "bills": 60,
+      "queries": 1,
+      "positions": 13,
+      "votes": 3039,
+      "absence": 3685
+    },
+    "actual": {
+      "bills": 60,
+      "queries": 1,
+      "positions": 13,
+      "votes": 3039,
+      "absence": 3685
+    },
+    "status": "PASS",
+    "mismatches": []
+  },
+  {
+    "type": "mk",
+    "mkId": 556,
+    "url": "/mk/556",
+    "expected": {
+      "bills": 0,
+      "queries": 0,
+      "positions": 10,
+      "votes": 205,
+      "absence": 6519
+    },
+    "actual": {
+      "bills": 0,
+      "queries": 0,
+      "positions": 10,
+      "votes": 205,
+      "absence": 6519
+    },
+    "status": "PASS",
+    "mismatches": []
+  },
+  {
+    "type": "mk",
+    "mkId": 30812,
+    "url": "/mk/30812",
+    "expected": {
+      "bills": 140,
+      "queries": 2,
+      "positions": 31,
+      "votes": 4058,
+      "absence": 2666
+    },
+    "actual": {
+      "bills": 140,
+      "queries": 2,
+      "positions": 31,
+      "votes": 4058,
+      "absence": 2666
+    },
+    "status": "PASS",
+    "mismatches": []
+  },
+  {
+    "type": "mk",
+    "mkId": 30814,
+    "url": "/mk/30814",
+    "expected": {
+      "bills": 24,
+      "queries": 3,
+      "positions": 4,
+      "votes": 2678,
+      "absence": 4046
+    },
+    "actual": {
+      "bills": 24,
+      "queries": 3,
+      "positions": 4,
+      "votes": 2678,
+      "absence": 4046
+    },
+    "status": "PASS",
+    "mismatches": []
+  },
+  {
+    "type": "mk",
+    "mkId": 30876,
+    "url": "/mk/30876",
+    "expected": {
+      "bills": 127,
+      "queries": 2,
+      "positions": 14,
+      "votes": 4499,
+      "absence": 1728
+    },
+    "actual": {
+      "bills": 127,
+      "queries": 2,
+      "positions": 14,
+      "votes": 4499,
+      "absence": 1728
+    },
+    "status": "PASS",
+    "mismatches": []
+  },
+  {
+    "type": "mk",
+    "mkId": 30695,
+    "url": "/mk/30695",
+    "expected": {
+      "bills": 122,
+      "queries": 29,
+      "positions": 8,
+      "votes": 3960,
+      "absence": 2764
+    },
+    "actual": {
+      "bills": 122,
+      "queries": 29,
+      "positions": 8,
+      "votes": 3960,
+      "absence": 2764
+    },
+    "status": "PASS",
+    "mismatches": []
+  },
+  {
+    "type": "mk",
+    "mkId": 30894,
+    "url": "/mk/30894",
+    "expected": {
+      "bills": 8,
+      "queries": 21,
+      "positions": 6,
+      "votes": 574,
+      "absence": 610
+    },
+    "actual": {
+      "bills": 8,
+      "queries": 21,
+      "positions": 6,
+      "votes": 574,
+      "absence": 610
+    },
+    "status": "PASS",
+    "mismatches": []
+  },
+  {
+    "type": "mk",
+    "mkId": 30842,
+    "url": "/mk/30842",
+    "expected": {
+      "bills": 182,
+      "queries": 1,
+      "positions": 22,
+      "votes": 4776,
+      "absence": 1948
+    },
+    "actual": {
+      "bills": 182,
+      "queries": 1,
+      "positions": 22,
+      "votes": 4776,
+      "absence": 1948
+    },
+    "status": "PASS",
+    "mismatches": []
+  },
+  {
+    "type": "mk",
+    "mkId": 30752,
+    "url": "/mk/30752",
+    "expected": {
+      "bills": 219,
+      "queries": 2,
+      "positions": 5,
+      "votes": 3309,
+      "absence": 3415
+    },
+    "actual": {
+      "bills": 219,
+      "queries": 2,
+      "positions": 5,
+      "votes": 3309,
+      "absence": 3415
+    },
+    "status": "PASS",
+    "mismatches": []
+  },
+  {
     "type": "vote",
-    "voteId": 40337,
-    "url": "/vote/40337",
+    "voteId": 41811,
+    "url": "/vote/41811",
+    "expected": {
+      "for": 44,
+      "against": 59,
+      "abstain": 1
+    },
+    "actual": {
+      "for": 44,
+      "against": 59,
+      "abstain": 1
+    },
+    "status": "PASS"
+  },
+  {
+    "type": "vote",
+    "voteId": 44126,
+    "url": "/vote/44126",
     "expected": {
       "for": 35,
       "against": 0,
@@ -437,63 +453,15 @@
   },
   {
     "type": "vote",
-    "voteId": 37851,
-    "url": "/vote/37851",
+    "voteId": 43076,
+    "url": "/vote/43076",
     "expected": {
-      "for": 54,
-      "against": 60,
-      "abstain": 0
-    },
-    "actual": {
-      "for": 54,
-      "against": 60,
-      "abstain": 0
-    },
-    "status": "PASS"
-  },
-  {
-    "type": "vote",
-    "voteId": 38635,
-    "url": "/vote/38635",
-    "expected": {
-      "for": 31,
-      "against": 12,
-      "abstain": 0
-    },
-    "actual": {
-      "for": 31,
-      "against": 12,
-      "abstain": 0
-    },
-    "status": "PASS"
-  },
-  {
-    "type": "vote",
-    "voteId": 41453,
-    "url": "/vote/41453",
-    "expected": {
-      "for": 51,
-      "against": 60,
-      "abstain": 0
-    },
-    "actual": {
-      "for": 51,
-      "against": 60,
-      "abstain": 0
-    },
-    "status": "PASS"
-  },
-  {
-    "type": "vote",
-    "voteId": 40924,
-    "url": "/vote/40924",
-    "expected": {
-      "for": 23,
+      "for": 14,
       "against": 0,
       "abstain": 0
     },
     "actual": {
-      "for": 23,
+      "for": 14,
       "against": 0,
       "abstain": 0
     },
@@ -501,175 +469,47 @@
   },
   {
     "type": "vote",
-    "voteId": 45271,
-    "url": "/vote/45271",
+    "voteId": 45060,
+    "url": "/vote/45060",
     "expected": {
-      "for": 14,
-      "against": 1,
-      "abstain": 1
-    },
-    "actual": {
-      "for": 14,
-      "against": 1,
-      "abstain": 1
-    },
-    "status": "PASS"
-  },
-  {
-    "type": "vote",
-    "voteId": 38160,
-    "url": "/vote/38160",
-    "expected": {
-      "for": 2,
-      "against": 22,
+      "for": 18,
+      "against": 0,
       "abstain": 0
     },
     "actual": {
-      "for": 2,
-      "against": 22,
+      "for": 18,
+      "against": 0,
       "abstain": 0
     },
     "status": "PASS"
   },
   {
     "type": "vote",
-    "voteId": 39808,
-    "url": "/vote/39808",
-    "expected": {
-      "for": 42,
-      "against": 57,
-      "abstain": 0
-    },
-    "actual": {
-      "for": 42,
-      "against": 57,
-      "abstain": 0
-    },
-    "status": "PASS"
-  },
-  {
-    "type": "vote",
-    "voteId": 38229,
-    "url": "/vote/38229",
-    "expected": {
-      "for": 8,
-      "against": 91,
-      "abstain": 0
-    },
-    "actual": {
-      "for": 8,
-      "against": 91,
-      "abstain": 0
-    },
-    "status": "PASS"
-  },
-  {
-    "type": "vote",
-    "voteId": 44275,
-    "url": "/vote/44275",
+    "voteId": 40534,
+    "url": "/vote/40534",
     "expected": {
       "for": 19,
-      "against": 0,
+      "against": 2,
       "abstain": 0
     },
     "actual": {
       "for": 19,
-      "against": 0,
+      "against": 2,
       "abstain": 0
     },
     "status": "PASS"
   },
   {
     "type": "vote",
-    "voteId": 44992,
-    "url": "/vote/44992",
-    "expected": {
-      "for": 8,
-      "against": 45,
-      "abstain": 0
-    },
-    "actual": {
-      "for": 8,
-      "against": 45,
-      "abstain": 0
-    },
-    "status": "PASS"
-  },
-  {
-    "type": "vote",
-    "voteId": 42098,
-    "url": "/vote/42098",
-    "expected": {
-      "for": 34,
-      "against": 0,
-      "abstain": 0
-    },
-    "actual": {
-      "for": 34,
-      "against": 0,
-      "abstain": 0
-    },
-    "status": "PASS"
-  },
-  {
-    "type": "vote",
-    "voteId": 40076,
-    "url": "/vote/40076",
-    "expected": {
-      "for": 62,
-      "against": 53,
-      "abstain": 0
-    },
-    "actual": {
-      "for": 62,
-      "against": 53,
-      "abstain": 0
-    },
-    "status": "PASS"
-  },
-  {
-    "type": "vote",
-    "voteId": 37811,
-    "url": "/vote/37811",
+    "voteId": 39050,
+    "url": "/vote/39050",
     "expected": {
       "for": 55,
-      "against": 59,
-      "abstain": 0
-    },
-    "actual": {
-      "for": 55,
-      "against": 59,
-      "abstain": 0
-    },
-    "status": "PASS"
-  },
-  {
-    "type": "vote",
-    "voteId": 43143,
-    "url": "/vote/43143",
-    "expected": {
-      "for": 6,
-      "against": 0,
-      "abstain": 0
-    },
-    "actual": {
-      "for": 6,
-      "against": 0,
-      "abstain": 0
-    },
-    "status": "PASS"
-  },
-  {
-    "type": "vote",
-    "voteId": 43654,
-    "url": "/vote/43654",
-    "expected": {
-      "for": 50,
       "against": 64,
       "abstain": 0
     },
     "actual": {
-      "for": 50,
+      "for": 55,
       "against": 64,
       "abstain": 0
     },
@@ -677,56 +517,40 @@
   },
   {
     "type": "vote",
-    "voteId": 39515,
-    "url": "/vote/39515",
+    "voteId": 41305,
+    "url": "/vote/41305",
     "expected": {
-      "for": 43,
-      "against": 32,
+      "for": 9,
+      "against": 61,
       "abstain": 0
     },
     "actual": {
-      "for": 43,
-      "against": 32,
+      "for": 9,
+      "against": 61,
       "abstain": 0
     },
     "status": "PASS"
   },
   {
     "type": "vote",
-    "voteId": 40942,
-    "url": "/vote/40942",
+    "voteId": 43316,
+    "url": "/vote/43316",
     "expected": {
-      "for": 15,
-      "against": 0,
+      "for": 11,
+      "against": 25,
       "abstain": 0
     },
     "actual": {
-      "for": 15,
-      "against": 0,
+      "for": 11,
+      "against": 25,
       "abstain": 0
     },
     "status": "PASS"
   },
   {
     "type": "vote",
-    "voteId": 40379,
-    "url": "/vote/40379",
-    "expected": {
-      "for": 57,
-      "against": 50,
-      "abstain": 0
-    },
-    "actual": {
-      "for": 57,
-      "against": 50,
-      "abstain": 0
-    },
-    "status": "PASS"
-  },
-  {
-    "type": "vote",
-    "voteId": 40287,
-    "url": "/vote/40287",
+    "voteId": 44840,
+    "url": "/vote/44840",
     "expected": {
       "for": 19,
       "against": 0,
@@ -740,51 +564,185 @@
     "status": "PASS"
   },
   {
-    "type": "committee",
-    "name": "הוועדה המיוחדת לצמצום פערים חברתיים בפריפריה",
-    "url": "/committee/%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%94%D7%9E%D7%99%D7%95%D7%97%D7%93%D7%AA%20%D7%9C%D7%A6%D7%9E%D7%A6%D7%95%D7%9D%20%D7%A4%D7%A2%D7%A8%D7%99%D7%9D%20%D7%97%D7%91%D7%A8%D7%AA%D7%99%D7%99%D7%9D%20%D7%91%D7%A4%D7%A8%D7%99%D7%A4%D7%A8%D7%99%D7%94",
+    "type": "vote",
+    "voteId": 39632,
+    "url": "/vote/39632",
+    "expected": {
+      "for": 45,
+      "against": 51,
+      "abstain": 0
+    },
+    "actual": {
+      "for": 45,
+      "against": 51,
+      "abstain": 0
+    },
+    "status": "PASS"
+  },
+  {
+    "type": "vote",
+    "voteId": 45511,
+    "url": "/vote/45511",
+    "expected": {
+      "for": 51,
+      "against": 65,
+      "abstain": 0
+    },
+    "actual": {
+      "for": 51,
+      "against": 65,
+      "abstain": 0
+    },
+    "status": "PASS"
+  },
+  {
+    "type": "vote",
+    "voteId": 38270,
+    "url": "/vote/38270",
+    "expected": {
+      "for": 8,
+      "against": 0,
+      "abstain": 0
+    },
+    "actual": {
+      "for": 8,
+      "against": 0,
+      "abstain": 0
+    },
+    "status": "PASS"
+  },
+  {
+    "type": "vote",
+    "voteId": 45678,
+    "url": "/vote/45678",
+    "expected": {
+      "for": 52,
+      "against": 64,
+      "abstain": 0
+    },
+    "actual": {
+      "for": 52,
+      "against": 64,
+      "abstain": 0
+    },
+    "status": "PASS"
+  },
+  {
+    "type": "vote",
+    "voteId": 45793,
+    "url": "/vote/45793",
+    "expected": {
+      "for": 33,
+      "against": 57,
+      "abstain": 0
+    },
+    "actual": {
+      "for": 33,
+      "against": 57,
+      "abstain": 0
+    },
+    "status": "PASS"
+  },
+  {
+    "type": "vote",
+    "voteId": 37909,
+    "url": "/vote/37909",
+    "expected": {
+      "for": 50,
+      "against": 61,
+      "abstain": 0
+    },
+    "actual": {
+      "for": 50,
+      "against": 61,
+      "abstain": 0
+    },
+    "status": "PASS"
+  },
+  {
+    "type": "vote",
+    "voteId": 42762,
+    "url": "/vote/42762",
+    "expected": {
+      "for": 16,
+      "against": 2,
+      "abstain": 1
+    },
+    "actual": {
+      "for": 16,
+      "against": 2,
+      "abstain": 1
+    },
+    "status": "PASS"
+  },
+  {
+    "type": "vote",
+    "voteId": 39012,
+    "url": "/vote/39012",
+    "expected": {
+      "for": 55,
+      "against": 64,
+      "abstain": 0
+    },
+    "actual": {
+      "for": 55,
+      "against": 64,
+      "abstain": 0
+    },
+    "status": "PASS"
+  },
+  {
+    "type": "vote",
+    "voteId": 43532,
+    "url": "/vote/43532",
+    "expected": {
+      "for": 47,
+      "against": 66,
+      "abstain": 1
+    },
+    "actual": {
+      "for": 47,
+      "against": 66,
+      "abstain": 1
+    },
+    "status": "PASS"
+  },
+  {
+    "type": "vote",
+    "voteId": 37976,
+    "url": "/vote/37976",
+    "expected": {
+      "for": 46,
+      "against": 63,
+      "abstain": 0
+    },
+    "actual": {
+      "for": 46,
+      "against": 63,
+      "abstain": 0
+    },
+    "status": "PASS"
+  },
+  {
+    "type": "vote",
+    "voteId": 40268,
+    "url": "/vote/40268",
+    "expected": {
+      "for": 8,
+      "against": 0,
+      "abstain": 0
+    },
+    "actual": {
+      "for": 8,
+      "against": 0,
+      "abstain": 0
+    },
     "status": "PASS"
   },
   {
     "type": "committee",
-    "name": "ועדת הכנסת",
-    "url": "/committee/%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%9B%D7%A0%D7%A1%D7%AA",
-    "status": "PASS"
-  },
-  {
-    "type": "committee",
-    "name": "הוועדה המיוחדת למאבק בשימוש בסמים ובאלכוהול",
-    "url": "/committee/%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%94%D7%9E%D7%99%D7%95%D7%97%D7%93%D7%AA%20%D7%9C%D7%9E%D7%90%D7%91%D7%A7%20%D7%91%D7%A9%D7%99%D7%9E%D7%95%D7%A9%20%D7%91%D7%A1%D7%9E%D7%99%D7%9D%20%D7%95%D7%91%D7%90%D7%9C%D7%9B%D7%95%D7%94%D7%95%D7%9C",
-    "status": "PASS"
-  },
-  {
-    "type": "committee",
-    "name": "ועדת המדע והטכנולוגיה",
-    "url": "/committee/%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%9E%D7%93%D7%A2%20%D7%95%D7%94%D7%98%D7%9B%D7%A0%D7%95%D7%9C%D7%95%D7%92%D7%99%D7%94",
-    "status": "PASS"
-  },
-  {
-    "type": "committee",
-    "name": "הוועדה לענייני ביקורת המדינה",
-    "url": "/committee/%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%9C%D7%A2%D7%A0%D7%99%D7%99%D7%A0%D7%99%20%D7%91%D7%99%D7%A7%D7%95%D7%A8%D7%AA%20%D7%94%D7%9E%D7%93%D7%99%D7%A0%D7%94",
-    "status": "PASS"
-  },
-  {
-    "type": "committee",
-    "name": "ועדת המשנה לעניין פינוי מוקשים ונפלים",
-    "url": "/committee/%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%9E%D7%A9%D7%A0%D7%94%20%D7%9C%D7%A2%D7%A0%D7%99%D7%99%D7%9F%20%D7%A4%D7%99%D7%A0%D7%95%D7%99%20%D7%9E%D7%95%D7%A7%D7%A9%D7%99%D7%9D%20%D7%95%D7%A0%D7%A4%D7%9C%D7%99%D7%9D",
-    "status": "PASS"
-  },
-  {
-    "type": "committee",
-    "name": "הוועדה לקידום מעמד האישה ולשוויון מגדרי",
-    "url": "/committee/%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%9C%D7%A7%D7%99%D7%93%D7%95%D7%9D%20%D7%9E%D7%A2%D7%9E%D7%93%20%D7%94%D7%90%D7%99%D7%A9%D7%94%20%D7%95%D7%9C%D7%A9%D7%95%D7%95%D7%99%D7%95%D7%9F%20%D7%9E%D7%92%D7%93%D7%A8%D7%99",
-    "status": "PASS"
-  },
-  {
-    "type": "committee",
-    "name": "הוועדה המיוחדת ליישובים בגבול המזרחי",
-    "url": "/committee/%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%94%D7%9E%D7%99%D7%95%D7%97%D7%93%D7%AA%20%D7%9C%D7%99%D7%99%D7%A9%D7%95%D7%91%D7%99%D7%9D%20%D7%91%D7%92%D7%91%D7%95%D7%9C%20%D7%94%D7%9E%D7%96%D7%A8%D7%97%D7%99",
+    "name": "ועדת המשנה לעניין הפעלת רוגלות על-ידי משטרת ישראל לביצוע האזנת סתר",
+    "url": "/committee/%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%9E%D7%A9%D7%A0%D7%94%20%D7%9C%D7%A2%D7%A0%D7%99%D7%99%D7%9F%20%D7%94%D7%A4%D7%A2%D7%9C%D7%AA%20%D7%A8%D7%95%D7%92%D7%9C%D7%95%D7%AA%20%D7%A2%D7%9C-%D7%99%D7%93%D7%99%20%D7%9E%D7%A9%D7%98%D7%A8%D7%AA%20%D7%99%D7%A9%D7%A8%D7%90%D7%9C%20%D7%9C%D7%91%D7%99%D7%A6%D7%95%D7%A2%20%D7%94%D7%90%D7%96%D7%A0%D7%AA%20%D7%A1%D7%AA%D7%A8",
     "status": "PASS"
   },
   {
@@ -795,8 +753,20 @@
   },
   {
     "type": "committee",
-    "name": "הוועדה המשותפת של ועדת החוקה, חוק ומשפט והוועדה לביטחון לאומי לדיון בהצעת חוק לתיקון פקודת המשטרה (המחלקה לחקירת שוטרים), ",
-    "url": "/committee/%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%94%D7%9E%D7%A9%D7%95%D7%AA%D7%A4%D7%AA%20%D7%A9%D7%9C%20%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%97%D7%95%D7%A7%D7%94%2C%20%D7%97%D7%95%D7%A7%20%D7%95%D7%9E%D7%A9%D7%A4%D7%98%20%D7%95%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%9C%D7%91%D7%99%D7%98%D7%97%D7%95%D7%9F%20%D7%9C%D7%90%D7%95%D7%9E%D7%99%20%D7%9C%D7%93%D7%99%D7%95%D7%9F%20%D7%91%D7%94%D7%A6%D7%A2%D7%AA%20%D7%97%D7%95%D7%A7%20%D7%9C%D7%AA%D7%99%D7%A7%D7%95%D7%9F%20%D7%A4%D7%A7%D7%95%D7%93%D7%AA%20%D7%94%D7%9E%D7%A9%D7%98%D7%A8%D7%94%20(%D7%94%D7%9E%D7%97%D7%9C%D7%A7%D7%94%20%D7%9C%D7%97%D7%A7%D7%99%D7%A8%D7%AA%20%D7%A9%D7%95%D7%98%D7%A8%D7%99%D7%9D)%2C%20",
+    "name": "ועדת המשנה לענייני עורף",
+    "url": "/committee/%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%9E%D7%A9%D7%A0%D7%94%20%D7%9C%D7%A2%D7%A0%D7%99%D7%99%D7%A0%D7%99%20%D7%A2%D7%95%D7%A8%D7%A3",
+    "status": "PASS"
+  },
+  {
+    "type": "committee",
+    "name": "הוועדה לביטחון לאומי",
+    "url": "/committee/%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%9C%D7%91%D7%99%D7%98%D7%97%D7%95%D7%9F%20%D7%9C%D7%90%D7%95%D7%9E%D7%99",
+    "status": "PASS"
+  },
+  {
+    "type": "committee",
+    "name": "הוועדה המיוחדת לחיזוק ופיתוח הנגב והגליל",
+    "url": "/committee/%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%94%D7%9E%D7%99%D7%95%D7%97%D7%93%D7%AA%20%D7%9C%D7%97%D7%99%D7%96%D7%95%D7%A7%20%D7%95%D7%A4%D7%99%D7%AA%D7%95%D7%97%20%D7%94%D7%A0%D7%92%D7%91%20%D7%95%D7%94%D7%92%D7%9C%D7%99%D7%9C",
     "status": "PASS"
   },
   {
@@ -807,122 +777,86 @@
   },
   {
     "type": "committee",
-    "name": "הוועדה המיוחדת לתיקונים לחוק יסוד: הממשלה",
-    "url": "/committee/%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%94%D7%9E%D7%99%D7%95%D7%97%D7%93%D7%AA%20%D7%9C%D7%AA%D7%99%D7%A7%D7%95%D7%A0%D7%99%D7%9D%20%D7%9C%D7%97%D7%95%D7%A7%20%D7%99%D7%A1%D7%95%D7%93%3A%20%D7%94%D7%9E%D7%9E%D7%A9%D7%9C%D7%94",
+    "name": "ועדת המשנה לפי סעיף 5 לחוק הכנסת לעניין חסיון קצא\"א",
+    "url": "/committee/%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%9E%D7%A9%D7%A0%D7%94%20%D7%9C%D7%A4%D7%99%20%D7%A1%D7%A2%D7%99%D7%A3%205%20%D7%9C%D7%97%D7%95%D7%A7%20%D7%94%D7%9B%D7%A0%D7%A1%D7%AA%20%D7%9C%D7%A2%D7%A0%D7%99%D7%99%D7%9F%20%D7%97%D7%A1%D7%99%D7%95%D7%9F%20%D7%A7%D7%A6%D7%90%22%D7%90",
     "status": "PASS"
   },
   {
     "type": "committee",
-    "name": "ועדת המשנה לנושאים מסווגים",
-    "url": "/committee/%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%9E%D7%A9%D7%A0%D7%94%20%D7%9C%D7%A0%D7%95%D7%A9%D7%90%D7%99%D7%9D%20%D7%9E%D7%A1%D7%95%D7%95%D7%92%D7%99%D7%9D",
+    "name": "הוועדה המיוחדת ליישובים בגבול המזרחי",
+    "url": "/committee/%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%94%D7%9E%D7%99%D7%95%D7%97%D7%93%D7%AA%20%D7%9C%D7%99%D7%99%D7%A9%D7%95%D7%91%D7%99%D7%9D%20%D7%91%D7%92%D7%91%D7%95%D7%9C%20%D7%94%D7%9E%D7%96%D7%A8%D7%97%D7%99",
     "status": "PASS"
   },
   {
     "type": "committee",
-    "name": "הוועדה לדיון בהצעת חוק התקשורת (שידורים), התשפ\"ו-2025 (מ/1898)",
-    "url": "/committee/%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%9C%D7%93%D7%99%D7%95%D7%9F%20%D7%91%D7%94%D7%A6%D7%A2%D7%AA%20%D7%97%D7%95%D7%A7%20%D7%94%D7%AA%D7%A7%D7%A9%D7%95%D7%A8%D7%AA%20(%D7%A9%D7%99%D7%93%D7%95%D7%A8%D7%99%D7%9D)%2C%20%D7%94%D7%AA%D7%A9%D7%A4%22%D7%95-2025%20(%D7%9E%2F1898)",
+    "name": "הוועדה המיוחדת לענייני הצעירים",
+    "url": "/committee/%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%94%D7%9E%D7%99%D7%95%D7%97%D7%93%D7%AA%20%D7%9C%D7%A2%D7%A0%D7%99%D7%99%D7%A0%D7%99%20%D7%94%D7%A6%D7%A2%D7%99%D7%A8%D7%99%D7%9D",
     "status": "PASS"
   },
   {
     "type": "committee",
-    "name": "הוועדה המיוחדת לטיפול בשורדי השואה",
-    "url": "/committee/%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%94%D7%9E%D7%99%D7%95%D7%97%D7%93%D7%AA%20%D7%9C%D7%98%D7%99%D7%A4%D7%95%D7%9C%20%D7%91%D7%A9%D7%95%D7%A8%D7%93%D7%99%20%D7%94%D7%A9%D7%95%D7%90%D7%94",
+    "name": "ועדת הפנים והגנת הסביבה",
+    "url": "/committee/%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%A4%D7%A0%D7%99%D7%9D%20%D7%95%D7%94%D7%92%D7%A0%D7%AA%20%D7%94%D7%A1%D7%91%D7%99%D7%91%D7%94",
     "status": "PASS"
   },
   {
     "type": "committee",
-    "name": "ועדת המשנה למדיניות חוץ והסברה",
-    "url": "/committee/%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%9E%D7%A9%D7%A0%D7%94%20%D7%9C%D7%9E%D7%93%D7%99%D7%A0%D7%99%D7%95%D7%AA%20%D7%97%D7%95%D7%A5%20%D7%95%D7%94%D7%A1%D7%91%D7%A8%D7%94",
+    "name": "ועדת המשנה לנושא בינה מלאכותית וטכנולוגיות מתקדמות",
+    "url": "/committee/%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%9E%D7%A9%D7%A0%D7%94%20%D7%9C%D7%A0%D7%95%D7%A9%D7%90%20%D7%91%D7%99%D7%A0%D7%94%20%D7%9E%D7%9C%D7%90%D7%9B%D7%95%D7%AA%D7%99%D7%AA%20%D7%95%D7%98%D7%9B%D7%A0%D7%95%D7%9C%D7%95%D7%92%D7%99%D7%95%D7%AA%20%D7%9E%D7%AA%D7%A7%D7%93%D7%9E%D7%95%D7%AA",
     "status": "PASS"
   },
   {
     "type": "committee",
-    "name": "הוועדה המשותפת של ועדת הכנסת וועדת הכספים לתקציב הכנסת לפי חוק יסודות התקציב, התשמ\"ה-1985",
-    "url": "/committee/%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%94%D7%9E%D7%A9%D7%95%D7%AA%D7%A4%D7%AA%20%D7%A9%D7%9C%20%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%9B%D7%A0%D7%A1%D7%AA%20%D7%95%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%9B%D7%A1%D7%A4%D7%99%D7%9D%20%D7%9C%D7%AA%D7%A7%D7%A6%D7%99%D7%91%20%D7%94%D7%9B%D7%A0%D7%A1%D7%AA%20%D7%9C%D7%A4%D7%99%20%D7%97%D7%95%D7%A7%20%D7%99%D7%A1%D7%95%D7%93%D7%95%D7%AA%20%D7%94%D7%AA%D7%A7%D7%A6%D7%99%D7%91%2C%20%D7%94%D7%AA%D7%A9%D7%9E%22%D7%94-1985",
+    "name": "הוועדה המשותפת של ועדת המדע והטכנולוגיה וועדת החוקה חוק ומשפט לפי סימן ג'1 לחוק סדר הדין הפלילי (סמכויות אכיפה - מעצרים), התשנ\"ו-1996 (מעצר בפיקוח אלקטרוני)",
+    "url": "/committee/%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%94%D7%9E%D7%A9%D7%95%D7%AA%D7%A4%D7%AA%20%D7%A9%D7%9C%20%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%9E%D7%93%D7%A2%20%D7%95%D7%94%D7%98%D7%9B%D7%A0%D7%95%D7%9C%D7%95%D7%92%D7%99%D7%94%20%D7%95%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%97%D7%95%D7%A7%D7%94%20%D7%97%D7%95%D7%A7%20%D7%95%D7%9E%D7%A9%D7%A4%D7%98%20%D7%9C%D7%A4%D7%99%20%D7%A1%D7%99%D7%9E%D7%9F%20%D7%92'1%20%D7%9C%D7%97%D7%95%D7%A7%20%D7%A1%D7%93%D7%A8%20%D7%94%D7%93%D7%99%D7%9F%20%D7%94%D7%A4%D7%9C%D7%99%D7%9C%D7%99%20(%D7%A1%D7%9E%D7%9B%D7%95%D7%99%D7%95%D7%AA%20%D7%90%D7%9B%D7%99%D7%A4%D7%94%20-%20%D7%9E%D7%A2%D7%A6%D7%A8%D7%99%D7%9D)%2C%20%D7%94%D7%AA%D7%A9%D7%A0%22%D7%95-1996%20(%D7%9E%D7%A2%D7%A6%D7%A8%20%D7%91%D7%A4%D7%99%D7%A7%D7%95%D7%97%20%D7%90%D7%9C%D7%A7%D7%98%D7%A8%D7%95%D7%A0%D7%99)",
     "status": "PASS"
   },
   {
     "type": "committee",
-    "name": "ועדת המשנה לקידום עסקים קטנים ובינוניים",
-    "url": "/committee/%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%9E%D7%A9%D7%A0%D7%94%20%D7%9C%D7%A7%D7%99%D7%93%D7%95%D7%9D%20%D7%A2%D7%A1%D7%A7%D7%99%D7%9D%20%D7%A7%D7%98%D7%A0%D7%99%D7%9D%20%D7%95%D7%91%D7%99%D7%A0%D7%95%D7%A0%D7%99%D7%99%D7%9D",
+    "name": "ועדת המשנה לפיתוח סחר בינלאומי",
+    "url": "/committee/%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%9E%D7%A9%D7%A0%D7%94%20%D7%9C%D7%A4%D7%99%D7%AA%D7%95%D7%97%20%D7%A1%D7%97%D7%A8%20%D7%91%D7%99%D7%A0%D7%9C%D7%90%D7%95%D7%9E%D7%99",
     "status": "PASS"
   },
   {
     "type": "committee",
-    "name": "ועדת האתיקה",
-    "url": "/committee/%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%90%D7%AA%D7%99%D7%A7%D7%94",
+    "name": "הוועדה המיוחדת לפניות הציבור",
+    "url": "/committee/%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%94%D7%9E%D7%99%D7%95%D7%97%D7%93%D7%AA%20%D7%9C%D7%A4%D7%A0%D7%99%D7%95%D7%AA%20%D7%94%D7%A6%D7%99%D7%91%D7%95%D7%A8",
     "status": "PASS"
   },
   {
     "type": "committee",
-    "name": "ועדה משותפת לוועדת החינוך, התרבות והספורט, ועדת הכנסת וועדת הפנים והגנת הסביבה, לפי חוק מוזאון הכנסת, התש\"ע-2010",
-    "url": "/committee/%D7%95%D7%A2%D7%93%D7%94%20%D7%9E%D7%A9%D7%95%D7%AA%D7%A4%D7%AA%20%D7%9C%D7%95%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%97%D7%99%D7%A0%D7%95%D7%9A%2C%20%D7%94%D7%AA%D7%A8%D7%91%D7%95%D7%AA%20%D7%95%D7%94%D7%A1%D7%A4%D7%95%D7%A8%D7%98%2C%20%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%9B%D7%A0%D7%A1%D7%AA%20%D7%95%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%A4%D7%A0%D7%99%D7%9D%20%D7%95%D7%94%D7%92%D7%A0%D7%AA%20%D7%94%D7%A1%D7%91%D7%99%D7%91%D7%94%2C%20%D7%9C%D7%A4%D7%99%20%D7%97%D7%95%D7%A7%20%D7%9E%D7%95%D7%96%D7%90%D7%95%D7%9F%20%D7%94%D7%9B%D7%A0%D7%A1%D7%AA%2C%20%D7%94%D7%AA%D7%A9%22%D7%A2-2010",
+    "name": "ועדת המשנה לצמצום רגולציה",
+    "url": "/committee/%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%9E%D7%A9%D7%A0%D7%94%20%D7%9C%D7%A6%D7%9E%D7%A6%D7%95%D7%9D%20%D7%A8%D7%92%D7%95%D7%9C%D7%A6%D7%99%D7%94",
     "status": "PASS"
   },
   {
-    "type": "faction",
-    "name": "נעם - בראשות אבי מעוז",
-    "url": "/faction/%D7%A0%D7%A2%D7%9D%20-%20%D7%91%D7%A8%D7%90%D7%A9%D7%95%D7%AA%20%D7%90%D7%91%D7%99%20%D7%9E%D7%A2%D7%95%D7%96",
+    "type": "committee",
+    "name": "הוועדה לקידום מעמד האישה ולשוויון מגדרי",
+    "url": "/committee/%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%9C%D7%A7%D7%99%D7%93%D7%95%D7%9D%20%D7%9E%D7%A2%D7%9E%D7%93%20%D7%94%D7%90%D7%99%D7%A9%D7%94%20%D7%95%D7%9C%D7%A9%D7%95%D7%95%D7%99%D7%95%D7%9F%20%D7%9E%D7%92%D7%93%D7%A8%D7%99",
     "status": "PASS"
   },
   {
-    "type": "faction",
-    "name": "יהדות התורה",
-    "url": "/faction/%D7%99%D7%94%D7%93%D7%95%D7%AA%20%D7%94%D7%AA%D7%95%D7%A8%D7%94",
+    "type": "committee",
+    "name": "ועדת המשנה השניים",
+    "url": "/committee/%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%9E%D7%A9%D7%A0%D7%94%20%D7%94%D7%A9%D7%A0%D7%99%D7%99%D7%9D",
     "status": "PASS"
   },
   {
-    "type": "faction",
-    "name": "חד\"ש-תע\"ל",
-    "url": "/faction/%D7%97%D7%93%22%D7%A9-%D7%AA%D7%A2%22%D7%9C",
+    "type": "committee",
+    "name": "הוועדה המשותפת של ועדת החוקה, חוק ומשפט ושל ועדת הכלכלה לדיון בהצעת חוק תובענות ייצוגיות (תיקון מס' 16) התשפ\"ד-2024 (מ/1785) ",
+    "url": "/committee/%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%94%D7%9E%D7%A9%D7%95%D7%AA%D7%A4%D7%AA%20%D7%A9%D7%9C%20%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%97%D7%95%D7%A7%D7%94%2C%20%D7%97%D7%95%D7%A7%20%D7%95%D7%9E%D7%A9%D7%A4%D7%98%20%D7%95%D7%A9%D7%9C%20%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%9B%D7%9C%D7%9B%D7%9C%D7%94%20%D7%9C%D7%93%D7%99%D7%95%D7%9F%20%D7%91%D7%94%D7%A6%D7%A2%D7%AA%20%D7%97%D7%95%D7%A7%20%D7%AA%D7%95%D7%91%D7%A2%D7%A0%D7%95%D7%AA%20%D7%99%D7%99%D7%A6%D7%95%D7%92%D7%99%D7%95%D7%AA%20(%D7%AA%D7%99%D7%A7%D7%95%D7%9F%20%D7%9E%D7%A1'%2016)%20%D7%94%D7%AA%D7%A9%D7%A4%22%D7%93-2024%20(%D7%9E%2F1785)%20",
     "status": "PASS"
   },
   {
-    "type": "faction",
-    "name": "יש עתיד",
-    "url": "/faction/%D7%99%D7%A9%20%D7%A2%D7%AA%D7%99%D7%93",
+    "type": "committee",
+    "name": "הוועדה המשותפת של ועדת החוקה, חוק ומשפט והוועדה לקידום מעמד האישה לדיון בהצעת חוק לביטול ההתיישנות בעבירות מין (תיקוני חקיקה), התשפ\"ג 2023 (פ/2559/25)",
+    "url": "/committee/%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%94%D7%9E%D7%A9%D7%95%D7%AA%D7%A4%D7%AA%20%D7%A9%D7%9C%20%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%97%D7%95%D7%A7%D7%94%2C%20%D7%97%D7%95%D7%A7%20%D7%95%D7%9E%D7%A9%D7%A4%D7%98%20%D7%95%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%9C%D7%A7%D7%99%D7%93%D7%95%D7%9D%20%D7%9E%D7%A2%D7%9E%D7%93%20%D7%94%D7%90%D7%99%D7%A9%D7%94%20%D7%9C%D7%93%D7%99%D7%95%D7%9F%20%D7%91%D7%94%D7%A6%D7%A2%D7%AA%20%D7%97%D7%95%D7%A7%20%D7%9C%D7%91%D7%99%D7%98%D7%95%D7%9C%20%D7%94%D7%94%D7%AA%D7%99%D7%99%D7%A9%D7%A0%D7%95%D7%AA%20%D7%91%D7%A2%D7%91%D7%99%D7%A8%D7%95%D7%AA%20%D7%9E%D7%99%D7%9F%20(%D7%AA%D7%99%D7%A7%D7%95%D7%A0%D7%99%20%D7%97%D7%A7%D7%99%D7%A7%D7%94)%2C%20%D7%94%D7%AA%D7%A9%D7%A4%22%D7%92%202023%20(%D7%A4%2F2559%2F25)",
     "status": "PASS"
   },
   {
-    "type": "faction",
-    "name": "חה\"כ עידן רול",
-    "url": "/faction/%D7%97%D7%94%22%D7%9B%20%D7%A2%D7%99%D7%93%D7%9F%20%D7%A8%D7%95%D7%9C",
-    "status": "PASS"
-  },
-  {
-    "type": "faction",
-    "name": "עוצמה יהודית בראשות איתמר בן גביר",
-    "url": "/faction/%D7%A2%D7%95%D7%A6%D7%9E%D7%94%20%D7%99%D7%94%D7%95%D7%93%D7%99%D7%AA%20%D7%91%D7%A8%D7%90%D7%A9%D7%95%D7%AA%20%D7%90%D7%99%D7%AA%D7%9E%D7%A8%20%D7%91%D7%9F%20%D7%92%D7%91%D7%99%D7%A8",
-    "status": "PASS"
-  },
-  {
-    "type": "faction",
-    "name": "הליכוד ",
-    "url": "/faction/%D7%94%D7%9C%D7%99%D7%9B%D7%95%D7%93%20",
-    "status": "PASS"
-  },
-  {
-    "type": "faction",
-    "name": "העבודה",
-    "url": "/faction/%D7%94%D7%A2%D7%91%D7%95%D7%93%D7%94",
-    "status": "PASS"
-  },
-  {
-    "type": "faction",
-    "name": "המחנה הממלכתי",
-    "url": "/faction/%D7%94%D7%9E%D7%97%D7%A0%D7%94%20%D7%94%D7%9E%D7%9E%D7%9C%D7%9B%D7%AA%D7%99",
-    "status": "PASS"
-  },
-  {
-    "type": "faction",
-    "name": "התאחדות הספרדים שומרי תורה תנועתו של מרן הרב עובדיה יוסף זצ\"ל",
-    "url": "/faction/%D7%94%D7%AA%D7%90%D7%97%D7%93%D7%95%D7%AA%20%D7%94%D7%A1%D7%A4%D7%A8%D7%93%D7%99%D7%9D%20%D7%A9%D7%95%D7%9E%D7%A8%D7%99%20%D7%AA%D7%95%D7%A8%D7%94%20%D7%AA%D7%A0%D7%95%D7%A2%D7%AA%D7%95%20%D7%A9%D7%9C%20%D7%9E%D7%A8%D7%9F%20%D7%94%D7%A8%D7%91%20%D7%A2%D7%95%D7%91%D7%93%D7%99%D7%94%20%D7%99%D7%95%D7%A1%D7%A3%20%D7%96%D7%A6%22%D7%9C",
-    "status": "PASS"
-  },
-  {
-    "type": "faction",
-    "name": "הימין הממלכתי ",
-    "url": "/faction/%D7%94%D7%99%D7%9E%D7%99%D7%9F%20%D7%94%D7%9E%D7%9E%D7%9C%D7%9B%D7%AA%D7%99%20",
+    "type": "committee",
+    "name": "הוועדה המשותפת של ועדת החוץ והביטחון וועדת החוקה, חוק ומשפט לעניין הכרזה על מצב חירום, לפי סעיף 68 לתקנון הכנסת",
+    "url": "/committee/%D7%94%D7%95%D7%95%D7%A2%D7%93%D7%94%20%D7%94%D7%9E%D7%A9%D7%95%D7%AA%D7%A4%D7%AA%20%D7%A9%D7%9C%20%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%97%D7%95%D7%A5%20%D7%95%D7%94%D7%91%D7%99%D7%98%D7%97%D7%95%D7%9F%20%D7%95%D7%95%D7%A2%D7%93%D7%AA%20%D7%94%D7%97%D7%95%D7%A7%D7%94%2C%20%D7%97%D7%95%D7%A7%20%D7%95%D7%9E%D7%A9%D7%A4%D7%98%20%D7%9C%D7%A2%D7%A0%D7%99%D7%99%D7%9F%20%D7%94%D7%9B%D7%A8%D7%96%D7%94%20%D7%A2%D7%9C%20%D7%9E%D7%A6%D7%91%20%D7%97%D7%99%D7%A8%D7%95%D7%9D%2C%20%D7%9C%D7%A4%D7%99%20%D7%A1%D7%A2%D7%99%D7%A3%2068%20%D7%9C%D7%AA%D7%A7%D7%A0%D7%95%D7%9F%20%D7%94%D7%9B%D7%A0%D7%A1%D7%AA",
     "status": "PASS"
   },
   {
@@ -933,8 +867,74 @@
   },
   {
     "type": "faction",
+    "name": "התאחדות הספרדים שומרי תורה תנועתו של מרן הרב עובדיה יוסף זצ\"ל",
+    "url": "/faction/%D7%94%D7%AA%D7%90%D7%97%D7%93%D7%95%D7%AA%20%D7%94%D7%A1%D7%A4%D7%A8%D7%93%D7%99%D7%9D%20%D7%A9%D7%95%D7%9E%D7%A8%D7%99%20%D7%AA%D7%95%D7%A8%D7%94%20%D7%AA%D7%A0%D7%95%D7%A2%D7%AA%D7%95%20%D7%A9%D7%9C%20%D7%9E%D7%A8%D7%9F%20%D7%94%D7%A8%D7%91%20%D7%A2%D7%95%D7%91%D7%93%D7%99%D7%94%20%D7%99%D7%95%D7%A1%D7%A3%20%D7%96%D7%A6%22%D7%9C",
+    "status": "PASS"
+  },
+  {
+    "type": "faction",
+    "name": "הציונות הדתית בראשות בצלאל סמוטריץ'",
+    "url": "/faction/%D7%94%D7%A6%D7%99%D7%95%D7%A0%D7%95%D7%AA%20%D7%94%D7%93%D7%AA%D7%99%D7%AA%20%D7%91%D7%A8%D7%90%D7%A9%D7%95%D7%AA%20%D7%91%D7%A6%D7%9C%D7%90%D7%9C%20%D7%A1%D7%9E%D7%95%D7%98%D7%A8%D7%99%D7%A5'",
+    "status": "PASS"
+  },
+  {
+    "type": "faction",
+    "name": "המחנה הממלכתי",
+    "url": "/faction/%D7%94%D7%9E%D7%97%D7%A0%D7%94%20%D7%94%D7%9E%D7%9E%D7%9C%D7%9B%D7%AA%D7%99",
+    "status": "PASS"
+  },
+  {
+    "type": "faction",
+    "name": "יהדות התורה",
+    "url": "/faction/%D7%99%D7%94%D7%93%D7%95%D7%AA%20%D7%94%D7%AA%D7%95%D7%A8%D7%94",
+    "status": "PASS"
+  },
+  {
+    "type": "faction",
+    "name": "נעם - בראשות אבי מעוז",
+    "url": "/faction/%D7%A0%D7%A2%D7%9D%20-%20%D7%91%D7%A8%D7%90%D7%A9%D7%95%D7%AA%20%D7%90%D7%91%D7%99%20%D7%9E%D7%A2%D7%95%D7%96",
+    "status": "PASS"
+  },
+  {
+    "type": "faction",
+    "name": "העבודה",
+    "url": "/faction/%D7%94%D7%A2%D7%91%D7%95%D7%93%D7%94",
+    "status": "PASS"
+  },
+  {
+    "type": "faction",
+    "name": "הליכוד ",
+    "url": "/faction/%D7%94%D7%9C%D7%99%D7%9B%D7%95%D7%93%20",
+    "status": "PASS"
+  },
+  {
+    "type": "faction",
     "name": "ישראל ביתנו",
     "url": "/faction/%D7%99%D7%A9%D7%A8%D7%90%D7%9C%20%D7%91%D7%99%D7%AA%D7%A0%D7%95",
+    "status": "PASS"
+  },
+  {
+    "type": "faction",
+    "name": "חד\"ש-תע\"ל",
+    "url": "/faction/%D7%97%D7%93%22%D7%A9-%D7%AA%D7%A2%22%D7%9C",
+    "status": "PASS"
+  },
+  {
+    "type": "faction",
+    "name": "עוצמה יהודית בראשות איתמר בן גביר",
+    "url": "/faction/%D7%A2%D7%95%D7%A6%D7%9E%D7%94%20%D7%99%D7%94%D7%95%D7%93%D7%99%D7%AA%20%D7%91%D7%A8%D7%90%D7%A9%D7%95%D7%AA%20%D7%90%D7%99%D7%AA%D7%9E%D7%A8%20%D7%91%D7%9F%20%D7%92%D7%91%D7%99%D7%A8",
+    "status": "PASS"
+  },
+  {
+    "type": "faction",
+    "name": "הימין הממלכתי ",
+    "url": "/faction/%D7%94%D7%99%D7%9E%D7%99%D7%9F%20%D7%94%D7%9E%D7%9E%D7%9C%D7%9B%D7%AA%D7%99%20",
+    "status": "PASS"
+  },
+  {
+    "type": "faction",
+    "name": "חה\"כ עידן רול",
+    "url": "/faction/%D7%97%D7%94%22%D7%9B%20%D7%A2%D7%99%D7%93%D7%9F%20%D7%A8%D7%95%D7%9C",
     "status": "PASS"
   },
   {
@@ -945,32 +945,20 @@
   },
   {
     "type": "faction",
-    "name": "הציונות הדתית בראשות בצלאל סמוטריץ'",
-    "url": "/faction/%D7%94%D7%A6%D7%99%D7%95%D7%A0%D7%95%D7%AA%20%D7%94%D7%93%D7%AA%D7%99%D7%AA%20%D7%91%D7%A8%D7%90%D7%A9%D7%95%D7%AA%20%D7%91%D7%A6%D7%9C%D7%90%D7%9C%20%D7%A1%D7%9E%D7%95%D7%98%D7%A8%D7%99%D7%A5'",
+    "name": "יש עתיד",
+    "url": "/faction/%D7%99%D7%A9%20%D7%A2%D7%AA%D7%99%D7%93",
     "status": "PASS"
   },
   {
     "type": "ministry",
-    "name": "משרד הכלכלה והתעשייה",
-    "url": "/ministry/%D7%9E%D7%A9%D7%A8%D7%93%20%D7%94%D7%9B%D7%9C%D7%9B%D7%9C%D7%94%20%D7%95%D7%94%D7%AA%D7%A2%D7%A9%D7%99%D7%99%D7%94",
+    "name": "משרד התרבות והספורט",
+    "url": "/ministry/%D7%9E%D7%A9%D7%A8%D7%93%20%D7%94%D7%AA%D7%A8%D7%91%D7%95%D7%AA%20%D7%95%D7%94%D7%A1%D7%A4%D7%95%D7%A8%D7%98",
     "status": "PASS"
   },
   {
     "type": "ministry",
-    "name": "משרד הרווחה והביטחון החברתי",
-    "url": "/ministry/%D7%9E%D7%A9%D7%A8%D7%93%20%D7%94%D7%A8%D7%95%D7%95%D7%97%D7%94%20%D7%95%D7%94%D7%91%D7%99%D7%98%D7%97%D7%95%D7%9F%20%D7%94%D7%97%D7%91%D7%A8%D7%AA%D7%99",
-    "status": "PASS"
-  },
-  {
-    "type": "ministry",
-    "name": "משרד ההתיישבות והמשימות הלאומיות",
-    "url": "/ministry/%D7%9E%D7%A9%D7%A8%D7%93%20%D7%94%D7%94%D7%AA%D7%99%D7%99%D7%A9%D7%91%D7%95%D7%AA%20%D7%95%D7%94%D7%9E%D7%A9%D7%99%D7%9E%D7%95%D7%AA%20%D7%94%D7%9C%D7%90%D7%95%D7%9E%D7%99%D7%95%D7%AA",
-    "status": "PASS"
-  },
-  {
-    "type": "ministry",
-    "name": "משרד התקשורת",
-    "url": "/ministry/%D7%9E%D7%A9%D7%A8%D7%93%20%D7%94%D7%AA%D7%A7%D7%A9%D7%95%D7%A8%D7%AA",
+    "name": "המשרד לנושאים אסטרטגיים והסברה",
+    "url": "/ministry/%D7%94%D7%9E%D7%A9%D7%A8%D7%93%20%D7%9C%D7%A0%D7%95%D7%A9%D7%90%D7%99%D7%9D%20%D7%90%D7%A1%D7%98%D7%A8%D7%98%D7%92%D7%99%D7%99%D7%9D%20%D7%95%D7%94%D7%A1%D7%91%D7%A8%D7%94",
     "status": "PASS"
   },
   {
@@ -981,20 +969,74 @@
   },
   {
     "type": "ministry",
-    "name": "משרד החדשנות, המדע והטכנולוגיה",
-    "url": "/ministry/%D7%9E%D7%A9%D7%A8%D7%93%20%D7%94%D7%97%D7%93%D7%A9%D7%A0%D7%95%D7%AA%2C%20%D7%94%D7%9E%D7%93%D7%A2%20%D7%95%D7%94%D7%98%D7%9B%D7%A0%D7%95%D7%9C%D7%95%D7%92%D7%99%D7%94",
+    "name": "משרד המודיעין",
+    "url": "/ministry/%D7%9E%D7%A9%D7%A8%D7%93%20%D7%94%D7%9E%D7%95%D7%93%D7%99%D7%A2%D7%99%D7%9F",
     "status": "PASS"
   },
   {
     "type": "ministry",
-    "name": "משרד החקלאות ופיתוח הכפר",
-    "url": "/ministry/%D7%9E%D7%A9%D7%A8%D7%93%20%D7%94%D7%97%D7%A7%D7%9C%D7%90%D7%95%D7%AA%20%D7%95%D7%A4%D7%99%D7%AA%D7%95%D7%97%20%D7%94%D7%9B%D7%A4%D7%A8",
+    "name": "משרד ההתיישבות והמשימות הלאומיות",
+    "url": "/ministry/%D7%9E%D7%A9%D7%A8%D7%93%20%D7%94%D7%94%D7%AA%D7%99%D7%99%D7%A9%D7%91%D7%95%D7%AA%20%D7%95%D7%94%D7%9E%D7%A9%D7%99%D7%9E%D7%95%D7%AA%20%D7%94%D7%9C%D7%90%D7%95%D7%9E%D7%99%D7%95%D7%AA",
+    "status": "PASS"
+  },
+  {
+    "type": "ministry",
+    "name": "משרד הכלכלה והתעשייה",
+    "url": "/ministry/%D7%9E%D7%A9%D7%A8%D7%93%20%D7%94%D7%9B%D7%9C%D7%9B%D7%9C%D7%94%20%D7%95%D7%94%D7%AA%D7%A2%D7%A9%D7%99%D7%99%D7%94",
+    "status": "PASS"
+  },
+  {
+    "type": "ministry",
+    "name": "המשרד לביטחון הפנים",
+    "url": "/ministry/%D7%94%D7%9E%D7%A9%D7%A8%D7%93%20%D7%9C%D7%91%D7%99%D7%98%D7%97%D7%95%D7%9F%20%D7%94%D7%A4%D7%A0%D7%99%D7%9D",
+    "status": "PASS"
+  },
+  {
+    "type": "ministry",
+    "name": "המשרד לשוויון חברתי",
+    "url": "/ministry/%D7%94%D7%9E%D7%A9%D7%A8%D7%93%20%D7%9C%D7%A9%D7%95%D7%95%D7%99%D7%95%D7%9F%20%D7%97%D7%91%D7%A8%D7%AA%D7%99",
+    "status": "PASS"
+  },
+  {
+    "type": "ministry",
+    "name": "משרד הרווחה והביטחון החברתי",
+    "url": "/ministry/%D7%9E%D7%A9%D7%A8%D7%93%20%D7%94%D7%A8%D7%95%D7%95%D7%97%D7%94%20%D7%95%D7%94%D7%91%D7%99%D7%98%D7%97%D7%95%D7%9F%20%D7%94%D7%97%D7%91%D7%A8%D7%AA%D7%99",
+    "status": "PASS"
+  },
+  {
+    "type": "ministry",
+    "name": "משרד העבודה",
+    "url": "/ministry/%D7%9E%D7%A9%D7%A8%D7%93%20%D7%94%D7%A2%D7%91%D7%95%D7%93%D7%94",
     "status": "PASS"
   },
   {
     "type": "ministry",
     "name": "משרד הנגב, הגליל והחוסן הלאומי",
     "url": "/ministry/%D7%9E%D7%A9%D7%A8%D7%93%20%D7%94%D7%A0%D7%92%D7%91%2C%20%D7%94%D7%92%D7%9C%D7%99%D7%9C%20%D7%95%D7%94%D7%97%D7%95%D7%A1%D7%9F%20%D7%94%D7%9C%D7%90%D7%95%D7%9E%D7%99",
+    "status": "PASS"
+  },
+  {
+    "type": "ministry",
+    "name": "המשרד לעניינים אסטרטגיים",
+    "url": "/ministry/%D7%94%D7%9E%D7%A9%D7%A8%D7%93%20%D7%9C%D7%A2%D7%A0%D7%99%D7%99%D7%A0%D7%99%D7%9D%20%D7%90%D7%A1%D7%98%D7%A8%D7%98%D7%92%D7%99%D7%99%D7%9D",
+    "status": "PASS"
+  },
+  {
+    "type": "ministry",
+    "name": "משרד החינוך",
+    "url": "/ministry/%D7%9E%D7%A9%D7%A8%D7%93%20%D7%94%D7%97%D7%99%D7%A0%D7%95%D7%9A",
+    "status": "PASS"
+  },
+  {
+    "type": "ministry",
+    "name": "המשרד להגנת הסביבה",
+    "url": "/ministry/%D7%94%D7%9E%D7%A9%D7%A8%D7%93%20%D7%9C%D7%94%D7%92%D7%A0%D7%AA%20%D7%94%D7%A1%D7%91%D7%99%D7%91%D7%94",
+    "status": "PASS"
+  },
+  {
+    "type": "ministry",
+    "name": "המשרד לקידום מעמד האישה",
+    "url": "/ministry/%D7%94%D7%9E%D7%A9%D7%A8%D7%93%20%D7%9C%D7%A7%D7%99%D7%93%D7%95%D7%9D%20%D7%9E%D7%A2%D7%9E%D7%93%20%D7%94%D7%90%D7%99%D7%A9%D7%94",
     "status": "PASS"
   },
   {
@@ -1011,92 +1053,26 @@
   },
   {
     "type": "ministry",
-    "name": "משרד הבינוי והשיכון",
-    "url": "/ministry/%D7%9E%D7%A9%D7%A8%D7%93%20%D7%94%D7%91%D7%99%D7%A0%D7%95%D7%99%20%D7%95%D7%94%D7%A9%D7%99%D7%9B%D7%95%D7%9F",
+    "name": "משרד המשפטים",
+    "url": "/ministry/%D7%9E%D7%A9%D7%A8%D7%93%20%D7%94%D7%9E%D7%A9%D7%A4%D7%98%D7%99%D7%9D",
     "status": "PASS"
   },
   {
     "type": "ministry",
-    "name": "המשרד לחיזוק ולקידום קהילתי",
-    "url": "/ministry/%D7%94%D7%9E%D7%A9%D7%A8%D7%93%20%D7%9C%D7%97%D7%99%D7%96%D7%95%D7%A7%20%D7%95%D7%9C%D7%A7%D7%99%D7%93%D7%95%D7%9D%20%D7%A7%D7%94%D7%99%D7%9C%D7%AA%D7%99",
+    "name": "המשרד לביטחון לאומי",
+    "url": "/ministry/%D7%94%D7%9E%D7%A9%D7%A8%D7%93%20%D7%9C%D7%91%D7%99%D7%98%D7%97%D7%95%D7%9F%20%D7%9C%D7%90%D7%95%D7%9E%D7%99",
     "status": "PASS"
   },
   {
     "type": "ministry",
-    "name": "משרד התחבורה והבטיחות בדרכים",
-    "url": "/ministry/%D7%9E%D7%A9%D7%A8%D7%93%20%D7%94%D7%AA%D7%97%D7%91%D7%95%D7%A8%D7%94%20%D7%95%D7%94%D7%91%D7%98%D7%99%D7%97%D7%95%D7%AA%20%D7%91%D7%93%D7%A8%D7%9B%D7%99%D7%9D",
-    "status": "PASS"
-  },
-  {
-    "type": "ministry",
-    "name": "משרד ההסברה",
-    "url": "/ministry/%D7%9E%D7%A9%D7%A8%D7%93%20%D7%94%D7%94%D7%A1%D7%91%D7%A8%D7%94",
-    "status": "PASS"
-  },
-  {
-    "type": "ministry",
-    "name": "המשרד לשוויון חברתי",
-    "url": "/ministry/%D7%94%D7%9E%D7%A9%D7%A8%D7%93%20%D7%9C%D7%A9%D7%95%D7%95%D7%99%D7%95%D7%9F%20%D7%97%D7%91%D7%A8%D7%AA%D7%99",
-    "status": "PASS"
-  },
-  {
-    "type": "ministry",
-    "name": "המשרד לשירותי דת",
-    "url": "/ministry/%D7%94%D7%9E%D7%A9%D7%A8%D7%93%20%D7%9C%D7%A9%D7%99%D7%A8%D7%95%D7%AA%D7%99%20%D7%93%D7%AA",
-    "status": "PASS"
-  },
-  {
-    "type": "ministry",
-    "name": "משרד הביטחון",
-    "url": "/ministry/%D7%9E%D7%A9%D7%A8%D7%93%20%D7%94%D7%91%D7%99%D7%98%D7%97%D7%95%D7%9F",
-    "status": "PASS"
-  },
-  {
-    "type": "ministry",
-    "name": "משרד החוץ",
-    "url": "/ministry/%D7%9E%D7%A9%D7%A8%D7%93%20%D7%94%D7%97%D7%95%D7%A5",
-    "status": "PASS"
-  },
-  {
-    "type": "ministry",
-    "name": "משרד העבודה",
-    "url": "/ministry/%D7%9E%D7%A9%D7%A8%D7%93%20%D7%94%D7%A2%D7%91%D7%95%D7%93%D7%94",
-    "status": "PASS"
-  },
-  {
-    "type": "ministry",
-    "name": "משרד התפוצות",
-    "url": "/ministry/%D7%9E%D7%A9%D7%A8%D7%93%20%D7%94%D7%AA%D7%A4%D7%95%D7%A6%D7%95%D7%AA",
+    "name": "משרד הפנים",
+    "url": "/ministry/%D7%9E%D7%A9%D7%A8%D7%93%20%D7%94%D7%A4%D7%A0%D7%99%D7%9D",
     "status": "PASS"
   },
   {
     "type": "agenda",
-    "name": "משפט ופשיעה",
-    "url": "/agenda/%D7%9E%D7%A9%D7%A4%D7%98%20%D7%95%D7%A4%D7%A9%D7%99%D7%A2%D7%94",
-    "status": "PASS"
-  },
-  {
-    "type": "agenda",
-    "name": "דת ומדינה",
-    "url": "/agenda/%D7%93%D7%AA%20%D7%95%D7%9E%D7%93%D7%99%D7%A0%D7%94",
-    "status": "PASS"
-  },
-  {
-    "type": "agenda",
-    "name": "סביבה ותשתיות",
-    "url": "/agenda/%D7%A1%D7%91%D7%99%D7%91%D7%94%20%D7%95%D7%AA%D7%A9%D7%AA%D7%99%D7%95%D7%AA",
-    "status": "PASS"
-  },
-  {
-    "type": "agenda",
-    "name": "ביטחון וצבא",
-    "url": "/agenda/%D7%91%D7%99%D7%98%D7%97%D7%95%D7%9F%20%D7%95%D7%A6%D7%91%D7%90",
-    "status": "PASS"
-  },
-  {
-    "type": "agenda",
-    "name": "מנהל ומשפט",
-    "url": "/agenda/%D7%9E%D7%A0%D7%94%D7%9C%20%D7%95%D7%9E%D7%A9%D7%A4%D7%98",
+    "name": "כלכלה ויוקר המחיה",
+    "url": "/agenda/%D7%9B%D7%9C%D7%9B%D7%9C%D7%94%20%D7%95%D7%99%D7%95%D7%A7%D7%A8%20%D7%94%D7%9E%D7%97%D7%99%D7%94",
     "status": "PASS"
   },
   {
@@ -1107,8 +1083,32 @@
   },
   {
     "type": "agenda",
+    "name": "מנהל ומשפט",
+    "url": "/agenda/%D7%9E%D7%A0%D7%94%D7%9C%20%D7%95%D7%9E%D7%A9%D7%A4%D7%98",
+    "status": "PASS"
+  },
+  {
+    "type": "agenda",
     "name": "חינוך ותרבות",
     "url": "/agenda/%D7%97%D7%99%D7%A0%D7%95%D7%9A%20%D7%95%D7%AA%D7%A8%D7%91%D7%95%D7%AA",
+    "status": "PASS"
+  },
+  {
+    "type": "agenda",
+    "name": "סביבה ותשתיות",
+    "url": "/agenda/%D7%A1%D7%91%D7%99%D7%91%D7%94%20%D7%95%D7%AA%D7%A9%D7%AA%D7%99%D7%95%D7%AA",
+    "status": "PASS"
+  },
+  {
+    "type": "agenda",
+    "name": "דת ומדינה",
+    "url": "/agenda/%D7%93%D7%AA%20%D7%95%D7%9E%D7%93%D7%99%D7%A0%D7%94",
+    "status": "PASS"
+  },
+  {
+    "type": "agenda",
+    "name": "משפט ופשיעה",
+    "url": "/agenda/%D7%9E%D7%A9%D7%A4%D7%98%20%D7%95%D7%A4%D7%A9%D7%99%D7%A2%D7%94",
     "status": "PASS"
   },
   {
@@ -1119,8 +1119,8 @@
   },
   {
     "type": "agenda",
-    "name": "כלכלה ויוקר המחיה",
-    "url": "/agenda/%D7%9B%D7%9C%D7%9B%D7%9C%D7%94%20%D7%95%D7%99%D7%95%D7%A7%D7%A8%20%D7%94%D7%9E%D7%97%D7%99%D7%94",
+    "name": "ביטחון וצבא",
+    "url": "/agenda/%D7%91%D7%99%D7%98%D7%97%D7%95%D7%9F%20%D7%95%D7%A6%D7%91%D7%90",
     "status": "PASS"
   },
   {
