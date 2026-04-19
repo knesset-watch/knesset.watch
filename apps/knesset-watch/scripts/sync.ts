@@ -545,7 +545,7 @@ async function sync() {
 
   const positions = await fetchAll(
     `${API}/KNS_PersonToPosition` +
-    `?$filter=${encodeURIComponent(`KnessetNum eq 25 and LastUpdatedDate ge ${sinceStr}`)}` +
+    `?$filter=${encodeURIComponent(`KnessetNum eq 25`)}` +
     `&$select=Id,PersonID,DutyDesc,CommitteeID,CommitteeName,GovMinistryID,GovMinistryName,StartDate,FinishDate,IsCurrent`,
   );
   insertPositionsBatch(positions);
