@@ -10,7 +10,7 @@ import { usePeriod, periodToDateRange } from '@/lib/period-context';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
-type TabView = 'overview' | 'votes' | 'bills' | 'queries' | 'positions' | 'agenda';
+type TabView = 'overview' | 'votes' | 'bills' | 'queries' | 'positions' | 'timeline' | 'agenda';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -84,6 +84,7 @@ interface ProfileData {
   billTopics: BillTopic[];
   queries: QuerySummary[];
   positions: PositionSummary[];
+  timeline: PersonTimelineEvent[];
   agendaStats: AgendaStat[];
   committeeActivity: CommitteeActivityItem[];
   withMajorityVotes: MkVoteRow[];
@@ -104,6 +105,23 @@ interface CommitteeActivityItem {
   committeeName: string;
   sessionCount: number;
   recentSessions: Array<{ id: number; date: string; title: string | null }>;
+}
+
+interface PersonTimelineEvent {
+  type: 'mk' | 'minister' | 'faction-change' | 'coalition-status';
+  from: string;
+  to: string | null;
+  details: {
+    mkEventType?: string;
+    knessetNum?: number;
+    factionName?: string;
+    coalitionStatus?: 'coalition' | 'opposition' | null;
+    officeSlug?: string;
+    officeName?: string;
+    roleType?: 'pm' | 'deputy-pm' | 'minister' | 'deputy' | 'acting';
+    governmentNum?: number;
+    isCurrent?: boolean;
+  };
 }
 
 interface MkVote {
@@ -129,6 +147,7 @@ const TABS: Array<[TabView, string]> = [
   ['bills', 'חוקים'],
   ['queries', 'שאילתות'],
   ['positions', 'תפקידים'],
+  ['timeline', 'ציר זמן'],
   ['agenda', 'אג\'נדה'],
 ];
 
@@ -1347,6 +1366,87 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                         );
                       })}
                     </div>
+                  </div>
+                )}
+              </>
+            )}
+          </>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════════ */}
+        {/* Timeline Tab                                                       */}
+        {/* ══════════════════════════════════════════════════════════════════ */}
+        {tab === 'timeline' && (
+          <>
+            {profileLoading ? (
+              <div className="py-32 text-center text-xl font-black animate-pulse opacity-20">טוען...</div>
+            ) : (
+              <>
+                {profile?.timeline.length === 0 ? (
+                  <div className="py-16 text-center text-gray-400 font-black">אין נתונים</div>
+                ) : (
+                  <div className="space-y-3">
+                    {profile?.timeline.map((event, idx) => {
+                      const dateFrom = formatDate(event.from);
+                      const dateTo = event.to ? formatDate(event.to) : null;
+                      const dateRange = dateTo ? `${dateFrom}–${dateTo}` : `מ-${dateFrom}`;
+
+                      if (event.type === 'minister') {
+                        const { officeSlug, officeName, roleType, isCurrent } = event.details;
+                        return (
+                          <div key={idx} className="px-4 py-3 rounded-xl border border-black/8 bg-white hover:bg-blue-50 transition-colors">
+                            <div className="flex items-start gap-3 justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-xs font-black px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                                    {roleType === 'pm' ? 'ראש ממשלה' : roleType === 'deputy-pm' ? 'סגן ראש ממשלה' : roleType === 'deputy' ? 'סגן שר' : roleType === 'acting' ? 'שר בשירות חוקי' : 'שר'}
+                                  </span>
+                                  {isCurrent && <span className="text-xs font-black px-2 py-0.5 rounded-full bg-green-100 text-green-700">נוכחי</span>}
+                                </div>
+                                {officeSlug ? (
+                                  <Link href={`${BASE_PATH}/office/${officeSlug}`} className="text-sm font-bold text-blue-700 hover:underline">
+                                    {officeName || officeSlug}
+                                  </Link>
+                                ) : (
+                                  <p className="text-sm font-bold">{officeName}</p>
+                                )}
+                                <p className="text-xs text-gray-500 mt-1">{dateRange}</p>
+                              </div>
+                              {event.details.governmentNum && (
+                                <span className="text-xs text-gray-500 font-medium">ממשלה {event.details.governmentNum}</span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      if (event.type === 'mk') {
+                        return (
+                          <div key={idx} className="px-4 py-3 rounded-xl bg-gray-50">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-xs font-black px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">חבר כנסת</span>
+                            </div>
+                            <p className="text-sm font-bold">חברות בכנסת</p>
+                            <p className="text-xs text-gray-500 mt-1">{dateRange}</p>
+                          </div>
+                        );
+                      }
+
+                      if (event.type === 'faction-change') {
+                        const { factionName } = event.details;
+                        return (
+                          <div key={idx} className="px-4 py-3 rounded-xl bg-purple-50">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-xs font-black px-2 py-0.5 rounded-full bg-purple-200 text-purple-700">שינוי סיעה</span>
+                            </div>
+                            <p className="text-sm font-bold">{factionName}</p>
+                            <p className="text-xs text-gray-500 mt-1">{dateRange}</p>
+                          </div>
+                        );
+                      }
+
+                      return null;
+                    })}
                   </div>
                 )}
               </>

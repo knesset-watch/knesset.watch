@@ -38,6 +38,21 @@ async function fetchAll(url: string): Promise<any[]> {
   return results;
 }
 
+// Classify role type from API fields
+function classifyRoleType(r: any): string {
+  const d = r.DutyDesc ?? '';
+  if (d.startsWith('ראש הממשלה')) return 'pm';
+  if (d.startsWith('סגן ראש הממשלה') || d.startsWith('המשנה לראש הממשלה')) return 'deputy-pm';
+  if (d === 'שר' || d === 'שרה') return 'minister';
+  if (d.match(/^(שר |שרת |השר |השרה )/)) return 'minister';
+  if (d.match(/^שר(ה|ת)? ללא תיק/)) return 'minister';
+  if (d.startsWith('שר בשירות חוקי') || d.startsWith('ממלא מקום שר') || d.startsWith('ממלא מקום השר')) return 'acting';
+  if (d.match(/^סגנ(ית)? שר/)) return 'deputy';
+  if (r.CommitteeID) return 'committee';
+  if (!d && !r.CommitteeID && !r.GovMinistryID) return 'mk';
+  return 'other';
+}
+
 // Normalise Hebrew name for matching (strips punctuation, collapses spaces)
 function normName(s: string): string {
   return s.replace(/[״׳"'\-]/g, '').replace(/\s+/g, ' ').trim();
@@ -525,11 +540,65 @@ async function sync() {
   );
   insertQueriesBatch(queries);
 
+  // ── Government Ministries ────────────────────────────────────────────────
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS gov_ministry (
+      id           INTEGER PRIMARY KEY,
+      name         TEXT NOT NULL,
+      is_active    INTEGER NOT NULL DEFAULT 0,
+      last_updated TEXT
+    )
+  `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS canonical_office (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      slug         TEXT NOT NULL UNIQUE,
+      display_name TEXT NOT NULL,
+      short_name   TEXT,
+      is_active    INTEGER NOT NULL DEFAULT 1,
+      notes        TEXT
+    )
+  `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS canonical_office_ministry (
+      canonical_office_id INTEGER NOT NULL REFERENCES canonical_office(id),
+      gov_ministry_id     INTEGER NOT NULL REFERENCES gov_ministry(id),
+      PRIMARY KEY (canonical_office_id, gov_ministry_id)
+    )
+  `);
+
+  const syncGovMinistries = async () => {
+    const insertMinistry = db.prepare(
+      `INSERT OR REPLACE INTO gov_ministry (id, name, is_active, last_updated)
+       VALUES (?, ?, ?, ?)`
+    );
+
+    const ministries = await fetchAll(
+      `${API}/KNS_GovMinistry?$select=Id,Name,IsActive,LastUpdatedDate`
+    );
+
+    db.transaction(() => {
+      for (const m of ministries) {
+        insertMinistry.run(m.Id ?? null, m.Name ?? '', m.IsActive ? 1 : 0, m.LastUpdatedDate ?? null);
+      }
+    })();
+
+    console.log(`  synced ${ministries.length} government ministries`);
+  };
+
+  await syncGovMinistries();
+
   // ── Positions ─────────────────────────────────────────────────────────────
+  // Ensure mk_position has government_num column
+  const posCols = (db.prepare(`PRAGMA table_info(mk_position)`).all() as { name: string }[]).map(r => r.name);
+  if (!posCols.includes('government_num')) db.exec(`ALTER TABLE mk_position ADD COLUMN government_num INTEGER`);
+
   const insertPosition = db.prepare(
     `INSERT OR REPLACE INTO mk_position
-       (id, mk_id, duty_desc, committee_id, committee, ministry_id, ministry, start_date, finish_date, is_current)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (id, mk_id, duty_desc, committee_id, committee, ministry_id, ministry, start_date, finish_date, is_current, role_type, government_num)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   );
   const insertPositionsBatch = db.transaction((rows: any[]) => {
     for (const r of rows) {
@@ -539,6 +608,8 @@ async function sync() {
         r.GovMinistryID ?? null, r.GovMinistryName ?? null,
         r.StartDate ?? '', r.FinishDate ?? null,
         r.IsCurrent ? 1 : 0,
+        classifyRoleType(r),
+        r.GovernmentNum ?? null,
       );
     }
   });
@@ -546,7 +617,7 @@ async function sync() {
   const positions = await fetchAll(
     `${API}/KNS_PersonToPosition` +
     `?$filter=${encodeURIComponent(`KnessetNum eq 25`)}` +
-    `&$select=Id,PersonID,DutyDesc,CommitteeID,CommitteeName,GovMinistryID,GovMinistryName,StartDate,FinishDate,IsCurrent`,
+    `&$select=Id,PersonID,DutyDesc,CommitteeID,CommitteeName,GovMinistryID,GovMinistryName,StartDate,FinishDate,IsCurrent,GovernmentNum`,
   );
   insertPositionsBatch(positions);
 

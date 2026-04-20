@@ -953,6 +953,210 @@ export function getCommitteeSessionDetail(sessionId: number): CommitteeSessionDe
 
 // ── Ministers ────────────────────────────────────────────────────────────────
 
+// ── Canonical Offices ────────────────────────────────────────────────────────
+
+export interface OfficeTimelineEntry {
+  positionId: number;
+  personId: number;
+  personName: string;
+  personSlug: string | null;
+  factionName: string | null;
+  roleType: 'minister' | 'deputy' | 'acting' | 'pm' | 'deputy-pm' | 'other';
+  dutyDesc: string | null;
+  governmentNum: number | null;
+  startDate: string;
+  finishDate: string | null;
+  isCurrent: boolean;
+  durationDays: number | null;
+}
+
+export interface OfficeDetail {
+  id: number;
+  slug: string;
+  displayName: string;
+  shortName: string | null;
+  isActive: boolean;
+  notes: string | null;
+  withoutPortfolio: boolean;
+  timeline: OfficeTimelineEntry[];
+  distinctHolderCount: number;
+  currentHolders: OfficeTimelineEntry[];
+}
+
+export interface OfficeListItem {
+  slug: string;
+  displayName: string;
+  shortName: string | null;
+  isActive: boolean;
+  currentHolder: string | null;
+}
+
+export function getOfficeDetail(slug: string): OfficeDetail | null {
+  const db = getDb();
+  if (!db) return null;
+
+  const office = db.prepare(`
+    SELECT id, slug, display_name, short_name, is_active, notes, without_portfolio
+    FROM canonical_office
+    WHERE slug = ?
+  `).get(slug) as { id: number; slug: string; display_name: string; short_name: string | null; is_active: number; notes: string | null; without_portfolio: number } | undefined;
+
+  if (!office) return null;
+
+  let timeline: OfficeTimelineEntry[] = [];
+
+  if (office.without_portfolio === 1) {
+    // Special case: minister-without-portfolio — no ministry_id linkage
+    timeline = (db.prepare(`
+      SELECT
+        pos.id as positionId,
+        mp.person_id as personId,
+        mp.first_name || ' ' || mp.last_name as personName,
+        mp.slug as personSlug,
+        mp.faction_name as factionName,
+        pos.role_type as roleType,
+        pos.duty_desc as dutyDesc,
+        pos.government_num as governmentNum,
+        pos.start_date as startDate,
+        pos.finish_date as finishDate,
+        pos.is_current as isCurrent,
+        CASE WHEN pos.finish_date IS NULL
+          THEN NULL
+          ELSE CAST((julianday(pos.finish_date) - julianday(pos.start_date)) AS INTEGER)
+        END as durationDays
+      FROM mk_position pos
+      JOIN mk_person mp ON mp.person_id = pos.mk_id
+      WHERE pos.role_type = 'minister'
+        AND (pos.duty_desc LIKE 'שר ללא תיק%' OR pos.duty_desc LIKE 'שרת ללא תיק%' OR pos.duty_desc LIKE 'שרה בלי תיק%')
+      ORDER BY pos.start_date ASC
+    `).all() as Array<{
+      positionId: number;
+      personId: number;
+      personName: string;
+      personSlug: string | null;
+      factionName: string | null;
+      roleType: string;
+      dutyDesc: string | null;
+      governmentNum: number | null;
+      startDate: string;
+      finishDate: string | null;
+      isCurrent: number;
+      durationDays: number | null;
+    }>).map(r => ({
+      ...r,
+      roleType: r.roleType as 'minister' | 'deputy' | 'acting' | 'pm' | 'deputy-pm' | 'other',
+      isCurrent: r.isCurrent === 1,
+    }));
+  } else {
+    // Standard case: office linked via canonical_office_ministry bridge
+    timeline = (db.prepare(`
+      SELECT
+        pos.id as positionId,
+        mp.person_id as personId,
+        mp.first_name || ' ' || mp.last_name as personName,
+        mp.slug as personSlug,
+        mp.faction_name as factionName,
+        pos.role_type as roleType,
+        pos.duty_desc as dutyDesc,
+        pos.government_num as governmentNum,
+        pos.start_date as startDate,
+        pos.finish_date as finishDate,
+        pos.is_current as isCurrent,
+        CASE WHEN pos.finish_date IS NULL
+          THEN NULL
+          ELSE CAST((julianday(pos.finish_date) - julianday(pos.start_date)) AS INTEGER)
+        END as durationDays
+      FROM mk_position pos
+      JOIN mk_person mp ON mp.person_id = pos.mk_id
+      JOIN canonical_office_ministry com ON com.gov_ministry_id = pos.ministry_id
+      WHERE com.canonical_office_id = ?
+      ORDER BY pos.start_date ASC
+    `).all(office.id) as Array<{
+      positionId: number;
+      personId: number;
+      personName: string;
+      personSlug: string | null;
+      factionName: string | null;
+      roleType: string;
+      dutyDesc: string | null;
+      governmentNum: number | null;
+      startDate: string;
+      finishDate: string | null;
+      isCurrent: number;
+      durationDays: number | null;
+    }>).map(r => ({
+      ...r,
+      roleType: r.roleType as 'minister' | 'deputy' | 'acting' | 'pm' | 'deputy-pm' | 'other',
+      isCurrent: r.isCurrent === 1,
+    }));
+  }
+
+  const currentHolders = timeline.filter(t => t.isCurrent);
+  const distinctHolders = new Set(timeline.map(t => t.personId));
+
+  return {
+    id: office.id,
+    slug: office.slug,
+    displayName: office.display_name,
+    shortName: office.short_name,
+    isActive: office.is_active === 1,
+    notes: office.notes,
+    withoutPortfolio: office.without_portfolio === 1,
+    timeline,
+    distinctHolderCount: distinctHolders.size,
+    currentHolders,
+  };
+}
+
+export function listCanonicalOffices(): OfficeListItem[] {
+  const db = getDb();
+  if (!db) return [];
+
+  return (db.prepare(`
+    SELECT
+      co.slug,
+      co.display_name,
+      co.short_name,
+      co.is_active,
+      (SELECT mp.first_name || ' ' || mp.last_name
+       FROM mk_position pos
+       JOIN mk_person mp ON mp.person_id = pos.mk_id
+       JOIN canonical_office_ministry com ON com.gov_ministry_id = pos.ministry_id
+       WHERE com.canonical_office_id = co.id AND pos.is_current = 1
+       LIMIT 1) as currentHolder
+    FROM canonical_office co
+    ORDER BY co.display_name
+  `).all() as Array<{
+    slug: string;
+    display_name: string;
+    short_name: string | null;
+    is_active: number;
+    currentHolder: string | null;
+  }>).map(r => ({
+    slug: r.slug,
+    displayName: r.display_name,
+    shortName: r.short_name,
+    isActive: r.is_active === 1,
+    currentHolder: r.currentHolder,
+  }));
+}
+
+export function resolveMinistrySlug(name: string): string | null {
+  const db = getDb();
+  if (!db) return null;
+
+  const result = db.prepare(`
+    SELECT DISTINCT co.slug
+    FROM canonical_office co
+    JOIN canonical_office_ministry com ON com.canonical_office_id = co.id
+    JOIN gov_ministry gm ON gm.id = com.gov_ministry_id
+    WHERE gm.name = ?
+    LIMIT 1
+  `).get(name) as { slug: string } | undefined;
+
+  return result?.slug ?? null;
+}
+
 export interface MinisterInfo {
   id: number;
   name: string;
@@ -961,6 +1165,7 @@ export interface MinisterInfo {
   factionName: string | null;
   ministerRole: string;
   ministry: string | null;
+  officeSlug: string | null;
   billCount: number;
   passedCount: number;
   committeeSessionCount: number;
@@ -990,6 +1195,9 @@ export function getMinisters(): MinisterInfo[] {
         ELSE '6:' || pos.duty_desc
       END) as roleKey,
       pos.ministry,
+      (SELECT co.slug FROM canonical_office co
+       JOIN canonical_office_ministry com ON com.canonical_office_id = co.id
+       WHERE com.gov_ministry_id = pos.ministry_id LIMIT 1) as officeSlug,
       (SELECT COUNT(*) FROM bill_initiator WHERE mk_id = mp.person_id) as billCount,
       (SELECT COUNT(DISTINCT bi.bill_id) FROM bill_initiator bi JOIN bill b ON b.id = bi.bill_id WHERE bi.mk_id = mp.person_id AND b.is_passed = 1) as passedCount,
       (SELECT COUNT(*) FROM committee_attendance ca WHERE ca.mk_id = mp.person_id) as committeeSessionCount
@@ -1003,7 +1211,7 @@ export function getMinisters(): MinisterInfo[] {
         OR pos.duty_desc LIKE 'סגן שר%' OR pos.duty_desc LIKE 'סגנית שר%')
     GROUP BY mp.person_id
     ORDER BY roleKey, mp.last_name
-  `).all() as Array<{ id: number; name: string; slug: string | null; isCoalition: number | null; factionName: string | null; roleKey: string; ministry: string | null; billCount: number; passedCount: number; committeeSessionCount: number }>)
+  `).all() as Array<{ id: number; name: string; slug: string | null; isCoalition: number | null; factionName: string | null; roleKey: string; ministry: string | null; officeSlug: string | null; billCount: number; passedCount: number; committeeSessionCount: number }>)
   .map(r => ({
     ...r,
     ministerRole: r.roleKey.replace(/^\d:/, ''),
@@ -2301,4 +2509,315 @@ export function getVoteFactionContext(voteIds: number[], factionId: number): Map
     majorityCode: r.majority_code,
     rebelCount: r.rebel_count,
   }]));
+}
+
+// ── Office Activity Journal ──────────────────────────────────────────────────────────
+
+export interface OfficeActivityEntry {
+  id: number;
+  canonicalOfficeId: number;
+  activityDate: string;
+  activityType: string;
+  activityTitle: string;
+  description: string;
+  affectedPersonName: string | null;
+  affectedPersonId: number | null;
+  governmentNum: number | null;
+  coalitionParty: string | null;
+  durationDays: number | null;
+  budgetAllocation: number | null;
+  controversyLevel: string;
+  policyFocus: string | null;
+  notes: string;
+  hebrewNotes: string | null;
+  dataSource: string;
+  sourceUrl: string | null;
+  confidenceLevel: number;
+}
+
+export interface OfficeActivityJournal {
+  canonicalOfficeId: number;
+  totalEntries: number;
+  activities: OfficeActivityEntry[];
+  controversyStats: {
+    none: number;
+    minor: number;
+    moderate: number;
+    major: number;
+  };
+  activityTypeStats: Record<string, number>;
+}
+
+/** Get full activity journal for a canonical office, sorted by date descending */
+export function getOfficeActivityJournal(canonicalOfficeId: number): OfficeActivityJournal | null {
+  const db = getDb();
+  if (!db) return null;
+
+  const rows = db.prepare(`
+    SELECT
+      id, canonical_office_id, activity_date, activity_type, activity_title,
+      description, affected_person_name, affected_person_id, government_num,
+      coalition_party, duration_days, budget_allocation, controversy_level,
+      policy_focus, notes, hebrew_notes, data_source, source_url, confidence_level
+    FROM office_activity_journal
+    WHERE canonical_office_id = ?
+    ORDER BY activity_date DESC
+  `).all(canonicalOfficeId) as Array<any>;
+
+  if (rows.length === 0) return null;
+
+  const activities: OfficeActivityEntry[] = rows.map(r => ({
+    id: r.id,
+    canonicalOfficeId: r.canonical_office_id,
+    activityDate: r.activity_date,
+    activityType: r.activity_type,
+    activityTitle: r.activity_title,
+    description: r.description,
+    affectedPersonName: r.affected_person_name,
+    affectedPersonId: r.affected_person_id,
+    governmentNum: r.government_num,
+    coalitionParty: r.coalition_party,
+    durationDays: r.duration_days,
+    budgetAllocation: r.budget_allocation,
+    controversyLevel: r.controversy_level,
+    policyFocus: r.policy_focus,
+    notes: r.notes,
+    hebrewNotes: r.hebrew_notes,
+    dataSource: r.data_source,
+    sourceUrl: r.source_url,
+    confidenceLevel: r.confidence_level,
+  }));
+
+  // Calculate controversy stats
+  const controversyStats = {
+    none: rows.filter(r => r.controversy_level === 'none').length,
+    minor: rows.filter(r => r.controversy_level === 'minor').length,
+    moderate: rows.filter(r => r.controversy_level === 'moderate').length,
+    major: rows.filter(r => r.controversy_level === 'major').length,
+  };
+
+  // Calculate activity type stats
+  const activityTypeStats: Record<string, number> = {};
+  for (const row of rows) {
+    activityTypeStats[row.activity_type] = (activityTypeStats[row.activity_type] || 0) + 1;
+  }
+
+  return {
+    canonicalOfficeId,
+    totalEntries: rows.length,
+    activities,
+    controversyStats,
+    activityTypeStats,
+  };
+}
+
+/** Get all activities of a specific type across all offices */
+export function getActivitiesByType(activityType: string): OfficeActivityEntry[] {
+  const db = getDb();
+  if (!db) return [];
+
+  const rows = db.prepare(`
+    SELECT
+      id, canonical_office_id, activity_date, activity_type, activity_title,
+      description, affected_person_name, affected_person_id, government_num,
+      coalition_party, duration_days, budget_allocation, controversy_level,
+      policy_focus, notes, hebrew_notes, data_source, source_url, confidence_level
+    FROM office_activity_journal
+    WHERE activity_type = ?
+    ORDER BY activity_date DESC
+  `).all(activityType) as Array<any>;
+
+  return rows.map(r => ({
+    id: r.id,
+    canonicalOfficeId: r.canonical_office_id,
+    activityDate: r.activity_date,
+    activityType: r.activity_type,
+    activityTitle: r.activity_title,
+    description: r.description,
+    affectedPersonName: r.affected_person_name,
+    affectedPersonId: r.affected_person_id,
+    governmentNum: r.government_num,
+    coalitionParty: r.coalition_party,
+    durationDays: r.duration_days,
+    budgetAllocation: r.budget_allocation,
+    controversyLevel: r.controversy_level,
+    policyFocus: r.policy_focus,
+    notes: r.notes,
+    hebrewNotes: r.hebrew_notes,
+    dataSource: r.data_source,
+    sourceUrl: r.source_url,
+    confidenceLevel: r.confidence_level,
+  }));
+}
+
+/** Get activities within a date range */
+export function getOfficeActivitiesByDateRange(
+  canonicalOfficeId: number,
+  startDate: string,
+  endDate: string,
+): OfficeActivityEntry[] {
+  const db = getDb();
+  if (!db) return [];
+
+  const rows = db.prepare(`
+    SELECT
+      id, canonical_office_id, activity_date, activity_type, activity_title,
+      description, affected_person_name, affected_person_id, government_num,
+      coalition_party, duration_days, budget_allocation, controversy_level,
+      policy_focus, notes, hebrew_notes, data_source, source_url, confidence_level
+    FROM office_activity_journal
+    WHERE canonical_office_id = ?
+      AND activity_date >= ?
+      AND activity_date <= ?
+    ORDER BY activity_date DESC
+  `).all(canonicalOfficeId, startDate, endDate) as Array<any>;
+
+  return rows.map(r => ({
+    id: r.id,
+    canonicalOfficeId: r.canonical_office_id,
+    activityDate: r.activity_date,
+    activityType: r.activity_type,
+    activityTitle: r.activity_title,
+    description: r.description,
+    affectedPersonName: r.affected_person_name,
+    affectedPersonId: r.affected_person_id,
+    governmentNum: r.government_num,
+    coalitionParty: r.coalition_party,
+    durationDays: r.duration_days,
+    budgetAllocation: r.budget_allocation,
+    controversyLevel: r.controversy_level,
+    policyFocus: r.policy_focus,
+    notes: r.notes,
+    hebrewNotes: r.hebrew_notes,
+    dataSource: r.data_source,
+    sourceUrl: r.source_url,
+    confidenceLevel: r.confidence_level,
+  }));
+}
+
+// ── Person Timeline ──────────────────────────────────────────────────────────────
+
+export type PersonTimelineEventType = 'mk' | 'minister' | 'faction-change' | 'coalition-status';
+
+export interface PersonTimelineEvent {
+  type: PersonTimelineEventType;
+  from: string;
+  to: string | null;
+  details: {
+    mkEventType?: string; // 'mk-tenure'
+    knessetNum?: number;
+    factionName?: string;
+    coalitionStatus?: 'coalition' | 'opposition' | null;
+    officeSlug?: string;
+    officeName?: string;
+    roleType?: 'pm' | 'deputy-pm' | 'minister' | 'deputy' | 'acting';
+    governmentNum?: number;
+    isCurrent?: boolean;
+  };
+}
+
+/**
+ * Get complete timeline of a person's roles across time.
+ * Includes: MK tenure, ministerial positions, faction membership, coalition status.
+ * Returns events sorted chronologically by from_date.
+ */
+export function getPersonTimeline(personId: number): PersonTimelineEvent[] {
+  const db = getDb();
+  if (!db) return [];
+
+  const events: PersonTimelineEvent[] = [];
+
+  // Query 1: Ministerial positions
+  const ministerialRows = db.prepare(`
+    SELECT
+      pos.start_date,
+      pos.finish_date,
+      pos.role_type,
+      pos.government_num,
+      pos.is_current,
+      co.slug,
+      co.display_name
+    FROM mk_position pos
+    LEFT JOIN canonical_office_ministry com ON com.gov_ministry_id = pos.ministry_id
+    LEFT JOIN canonical_office co ON co.id = com.canonical_office_id
+    WHERE pos.mk_id = ?
+      AND pos.role_type IN ('pm', 'deputy-pm', 'minister', 'deputy', 'acting')
+    ORDER BY pos.start_date ASC
+  `).all(personId) as Array<{
+    start_date: string;
+    finish_date: string | null;
+    role_type: string;
+    government_num: number | null;
+    is_current: number;
+    slug: string | null;
+    display_name: string | null;
+  }>;
+
+  for (const row of ministerialRows) {
+    events.push({
+      type: 'minister',
+      from: row.start_date,
+      to: row.finish_date,
+      details: {
+        officeSlug: row.slug || undefined,
+        officeName: row.display_name || undefined,
+        roleType: row.role_type as 'pm' | 'deputy-pm' | 'minister' | 'deputy' | 'acting',
+        governmentNum: row.government_num || undefined,
+        isCurrent: row.is_current === 1,
+      },
+    });
+  }
+
+  // Query 2: MK tenure
+  const mkRows = db.prepare(`
+    SELECT
+      pos.start_date,
+      pos.finish_date
+    FROM mk_position pos
+    WHERE pos.mk_id = ? AND (pos.role_type = 'mk' OR pos.committee_id IS NOT NULL)
+    GROUP BY strftime('%Y-%m', pos.start_date)
+    ORDER BY pos.start_date ASC
+    LIMIT 1
+  `).all(personId) as Array<{ start_date: string; finish_date: string | null }>;
+
+  if (mkRows.length > 0) {
+    const mkStart = mkRows[0];
+    events.push({
+      type: 'mk',
+      from: mkStart.start_date,
+      to: mkStart.finish_date,
+      details: {
+        mkEventType: 'mk-tenure',
+      },
+    });
+  }
+
+  // Query 3: Faction history
+  const factionRows = db.prepare(`
+    SELECT
+      from_date,
+      to_date,
+      faction_name,
+      knesset_num
+    FROM mk_faction_history
+    WHERE person_id = ?
+    ORDER BY from_date ASC
+  `).all(personId) as Array<{ from_date: string; to_date: string | null; faction_name: string; knesset_num: number }>;
+
+  for (const row of factionRows) {
+    events.push({
+      type: 'faction-change',
+      from: row.from_date,
+      to: row.to_date,
+      details: {
+        factionName: row.faction_name,
+        knessetNum: row.knesset_num,
+      },
+    });
+  }
+
+  // Sort all events chronologically
+  events.sort((a, b) => new Date(a.from).getTime() - new Date(b.from).getTime());
+
+  return events;
 }

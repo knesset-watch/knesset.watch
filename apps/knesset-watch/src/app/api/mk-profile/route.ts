@@ -11,6 +11,7 @@ import {
   getMkVoteStats,
   getMkWithMajorityVotes,
   getMkAgendaStats,
+  getPersonTimeline,
   dbAvailable,
 } from '@/lib/knesset-db';
 
@@ -41,6 +42,7 @@ export async function GET(request: Request) {
     const billTopics        = dbAvailable() ? getMkBillTopics(mkId)        : [];
     const queries           = dbAvailable() ? getMkQueries(mkId)           : [];
     const positions         = dbAvailable() ? getMkPositions(mkId)         : [];
+    const timeline          = dbAvailable() ? getPersonTimeline(mkId)      : [];
     const voteStats         = getMkVoteStats(mkId);
     const withMajorityVotes = dbAvailable() ? getMkWithMajorityVotes(mkId) : [];
     const agendaStats       = dbAvailable() ? getMkAgendaStats(mkId)       : [];
@@ -179,6 +181,7 @@ export async function GET(request: Request) {
       billTopics,
       queries,
       positions,
+      timeline,
       agendaStats,
       rebellionCount: rebellion?.cnt ?? 0,
       totalPartisanVotes: totalPartisanVotes?.cnt ?? 0,
