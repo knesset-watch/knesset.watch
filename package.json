@@ -2,10 +2,15 @@
   "name": "knesset",
   "version": "1.0.0",
   "private": true,
-  "workspaces": ["apps/*"],
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
     "dev": "npm run dev --workspaces",
     "build": "npm run build --workspaces",
     "lint": "npm run lint --workspaces"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.1"
   }
 }

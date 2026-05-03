@@ -183,7 +183,7 @@ const TIMEFRAMES = [
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'default',    label: 'ברירת מחדל' },
-  { value: 'proposed',   label: 'הצעות חוק' },
+  { value: 'proposed',   label: 'ה"ח\u00A0יזומות' },
   { value: 'passed',     label: 'חוקים שעברו' },
   { value: 'ratio-desc', label: 'יחס גבוה ← נמוך' },
   { value: 'ratio-asc',  label: 'יחס נמוך ← גבוה' },
@@ -1290,7 +1290,7 @@ export default function KnessetWatchPage() {
                   <div className="mt-auto pt-6">
                     <div className="grid grid-cols-3 gap-3">
                       <div className="flex flex-col">
-                        <span className="text-[11px] font-black uppercase text-gray-400 mb-1">הצעות</span>
+                        <span className="text-[11px] font-black uppercase text-gray-400 mb-1 whitespace-nowrap">ה"ח&nbsp;יזומות</span>
                         <span className="text-3xl font-black">{f.billCount}</span>
                       </div>
                       <div className="flex flex-col border-r border-black/5 pr-3">
@@ -1468,7 +1468,7 @@ export default function KnessetWatchPage() {
                                       <div className="mt-auto pt-6">                      <div className="grid grid-cols-3 gap-3">
                         <div className="flex flex-col">
                           <span className="text-[11px] font-black uppercase text-gray-400 mb-1">
-                            הצעות{groupBy === 'party-avg' ? ' (ממוצע)' : ''}
+                            ה"ח&nbsp;יזומות{groupBy === 'party-avg' ? ' (ממוצע)' : ''}
                           </span>
                           <span className={`text-3xl font-black transition-opacity ${pulse ? 'opacity-30 animate-pulse' : ''}`}>
                             {groupBy === 'party-avg' ? party.displayProposed.toFixed(1) : Math.round(party.displayProposed)}
@@ -1499,7 +1499,7 @@ export default function KnessetWatchPage() {
             <div className="flex flex-col gap-1.5">
               <div className="grid grid-cols-[1fr_6rem_6rem_6rem] gap-4 py-2 px-4 text-[11px] font-black uppercase tracking-widest text-gray-400">
                 <span>מפלגה</span>
-                <span>הצעות{groupBy === 'party-avg' ? ' (ממוצע)' : ''}</span>
+                <span className="whitespace-nowrap">ה"ח&nbsp;יזומות{groupBy === 'party-avg' ? ' (ממוצע)' : ''}</span>
                 <span>עברו{groupBy === 'party-avg' ? ' (ממוצע)' : ''}</span>
                 <span>יחס</span>
               </div>
@@ -1650,7 +1650,7 @@ export default function KnessetWatchPage() {
                   <div className="mt-auto pt-6">
                     <div className="grid grid-cols-4 gap-2">
                       <div className="flex flex-col min-w-0">
-                        <span className="text-[11px] font-black uppercase text-gray-400 mb-1">הצעות</span>
+                        <span className="text-[11px] font-black uppercase text-gray-400 mb-1 whitespace-nowrap">ה"ח&nbsp;יזומות</span>
                         <span className={`text-lg font-black tabular-nums transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
                           {item.stats?.proposed ?? 0}
                         </span>
@@ -1684,7 +1684,7 @@ export default function KnessetWatchPage() {
           <div className="flex flex-col gap-1.5">
             <div className="grid grid-cols-[1fr_6rem_6rem_6rem_6rem] gap-4 py-2 px-4 text-[11px] font-black uppercase tracking-widest text-gray-400">
               <span>שם</span>
-              <span>הצעות</span>
+              <span className="whitespace-nowrap">ה"ח&nbsp;יזומות</span>
               <span>עברו</span>
               <span>יחס</span>
               <span>ועדות</span>

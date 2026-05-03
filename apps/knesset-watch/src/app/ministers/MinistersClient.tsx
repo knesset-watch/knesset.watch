@@ -82,7 +82,7 @@ export default function MinistersClient({ ministers }: { ministers: MinisterInfo
     return (
       <button
         onClick={() => handleSort(col)}
-        className={`text-[11px] font-black uppercase tracking-widest transition-colors flex items-center gap-1 ${className} ${
+        className={`text-[11px] font-black uppercase tracking-widest transition-colors flex items-center gap-1 whitespace-nowrap ${className} ${
           isActive ? 'text-black bg-blue-50 px-2 py-1 rounded' : 'text-gray-400 hover:text-gray-600'
         }`}
       >
@@ -98,7 +98,7 @@ export default function MinistersClient({ ministers }: { ministers: MinisterInfo
           <SortHeader col="name" label="שם" />
           <span className="text-[11px] font-black uppercase tracking-widest text-gray-400">משרד</span>
           <SortHeader col="sessions" label="ועדות" className="justify-center" />
-          <SortHeader col="bills" label="הצעות" className="justify-center" />
+          <SortHeader col="bills" label={'ה"ח\u00A0יזומות'} className="justify-center" />
           <span className="text-[11px] font-black uppercase tracking-widest text-gray-400 text-center">עברו</span>
         </div>
         {sortRows(rows).map(m => <MinisterRow key={m.id} m={m} />)}
@@ -131,7 +131,7 @@ export default function MinistersClient({ ministers }: { ministers: MinisterInfo
 
         <div className="rounded-2xl border border-black/5 px-4 py-3 bg-gray-50 text-xs text-gray-500 mb-6">
           <span className="font-black text-gray-700">ועדות</span> = מספר ישיבות ועדה שנכח/ה בהן כחבר/ת כנסת ·
-          <span className="font-black text-gray-700 mr-2">הצעות</span> = הצ&quot;ח שיזם/ה אישית
+          <span className="font-black text-gray-700 mr-2 whitespace-nowrap">ה&quot;ח&nbsp;יזומות</span> = הצ&quot;ח שבהן הח&quot;כ מופיע/ה כיוזם/ת
         </div>
 
         {/* Full ministers */}

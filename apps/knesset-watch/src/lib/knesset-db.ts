@@ -1195,9 +1195,7 @@ export function getMinisters(): MinisterInfo[] {
         ELSE '6:' || pos.duty_desc
       END) as roleKey,
       pos.ministry,
-      (SELECT co.slug FROM canonical_office co
-       JOIN canonical_office_ministry com ON com.canonical_office_id = co.id
-       WHERE com.gov_ministry_id = pos.ministry_id LIMIT 1) as officeSlug,
+      NULL as officeSlug,
       (SELECT COUNT(*) FROM bill_initiator WHERE mk_id = mp.person_id) as billCount,
       (SELECT COUNT(DISTINCT bi.bill_id) FROM bill_initiator bi JOIN bill b ON b.id = bi.bill_id WHERE bi.mk_id = mp.person_id AND b.is_passed = 1) as passedCount,
       (SELECT COUNT(*) FROM committee_attendance ca WHERE ca.mk_id = mp.person_id) as committeeSessionCount
