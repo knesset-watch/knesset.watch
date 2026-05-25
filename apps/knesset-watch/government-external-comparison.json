@@ -1,0 +1,270 @@
+{
+  "timestamp": "2026-04-19T10:40:04.451Z",
+  "sources": {
+    "database": {
+      "count": 27,
+      "source": "Knesset OData API (KNS_PersonToPosition)",
+      "data": [
+        {
+          "hebrew_name": "עמיחי אליהו",
+          "role": "שר המורשת",
+          "ministry": "משרד המורשת"
+        },
+        {
+          "hebrew_name": "זאב אלקין",
+          "role": "שר נוסף במשרד האוצר",
+          "ministry": "משרד האוצר"
+        },
+        {
+          "hebrew_name": "דוד אמסלם",
+          "role": "שר נוסף במשרד המשפטים",
+          "ministry": "משרד המשפטים"
+        },
+        {
+          "hebrew_name": "ניר ברקת",
+          "role": "שר הכלכלה והתעשייה",
+          "ministry": "משרד הכלכלה והתעשייה"
+        },
+        {
+          "hebrew_name": "גילה גמליאל",
+          "role": "שרת החדשנות, המדע והטכנולוגיה ",
+          "ministry": "משרד החדשנות, המדע והטכנולוגיה"
+        },
+        {
+          "hebrew_name": "אבי דיכטר",
+          "role": "שר החקלאות וביטחון המזון",
+          "ministry": "משרד החקלאות וביטחון המזון"
+        },
+        {
+          "hebrew_name": "יצחק שמעון וסרלאוף",
+          "role": "שר הנגב, הגליל והחוסן הלאומי",
+          "ministry": "משרד הנגב, הגליל והחוסן הלאומי"
+        },
+        {
+          "hebrew_name": "מכלוף מיקי זוהר",
+          "role": "שר התרבות והספורט",
+          "ministry": "משרד התרבות והספורט"
+        },
+        {
+          "hebrew_name": "אלי כהן",
+          "role": "שר האנרגיה והתשתיות",
+          "ministry": "משרד האנרגיה והתשתיות"
+        },
+        {
+          "hebrew_name": "חיים כץ",
+          "role": "שר התיירות",
+          "ministry": "משרד התיירות"
+        },
+        {
+          "hebrew_name": "ישראל כץ",
+          "role": "שר הביטחון",
+          "ministry": "משרד הביטחון"
+        },
+        {
+          "hebrew_name": "חיים כץ",
+          "role": "שר הבינוי והשיכון",
+          "ministry": "משרד הבינוי והשיכון"
+        },
+        {
+          "hebrew_name": "חיים כץ",
+          "role": "שר הבריאות",
+          "ministry": "משרד הבריאות"
+        },
+        {
+          "hebrew_name": "חיים כץ",
+          "role": "שר הרווחה והביטחון החברתי",
+          "ministry": "משרד הרווחה והביטחון החברתי"
+        },
+        {
+          "hebrew_name": "יריב לוין",
+          "role": "שר המשפטים",
+          "ministry": "משרד המשפטים"
+        },
+        {
+          "hebrew_name": "יריב לוין",
+          "role": "שר העבודה",
+          "ministry": "משרד העבודה"
+        },
+        {
+          "hebrew_name": "יריב לוין",
+          "role": "שר ירושלים ומסורת ישראל",
+          "ministry": "משרד ירושלים ומסורת ישראל"
+        },
+        {
+          "hebrew_name": "בנימין נתניהו",
+          "role": "ראש הממשלה",
+          "ministry": "משרד ראש הממשלה"
+        },
+        {
+          "hebrew_name": "אופיר סופר",
+          "role": "שר העלייה והקליטה",
+          "ministry": "משרד העלייה והקליטה"
+        },
+        {
+          "hebrew_name": "אורית מלכה סטרוק",
+          "role": "שרת ההתיישבות והמשימות הלאומיות",
+          "ministry": "משרד ההתיישבות והמשימות הלאומיות"
+        },
+        {
+          "hebrew_name": "בצלאל סמוטריץ'",
+          "role": "שר האוצר",
+          "ministry": "משרד האוצר"
+        },
+        {
+          "hebrew_name": "בצלאל סמוטריץ'",
+          "role": "שר נוסף במשרד הביטחון",
+          "ministry": "משרד הביטחון"
+        },
+        {
+          "hebrew_name": "גדעון סער",
+          "role": "שר החוץ",
+          "ministry": "משרד החוץ"
+        },
+        {
+          "hebrew_name": "יואב קיש",
+          "role": "שר החינוך",
+          "ministry": "משרד החינוך"
+        },
+        {
+          "hebrew_name": "שלמה קרעי",
+          "role": "שר התקשורת",
+          "ministry": "משרד התקשורת"
+        },
+        {
+          "hebrew_name": "מירי מרים רגב",
+          "role": "שרת התחבורה והבטיחות בדרכים",
+          "ministry": "משרד התחבורה והבטיחות בדרכים"
+        },
+        {
+          "hebrew_name": "עמיחי שיקלי",
+          "role": "שר התפוצות והמאבק באנטישמיות",
+          "ministry": "משרד התפוצות והמאבק באנטישמיות"
+        }
+      ]
+    },
+    "wikipedia": {
+      "count": 8,
+      "url": "https://en.wikipedia.org/wiki/Cabinet_of_Israel",
+      "data": [
+        {
+          "name": "Benjamin Netanyahu",
+          "hebrewName": "בנימין נתניהו",
+          "role": "Prime Minister",
+          "ministry": "Prime Minister's Office",
+          "source": "wikipedia",
+          "date": "2026-04-19"
+        },
+        {
+          "name": "Bezalel Smotrich",
+          "hebrewName": "בצלאל סמוטריץ'",
+          "role": "Minister of Finance",
+          "ministry": "Ministry of Finance",
+          "source": "wikipedia",
+          "date": "2026-04-19"
+        },
+        {
+          "name": "Itamar Ben-Gvir",
+          "hebrewName": "איתמר בן גביר",
+          "role": "Minister of National Security",
+          "ministry": "Ministry of National Security",
+          "source": "wikipedia",
+          "date": "2026-04-19"
+        },
+        {
+          "name": "Avi Dichter",
+          "hebrewName": "אבי דיכטר",
+          "role": "Minister of Defence",
+          "ministry": "Ministry of Defence",
+          "source": "wikipedia",
+          "date": "2026-04-19"
+        },
+        {
+          "name": "Eli Cohen",
+          "hebrewName": "אלי כהן",
+          "role": "Minister of Foreign Affairs",
+          "ministry": "Ministry of Foreign Affairs",
+          "source": "wikipedia",
+          "date": "2026-04-19"
+        },
+        {
+          "name": "Gila Gamliel",
+          "hebrewName": "גילה גמליאל",
+          "role": "Minister of Innovation, Science and Technology",
+          "ministry": "Ministry of Innovation, Science and Technology",
+          "source": "wikipedia",
+          "date": "2026-04-19"
+        },
+        {
+          "name": "Miri Regev",
+          "hebrewName": "מירי מרים רגב",
+          "role": "Minister of Transport and Road Safety",
+          "ministry": "Ministry of Transport and Road Safety",
+          "source": "wikipedia",
+          "date": "2026-04-19"
+        },
+        {
+          "name": "Yariiv Levin",
+          "hebrewName": "יריב לוין",
+          "role": "Minister of Justice",
+          "ministry": "Ministry of Justice",
+          "source": "wikipedia",
+          "date": "2026-04-19"
+        }
+      ]
+    },
+    "govil": {
+      "count": 5,
+      "url": "https://www.gov.il/en/Departments/Government",
+      "data": [
+        {
+          "name": "Benjamin Netanyahu",
+          "hebrewName": "בנימין נתניהו",
+          "role": "Prime Minister",
+          "ministry": "Prime Minister's Office",
+          "source": "govil",
+          "date": "2026-04-19"
+        },
+        {
+          "name": "Bezalel Smotrich",
+          "hebrewName": "בצלאל סמוטריץ'",
+          "role": "Minister of Finance",
+          "ministry": "Ministry of Finance",
+          "source": "govil",
+          "date": "2026-04-19"
+        },
+        {
+          "name": "Itamar Ben-Gvir",
+          "hebrewName": "איתמר בן גביר",
+          "role": "Minister of National Security",
+          "ministry": "Ministry of National Security",
+          "source": "govil",
+          "date": "2026-04-19"
+        },
+        {
+          "name": "Avi Dichter",
+          "hebrewName": "אבי דיכטר",
+          "role": "Minister of Defence",
+          "ministry": "Ministry of Defence",
+          "source": "govil",
+          "date": "2026-04-19"
+        },
+        {
+          "name": "Eli Cohen",
+          "hebrewName": "אלי כהן",
+          "role": "Minister of Foreign Affairs",
+          "ministry": "Ministry of Foreign Affairs",
+          "source": "govil",
+          "date": "2026-04-19"
+        }
+      ]
+    }
+  },
+  "coverage": {
+    "wikiMatch": "7/27 (26%)",
+    "govilMatch": "4/27 (15%)"
+  },
+  "discrepancies": {
+    "inDBButNotWiki": 14,
+    "inWikiButNotDB": 1
+  }
+}

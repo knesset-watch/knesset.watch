@@ -1,0 +1,428 @@
+[
+  {
+    "slug": "ministry-1",
+    "display_name": "בלי תיק",
+    "is_active": true,
+    "notes": "1 government ministry ID(s): 1434",
+    "gov_ministry_ids": [
+      1434
+    ]
+  },
+  {
+    "slug": "ministry-2",
+    "display_name": "המשרד לביטחון הפנים",
+    "is_active": true,
+    "notes": "1 government ministry ID(s): 1360",
+    "gov_ministry_ids": [
+      1360
+    ]
+  },
+  {
+    "slug": "ministry-3",
+    "display_name": "המשרד לביטחון לאומי",
+    "is_active": true,
+    "notes": "1 government ministry ID(s): 1361",
+    "gov_ministry_ids": [
+      1361
+    ]
+  },
+  {
+    "slug": "ministry-4",
+    "display_name": "המשרד להגנת הסביבה",
+    "is_active": true,
+    "notes": "2 government ministry ID(s): 1331, 1332",
+    "gov_ministry_ids": [
+      1331,
+      1332
+    ]
+  },
+  {
+    "slug": "ministry-5",
+    "display_name": "המשרד לחיזוק ולקידום קהילתי",
+    "is_active": true,
+    "notes": "1 government ministry ID(s): 1314",
+    "gov_ministry_ids": [
+      1314
+    ]
+  },
+  {
+    "slug": "ministry-6",
+    "display_name": "המשרד לנושאים אסטרטגיים והסברה",
+    "is_active": true,
+    "notes": "1 government ministry ID(s): 1307",
+    "gov_ministry_ids": [
+      1307
+    ]
+  },
+  {
+    "slug": "ministry-7",
+    "display_name": "המשרד לעניינים אסטרטגיים",
+    "is_active": true,
+    "notes": "1 government ministry ID(s): 1309",
+    "gov_ministry_ids": [
+      1309
+    ]
+  },
+  {
+    "slug": "ministry-8",
+    "display_name": "המשרד לפיתוח הפריפריה, הנגב והגליל",
+    "is_active": true,
+    "notes": "1 government ministry ID(s): 843",
+    "gov_ministry_ids": [
+      843
+    ]
+  },
+  {
+    "slug": "ministry-9",
+    "display_name": "המשרד לקידום מעמד האישה",
+    "is_active": true,
+    "notes": "1 government ministry ID(s): 1298",
+    "gov_ministry_ids": [
+      1298
+    ]
+  },
+  {
+    "slug": "ministry-10",
+    "display_name": "המשרד לשוויון חברתי",
+    "is_active": true,
+    "notes": "1 government ministry ID(s): 1296",
+    "gov_ministry_ids": [
+      1296
+    ]
+  },
+  {
+    "slug": "ministry-11",
+    "display_name": "המשרד לשוויון חברתי וקידום מעמד האישה",
+    "is_active": true,
+    "notes": "1 government ministry ID(s): 1297",
+    "gov_ministry_ids": [
+      1297
+    ]
+  },
+  {
+    "slug": "ministry-12",
+    "display_name": "המשרד לשירותי דת",
+    "is_active": true,
+    "notes": "1 government ministry ID(s): 1283",
+    "gov_ministry_ids": [
+      1283
+    ]
+  },
+  {
+    "slug": "ministry-13",
+    "display_name": "המשרד לשיתוף פעולה אזורי",
+    "is_active": true,
+    "notes": "2 government ministry ID(s): 1250, 1251",
+    "gov_ministry_ids": [
+      1250,
+      1251
+    ]
+  },
+  {
+    "slug": "ministry-14",
+    "display_name": "משרד האוצר",
+    "is_active": true,
+    "notes": "2 government ministry ID(s): 1236, 1237",
+    "gov_ministry_ids": [
+      1236,
+      1237
+    ]
+  },
+  {
+    "slug": "ministry-15",
+    "display_name": "משרד האנרגיה",
+    "is_active": true,
+    "notes": "1 government ministry ID(s): 1204",
+    "gov_ministry_ids": [
+      1204
+    ]
+  },
+  {
+    "slug": "ministry-16",
+    "display_name": "משרד האנרגיה והתשתיות",
+    "is_active": true,
+    "notes": "1 government ministry ID(s): 1205",
+    "gov_ministry_ids": [
+      1205
+    ]
+  },
+  {
+    "slug": "ministry-17",
+    "display_name": "משרד הביטחון",
+    "is_active": true,
+    "notes": "2 government ministry ID(s): 1177, 1178",
+    "gov_ministry_ids": [
+      1177,
+      1178
+    ]
+  },
+  {
+    "slug": "ministry-18",
+    "display_name": "משרד הבינוי והשיכון",
+    "is_active": true,
+    "notes": "2 government ministry ID(s): 1145, 1146",
+    "gov_ministry_ids": [
+      1145,
+      1146
+    ]
+  },
+  {
+    "slug": "ministry-19",
+    "display_name": "משרד הבריאות",
+    "is_active": true,
+    "notes": "2 government ministry ID(s): 1111, 1112",
+    "gov_ministry_ids": [
+      1111,
+      1112
+    ]
+  },
+  {
+    "slug": "ministry-20",
+    "display_name": "משרד ההסברה",
+    "is_active": true,
+    "notes": "1 government ministry ID(s): 1078",
+    "gov_ministry_ids": [
+      1078
+    ]
+  },
+  {
+    "slug": "ministry-21",
+    "display_name": "משרד ההתיישבות והמשימות הלאומיות",
+    "is_active": true,
+    "notes": "1 government ministry ID(s): 1070",
+    "gov_ministry_ids": [
+      1070
+    ]
+  },
+  {
+    "slug": "ministry-22",
+    "display_name": "משרד החדשנות, המדע והטכנולוגיה",
+    "is_active": true,
+    "notes": "2 government ministry ID(s): 1066, 1067",
+    "gov_ministry_ids": [
+      1066,
+      1067
+    ]
+  },
+  {
+    "slug": "ministry-23",
+    "display_name": "משרד החוץ",
+    "is_active": true,
+    "notes": "2 government ministry ID(s): 1041, 1042",
+    "gov_ministry_ids": [
+      1041,
+      1042
+    ]
+  },
+  {
+    "slug": "ministry-24",
+    "display_name": "משרד החינוך",
+    "is_active": true,
+    "notes": "2 government ministry ID(s): 1003, 1004",
+    "gov_ministry_ids": [
+      1003,
+      1004
+    ]
+  },
+  {
+    "slug": "ministry-25",
+    "display_name": "משרד החקלאות וביטחון המזון",
+    "is_active": true,
+    "notes": "1 government ministry ID(s): 967",
+    "gov_ministry_ids": [
+      967
+    ]
+  },
+  {
+    "slug": "ministry-26",
+    "display_name": "משרד החקלאות ופיתוח הכפר",
+    "is_active": true,
+    "notes": "1 government ministry ID(s): 966",
+    "gov_ministry_ids": [
+      966
+    ]
+  },
+  {
+    "slug": "ministry-27",
+    "display_name": "משרד הכלכלה והתעשייה",
+    "is_active": true,
+    "notes": "2 government ministry ID(s): 921, 922",
+    "gov_ministry_ids": [
+      921,
+      922
+    ]
+  },
+  {
+    "slug": "ministry-28",
+    "display_name": "משרד המודיעין",
+    "is_active": true,
+    "notes": "2 government ministry ID(s): 889, 890",
+    "gov_ministry_ids": [
+      889,
+      890
+    ]
+  },
+  {
+    "slug": "ministry-29",
+    "display_name": "משרד המורשת",
+    "is_active": true,
+    "notes": "1 government ministry ID(s): 884",
+    "gov_ministry_ids": [
+      884
+    ]
+  },
+  {
+    "slug": "ministry-30",
+    "display_name": "משרד המשפטים",
+    "is_active": true,
+    "notes": "2 government ministry ID(s): 875, 876",
+    "gov_ministry_ids": [
+      875,
+      876
+    ]
+  },
+  {
+    "slug": "ministry-31",
+    "display_name": "משרד הנגב, הגליל והחוסן הלאומי",
+    "is_active": true,
+    "notes": "1 government ministry ID(s): 844",
+    "gov_ministry_ids": [
+      844
+    ]
+  },
+  {
+    "slug": "ministry-32",
+    "display_name": "משרד העבודה",
+    "is_active": true,
+    "notes": "1 government ministry ID(s): 830",
+    "gov_ministry_ids": [
+      830
+    ]
+  },
+  {
+    "slug": "ministry-33",
+    "display_name": "משרד העלייה והקליטה",
+    "is_active": true,
+    "notes": "2 government ministry ID(s): 802, 803",
+    "gov_ministry_ids": [
+      802,
+      803
+    ]
+  },
+  {
+    "slug": "ministry-34",
+    "display_name": "משרד הפנים",
+    "is_active": true,
+    "notes": "2 government ministry ID(s): 753, 754",
+    "gov_ministry_ids": [
+      753,
+      754
+    ]
+  },
+  {
+    "slug": "ministry-35",
+    "display_name": "משרד הקשר בין הממשלה לכנסת",
+    "is_active": true,
+    "notes": "2 government ministry ID(s): 721, 722",
+    "gov_ministry_ids": [
+      721,
+      722
+    ]
+  },
+  {
+    "slug": "ministry-36",
+    "display_name": "משרד הרווחה והביטחון החברתי",
+    "is_active": true,
+    "notes": "2 government ministry ID(s): 710, 711",
+    "gov_ministry_ids": [
+      710,
+      711
+    ]
+  },
+  {
+    "slug": "ministry-37",
+    "display_name": "משרד התחבורה והבטיחות בדרכים",
+    "is_active": true,
+    "notes": "2 government ministry ID(s): 685, 686",
+    "gov_ministry_ids": [
+      685,
+      686
+    ]
+  },
+  {
+    "slug": "ministry-38",
+    "display_name": "משרד התיירות",
+    "is_active": true,
+    "notes": "2 government ministry ID(s): 653, 654",
+    "gov_ministry_ids": [
+      653,
+      654
+    ]
+  },
+  {
+    "slug": "ministry-39",
+    "display_name": "משרד התפוצות",
+    "is_active": true,
+    "notes": "1 government ministry ID(s): 627",
+    "gov_ministry_ids": [
+      627
+    ]
+  },
+  {
+    "slug": "ministry-40",
+    "display_name": "משרד התפוצות והמאבק באנטישמיות",
+    "is_active": true,
+    "notes": "1 government ministry ID(s): 628",
+    "gov_ministry_ids": [
+      628
+    ]
+  },
+  {
+    "slug": "ministry-41",
+    "display_name": "משרד התקשורת",
+    "is_active": true,
+    "notes": "2 government ministry ID(s): 617, 618",
+    "gov_ministry_ids": [
+      617,
+      618
+    ]
+  },
+  {
+    "slug": "ministry-42",
+    "display_name": "משרד התרבות והספורט",
+    "is_active": true,
+    "notes": "2 government ministry ID(s): 588, 589",
+    "gov_ministry_ids": [
+      588,
+      589
+    ]
+  },
+  {
+    "slug": "ministry-43",
+    "display_name": "משרד ירושלים ומורשת",
+    "is_active": true,
+    "notes": "1 government ministry ID(s): 582",
+    "gov_ministry_ids": [
+      582
+    ]
+  },
+  {
+    "slug": "ministry-44",
+    "display_name": "משרד ירושלים ומסורת ישראל",
+    "is_active": true,
+    "notes": "1 government ministry ID(s): 583",
+    "gov_ministry_ids": [
+      583
+    ]
+  },
+  {
+    "slug": "ministry-45",
+    "display_name": "משרד ראש הממשלה",
+    "is_active": true,
+    "notes": "2 government ministry ID(s): 567, 568",
+    "gov_ministry_ids": [
+      567,
+      568
+    ]
+  }
+]

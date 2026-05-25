@@ -1,7 +1,6 @@
 import { checkServerAuth } from '@/lib/ui/auth-utils';
-import { redirect, notFound } from 'next/navigation';
-import { getMinistryDetail } from '@/lib/knesset-db';
-import MinistryClient from './MinistryClient';
+import { redirect } from 'next/navigation';
+import { resolveMinistrySlug } from '@/lib/knesset-db';
 
 interface Props {
   params: Promise<{ name: string }>;
@@ -14,8 +13,10 @@ export default async function MinistryPage({ params }: Props) {
   const { name: rawName } = await params;
   const name = decodeURIComponent(rawName);
 
-  const data = getMinistryDetail(name);
-  if (!data) notFound();
+  // Resolve ministry name to canonical office slug
+  const slug = resolveMinistrySlug(name);
+  if (!slug) redirect('/ministers');
 
-  return <MinistryClient data={data} />;
+  // Redirect to the canonical office page
+  redirect(`/office/${slug}`);
 }

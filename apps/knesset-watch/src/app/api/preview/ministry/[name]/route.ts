@@ -20,7 +20,7 @@ export async function GET(
     db = new Database(DB_PATH, { readonly: true });
 
     const totalMinisters = (db.prepare(`
-      SELECT COUNT(DISTINCT mk_id) as cnt FROM mk_position WHERE committee = ?
+      SELECT COUNT(DISTINCT mk_id) as cnt FROM mk_position WHERE ministry = ?
     `).get(ministryName) as { cnt: number }).cnt;
 
     if (totalMinisters === 0) return NextResponse.json({ error: 'not found' }, { status: 404 });
@@ -29,7 +29,7 @@ export async function GET(
       SELECT mp.first_name || ' ' || mp.last_name as name
       FROM mk_position pos
       JOIN mk_person mp ON mp.person_id = pos.mk_id
-      WHERE pos.committee = ? AND pos.is_current = 1
+      WHERE pos.ministry = ? AND pos.is_current = 1
         AND (pos.duty_desc LIKE 'שר%' OR pos.duty_desc LIKE 'שרת%'
           OR pos.duty_desc LIKE 'השר%' OR pos.duty_desc LIKE 'השרה%')
       ORDER BY pos.start_date DESC LIMIT 1

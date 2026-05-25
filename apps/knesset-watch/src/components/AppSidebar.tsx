@@ -8,7 +8,7 @@ const NAV = [
     group: 'אנשים',
     links: [
       { href: '/mks',       label: 'ח"כים',       prefixes: ['/mks', '/mk/'] },
-      { href: '/ministers', label: 'שרים',          prefixes: ['/ministers'] },
+      { href: '/ministers', label: 'שרים',          prefixes: ['/ministers', '/office/'] },
     ],
   },
   {

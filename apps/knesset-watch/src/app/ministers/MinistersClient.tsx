@@ -48,7 +48,14 @@ export default function MinistersClient({ ministers }: { ministers: MinisterInfo
           <span className="text-[11px] text-gray-500">{m.factionName}</span>
         </div>
         <div className="min-w-0">
-          {m.ministry ? (
+          {m.ministry && m.officeSlug ? (
+            <Link
+              href={`/office/${m.officeSlug}`}
+              className="text-xs text-gray-700 leading-snug line-clamp-2 hover:underline hover:text-teal-700 transition-colors"
+            >
+              {m.ministerRole}
+            </Link>
+          ) : m.ministry ? (
             <Link
               href={`/ministry/${encodeURIComponent(m.ministry)}`}
               className="text-xs text-gray-700 leading-snug line-clamp-2 hover:underline hover:text-teal-700 transition-colors"
