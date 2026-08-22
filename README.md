@@ -25,7 +25,7 @@ Each app has its own README with setup details. The main app to work on is `apps
 - **Next.js 16** (App Router), TypeScript, Tailwind CSS — RTL, Hebrew UI
 - **Local SQLite** (`apps/knesset-watch/knesset.db`, via `better-sqlite3`) — committed to git, holds bills/votes/MKs/committees/positions
 - **Turso** (libSQL hosted) — protocol search + vector embeddings for RAG
-- **Google Gemini** (`gemini-2.5-flash`) — query rewriting, answer streaming, Google Search grounding
+- **Google Gemini** (`gemini-3.6-flash`) — query rewriting, answer streaming, Google Search grounding
 - **Jina AI** — 256-dim text embeddings
 - **Upstash Redis** — Ask API response cache (TTL 2h)
 - **Vercel** — current hosting (Netlify migration planned, see `docs/plans/`)

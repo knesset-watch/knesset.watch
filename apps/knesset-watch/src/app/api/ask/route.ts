@@ -100,14 +100,14 @@ async function* streamGemini(userMessage: string, systemPrompt: string): AsyncGe
   if (!key) throw new Error('GEMINI_API_KEY not set');
 
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?key=${key}&alt=sse`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:streamGenerateContent?key=${key}&alt=sse`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         system_instruction: { parts: [{ text: systemPrompt }] },
         contents: [{ role: 'user', parts: [{ text: userMessage }] }],
-        generationConfig: { maxOutputTokens: 4096, thinkingConfig: { thinkingBudget: 0 } },
+        generationConfig: { maxOutputTokens: 4096, thinkingConfig: { thinkingLevel: 'low' } },
       }),
     },
   );
@@ -151,7 +151,7 @@ async function rewriteQueryForSearch(query: string, mkName?: string): Promise<st
   if (!key) return query;
   try {
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${key}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -164,7 +164,7 @@ async function rewriteQueryForSearch(query: string, mkName?: string): Promise<st
             `• הוסף מילה נרדפת אחת לכל היותר לנושא המרכזי\n` +
             `• שמור על עצם הנושא — אל תוסיף נושאים חדשים`,
           }] }],
-          generationConfig: { maxOutputTokens: 60, thinkingConfig: { thinkingBudget: 0 } },
+          generationConfig: { maxOutputTokens: 60, thinkingConfig: { thinkingLevel: 'low' } },
         }),
       },
     );
@@ -182,7 +182,7 @@ async function generateSuggestions(query: string): Promise<string[]> {
   if (!key) return [];
   try {
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${key}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -192,7 +192,7 @@ async function generateSuggestions(query: string): Promise<string[]> {
             `הצע 3 שאלות המשך קצרות ושימושיות בעברית שהמשתמש עשוי לשאול.\n` +
             `כל שאלה שורה אחת, ללא מספרים, ללא סימנים.`,
           }] }],
-          generationConfig: { maxOutputTokens: 160, thinkingConfig: { thinkingBudget: 0 } },
+          generationConfig: { maxOutputTokens: 160, thinkingConfig: { thinkingLevel: 'low' } },
         }),
       },
     );
@@ -211,7 +211,7 @@ async function fetchNewsContext(topic: string, mkName?: string): Promise<string>
   const searchQuery = mkName ? `${mkName} ${topic}` : topic;
   try {
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${key}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -222,7 +222,7 @@ async function fetchNewsContext(topic: string, mkName?: string): Promise<string>
             `אל תוסיף מידע מדויק שאינך בטוח בו.`,
           }] }],
           tools: [{ googleSearch: {} }],
-          generationConfig: { maxOutputTokens: 300, thinkingConfig: { thinkingBudget: 0 } },
+          generationConfig: { maxOutputTokens: 300, thinkingConfig: { thinkingLevel: 'low' } },
         }),
       },
     );
