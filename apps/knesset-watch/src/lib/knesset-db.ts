@@ -2819,3 +2819,296 @@ export function getPersonTimeline(personId: number): PersonTimelineEvent[] {
 
   return events;
 }
+
+/* ════════════════════════════════════════════════════════════════════════════
+ *  מדד מעורבות פרלמנטרית
+ *
+ *  מודד עד כמה חבר כנסת פעיל בעבודה הפרלמנטרית.
+ *  לא מודד: איכות חקיקה, אג'נדה, או כוח פוליטי.
+ *
+ *  המדד בנוי משני רכיבים, כל אחד 50%:
+ *    1. כמה הצעות חוק יזם
+ *    2. באיזה אחוז מההצבעות השתתף
+ *
+ *  כל רכיב מומר לאחוזון לפני השקלול, כי הם בסקאלות שונות לגמרי —
+ *  מספר ההצעות במאות, שיעור ההשתתפות באחוזים. בלי ההמרה, מספר
+ *  ההצעות היה מכריע לבדו.
+ *
+ *  שרים מקבלים ציון אפסי מעצם הגדרת המדד: הם לא מגישים הצעות חוק
+ *  פרטיות (הם מקדמים חקיקה ממשלתית) ולא נוכחים בהצבעות (הם מנהלים
+ *  משרד). לכן כל תצוגה של ציון שר חייבת לשאת הערה. ראו isMinister.
+ *
+ *  הנחת יסוד: המאגר מכיל כנסת אחת בלבד — הכנסת ה-25.
+ *  הפונקציה עצמה לא מסננת לפי מספר כנסת, כי אין עמודת knesset_num
+ *  על bill, bill_initiator, mk_person או plenary_vote. הסינון נעשה
+ *  במקור, ב-sync.ts, שמושך רק KnessetNum eq 25 (שורות 85, 313, 461).
+ *  ההצבעות מוגבלות בתאריך ונעות בין 16.11.2022 ל-25.2.2026.
+ *
+ *  ⚠ אם יסונכרנו נתונים של כנסת נוספת לאותו מאגר, החישוב יערבב בין
+ *  הכנסות בלי להתריע. הפתרון הנכון הוא עמודת knesset_num וסינון
+ *  מפורש — חוב טכני שרשום ולא בוצע.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+/** סטטוסים שמעידים שהצעת החוק עברה את הקריאה הטרומית והתקדמה */
+const STATUS_PASSED_PRELIMINARY = [108, 141, 111, 113, 130, 114, 118, 122];
+/** התקבלה בקריאה שלישית */
+const STATUS_BECAME_LAW = 118;
+/** נעצרה. הסטטוס לא מספר באיזה שלב, לכן נשענים על קיום הצבעה */
+const STATUS_STOPPED = 177;
+
+export interface EngagementRow {
+  mkId: number;
+  name: string;
+  faction: string;
+  isCoalition: boolean | null;
+  /** מכהן כשר. התצוגה חייבת להוסיף הערה שהמדד לא משקף את עבודתו */
+  isMinister: boolean;
+  ministerRoles: string[];
+
+  /** מספר הצעות החוק שיזם. הרכיב הראשון במדד */
+  billsInitiated: number;
+  /** כמה מהן התקדמו באמת. הקשר לתצוגה בלבד, לא נכנס לציון */
+  billsAdvanced: number;
+  /** כמה מהן הפכו לחוק. גם זה תצוגה בלבד */
+  billsPassed: number;
+
+  votesParticipated: number;
+  /** כמה הצבעות היו בכנסת בזמן שהוא כיהן בפועל */
+  votesExpected: number;
+  /** שיעור ההשתתפות באחוזים. הרכיב השני במדד */
+  attendancePct: number;
+
+  pInitiative: number;
+  pAttendance: number;
+  /** הציון הסופי, 0 עד 100 */
+  engagement: number;
+}
+
+/**
+ * האם הצעת החוק התקדמה מעבר להנחה על השולחן.
+ *
+ * 65% מהצעות החוק נשארות במצב "הונחה לדיון מוקדם" ולא זזות משם,
+ * ולכן עצם ההגשה לא מעידה על עבודה. הרף הוא מעבר הקריאה הטרומית.
+ *
+ * מקרה מיוחד: הצעה שנעצרה. הסטטוס לא מגלה באיזה שלב היא נעצרה,
+ * אז אם היא הגיעה להצבעה במליאה, סימן שהספיקה להתקדם.
+ */
+function billAdvanced(statusId: number, reachedPlenaryVote: boolean): boolean {
+  if (STATUS_PASSED_PRELIMINARY.includes(statusId)) return true;
+  if (statusId === STATUS_STOPPED && reachedPlenaryVote) return true;
+  return false;
+}
+
+/**
+ * מיקום הערך בתוך הקבוצה, כאחוז.
+ *
+ * מי שנמצא בתיקו נספר כחצי. בלי זה, כל מי שחולק את הערך הנמוך
+ * ביותר היה מקבל אפס: 19 חברי כנסת לא יזמו אף הצעת חוק וכולם היו
+ * יורדים ל-0.0, בעוד שמי שיזם הצעה אחת קופץ ל-12.9. הספירה
+ * החלקית מרככת את המדרגה ומשקפת נכון יותר את מיקומם.
+ */
+function percentileRank(allValues: number[], value: number): number {
+  if (allValues.length === 0) return 0;
+
+  const below = allValues.filter(v => v < value).length;
+  const equal = allValues.filter(v => v === value).length;
+
+  return (100 * (below + equal / 2)) / allValues.length;
+}
+
+/** תאריכי ההתחלה והסיום של כהונת חבר הכנסת */
+interface TenureSegment {
+  startDate?: string;
+  endDate?: string;
+}
+
+/**
+ * חלון הכהונה נשמר כ-JSON בעמודה segments.
+ * הוא קיים אצל כל 147 חברי הכנסת, ובלעדיו מחליף שנכנס באמצע
+ * הקדנציה היה נראה כאילו החסיר מאות הצבעות.
+ */
+function parseTenure(segmentsJson: string | null): TenureSegment[] {
+  try {
+    const parsed = JSON.parse(segmentsJson ?? '[]');
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+/** כמה מהתאריכים האלה נופלים בתוך תקופת הכהונה */
+function countVotesDuringTenure(voteDates: string[], tenure: TenureSegment[]): number {
+  return voteDates.filter(date =>
+    tenure.some(seg => seg.startDate && seg.endDate && date >= seg.startDate && date <= seg.endDate),
+  ).length;
+}
+
+/* ── שליפות מסד הנתונים ───────────────────────────────────────────────────── */
+
+/** התאריכים של כל ההצבעות במליאה, כמחרוזות בפורמט YYYY-MM-DD */
+function loadVoteDates(db: Database.Database): string[] {
+  const rows = db
+    .prepare(`SELECT substr(date, 1, 10) AS d FROM plenary_vote WHERE date IS NOT NULL`)
+    .all() as Array<{ d: string }>;
+  return rows.map(r => r.d);
+}
+
+interface BillTally {
+  initiated: number;
+  advanced: number;
+  passed: number;
+}
+
+/**
+ * סופר לכל חבר כנסת כמה הצעות יזם, כמה מהן התקדמו וכמה הפכו לחוק.
+ *
+ * השאילתה מחזירה שורה לכל צמד (חבר כנסת, הצעת חוק) והספירה נעשית
+ * כאן בקוד, כך שהכלל של "מה נחשב התקדמות" יושב במקום אחד קריא
+ * ולא מפוזר בתוך SQL.
+ */
+function tallyBillsPerMk(db: Database.Database): Map<number, BillTally> {
+  const rows = db
+    .prepare(
+      `SELECT bi.mk_id    AS mkId,
+              bi.bill_id  AS billId,
+              b.status_id AS statusId,
+              CASE WHEN v.bill_id IS NULL THEN 0 ELSE 1 END AS reachedVote
+       FROM bill_initiator bi
+       JOIN bill b ON b.id = bi.bill_id
+       LEFT JOIN (SELECT DISTINCT bill_id FROM plenary_vote WHERE bill_id IS NOT NULL) v
+              ON v.bill_id = b.id
+       GROUP BY bi.mk_id, bi.bill_id`,
+    )
+    .all() as Array<{ mkId: number; billId: number; statusId: number; reachedVote: number }>;
+
+  const tally = new Map<number, BillTally>();
+
+  for (const row of rows) {
+    const current = tally.get(row.mkId) ?? { initiated: 0, advanced: 0, passed: 0 };
+
+    current.initiated += 1;
+    if (billAdvanced(row.statusId, row.reachedVote === 1)) current.advanced += 1;
+    if (row.statusId === STATUS_BECAME_LAW) current.passed += 1;
+
+    tally.set(row.mkId, current);
+  }
+
+  return tally;
+}
+
+/** כמה הצבעות כל חבר כנסת השתתף בהן בפועל */
+function countVotesPerMk(db: Database.Database): Map<number, number> {
+  const rows = db
+    .prepare(`SELECT mk_id AS mkId, COUNT(DISTINCT vote_id) AS n FROM mk_vote_result GROUP BY mk_id`)
+    .all() as Array<{ mkId: number; n: number }>;
+  return new Map(rows.map(r => [r.mkId, r.n]));
+}
+
+/** מי מחברי הכנסת מכהן כשר, ובאילו תפקידים */
+function findCurrentMinisters(db: Database.Database): Map<number, string[]> {
+  const rows = db
+    .prepare(
+      `SELECT mk_id AS mkId, duty_desc AS duty
+       FROM mk_position
+       WHERE is_current = 1 AND ministry IS NOT NULL AND ministry <> ''`,
+    )
+    .all() as Array<{ mkId: number; duty: string | null }>;
+
+  const ministers = new Map<number, string[]>();
+  for (const row of rows) {
+    const roles = ministers.get(row.mkId) ?? [];
+    if (row.duty && !roles.includes(row.duty)) roles.push(row.duty);
+    ministers.set(row.mkId, roles);
+  }
+  return ministers;
+}
+
+/* ── החישוב עצמו ──────────────────────────────────────────────────────────── */
+
+/** מחושב פעם אחת ונשמר. האחוזון דורש את כל הקבוצה ממילא */
+let _engagement: EngagementRow[] | null = null;
+
+/** מדד המעורבות של כל חברי הכנסת ה-25, מהגבוה לנמוך */
+export function getParliamentaryEngagement(): EngagementRow[] {
+  if (_engagement) return _engagement;
+
+  const db = getDb();
+  if (!db) return [];
+
+  // שלב 1: לאסוף את כל הנתונים הגולמיים
+  const voteDates = loadVoteDates(db);
+  const billsPerMk = tallyBillsPerMk(db);
+  const votesPerMk = countVotesPerMk(db);
+  const ministers = findCurrentMinisters(db);
+
+  const people = db
+    .prepare(
+      `SELECT person_id, first_name, last_name, faction_name, is_coalition, segments
+       FROM mk_person`,
+    )
+    .all() as Array<{
+      person_id: number;
+      first_name: string | null;
+      last_name: string | null;
+      faction_name: string | null;
+      is_coalition: number | null;
+      segments: string | null;
+    }>;
+
+  // שלב 2: לבנות שורה לכל חבר כנסת
+  const rows: EngagementRow[] = [];
+
+  for (const person of people) {
+    const tenure = parseTenure(person.segments);
+    const votesExpected = countVotesDuringTenure(voteDates, tenure);
+
+    // בלי חלון כהונה אין מכנה לחישוב האחוז, עדיף להשמיט מלחלק באפס
+    if (votesExpected === 0) continue;
+
+    const bills = billsPerMk.get(person.person_id) ?? { initiated: 0, advanced: 0, passed: 0 };
+    const votesParticipated = votesPerMk.get(person.person_id) ?? 0;
+    const ministerRoles = ministers.get(person.person_id) ?? [];
+
+    rows.push({
+      mkId: person.person_id,
+      name: `${person.first_name ?? ''} ${person.last_name ?? ''}`.trim(),
+      faction: (person.faction_name ?? '').trim(),
+      isCoalition: person.is_coalition === null ? null : person.is_coalition === 1,
+      isMinister: ministerRoles.length > 0,
+      ministerRoles,
+
+      billsInitiated: bills.initiated,
+      billsAdvanced: bills.advanced,
+      billsPassed: bills.passed,
+
+      votesParticipated,
+      votesExpected,
+      attendancePct: (100 * votesParticipated) / votesExpected,
+
+      // מחושבים בשלב הבא, כשכל הקבוצה ידועה
+      pInitiative: 0,
+      pAttendance: 0,
+      engagement: 0,
+    });
+  }
+
+  // שלב 3: להמיר לאחוזונים ולשקלל
+  const allInitiatives = rows.map(r => r.billsInitiated);
+  const allAttendances = rows.map(r => r.attendancePct);
+
+  for (const row of rows) {
+    row.pInitiative = percentileRank(allInitiatives, row.billsInitiated);
+    row.pAttendance = percentileRank(allAttendances, row.attendancePct);
+    row.engagement = 0.5 * row.pInitiative + 0.5 * row.pAttendance;
+  }
+
+  rows.sort((a, b) => b.engagement - a.engagement);
+
+  _engagement = rows;
+  return rows;
+}
+
+/** מדד המעורבות של חבר כנסת אחד, או null אם אינו בקבוצה */
+export function getMkEngagement(mkId: number): EngagementRow | null {
+  return getParliamentaryEngagement().find(row => row.mkId === mkId) ?? null;
+}
