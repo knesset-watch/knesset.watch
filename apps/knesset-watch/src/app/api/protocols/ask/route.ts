@@ -1,9 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { validateApiAuth } from '@/lib/ui/auth-utils';
-import { searchProtocols, searchProtocolsVec, embedQueryPublic, getProtocolSession } from '@/lib/protocols-db';
-import type { ProtocolSearchResult } from '@/lib/protocols-db';
+import { NextRequest, NextResponse } from "next/server";
+import { validateApiAuth } from "@/lib/ui/auth-utils";
+import {
+  searchProtocols,
+  searchProtocolsVec,
+  embedQueryPublic,
+  getProtocolSession,
+} from "@/lib/protocols-db";
+import type { ProtocolSearchResult } from "@/lib/protocols-db";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface AskSource {
   sessionId: number;
@@ -13,17 +18,21 @@ interface AskSource {
 }
 
 export async function POST(req: NextRequest) {
-  const authError = await validateApiAuth('SITE_PASSWORD', 'knesset-watch_auth_token');
+  const authError = await validateApiAuth(
+    "SITE_PASSWORD",
+    "knesset-watch_auth_token",
+  );
   if (authError) return authError;
 
-  const body = await req.json() as { question?: unknown };
-  const question = typeof body.question === 'string' ? body.question.trim() : '';
+  const body = (await req.json()) as { question?: unknown };
+  const question =
+    typeof body.question === "string" ? body.question.trim() : "";
 
   if (!question || question.length < 2) {
-    return NextResponse.json({ error: 'שאלה קצרה מדי' }, { status: 400 });
+    return NextResponse.json({ error: "שאלה קצרה מדי" }, { status: 400 });
   }
   if (question.length > 500) {
-    return NextResponse.json({ error: 'שאלה ארוכה מדי' }, { status: 400 });
+    return NextResponse.json({ error: "שאלה ארוכה מדי" }, { status: 400 });
   }
 
   try {
@@ -41,7 +50,7 @@ export async function POST(req: NextRequest) {
 
     if (allResults.length === 0) {
       return NextResponse.json({
-        answer: 'לא נמצאו קטעים רלוונטיים לשאלה זו בפרוטוקולי הכנסת.',
+        answer: "לא נמצאו קטעים רלוונטיים לשאלה זו בפרוטוקולי הכנסת.",
         sources: [],
       });
     }
@@ -59,11 +68,11 @@ export async function POST(req: NextRequest) {
 
     // 3. Fetch full session content for top sessions (parallel)
     const sessionResults = await Promise.all(
-      topSessionIds.map(id => getProtocolSession(id)),
+      topSessionIds.map((id) => getProtocolSession(id)),
     );
 
     // 4. Build context string — cap at 30 chunks per session to limit tokens
-    let context = '';
+    let context = "";
     const sources: AskSource[] = [];
 
     for (const result of sessionResults) {
@@ -77,15 +86,15 @@ export async function POST(req: NextRequest) {
         title: session.title,
       });
 
-      context += `[${session.date} | ${session.committeeName ?? 'ועדה'}]\n`;
+      context += `[${session.date} | ${session.committeeName ?? "ועדה"}]\n`;
       if (session.title) context += `${session.title}\n`;
 
       const cappedChunks = chunks.slice(0, 60);
       for (const chunk of cappedChunks) {
         if (chunk.speaker) context += `${chunk.speaker}: `;
-        context += chunk.text.trim().replace(/\n{3,}/g, '\n') + '\n';
+        context += chunk.text.trim().replace(/\n{3,}/g, "\n") + "\n";
       }
-      context += '\n';
+      context += "\n";
 
       // Stop at ~6000 chars — keeps request under ~2000 tokens
       // Groq llama-3.3-70b has 6000 TPM; 8b-instant fallback has 30,000 TPM
@@ -95,7 +104,7 @@ export async function POST(req: NextRequest) {
     // Guard: if context is too thin, nothing useful to send to Groq
     if (context.trim().length < 100) {
       return NextResponse.json({
-        answer: 'לא נמצא מידע מספיק בפרוטוקולים על נושא זה.',
+        answer: "לא נמצא מידע מספיק בפרוטוקולים על נושא זה.",
         sources: [],
       });
     }
@@ -107,49 +116,51 @@ export async function POST(req: NextRequest) {
 ציין שמות דוברים, תאריכים ושמות ועדות כשרלוונטי.`;
 
     async function callGroq(model: string): Promise<Response> {
-      return fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
+      return fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
         },
         body: JSON.stringify({
           model,
           max_tokens: 512,
           messages: [
-            { role: 'system', content: SYSTEM_PROMPT },
-            { role: 'user', content: `שאלה: ${question}\n\nקטעים מפרוטוקולים:\n${context}` },
+            { role: "system", content: SYSTEM_PROMPT },
+            {
+              role: "user",
+              content: `שאלה: ${question}\n\nקטעים מפרוטוקולים:\n${context}`,
+            },
           ],
         }),
       });
     }
 
-    let groqRes = await callGroq('llama-3.3-70b-versatile');
-
-    // On rate-limit, wait 1s and retry with the faster 8b model (higher token quota)
+    let groqRes = await callGroq("openai/gpt-oss-20b"); // On rate-limit, wait 1s and retry with the faster 8b model (higher token quota)
     if (groqRes.status === 429) {
-      await new Promise(r => setTimeout(r, 1000));
-      groqRes = await callGroq('llama-3.1-8b-instant');
+      await new Promise((r) => setTimeout(r, 1000));
+      groqRes = await callGroq("openai/gpt-oss-20b");
     }
 
     if (!groqRes.ok) {
       const err = await groqRes.text();
-      console.error('Groq error:', groqRes.status, err);
-      const msg = groqRes.status === 429 || groqRes.status === 413
-        ? 'שירות ה-AI עמוס כרגע, נסה שוב בעוד כמה שניות'
-        : 'שגיאה בשירות ה-AI';
+      console.error("Groq error:", groqRes.status, err);
+      const msg =
+        groqRes.status === 429 || groqRes.status === 413
+          ? "שירות ה-AI עמוס כרגע, נסה שוב בעוד כמה שניות"
+          : "שגיאה בשירות ה-AI";
       return NextResponse.json({ error: msg }, { status: 502 });
     }
 
-    const groqData = await groqRes.json() as {
+    const groqData = (await groqRes.json()) as {
       choices: Array<{ message: { content: string } }>;
     };
-    const answer = groqData.choices[0]?.message?.content ?? '';
+    const answer = groqData.choices[0]?.message?.content ?? "";
 
     return NextResponse.json({ answer, sources });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
-    console.error('protocols/ask error:', msg);
+    console.error("protocols/ask error:", msg);
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
