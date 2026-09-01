@@ -62,6 +62,12 @@ const MIN_VOTES_FOR_RANKING = 10;
 const RESULT_FOR = 7;
 const RESULT_AGAINST = 8;
 
+/** התקבלה בקריאה שלישית. תואם ל-STATUS_BECAME_LAW ב-knesset-db.ts */
+const STATUS_BECAME_LAW = 118;
+
+/** כמה הצעות חוק מוחזרות לקישור בכל אג'נדה. מספיק לאימות, לא מנפח את התשובה */
+const MAX_BILL_REFS = 8;
+
 /** מה המשתמש בחר: אג'נדה, ואם ידועה — גם העמדה שהוא מזדהה איתה */
 export interface AgendaSelection {
   issueId: string;
@@ -79,6 +85,16 @@ export interface AgendaFlags {
   contradictedOwnBill: number;
 }
 
+/** הצעת חוק קונקרטית שהח"כ יזם, לקישור מהתצוגה אל /bill/[id] */
+export interface AgendaBillRef {
+  billId: number;
+  title: string;
+  /** עברה את הקריאה הטרומית */
+  advanced: boolean;
+  /** התקבלה בקריאה שלישית */
+  passed: boolean;
+}
+
 export interface AgendaScore {
   issueId: string;
   label: string;
@@ -87,6 +103,11 @@ export interface AgendaScore {
   billsInitiated: number;
   /** כמה מהן עברו את הקריאה הטרומית */
   billsAdvanced: number;
+  /**
+   * ההצעות עצמן, כדי שהמשתמש יוכל לאמת את הציון ולא רק לקרוא מספר.
+   * מוגבל ל-MAX_BILL_REFS, ממוינות כך שמה שהתקדם מופיע ראשון.
+   */
+  bills: AgendaBillRef[];
 
   /** הצבעות שבהן תמך בכיוון האג'נדה */
   supportingVotes: number;
@@ -148,6 +169,7 @@ function hasClassification(db: Database.Database): boolean {
 interface AgendaBill {
   billId: number;
   statusId: number;
+  title: string;
   /** האם החוק דוחף לכיוון העמדה שנבחרה. null כשאין נתוני עמדה */
   matchesStance: boolean | null;
 }
@@ -167,16 +189,20 @@ function loadAgendaBills(
   if (useClassification) {
     const rows = db
       .prepare(
-        `SELECT c.bill_id AS billId, b.status_id AS statusId, c.stance_id AS stanceId
+        `SELECT c.bill_id AS billId, b.status_id AS statusId, b.title AS title,
+                c.stance_id AS stanceId
          FROM bill_political_classification c
          JOIN bill b ON b.id = c.bill_id
          WHERE c.issue_id = ?`,
       )
-      .all(selection.issueId) as Array<{ billId: number; statusId: number; stanceId: string | null }>;
+      .all(selection.issueId) as Array<{
+        billId: number; statusId: number; title: string; stanceId: string | null;
+      }>;
 
     return rows.map(r => ({
       billId: r.billId,
       statusId: r.statusId,
+      title: r.title,
       matchesStance: selection.stanceId && r.stanceId ? r.stanceId === selection.stanceId : null,
     }));
   }
@@ -188,8 +214,8 @@ function loadAgendaBills(
   const params = issue.keywords.map(k => `%${k}%`);
 
   const rows = db
-    .prepare(`SELECT id AS billId, status_id AS statusId FROM bill WHERE ${where}`)
-    .all(...params) as Array<{ billId: number; statusId: number }>;
+    .prepare(`SELECT id AS billId, status_id AS statusId, title FROM bill WHERE ${where}`)
+    .all(...params) as Array<{ billId: number; statusId: number; title: string }>;
 
   return rows.map(r => ({ ...r, matchesStance: null }));
 }
@@ -260,6 +286,8 @@ interface MkTally {
   supportingVotes: number;
   rebelVotes: number;
   contradictedOwnBill: number;
+  /** ההצעות עצמן, לקישור מהתצוגה */
+  bills: AgendaBillRef[];
 }
 
 function emptyTally(): MkTally {
@@ -269,6 +297,7 @@ function emptyTally(): MkTally {
     supportingVotes: 0,
     rebelVotes: 0,
     contradictedOwnBill: 0,
+    bills: [],
   };
 }
 
@@ -507,6 +536,10 @@ export function computeAgendaActivity(
           label: issue.label,
           billsInitiated: tally.billsInitiated,
           billsAdvanced: tally.billsAdvanced,
+          // מה שהתקדם ראשון — זו ההצעה ששווה ללחוץ עליה
+          bills: [...tally.bills]
+            .sort((x, y) => Number(y.passed) - Number(x.passed) || Number(y.advanced) - Number(x.advanced))
+            .slice(0, MAX_BILL_REFS),
           supportingVotes: tally.supportingVotes,
           voteOpportunities: opportunities,
           supportRate: round1(rate * 100),
@@ -605,7 +638,15 @@ function tallyBills(
 
       const advanced = billAdvanced(bill.statusId, reachedPlenary.has(r.billId));
       if (advanced) tally.billsAdvanced += 1;
-      if (!onlyAdvanced || advanced) tally.billsInitiated += 1;
+      if (!onlyAdvanced || advanced) {
+        tally.billsInitiated += 1;
+        tally.bills.push({
+          billId: bill.billId,
+          title: bill.title,
+          advanced,
+          passed: bill.statusId === STATUS_BECAME_LAW,
+        });
+      }
     }
   }
 
