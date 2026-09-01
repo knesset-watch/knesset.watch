@@ -4,8 +4,17 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePeriod, periodToDateRange } from '@/lib/period-context';
+import { DOMAINS, POLITICAL_ISSUES } from '@/lib/agendas';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
+/** כמה תחומים נבחרים כאן לפני המעבר לשאלון. זהה ל-DOMAIN_PICKS ב-/agenda-match */
+const HOME_DOMAIN_PICKS = 3;
+
+/** רק תחומים שיש להם אג'נדות. תחום ריק לא ניתן לבחירה ואין טעם להציגו כאן */
+const PICKABLE_DOMAINS = DOMAINS.filter(d =>
+  POLITICAL_ISSUES.some(i => i.domainId === d.id),
+);
 
 interface Stats {
   mks: number;
@@ -48,9 +57,24 @@ export default function HomepageClient() {
   const [query, setQuery] = useState('');
   const [stats, setStats] = useState<Stats | null>(null);
   const [recentBills, setRecentBills] = useState<RecentBill[]>([]);
+  const [homeDomains, setHomeDomains] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const { period } = usePeriod();
+
+  function toggleHomeDomain(id: string) {
+    setHomeDomains(prev => {
+      if (prev.includes(id)) return prev.filter(d => d !== id);
+      if (prev.length >= HOME_DOMAIN_PICKS) return prev;
+      return [...prev, id];
+    });
+  }
+
+  /** התחומים עוברים ב-query string, והשאלון פותח ישר בשלב העמדות */
+  function startQuestionnaire() {
+    if (homeDomains.length === 0) return;
+    router.push(`/agenda-match?domains=${homeDomains.join(',')}`);
+  }
 
   const fetchData = useCallback(async () => {
     const dateRange = periodToDateRange(period);
@@ -136,6 +160,66 @@ export default function HomepageClient() {
           </div>
         </div>
       )}
+
+      {/* שאלון ההתאמה — השלב הראשון יושב כאן, והמשכו ב-/agenda-match */}
+      <div className="max-w-3xl mx-auto px-6 mb-14">
+        <div className="rounded-2xl border-2 border-teal-600/25 bg-teal-50/40 p-6">
+          <div className="text-[11px] font-black text-teal-700 uppercase tracking-widest mb-1">
+            מי עובד בשבילך
+          </div>
+          <h2 className="text-xl font-black mb-1">בחרי עד שלושה תחומים שחשובים לך</h2>
+          <p className="text-sm text-gray-600 mb-4 font-medium leading-relaxed">
+            נשאל אותך מה העמדה שלך בכל נושא, ונדרג את חברי הכנסת לפי מידת הפעילות שלהם —
+            הצעות חוק שיזמו והצבעות שתמכו בהן.
+          </p>
+
+          <div className="flex flex-wrap gap-2">
+            {PICKABLE_DOMAINS.map(d => {
+              const selected = homeDomains.includes(d.id);
+              const full = homeDomains.length >= HOME_DOMAIN_PICKS && !selected;
+              return (
+                <button
+                  key={d.id}
+                  onClick={() => toggleHomeDomain(d.id)}
+                  disabled={full}
+                  className={`text-xs font-black px-3 py-2 rounded-lg border-2 transition-colors ${
+                    selected
+                      ? 'border-teal-600 bg-teal-600 text-white'
+                      : full
+                        ? 'border-black/8 text-gray-400 opacity-50 cursor-not-allowed bg-white'
+                        : 'border-black/10 bg-white hover:border-teal-400'
+                  }`}
+                >
+                  {d.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex items-center gap-3 mt-5 flex-wrap">
+            <button
+              onClick={startQuestionnaire}
+              disabled={homeDomains.length === 0}
+              className="px-5 py-2.5 rounded-lg bg-black text-white font-black text-sm disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+            >
+              המשך לשאלון
+            </button>
+            <span className="text-xs text-gray-500 font-medium">
+              {homeDomains.length > 0
+                ? `נבחרו ${homeDomains.length} מתוך ${HOME_DOMAIN_PICKS}`
+                : 'אפשר גם לדלג ולבחור בשאלון עצמו'}
+            </span>
+            {homeDomains.length === 0 && (
+              <Link
+                href="/agenda-match"
+                className="text-xs font-black underline text-gray-600 hover:text-black"
+              >
+                לשאלון המלא ←
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Section cards */}
       <div className="max-w-3xl mx-auto px-6 mb-14">
