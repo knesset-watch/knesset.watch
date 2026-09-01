@@ -60,6 +60,11 @@ interface Coverage {
   belowThreshold: boolean;
 }
 
+/** מפתח sessionStorage לכרטיס הפתוח, לכל חיפוש בנפרד */
+function expandedStorageKey(picks: string | null): string | null {
+  return picks ? `agenda-match:open:${picks}` : null;
+}
+
 export default function AgendaMatchClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -77,10 +82,38 @@ export default function AgendaMatchClient() {
   const [expanded, setExpanded] = useState<number | null>(null);
 
   /**
-   * תחומים שנבחרו כבר במסך הבית מגיעים כ-?domains=a,b,c
-   * ומדלגים ישר לשלב העמדות.
+   * שחזור מצב מה-URL.
+   *
+   * ?domains=a,b,c — הגיע ממסך הבית, פותח בשלב העמדות.
+   * ?picks=issue:stance,... — חיפוש שכבר רץ. זה מה שמאפשר לצאת להצעת חוק
+   * ולחזור אחורה אל אותה רשימת ח"כים: הבחירות חיות ב-URL ולא רק ב-state,
+   * ולכן כפתור החזרה של הדפדפן מחזיר את התוצאות במקום מסך ריק.
    */
   useEffect(() => {
+    const picksRaw = searchParams.get('picks');
+
+    if (picksRaw) {
+      const restored: Record<string, string> = {};
+      for (const pair of picksRaw.split(',')) {
+        const [issueId, stanceId] = pair.split(':');
+        const issue = POLITICAL_ISSUES.find(i => i.id === issueId);
+        if (issue && issue.stances.some(s => s.id === stanceId)) {
+          restored[issueId] = stanceId;
+        }
+      }
+      if (Object.keys(restored).length > 0) {
+        setStances(restored);
+        setDomains([...new Set(
+          Object.keys(restored)
+            .map(id => POLITICAL_ISSUES.find(i => i.id === id)?.domainId)
+            .filter((d): d is string => Boolean(d)),
+        )]);
+        setStep('results');
+        void fetchResults(restored);
+        return;
+      }
+    }
+
     const raw = searchParams.get('domains');
     if (!raw) return;
     const valid = raw.split(',').filter(id => DOMAINS.some(d => d.id === id)).slice(0, DOMAIN_PICKS);
@@ -89,6 +122,19 @@ export default function AgendaMatchClient() {
       setStep('issues');
     }
   }, [searchParams]);
+
+  /** איזה כרטיס היה פתוח בחיפוש הזה, כדי שחזרה תנחת באותו מקום */
+  useEffect(() => {
+    if (step !== 'results' || rows.length === 0) return;
+    const key = expandedStorageKey(searchParams.get('picks'));
+    if (!key) return;
+    try {
+      const saved = sessionStorage.getItem(key);
+      if (saved) setExpanded(Number(saved));
+    } catch {
+      // sessionStorage חסום — לא קריטי, פשוט נפתח סגור
+    }
+  }, [step, rows.length, searchParams]);
 
   /** האג'נדות ששייכות לתחומים שנבחרו, מקובצות לפי התחום שלהן */
   const issuesByDomain = useMemo(
@@ -124,17 +170,16 @@ export default function AgendaMatchClient() {
     });
   }
 
-  async function runSearch() {
+  async function fetchResults(picked: Record<string, string>) {
     setLoading(true);
     setError(null);
-    setStep('results');
 
     try {
       const res = await fetch(`${BASE_PATH}/api/agenda-activity`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          selections: chosenIssueIds.map(issueId => ({ issueId, stanceId: stances[issueId] })),
+          selections: Object.entries(picked).map(([issueId, stanceId]) => ({ issueId, stanceId })),
         }),
       });
 
@@ -151,6 +196,32 @@ export default function AgendaMatchClient() {
     }
   }
 
+  /**
+   * החיפוש נכתב ל-URL לפני שהוא רץ. כך יציאה להצעת חוק וחזרה אחורה
+   * מחזירה בדיוק את אותה רשימת ח"כים, בלי להריץ את השאלון מחדש.
+   */
+  function runSearch() {
+    if (chosenIssueIds.length === 0) return;
+    const picks = chosenIssueIds.map(id => `${id}:${stances[id]}`).join(',');
+    setStep('results');
+    router.push(`/agenda-match?domains=${domains.join(',')}&picks=${encodeURIComponent(picks)}`);
+    void fetchResults(stances);
+  }
+
+  /** פתיחה וסגירה של כרטיס ח"כ, נשמרת כדי שחזרה מהצעת חוק תנחת באותו מקום */
+  function toggleExpanded(mkId: number) {
+    const next = expanded === mkId ? null : mkId;
+    setExpanded(next);
+    const key = expandedStorageKey(searchParams.get('picks'));
+    if (!key) return;
+    try {
+      if (next === null) sessionStorage.removeItem(key);
+      else sessionStorage.setItem(key, String(next));
+    } catch {
+      // sessionStorage חסום — הפתיחה עדיין עובדת, רק לא נשמרת
+    }
+  }
+
   function restart() {
     setStep('domains');
     setDomains([]);
@@ -159,6 +230,7 @@ export default function AgendaMatchClient() {
     setCoverage([]);
     setError(null);
     setExpanded(null);
+    router.push('/agenda-match');
   }
 
   function handleBack() {
@@ -406,7 +478,7 @@ export default function AgendaMatchClient() {
                     return (
                       <li key={row.mkId} className="rounded-xl border border-black/8 overflow-hidden">
                         <button
-                          onClick={() => setExpanded(open ? null : row.mkId)}
+                          onClick={() => toggleExpanded(row.mkId)}
                           className="w-full text-right p-4 hover:bg-gray-50 transition-colors"
                         >
                           <div className="flex items-center gap-3">
