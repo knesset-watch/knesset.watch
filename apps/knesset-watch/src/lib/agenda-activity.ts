@@ -128,6 +128,12 @@ export interface AgendaScore {
    * נתונים ולא מחוסר פעילות, והציון נשען על החקיקה בלבד.
    */
   votingAvailable: boolean;
+  /**
+   * true — נספרו רק חוקים והצבעות שדוחפים לכיוון שהמשתמש בחר.
+   * false — אין נתוני עמדה, ולכן זו פעילות בנושא ולא התאמה לעמדה.
+   * התצוגה חייבת להבחין בין השניים.
+   */
+  stanceAware: boolean;
   /** הציון לאג'נדה הזו, 0 עד 100 */
   score: number;
 
@@ -155,6 +161,8 @@ export interface AgendaCoverage {
   voteCount: number;
   /** מתוכן, כמה הצבעות כיוון החוק שלהן ידוע. רק הן נכנסות לרכיב ההצבעות */
   votesWithStance: number;
+  /** האם באג'נדה הזו הופעל סינון לפי כיוון. ראו AgendaScore.stanceAware */
+  stanceAware: boolean;
   /** כמה ח"כים מכהנים פעילים באג'נדה — קבוצת הדירוג */
   activeMks: number;
   source: AgendaSource;
@@ -518,7 +526,16 @@ export function computeAgendaActivity(
       const tallies = new Map<number, MkTally>();
       for (const mkId of mks.keys()) tallies.set(mkId, emptyTally());
 
-      const initiatorsByBill = tallyBills(db, bills, tallies, opts.countOnlyAdvancedBills === true);
+      /**
+       * האם ידוע לאיזה כיוון כל חוק דוחף. בלי זה אפשר למדוד פעילות
+       * בנושא, אבל אי אפשר לומר "עובד למענך" — כי חוק בעד וחוק נגד
+       * יושבים באותה אג'נדה ונראים זהים.
+       */
+      const stanceAware = bills.some(b => b.matchesStance !== null);
+
+      const initiatorsByBill = tallyBills(
+        db, bills, tallies, opts.countOnlyAdvancedBills === true, stanceAware,
+      );
       tallyVotes(db, votes, tallies, initiatorsByBill);
 
       /**
@@ -566,6 +583,7 @@ export function computeAgendaActivity(
           pInitiative: round1(pInitiative),
           pVoting: round1(pVoting),
           votingAvailable,
+          stanceAware,
           /**
            * כשאין הצבעות מסווגות, רכיב ההצבעות אינו קיים — לא אפס.
            * שקלול ב-0.6 היה מוריד לכולם 40 נקודות ומשדר "פעילות נמוכה"
@@ -588,6 +606,7 @@ export function computeAgendaActivity(
         issueId: issue.id,
         label: issue.label,
         votesWithStance: stanceKnownDates.length,
+        stanceAware,
         billCount: bills.length,
         voteCount: votes.length,
         activeMks: active.length,
@@ -628,6 +647,7 @@ function tallyBills(
   bills: AgendaBill[],
   tallies: Map<number, MkTally>,
   onlyAdvanced: boolean,
+  stanceAware: boolean,
 ): Map<number, Set<number>> {
   const initiatorsByBill = new Map<number, Set<number>>();
   if (bills.length === 0) return initiatorsByBill;
@@ -666,6 +686,16 @@ function tallyBills(
       const tally = tallies.get(r.mkId);
       const bill = byId.get(r.billId);
       if (!tally || !bill) continue;
+
+      /**
+       * כשיש נתוני עמדה, נספרות רק הצעות שדוחפות לכיוון שהמשתמש בחר.
+       * ח"כ שיזם עשרה חוקים להרחבת הפטור מגיוס אינו "עובד למען" משתמש
+       * שתומך בגיוס — גם אם שני הדברים יושבים באותה אג'נדה.
+       *
+       * היוזם נרשם ב-initiatorsByBill עוד לפני הסינון, כי דגל הסתירה
+       * צריך לזהות הצבעה נגד חוק שהח"כ יזם, בלי קשר לכיוונו.
+       */
+      if (stanceAware && bill.matchesStance !== true) continue;
 
       const advanced = billAdvanced(bill.statusId, reachedPlenary.has(r.billId));
       if (advanced) tally.billsAdvanced += 1;

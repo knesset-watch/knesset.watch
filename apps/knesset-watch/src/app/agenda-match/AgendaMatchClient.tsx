@@ -36,6 +36,7 @@ interface AgendaScore {
   pInitiative: number;
   pVoting: number;
   votingAvailable: boolean;
+  stanceAware: boolean;
   score: number;
   flags: AgendaFlags;
 }
@@ -58,6 +59,7 @@ interface Coverage {
   voteCount: number;
   activeMks: number;
   votesWithStance: number;
+  stanceAware: boolean;
   source: 'classification' | 'keywords';
   belowThreshold: boolean;
 }
@@ -456,9 +458,29 @@ export default function AgendaMatchClient() {
                   </span>
                 </div>
                 <p className="text-xs text-gray-500 mb-5 font-medium leading-relaxed">
-                  הציון משקלל 60% יוזמה חקיקתית ו-40% תמיכה בהצבעות, שניהם כאחוזון ביחס לשאר
-                  הפעילים באותו נושא. המדד מודד <strong>מידת פעילות</strong>, לא הסכמה מלאה איתך.
+                  {coverage.every(c => c.stanceAware) ? (
+                    <>
+                      נספרות רק הצעות חוק שדוחפות <strong>לכיוון שבחרת</strong>, והצבעות שתומכות
+                      בו. הציון משקלל 60% יוזמה חקיקתית ו-40% תמיכה בהצבעות, שניהם כאחוזון ביחס
+                      לשאר הפעילים באותו נושא.
+                    </>
+                  ) : (
+                    <>
+                      הציון משקלל 60% יוזמה חקיקתית ו-40% תמיכה בהצבעות, שניהם כאחוזון ביחס לשאר
+                      הפעילים באותו נושא. המדד מודד <strong>מידת פעילות בנושא</strong> — לא כיוון.
+                    </>
+                  )}
                 </p>
+
+                {coverage.some(c => !c.stanceAware) && (
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 mb-5">
+                    <p className="text-xs font-black text-amber-900 leading-relaxed">
+                      ⚠ אין עדיין סיווג עמדות לנושאים:{' '}
+                      {coverage.filter(c => !c.stanceAware).map(c => c.label).join(', ')}. שם מוצגת
+                      פעילות בנושא — כולל ח&quot;כים שדוחפים לכיוון ההפוך מזה שבחרת.
+                    </p>
+                  </div>
+                )}
 
                 {thinAgendas.length > 0 && (
                   <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 mb-5">
