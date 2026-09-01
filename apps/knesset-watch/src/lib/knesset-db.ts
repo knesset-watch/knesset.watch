@@ -2893,7 +2893,7 @@ export interface EngagementRow {
  * מקרה מיוחד: הצעה שנעצרה. הסטטוס לא מגלה באיזה שלב היא נעצרה,
  * אז אם היא הגיעה להצבעה במליאה, סימן שהספיקה להתקדם.
  */
-function billAdvanced(statusId: number, reachedPlenaryVote: boolean): boolean {
+export function billAdvanced(statusId: number, reachedPlenaryVote: boolean): boolean {
   if (STATUS_PASSED_PRELIMINARY.includes(statusId)) return true;
   if (statusId === STATUS_STOPPED && reachedPlenaryVote) return true;
   return false;
@@ -2907,7 +2907,7 @@ function billAdvanced(statusId: number, reachedPlenaryVote: boolean): boolean {
  * יורדים ל-0.0, בעוד שמי שיזם הצעה אחת קופץ ל-12.9. הספירה
  * החלקית מרככת את המדרגה ומשקפת נכון יותר את מיקומם.
  */
-function percentileRank(allValues: number[], value: number): number {
+export function percentileRank(allValues: number[], value: number): number {
   if (allValues.length === 0) return 0;
 
   const below = allValues.filter(v => v < value).length;
@@ -2917,7 +2917,7 @@ function percentileRank(allValues: number[], value: number): number {
 }
 
 /** תאריכי ההתחלה והסיום של כהונת חבר הכנסת */
-interface TenureSegment {
+export interface TenureSegment {
   startDate?: string;
   endDate?: string;
 }
@@ -2927,7 +2927,7 @@ interface TenureSegment {
  * הוא קיים אצל כל 147 חברי הכנסת, ובלעדיו מחליף שנכנס באמצע
  * הקדנציה היה נראה כאילו החסיר מאות הצבעות.
  */
-function parseTenure(segmentsJson: string | null): TenureSegment[] {
+export function parseTenure(segmentsJson: string | null): TenureSegment[] {
   try {
     const parsed = JSON.parse(segmentsJson ?? '[]');
     return Array.isArray(parsed) ? parsed : [];
@@ -2937,7 +2937,7 @@ function parseTenure(segmentsJson: string | null): TenureSegment[] {
 }
 
 /** כמה מהתאריכים האלה נופלים בתוך תקופת הכהונה */
-function countVotesDuringTenure(voteDates: string[], tenure: TenureSegment[]): number {
+export function countVotesDuringTenure(voteDates: string[], tenure: TenureSegment[]): number {
   return voteDates.filter(date =>
     tenure.some(seg => seg.startDate && seg.endDate && date >= seg.startDate && date <= seg.endDate),
   ).length;
