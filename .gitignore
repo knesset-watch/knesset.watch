@@ -23,3 +23,12 @@ apps/.DS_Store
 
 # Playwright MCP session cache
 .playwright-mcp/
+
+# Bill source PDFs — kept on disk, never in git (see README: save originals, don't commit them)
+apps/knesset-watch/bill-documents/
+
+# Local DB snapshots (85MB each, regenerable).
+# NOTE: knesset-deploy.db stays tracked — it is the build artifact source.
+apps/knesset-watch/knesset-backup.db
+apps/knesset-watch/knesset-before-august-sync.db
+apps/knesset-watch/knesset.local-backup.db
