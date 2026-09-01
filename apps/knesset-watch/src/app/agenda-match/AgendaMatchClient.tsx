@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { DOMAINS, POLITICAL_ISSUES } from '@/lib/agendas';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
@@ -17,11 +17,19 @@ interface AgendaFlags {
   contradictedOwnBill: number;
 }
 
+interface BillRef {
+  billId: number;
+  title: string;
+  advanced: boolean;
+  passed: boolean;
+}
+
 interface AgendaScore {
   issueId: string;
   label: string;
   billsInitiated: number;
   billsAdvanced: number;
+  bills: BillRef[];
   supportingVotes: number;
   voteOpportunities: number;
   supportRate: number;
@@ -54,6 +62,7 @@ interface Coverage {
 
 export default function AgendaMatchClient() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [step, setStep] = useState<Step>('domains');
   const [domains, setDomains] = useState<string[]>([]);
@@ -67,9 +76,29 @@ export default function AgendaMatchClient() {
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<number | null>(null);
 
-  /** האג'נדות ששייכות לתחומים שנבחרו */
-  const availableIssues = useMemo(
-    () => POLITICAL_ISSUES.filter(i => domains.includes(i.domainId)),
+  /**
+   * תחומים שנבחרו כבר במסך הבית מגיעים כ-?domains=a,b,c
+   * ומדלגים ישר לשלב העמדות.
+   */
+  useEffect(() => {
+    const raw = searchParams.get('domains');
+    if (!raw) return;
+    const valid = raw.split(',').filter(id => DOMAINS.some(d => d.id === id)).slice(0, DOMAIN_PICKS);
+    if (valid.length > 0) {
+      setDomains(valid);
+      setStep('issues');
+    }
+  }, [searchParams]);
+
+  /** האג'נדות ששייכות לתחומים שנבחרו, מקובצות לפי התחום שלהן */
+  const issuesByDomain = useMemo(
+    () =>
+      domains
+        .map(id => ({
+          domain: DOMAINS.find(d => d.id === id)!,
+          issues: POLITICAL_ISSUES.filter(i => i.domainId === id),
+        }))
+        .filter(g => g.domain && g.issues.length > 0),
     [domains],
   );
 
@@ -187,7 +216,9 @@ export default function AgendaMatchClient() {
           })}
         </ol>
 
-        {/* ── Step 1: domains ── */}
+        {/* ── Step 1: domains ──
+            תחום = טורקיז. הגוון הזה חוזר בכל מקום שבו מוצג תחום,
+            כדי שההיררכיה תחום ← אג'נדה תיקרא מיד. */}
         {step === 'domains' && (
           <div>
             <h2 className="text-lg font-black mb-1">בחרי עד שלושה תחומים</h2>
@@ -198,26 +229,28 @@ export default function AgendaMatchClient() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {DOMAINS.map(d => {
                 const selected = domains.includes(d.id);
-                const full = domains.length >= DOMAIN_PICKS && !selected;
                 const count = POLITICAL_ISSUES.filter(i => i.domainId === d.id).length;
+                const disabled = (domains.length >= DOMAIN_PICKS && !selected) || count === 0;
                 return (
                   <button
                     key={d.id}
                     onClick={() => toggleDomain(d.id)}
-                    disabled={full || count === 0}
-                    className={`text-right rounded-xl border p-4 transition-colors ${
+                    disabled={disabled}
+                    className={`text-right rounded-xl border-2 p-4 transition-colors ${
                       selected
-                        ? 'border-black bg-gray-50'
-                        : full || count === 0
+                        ? 'border-teal-600 bg-teal-50'
+                        : disabled
                           ? 'border-black/8 opacity-40 cursor-not-allowed'
-                          : 'border-black/8 bg-white hover:bg-gray-50'
+                          : 'border-black/8 bg-white hover:border-teal-300 hover:bg-teal-50/40'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className="text-base font-black leading-snug">{d.label}</h3>
-                      {selected && <span className="text-sm font-black">✓</span>}
+                      <h3 className={`text-base font-black leading-snug ${selected ? 'text-teal-900' : ''}`}>
+                        {d.label}
+                      </h3>
+                      {selected && <span className="text-sm font-black text-teal-700">✓</span>}
                     </div>
-                    <p className="text-xs text-gray-500 mt-1 font-medium leading-relaxed">
+                    <p className={`text-xs mt-1 font-medium ${selected ? 'text-teal-700' : 'text-gray-500'}`}>
                       {count > 0 ? `${count} אג'נדות` : 'אין אג\'נדות מוגדרות'}
                     </p>
                   </button>
@@ -235,7 +268,8 @@ export default function AgendaMatchClient() {
           </div>
         )}
 
-        {/* ── Step 2: issues + stances ── */}
+        {/* ── Step 2: issues grouped under their domain ──
+            כותרת התחום בטורקיז, כרטיסי האג'נדה באינדיגו. */}
         {step === 'issues' && (
           <div>
             <h2 className="text-lg font-black mb-1">מה העמדה שלך בכל נושא?</h2>
@@ -243,39 +277,69 @@ export default function AgendaMatchClient() {
               אפשר לדלג על נושא שלא מעניין אותך. נבחרו {chosenIssueIds.length} נושאים.
             </p>
 
-            <div className="flex flex-col gap-4">
-              {availableIssues.map(issue => (
-                <div key={issue.id} className="rounded-xl border border-black/8 p-4">
-                  <h3 className="text-base font-black">{issue.label}</h3>
-                  <p className="text-xs text-gray-500 mt-1 mb-3 font-medium leading-relaxed">
-                    {issue.description}
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    {issue.stances.map(stance => {
-                      const on = stances[issue.id] === stance.id;
+            <div className="flex flex-col gap-7">
+              {issuesByDomain.map(({ domain, issues }) => (
+                <section key={domain.id}>
+                  {/* כותרת התחום — הגוון הטורקיז מהשלב הקודם */}
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b-2 border-teal-600">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-teal-700">
+                      תחום
+                    </span>
+                    <h3 className="text-base font-black text-teal-900">{domain.label}</h3>
+                    <span className="text-xs text-gray-400 font-medium">
+                      {issues.length} אג&apos;נדות
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col gap-3">
+                    {issues.map(issue => {
+                      const chosen = stances[issue.id];
                       return (
-                        <button
-                          key={stance.id}
-                          onClick={() => pickStance(issue.id, stance.id)}
-                          className={`flex-1 text-right text-xs font-black leading-relaxed rounded-lg border px-3 py-2.5 transition-colors ${
-                            on
-                              ? 'border-black bg-black text-white'
-                              : 'border-black/10 bg-white hover:bg-gray-50'
+                        <div
+                          key={issue.id}
+                          className={`rounded-xl border-r-4 border border-black/8 p-4 transition-colors ${
+                            chosen ? 'border-r-indigo-600 bg-indigo-50/50' : 'border-r-indigo-200'
                           }`}
                         >
-                          {stance.label}
-                        </button>
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500">
+                              אג&apos;נדה
+                            </span>
+                            <h4 className="text-base font-black">{issue.label}</h4>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1 mb-3 font-medium leading-relaxed">
+                            {issue.description}
+                          </p>
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            {issue.stances.map(stance => {
+                              const on = chosen === stance.id;
+                              return (
+                                <button
+                                  key={stance.id}
+                                  onClick={() => pickStance(issue.id, stance.id)}
+                                  className={`flex-1 text-right text-xs font-black leading-relaxed rounded-lg border px-3 py-2.5 transition-colors ${
+                                    on
+                                      ? 'border-indigo-600 bg-indigo-600 text-white'
+                                      : 'border-black/10 bg-white hover:border-indigo-300 hover:bg-indigo-50/50'
+                                  }`}
+                                >
+                                  {stance.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
                       );
                     })}
                   </div>
-                </div>
+                </section>
               ))}
             </div>
 
             <button
               onClick={runSearch}
               disabled={chosenIssueIds.length === 0}
-              className="mt-6 px-5 py-2.5 rounded-lg bg-black text-white font-black text-sm disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+              className="mt-7 px-5 py-2.5 rounded-lg bg-black text-white font-black text-sm disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
             >
               הצג את חברי הכנסת
             </button>
@@ -294,10 +358,7 @@ export default function AgendaMatchClient() {
             {error && (
               <div className="rounded-xl border border-red-200 bg-red-50 p-5">
                 <p className="font-black text-red-700 text-sm">{error}</p>
-                <button
-                  onClick={restart}
-                  className="mt-3 text-xs font-black underline text-red-700"
-                >
+                <button onClick={restart} className="mt-3 text-xs font-black underline text-red-700">
                   להתחיל מחדש
                 </button>
               </div>
@@ -398,14 +459,23 @@ export default function AgendaMatchClient() {
                               </p>
                             )}
 
-                            <div className="flex flex-col gap-3">
+                            <div className="flex flex-col gap-4">
                               {row.perAgenda.map(a => (
-                                <div key={a.issueId}>
+                                <div
+                                  key={a.issueId}
+                                  className="border-r-4 border-indigo-300 pr-3 bg-white rounded-lg py-3 pl-3"
+                                >
                                   <div className="flex items-baseline justify-between gap-2">
-                                    <h4 className="text-sm font-black">{a.label}</h4>
+                                    <div className="flex items-baseline gap-2">
+                                      <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500">
+                                        אג&apos;נדה
+                                      </span>
+                                      <h4 className="text-sm font-black">{a.label}</h4>
+                                    </div>
                                     <span className="text-sm font-black tabular-nums">{a.score}</span>
                                   </div>
-                                  <p className="text-xs text-gray-600 font-medium mt-0.5 leading-relaxed">
+
+                                  <p className="text-xs text-gray-600 font-medium mt-1 leading-relaxed">
                                     יזם {a.billsInitiated} הצעות חוק
                                     {a.billsAdvanced > 0 && ` (${a.billsAdvanced} התקדמו)`}
                                     {' · '}
@@ -413,6 +483,36 @@ export default function AgendaMatchClient() {
                                     {' · '}
                                     אחוזונים {a.pInitiative} / {a.pVoting}
                                   </p>
+
+                                  {a.bills.length > 0 && (
+                                    <ul className="mt-2.5 flex flex-col gap-1.5">
+                                      {a.bills.map(b => (
+                                        <li key={b.billId} className="flex items-start gap-2">
+                                          <Link
+                                            href={`/bill/${b.billId}`}
+                                            prefetch={false}
+                                            className="text-xs font-medium leading-relaxed text-indigo-700 hover:underline flex-1"
+                                          >
+                                            {b.title}
+                                          </Link>
+                                          {b.passed ? (
+                                            <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-teal-100 text-teal-800 shrink-0">
+                                              עבר
+                                            </span>
+                                          ) : b.advanced ? (
+                                            <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-gray-200 text-gray-700 shrink-0">
+                                              התקדם
+                                            </span>
+                                          ) : null}
+                                        </li>
+                                      ))}
+                                      {a.billsInitiated > a.bills.length && (
+                                        <li className="text-[11px] text-gray-400 font-medium">
+                                          ועוד {a.billsInitiated - a.bills.length} הצעות
+                                        </li>
+                                      )}
+                                    </ul>
+                                  )}
                                 </div>
                               ))}
                             </div>
