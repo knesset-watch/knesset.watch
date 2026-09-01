@@ -21,6 +21,12 @@ const DOCS_DIR = path.join(process.cwd(), "bill-documents");
 const CONCURRENCY = 5;
 const BATCH_DELAY_MS = 400;
 
+const limitArg = process.argv.find((arg) => arg.startsWith("--limit="));
+
+const LIMIT = limitArg
+  ? Number(limitArg.split("=")[1])
+  : null;
+
 // ── HTTP ─────────────────────────────────────────────────────────────────────
 
 async function downloadBuffer(url: string): Promise<Buffer> {
@@ -141,25 +147,33 @@ async function main() {
     recursive: true,
   });
 
-  const bills = db
-    .prepare(
-      `
-      SELECT
-        id,
-        title,
-        doc_url
-      FROM bill
-      WHERE doc_url IS NOT NULL
-        AND doc_url != ''
-        AND local_path IS NULL
-      ORDER BY id ASC
-    `,
-    )
-    .all() as {
-    id: number;
-    title: string;
-    doc_url: string;
-  }[];
+  let bills = db
+  .prepare(
+    `
+    SELECT
+      id,
+      MAX(title) AS title,
+      MAX(doc_url) AS doc_url
+    FROM bill
+    WHERE doc_url IS NOT NULL
+      AND TRIM(doc_url) != ''
+      AND (
+        text_content IS NULL
+        OR TRIM(text_content) = ''
+      )
+    GROUP BY id
+    ORDER BY id ASC
+  `,
+  )
+  .all() as {
+  id: number;
+  title: string;
+  doc_url: string;
+}[];
+
+if (LIMIT !== null) {
+  bills = bills.slice(0, LIMIT);
+}
 
   if (bills.length === 0) {
     console.log("  No bill documents left to download.");
@@ -195,9 +209,14 @@ async function main() {
         const relPath = path.relative(process.cwd(), localPath);
 
         try {
-          const buf = await downloadBuffer(bill.doc_url);
+          let buf: Buffer;
 
-          fs.writeFileSync(localPath, buf);
+          if (fs.existsSync(localPath)) {
+            buf = fs.readFileSync(localPath);
+          } else {
+            buf = await downloadBuffer(bill.doc_url);
+            fs.writeFileSync(localPath, buf);
+          }
 
           const text = await extractText(buf, ext);
 
