@@ -7,24 +7,78 @@
  *   npm run db:sync
  */
 
-import Database from 'better-sqlite3';
-import path from 'path';
+import Database from "better-sqlite3";
+import path from "path";
 
-const API = (process.env.KNESSET_API_BASE ?? 'https://knesset.gov.il') + '/OdataV4/ParliamentInfo';
-const DB_PATH = path.join(process.cwd(), 'knesset.db');
+const API =
+  (process.env.KNESSET_API_BASE ?? "https://knesset.gov.il") +
+  "/OdataV4/ParliamentInfo";
+const DB_PATH = path.join(process.cwd(), "knesset.db");
 
 // Overlap ensures we never miss anything due to clock skew or delayed updates
 const LOOKBACK_DAYS = 7;
 
 const PASSED_STATUS_IDS = new Set([118, 119, 6020, 6030, 6040]);
 
-async function fetchPage(url: string): Promise<{ value: any[]; next: string | null }> {
-  const res = await fetch(url, {
-    headers: { Accept: 'application/json', 'User-Agent': 'Mozilla/5.0' },
-  });
-  if (!res.ok) throw new Error(`Knesset API ${res.status}`);
-  const json = await res.json();
-  return { value: json.value ?? [], next: json['@odata.nextLink'] ?? null };
+async function fetchPage(
+  url: string,
+): Promise<{ value: any[]; next: string | null }> {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      const res = await fetch(url, {
+        headers: {
+          Accept: "application/json",
+          "User-Agent": "Mozilla/5.0",
+        },
+        signal: AbortSignal.timeout(30000),
+      });
+
+      const text = await res.text();
+
+      let json: any = null;
+
+      try {
+        json = text ? JSON.parse(text) : null;
+      } catch {
+        // Response body is not valid JSON
+      }
+
+      // הכנסת לפעמים מחזירה HTTP 500
+      // למרות שיש בגוף התשובה נתוני OData תקינים
+      if (json && Array.isArray(json.value)) {
+        if (!res.ok) {
+          console.warn(
+            `Warning: API returned ${res.status}, but response contained valid data`,
+          );
+        }
+
+        return {
+          value: json.value,
+          next: json["@odata.nextLink"] ?? null,
+        };
+      }
+
+      if (!res.ok) {
+        throw new Error(`API ${res.status}`);
+      }
+
+      throw new Error("API response did not contain a value array");
+    } catch (err: any) {
+      if (attempt < 4) {
+        const delay = (attempt + 1) * 3000;
+
+        console.warn(
+          `Request failed (${err.message}). Retrying in ${delay / 1000}s...`,
+        );
+
+        await new Promise((r) => setTimeout(r, delay));
+      } else {
+        throw err;
+      }
+    }
+  }
+
+  throw new Error("unreachable");
 }
 
 async function fetchAll(url: string): Promise<any[]> {
@@ -40,22 +94,31 @@ async function fetchAll(url: string): Promise<any[]> {
 
 // Classify role type from API fields
 function classifyRoleType(r: any): string {
-  const d = r.DutyDesc ?? '';
-  if (d.startsWith('ראש הממשלה')) return 'pm';
-  if (d.startsWith('סגן ראש הממשלה') || d.startsWith('המשנה לראש הממשלה')) return 'deputy-pm';
-  if (d === 'שר' || d === 'שרה') return 'minister';
-  if (d.match(/^(שר |שרת |השר |השרה )/)) return 'minister';
-  if (d.match(/^שר(ה|ת)? ללא תיק/)) return 'minister';
-  if (d.startsWith('שר בשירות חוקי') || d.startsWith('ממלא מקום שר') || d.startsWith('ממלא מקום השר')) return 'acting';
-  if (d.match(/^סגנ(ית)? שר/)) return 'deputy';
-  if (r.CommitteeID) return 'committee';
-  if (!d && !r.CommitteeID && !r.GovMinistryID) return 'mk';
-  return 'other';
+  const d = r.DutyDesc ?? "";
+  if (d.startsWith("ראש הממשלה")) return "pm";
+  if (d.startsWith("סגן ראש הממשלה") || d.startsWith("המשנה לראש הממשלה"))
+    return "deputy-pm";
+  if (d === "שר" || d === "שרה") return "minister";
+  if (d.match(/^(שר |שרת |השר |השרה )/)) return "minister";
+  if (d.match(/^שר(ה|ת)? ללא תיק/)) return "minister";
+  if (
+    d.startsWith("שר בשירות חוקי") ||
+    d.startsWith("ממלא מקום שר") ||
+    d.startsWith("ממלא מקום השר")
+  )
+    return "acting";
+  if (d.match(/^סגנ(ית)? שר/)) return "deputy";
+  if (r.CommitteeID) return "committee";
+  if (!d && !r.CommitteeID && !r.GovMinistryID) return "mk";
+  return "other";
 }
 
 // Normalise Hebrew name for matching (strips punctuation, collapses spaces)
 function normName(s: string): string {
-  return s.replace(/[״׳"'\-]/g, '').replace(/\s+/g, ' ').trim();
+  return s
+    .replace(/[״׳"'\-]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 /**
@@ -82,16 +145,16 @@ async function resolveNewKnsId(
   // Fetch fresh K25 MK list from API to find the new person
   const posRows = await fetchAll(
     `${API}/KNS_PersonToPosition` +
-    `?$filter=PositionID eq 54 and KnessetNum eq 25` +
-    `&$expand=KNS_Person($select=Id,FirstName,LastName)` +
-    `&$select=PersonID`,
+      `?$filter=PositionID eq 54 and KnessetNum eq 25` +
+      `&$expand=KNS_Person($select=Id,FirstName,LastName)` +
+      `&$select=PersonID`,
   );
 
   const nameToPersonId = new Map<string, number>();
   for (const r of posRows) {
     const p = r.KNS_Person;
     if (!p) continue;
-    const name = normName(`${p.FirstName ?? ''} ${p.LastName ?? ''}`);
+    const name = normName(`${p.FirstName ?? ""} ${p.LastName ?? ""}`);
     nameToPersonId.set(name, p.Id);
   }
 
@@ -99,13 +162,19 @@ async function resolveNewKnsId(
   const personId = nameToPersonId.get(voteName);
 
   if (personId) {
-    db.prepare('INSERT OR REPLACE INTO mk_id_map (person_id, kns_id) VALUES (?, ?)').run(personId, knsId);
+    db.prepare(
+      "INSERT OR REPLACE INTO mk_id_map (person_id, kns_id) VALUES (?, ?)",
+    ).run(personId, knsId);
     knsToPersonMap.set(knsId, personId);
-    console.log(`  New MK resolved: KnsID ${knsId} → PersonID ${personId} (${firstName} ${lastName})`);
+    console.log(
+      `  New MK resolved: KnsID ${knsId} → PersonID ${personId} (${firstName} ${lastName})`,
+    );
     return personId;
   }
 
-  console.warn(`  Warning: could not resolve KnsID ${knsId} (${firstName} ${lastName}) — storing under KnsID`);
+  console.warn(
+    `  Warning: could not resolve KnsID ${knsId} (${firstName} ${lastName}) — storing under KnsID`,
+  );
   return knsId;
 }
 
@@ -120,68 +189,103 @@ async function sync() {
     );
   `);
   const { version: schemaVersion } = db
-    .prepare('SELECT COALESCE(MAX(version), 0) as version FROM schema_version')
+    .prepare("SELECT COALESCE(MAX(version), 0) as version FROM schema_version")
     .get() as { version: number };
   console.log(`DB schema version: ${schemaVersion}`);
 
   const since = new Date();
   since.setDate(since.getDate() - LOOKBACK_DAYS);
-  const sinceStr = since.toISOString().replace(/\.\d{3}Z$/, '+00:00');
+  const sinceStr = since.toISOString().replace(/\.\d{3}Z$/, "+00:00");
 
   console.log(`Syncing records updated since ${since.toLocaleDateString()} …`);
 
   // ── Votes ─────────────────────────────────────────────────────────────────
-  const voteCols = (db.prepare(`PRAGMA table_info(plenary_vote)`).all() as { name: string }[]).map(r => r.name);
-  if (!voteCols.includes('micro_agenda')) db.exec(`ALTER TABLE plenary_vote ADD COLUMN micro_agenda TEXT`);
-  if (!voteCols.includes('macro_agenda')) db.exec(`ALTER TABLE plenary_vote ADD COLUMN macro_agenda TEXT`);
+  const voteCols = (
+    db.prepare(`PRAGMA table_info(plenary_vote)`).all() as { name: string }[]
+  ).map((r) => r.name);
+
+  if (!voteCols.includes("micro_agenda"))
+    db.exec(`ALTER TABLE plenary_vote ADD COLUMN micro_agenda TEXT`);
+
+  if (!voteCols.includes("macro_agenda"))
+    db.exec(`ALTER TABLE plenary_vote ADD COLUMN macro_agenda TEXT`);
+
+  if (!voteCols.includes("bill_id"))
+    db.exec(`ALTER TABLE plenary_vote ADD COLUMN bill_id INTEGER`);
+
+  if (!voteCols.includes("bill_id_source"))
+    db.exec(`ALTER TABLE plenary_vote ADD COLUMN bill_id_source TEXT`);
 
   const insertVote = db.prepare(
-    'INSERT OR REPLACE INTO plenary_vote (id, title, date, micro_agenda, macro_agenda) VALUES (?, ?, ?, ?, ?)',
+    `INSERT OR REPLACE INTO plenary_vote
+   (id, title, date, micro_agenda, macro_agenda, bill_id, bill_id_source)
+   VALUES (?, ?, ?, ?, ?, ?, ?)`,
   );
+
   const insertVotesBatch = db.transaction((rows: any[]) => {
     for (const r of rows) {
-      const { macro, micro } = categorize(r.VoteTitle ?? '', null);
-      insertVote.run(r.Id, r.VoteTitle ?? '', r.VoteDateTime ?? '', micro, macro);
+      const { macro, micro } = categorize(r.VoteTitle ?? "", null);
+
+      insertVote.run(
+        r.Id,
+        r.VoteTitle ?? "",
+        r.VoteDateTime ?? "",
+        micro,
+        macro,
+        r.ItemID ?? null,
+        r.ItemID ? "api" : null,
+      );
     }
   });
 
   const votes = await fetchAll(
     `${API}/KNS_PlenumVote` +
-    `?$filter=${encodeURIComponent(`VoteDateTime ge ${sinceStr}`)}` +
-    `&$select=Id,VoteTitle,VoteDateTime`,
+      `?$filter=${encodeURIComponent(`VoteDateTime ge ${sinceStr}`)}`,
   );
+
   insertVotesBatch(votes);
 
   // ── Vote results ──────────────────────────────────────────────────────────
   // Load kns_id → person_id mapping so new vote rows are stored under PersonID
   const knsToPersonMap = new Map<number, number>(
-    (db.prepare('SELECT kns_id, person_id FROM mk_id_map').all() as { kns_id: number; person_id: number }[])
-      .map(r => [r.kns_id, r.person_id]),
+    (
+      db.prepare("SELECT kns_id, person_id FROM mk_id_map").all() as {
+        kns_id: number;
+        person_id: number;
+      }[]
+    ).map((r) => [r.kns_id, r.person_id]),
   );
 
   const insertResult = db.prepare(
-    'INSERT OR REPLACE INTO mk_vote_result (vote_id, mk_id, result_code) VALUES (?, ?, ?)',
+    "INSERT OR REPLACE INTO mk_vote_result (vote_id, mk_id, result_code) VALUES (?, ?, ?)",
   );
 
   // Fetch with FirstName/LastName so we can resolve any new KnsIDs on the fly
   const results = await fetchAll(
     `${API}/KNS_PlenumVoteResult` +
-    `?$filter=${encodeURIComponent(`VoteDate ge ${sinceStr}`)}` +
-    `&$select=VoteID,MkId,ResultCode,FirstName,LastName`,
+      `?$filter=${encodeURIComponent(`VoteDate ge ${sinceStr}`)}` +
+      `&$select=VoteID,MkId,ResultCode,FirstName,LastName`,
   );
 
   // Resolve any unknown KnsIDs before batch-inserting
-  const unknownKnsIds = new Set(results.map(r => r.MkId).filter(id => !knsToPersonMap.has(id)));
+  const unknownKnsIds = new Set(
+    results.map((r) => r.MkId).filter((id) => !knsToPersonMap.has(id)),
+  );
   if (unknownKnsIds.size > 0) {
     console.log(`Resolving ${unknownKnsIds.size} new KnsID(s) …`);
     // Group by KnsID to get a name sample for each
     const byKnsId = new Map<number, { firstName: string; lastName: string }>();
     for (const r of results) {
       if (unknownKnsIds.has(r.MkId) && !byKnsId.has(r.MkId)) {
-        byKnsId.set(r.MkId, { firstName: r.FirstName ?? '', lastName: r.LastName ?? '' });
+        byKnsId.set(r.MkId, {
+          firstName: r.FirstName ?? "",
+          lastName: r.LastName ?? "",
+        });
       }
     }
-    for (const [knsId, { firstName, lastName }] of Array.from(byKnsId.entries())) {
+    for (const [knsId, { firstName, lastName }] of Array.from(
+      byKnsId.entries(),
+    )) {
       await resolveNewKnsId(db, knsId, firstName, lastName, knsToPersonMap);
     }
   }
@@ -210,27 +314,44 @@ async function sync() {
   )`);
 
   // Ensure all mk_person columns exist
-  const personCols = (db.prepare(`PRAGMA table_info(mk_person)`).all() as { name: string }[]).map(r => r.name);
-  if (!personCols.includes('is_current'))   db.exec(`ALTER TABLE mk_person ADD COLUMN is_current INTEGER NOT NULL DEFAULT 0`);
-  if (!personCols.includes('is_coalition')) db.exec(`ALTER TABLE mk_person ADD COLUMN is_coalition INTEGER`);
-  if (!personCols.includes('coalition_pct')) db.exec(`ALTER TABLE mk_person ADD COLUMN coalition_pct REAL`);
-  if (!personCols.includes('non_mk_pct'))   db.exec(`ALTER TABLE mk_person ADD COLUMN non_mk_pct REAL`);
-  if (!personCols.includes('segments'))     db.exec(`ALTER TABLE mk_person ADD COLUMN segments TEXT`);
+  const personCols = (
+    db.prepare(`PRAGMA table_info(mk_person)`).all() as { name: string }[]
+  ).map((r) => r.name);
+  if (!personCols.includes("is_current"))
+    db.exec(
+      `ALTER TABLE mk_person ADD COLUMN is_current INTEGER NOT NULL DEFAULT 0`,
+    );
+  if (!personCols.includes("is_coalition"))
+    db.exec(`ALTER TABLE mk_person ADD COLUMN is_coalition INTEGER`);
+  if (!personCols.includes("coalition_pct"))
+    db.exec(`ALTER TABLE mk_person ADD COLUMN coalition_pct REAL`);
+  if (!personCols.includes("non_mk_pct"))
+    db.exec(`ALTER TABLE mk_person ADD COLUMN non_mk_pct REAL`);
+  if (!personCols.includes("segments"))
+    db.exec(`ALTER TABLE mk_person ADD COLUMN segments TEXT`);
 
-  const K25_START = new Date('2022-11-15');
-  const K25_COALITION_PERIODS: Array<{ factionId: number; start: Date | null; end: Date | null }> = [
-    { factionId: 1096, start: null, end: null },  // הליכוד (Likud)
-    { factionId: 1095, start: null, end: null },  // שס (Shas)
-    { factionId: 1101, start: null, end: null },  // יהדות התורה (UTJ)
-    { factionId: 1105, start: null, end: null },  // הציונות הדתית (Religious Zionism)
-    { factionId: 1106, start: null, end: null },  // עוצמה יהודית (Otzma)
-    { factionId: 1107, start: null, end: null },  // נעם (Noam)
-    { factionId: 1098, start: new Date('2023-10-12'), end: new Date('2024-06-09') },  // הציונות הדתית (temporary)
-    { factionId: 1108, start: new Date('2024-09-29'), end: null },  // לא מעורב (temporary)
+  const K25_START = new Date("2022-11-15");
+  const K25_COALITION_PERIODS: Array<{
+    factionId: number;
+    start: Date | null;
+    end: Date | null;
+  }> = [
+    { factionId: 1096, start: null, end: null }, // הליכוד (Likud)
+    { factionId: 1095, start: null, end: null }, // שס (Shas)
+    { factionId: 1101, start: null, end: null }, // יהדות התורה (UTJ)
+    { factionId: 1105, start: null, end: null }, // הציונות הדתית (Religious Zionism)
+    { factionId: 1106, start: null, end: null }, // עוצמה יהודית (Otzma)
+    { factionId: 1107, start: null, end: null }, // נעם (Noam)
+    {
+      factionId: 1098,
+      start: new Date("2023-10-12"),
+      end: new Date("2024-06-09"),
+    }, // הציונות הדתית (temporary)
+    { factionId: 1108, start: new Date("2024-09-29"), end: null }, // לא מעורב (temporary)
   ];
 
   function isCoalitionAtTime(factionId: number, time: Date): boolean {
-    return K25_COALITION_PERIODS.some(p => {
+    return K25_COALITION_PERIODS.some((p) => {
       if (p.factionId !== factionId) return false;
       const afterStart = p.start === null || time >= p.start;
       const beforeEnd = p.end === null || time <= p.end;
@@ -238,23 +359,33 @@ async function sync() {
     });
   }
 
-  function computeSegments(records: any[], hasCurrent: boolean, k25TotalMs: number): any[] {
+  function computeSegments(
+    records: any[],
+    hasCurrent: boolean,
+    k25TotalMs: number,
+  ): any[] {
     const now = Date.now();
     const k25StartMs = K25_START.getTime();
     const stints = records
-      .map(r => ({
+      .map((r) => ({
         start: Math.max(new Date(r.StartDate).getTime(), k25StartMs),
         end: r.FinishDate ? new Date(r.FinishDate).getTime() : now,
         factionId: r.FactionID as number,
       }))
-      .filter(r => r.end > r.start && r.start < now)
+      .filter((r) => r.end > r.start && r.start < now)
       .sort((a, b) => a.start - b.start);
 
     const result: any[] = [];
     let cursor = k25StartMs;
     for (const stint of stints) {
       if (stint.start > cursor) {
-        result.push({ startFrac: (cursor - k25StartMs) / k25TotalMs, endFrac: (stint.start - k25StartMs) / k25TotalMs, state: 'none', startDate: new Date(cursor).toISOString().split('T')[0], endDate: new Date(stint.start).toISOString().split('T')[0] });
+        result.push({
+          startFrac: (cursor - k25StartMs) / k25TotalMs,
+          endFrac: (stint.start - k25StartMs) / k25TotalMs,
+          state: "none",
+          startDate: new Date(cursor).toISOString().split("T")[0],
+          endDate: new Date(stint.start).toISOString().split("T")[0],
+        });
       }
       const events = new Set<number>([stint.start, stint.end]);
       for (const p of K25_COALITION_PERIODS) {
@@ -266,29 +397,49 @@ async function sync() {
       }
       const timeline = Array.from(events).sort((a, b) => a - b);
       for (let i = 0; i < timeline.length - 1; i++) {
-        const s = timeline[i], e = timeline[i + 1], mid = (s + e) / 2;
-        const isCoal = K25_COALITION_PERIODS.some(p => {
+        const s = timeline[i],
+          e = timeline[i + 1],
+          mid = (s + e) / 2;
+        const isCoal = K25_COALITION_PERIODS.some((p) => {
           if (p.factionId !== stint.factionId) return false;
           const pStart = (p.start ?? K25_START).getTime();
           const pEnd = p.end ? p.end.getTime() : now;
           return mid >= pStart && mid <= pEnd;
         });
-        result.push({ startFrac: (s - k25StartMs) / k25TotalMs, endFrac: (e - k25StartMs) / k25TotalMs, state: isCoal ? 'coalition' : 'opposition', startDate: new Date(s).toISOString().split('T')[0], endDate: new Date(e).toISOString().split('T')[0] });
+        result.push({
+          startFrac: (s - k25StartMs) / k25TotalMs,
+          endFrac: (e - k25StartMs) / k25TotalMs,
+          state: isCoal ? "coalition" : "opposition",
+          startDate: new Date(s).toISOString().split("T")[0],
+          endDate: new Date(e).toISOString().split("T")[0],
+        });
       }
       cursor = stint.end;
     }
     if (!hasCurrent && cursor < now) {
-      result.push({ startFrac: (cursor - k25StartMs) / k25TotalMs, endFrac: 1.0, state: 'none', startDate: new Date(cursor).toISOString().split('T')[0], endDate: new Date(now).toISOString().split('T')[0] });
+      result.push({
+        startFrac: (cursor - k25StartMs) / k25TotalMs,
+        endFrac: 1.0,
+        state: "none",
+        startDate: new Date(cursor).toISOString().split("T")[0],
+        endDate: new Date(now).toISOString().split("T")[0],
+      });
     }
     return result;
   }
 
   function computeCoalitionPct(records: any[]): number {
     const now = new Date();
-    let totalMs = 0, coalitionMs = 0;
+    let totalMs = 0,
+      coalitionMs = 0;
     for (const r of records) {
-      const segStart = Math.max(new Date(r.StartDate).getTime(), K25_START.getTime());
-      const segEnd = r.FinishDate ? new Date(r.FinishDate).getTime() : now.getTime();
+      const segStart = Math.max(
+        new Date(r.StartDate).getTime(),
+        K25_START.getTime(),
+      );
+      const segEnd = r.FinishDate
+        ? new Date(r.FinishDate).getTime()
+        : now.getTime();
       const duration = Math.max(0, segEnd - segStart);
       if (duration === 0) continue;
       totalMs += duration;
@@ -310,7 +461,7 @@ async function sync() {
   );
 
   const factionRows = await fetchAll(
-    `${API}/KNS_Faction?$filter=${encodeURIComponent('KnessetNum eq 25')}`,
+    `${API}/KNS_Faction?$filter=${encodeURIComponent("KnessetNum eq 25")}`,
   );
   const factionMap = new Map<number, string>();
   for (const f of factionRows) {
@@ -319,9 +470,9 @@ async function sync() {
 
   const personToPosRows = await fetchAll(
     `${API}/KNS_PersonToPosition` +
-    `?$filter=${encodeURIComponent('KnessetNum eq 25 and PositionID eq 54')}` +
-    `&$expand=KNS_Person` +
-    `&$orderby=StartDate asc`,
+      `?$filter=${encodeURIComponent("KnessetNum eq 25 and PositionID eq 54")}` +
+      `&$expand=KNS_Person` +
+      `&$orderby=StartDate asc`,
   );
 
   const recordsByPerson = new Map<number, any[]>();
@@ -337,9 +488,9 @@ async function sync() {
 
   db.transaction(() => {
     for (const [pid, records] of recordsByPerson) {
-      const hasCurrent = records.some(r => r.IsCurrent);
+      const hasCurrent = records.some((r) => r.IsCurrent);
       const currentRec = hasCurrent
-        ? (records.find(r => r.IsCurrent) ?? records[records.length - 1])
+        ? (records.find((r) => r.IsCurrent) ?? records[records.length - 1])
         : records.reduce((a, b) => {
             const da = a.FinishDate ? new Date(a.FinishDate) : new Date(0);
             const db = b.FinishDate ? new Date(b.FinishDate) : new Date(0);
@@ -347,24 +498,40 @@ async function sync() {
           });
 
       const factionId = currentRec.FactionID ?? null;
-      const factionName = factionId != null ? (factionMap.get(factionId) ?? null) : null;
-      
+      const factionName =
+        factionId != null ? (factionMap.get(factionId) ?? null) : null;
+
       let nonMkPct = 0;
       let latestFinish: Date | null = null;
       if (!hasCurrent) {
         let lastMs = K25_START.getTime();
         for (const r of records) {
-          const fin = r.FinishDate ? new Date(r.FinishDate).getTime() : now.getTime();
-          if (fin > lastMs) { lastMs = fin; latestFinish = new Date(lastMs); }
+          const fin = r.FinishDate
+            ? new Date(r.FinishDate).getTime()
+            : now.getTime();
+          if (fin > lastMs) {
+            lastMs = fin;
+            latestFinish = new Date(lastMs);
+          }
         }
-        nonMkPct = Math.max(0, Math.min(1, (now.getTime() - lastMs) / k25TotalMs));
+        nonMkPct = Math.max(
+          0,
+          Math.min(1, (now.getTime() - lastMs) / k25TotalMs),
+        );
       }
 
-      const isCoal = factionId != null
-        ? (hasCurrent
-            ? K25_COALITION_PERIODS.some(p => p.factionId === factionId && (p.end === null || new Date() <= p.end))
-            : (latestFinish ? isCoalitionAtTime(factionId, latestFinish) : false))
-        : null;
+      const isCoal =
+        factionId != null
+          ? hasCurrent
+            ? K25_COALITION_PERIODS.some(
+                (p) =>
+                  p.factionId === factionId &&
+                  (p.end === null || new Date() <= p.end),
+              )
+            : latestFinish
+              ? isCoalitionAtTime(factionId, latestFinish)
+              : false
+          : null;
 
       const rawPct = computeCoalitionPct(records);
       const coalitionPct = rawPct > 0.05 && rawPct < 0.95 ? rawPct : null;
@@ -372,14 +539,29 @@ async function sync() {
 
       // Slug logic: English name slug if available
       const person = currentRec.KNS_Person;
-      const fEng = (person.FirstNameEng ?? '').trim(), lEng = (person.LastNameEng ?? '').trim();
-      const slug = (fEng || lEng) 
-        ? `${fEng}-${lEng}`.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-')
-        : String(pid);
+      const fEng = (person.FirstNameEng ?? "").trim(),
+        lEng = (person.LastNameEng ?? "").trim();
+      const slug =
+        fEng || lEng
+          ? `${fEng}-${lEng}`
+              .toLowerCase()
+              .replace(/\s+/g, "-")
+              .replace(/[^a-z0-9-]/g, "")
+              .replace(/-+/g, "-")
+          : String(pid);
 
       insertPerson.run(
-        pid, person.FirstName ?? '', person.LastName ?? '', factionId, factionName, slug,
-        hasCurrent ? 1 : 0, isCoal ? 1 : 0, coalitionPct, nonMkPct, JSON.stringify(segments)
+        pid,
+        person.FirstName ?? "",
+        person.LastName ?? "",
+        factionId,
+        factionName,
+        slug,
+        hasCurrent ? 1 : 0,
+        isCoal ? 1 : 0,
+        coalitionPct,
+        nonMkPct,
+        JSON.stringify(segments),
       );
     }
   })();
@@ -389,67 +571,195 @@ async function sync() {
   // Fetch committee names once for bill tagging
   const committeeRows = await fetchAll(`${API}/KNS_Committee?$select=Id,Name`);
   const committeeMap = new Map<number, string>();
-  for (const r of committeeRows) { if (r.Id != null && r.Name) committeeMap.set(r.Id, r.Name); }
+  for (const r of committeeRows) {
+    if (r.Id != null && r.Name) committeeMap.set(r.Id, r.Name);
+  }
 
   // Ensure all bill columns exist (migration for older DBs)
-  const billCols = (db.prepare(`PRAGMA table_info(bill)`).all() as { name: string }[]).map(r => r.name);
-  if (!billCols.includes('committee_id'))   db.exec(`ALTER TABLE bill ADD COLUMN committee_id INTEGER`);
-  if (!billCols.includes('committee_name')) db.exec(`ALTER TABLE bill ADD COLUMN committee_name TEXT`);
-  if (!billCols.includes('summary'))        db.exec(`ALTER TABLE bill ADD COLUMN summary TEXT`);
-  if (!billCols.includes('doc_url'))        db.exec(`ALTER TABLE bill ADD COLUMN doc_url TEXT`);
-  if (!billCols.includes('micro_agenda'))   db.exec(`ALTER TABLE bill ADD COLUMN micro_agenda TEXT`);
-  if (!billCols.includes('macro_agenda'))   db.exec(`ALTER TABLE bill ADD COLUMN macro_agenda TEXT`);
-  if (!billCols.includes('publication_date')) db.exec(`ALTER TABLE bill ADD COLUMN publication_date TEXT`);
-  if (!billCols.includes('status_desc')) db.exec(`ALTER TABLE bill ADD COLUMN status_desc TEXT`);
-  if (!billCols.includes('init_date')) db.exec(`ALTER TABLE bill ADD COLUMN init_date TEXT`);
+  const billCols = (
+    db.prepare(`PRAGMA table_info(bill)`).all() as { name: string }[]
+  ).map((r) => r.name);
+  if (!billCols.includes("committee_id"))
+    db.exec(`ALTER TABLE bill ADD COLUMN committee_id INTEGER`);
+  if (!billCols.includes("committee_name"))
+    db.exec(`ALTER TABLE bill ADD COLUMN committee_name TEXT`);
+  if (!billCols.includes("summary"))
+    db.exec(`ALTER TABLE bill ADD COLUMN summary TEXT`);
+  if (!billCols.includes("doc_url"))
+    db.exec(`ALTER TABLE bill ADD COLUMN doc_url TEXT`);
+  if (!billCols.includes("micro_agenda"))
+    db.exec(`ALTER TABLE bill ADD COLUMN micro_agenda TEXT`);
+  if (!billCols.includes("macro_agenda"))
+    db.exec(`ALTER TABLE bill ADD COLUMN macro_agenda TEXT`);
+  if (!billCols.includes("publication_date"))
+    db.exec(`ALTER TABLE bill ADD COLUMN publication_date TEXT`);
+  if (!billCols.includes("status_desc"))
+    db.exec(`ALTER TABLE bill ADD COLUMN status_desc TEXT`);
+  if (!billCols.includes("init_date"))
+    db.exec(`ALTER TABLE bill ADD COLUMN init_date TEXT`);
 
   const insertBill = db.prepare(
-    'INSERT OR REPLACE INTO bill (id, title, subtype, status_id, status_desc, is_passed, committee_id, committee_name, summary, micro_agenda, macro_agenda, publication_date, init_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    "INSERT OR REPLACE INTO bill (id, title, subtype, status_id, status_desc, is_passed, committee_id, committee_name, summary, micro_agenda, macro_agenda, publication_date, init_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
   );
 
   // Simple categorization helper (copied from generation script)
-  function categorize(title: string, committee: string | null): { macro: string; micro: string } {
+  function categorize(
+    title: string,
+    committee: string | null,
+  ): { macro: string; micro: string } {
     const t = title.toLowerCase();
-    const c = committee || '';
+    const c = committee || "";
     let macro = "מנהל ומשפט";
-    if (c.includes("ביטחון") || t.includes('צה"ל') || t.includes("צבא") || t.includes("טרור") || t.includes("נשק") || t.includes("מילואים") || t.includes("חיילים")) macro = "ביטחון וצבא";
-    else if (c.includes("כספים") || c.includes("כלכלה") || t.includes("מס ") || t.includes("מיסוי") || t.includes("תקציב") || t.includes("צרכן") || t.includes("בנק") || t.includes("מכס")) macro = "כלכלה ויוקר המחיה";
-    else if (c.includes("בריאות") || c.includes("רווחה") || t.includes("בריאות") || t.includes("ביטוח לאומי") || t.includes("קצבת") || t.includes("נכים") || t.includes("עוני")) macro = "בריאות ורווחה";
-    else if (c.includes("חינוך") || t.includes("חינוך") || t.includes("בתי ספר") || t.includes("תלמידים") || t.includes("אקדמיה") || t.includes("תרבות") || t.includes("ספורט")) macro = "חינוך ותרבות";
-    else if (t.includes("רבנות") || t.includes("דת") || t.includes("כשרות") || t.includes("שבת") || t.includes("גיור") || t.includes("בתי דין רבניים")) macro = "דת ומדינה";
-    else if (c.includes("חוקה") || c.includes("משפט") || t.includes("עונשין") || t.includes("פשיעה") || t.includes("אלימות") || t.includes("בתי משפט") || t.includes("שפיטה") || t.includes("מאסר")) macro = "משפט ופשיעה";
-    else if (c.includes("סביבה") || t.includes("תכנון והבניה") || t.includes("תחבורה") || t.includes("מקרקעין") || t.includes("אנרגיה") || t.includes("מים") || t.includes("חשמל")) macro = "סביבה ותשתיות";
-    else if (c.includes("עבודה") || t.includes("עובדים") || t.includes("שכר") || t.includes("תעסוקה") || t.includes("חופשה") || t.includes("פיצויי פיטורים")) macro = "עבודה ותעסוקה";
-    else if (c.includes("פנים") || t.includes("רשויות מקומיות") || t.includes("בחירות") || t.includes("ממשלה") || t.includes("כנסת") || t.includes("שירות המדינה") || t.includes("מבקר המדינה")) macro = "שלטון ומינהל";
-    else if (c.includes("זכויות") || c.includes("נשים") || t.includes("הפליה") || t.includes("שוויון") || t.includes('להט"ב')) macro = "זכויות אדם ושוויון";
+    if (
+      c.includes("ביטחון") ||
+      t.includes('צה"ל') ||
+      t.includes("צבא") ||
+      t.includes("טרור") ||
+      t.includes("נשק") ||
+      t.includes("מילואים") ||
+      t.includes("חיילים")
+    )
+      macro = "ביטחון וצבא";
+    else if (
+      c.includes("כספים") ||
+      c.includes("כלכלה") ||
+      t.includes("מס ") ||
+      t.includes("מיסוי") ||
+      t.includes("תקציב") ||
+      t.includes("צרכן") ||
+      t.includes("בנק") ||
+      t.includes("מכס")
+    )
+      macro = "כלכלה ויוקר המחיה";
+    else if (
+      c.includes("בריאות") ||
+      c.includes("רווחה") ||
+      t.includes("בריאות") ||
+      t.includes("ביטוח לאומי") ||
+      t.includes("קצבת") ||
+      t.includes("נכים") ||
+      t.includes("עוני")
+    )
+      macro = "בריאות ורווחה";
+    else if (
+      c.includes("חינוך") ||
+      t.includes("חינוך") ||
+      t.includes("בתי ספר") ||
+      t.includes("תלמידים") ||
+      t.includes("אקדמיה") ||
+      t.includes("תרבות") ||
+      t.includes("ספורט")
+    )
+      macro = "חינוך ותרבות";
+    else if (
+      t.includes("רבנות") ||
+      t.includes("דת") ||
+      t.includes("כשרות") ||
+      t.includes("שבת") ||
+      t.includes("גיור") ||
+      t.includes("בתי דין רבניים")
+    )
+      macro = "דת ומדינה";
+    else if (
+      c.includes("חוקה") ||
+      c.includes("משפט") ||
+      t.includes("עונשין") ||
+      t.includes("פשיעה") ||
+      t.includes("אלימות") ||
+      t.includes("בתי משפט") ||
+      t.includes("שפיטה") ||
+      t.includes("מאסר")
+    )
+      macro = "משפט ופשיעה";
+    else if (
+      c.includes("סביבה") ||
+      t.includes("תכנון והבניה") ||
+      t.includes("תחבורה") ||
+      t.includes("מקרקעין") ||
+      t.includes("אנרגיה") ||
+      t.includes("מים") ||
+      t.includes("חשמל")
+    )
+      macro = "סביבה ותשתיות";
+    else if (
+      c.includes("עבודה") ||
+      t.includes("עובדים") ||
+      t.includes("שכר") ||
+      t.includes("תעסוקה") ||
+      t.includes("חופשה") ||
+      t.includes("פיצויי פיטורים")
+    )
+      macro = "עבודה ותעסוקה";
+    else if (
+      c.includes("פנים") ||
+      t.includes("רשויות מקומיות") ||
+      t.includes("בחירות") ||
+      t.includes("ממשלה") ||
+      t.includes("כנסת") ||
+      t.includes("שירות המדינה") ||
+      t.includes("מבקר המדינה")
+    )
+      macro = "שלטון ומינהל";
+    else if (
+      c.includes("זכויות") ||
+      c.includes("נשים") ||
+      t.includes("הפליה") ||
+      t.includes("שוויון") ||
+      t.includes('להט"ב')
+    )
+      macro = "זכויות אדם ושוויון";
 
-    let micro = title.replace(/^הצעת /, '').replace(/, התשפ.*/, '').replace(/ \S+$/, '');
+    let micro = title
+      .replace(/^הצעת /, "")
+      .replace(/, התשפ.*/, "")
+      .replace(/ \S+$/, "");
     const parenMatch = title.match(/\(([^0-9(]+)\)/);
-    if (parenMatch && parenMatch[1] && parenMatch[1].length > 5 && !parenMatch[1].includes("תיקון")) {
+    if (
+      parenMatch &&
+      parenMatch[1] &&
+      parenMatch[1].length > 5 &&
+      !parenMatch[1].includes("תיקון")
+    ) {
       micro = parenMatch[1];
     } else {
-      micro = micro.replace(/^חוק /, '').replace(/^לתיקון פקודת /, 'פקודת ').replace(/ \(תיקון מס' \d+\)/, '').replace(/ \(תיקון\)/, '').trim();
+      micro = micro
+        .replace(/^חוק /, "")
+        .replace(/^לתיקון פקודת /, "פקודת ")
+        .replace(/ \(תיקון מס' \d+\)/, "")
+        .replace(/ \(תיקון\)/, "")
+        .trim();
       if (micro.length > 50) micro = micro.substring(0, 47) + "...";
     }
     return { macro, micro };
   }
 
   const insertInitiator = db.prepare(
-    'INSERT OR REPLACE INTO bill_initiator (bill_id, mk_id) VALUES (?, ?)',
+    "INSERT OR REPLACE INTO bill_initiator (bill_id, mk_id) VALUES (?, ?)",
   );
   const insertBillsBatch = db.transaction((rows: any[]) => {
     for (const r of rows) {
-      const committeeName = r.CommitteeID != null ? (committeeMap.get(r.CommitteeID) ?? null) : null;
-      const { macro, micro } = categorize(r.Name ?? '', committeeName);
+      const committeeName =
+        r.CommitteeID != null
+          ? (committeeMap.get(r.CommitteeID) ?? null)
+          : null;
+      const { macro, micro } = categorize(r.Name ?? "", committeeName);
       insertBill.run(
-        r.Id, r.Name ?? '', r.SubTypeDesc ?? '', r.StatusID ?? 0,
+        r.Id,
+        r.Name ?? "",
+        r.SubTypeDesc ?? "",
+        r.StatusID ?? 0,
         r.KNS_Status?.Desc ?? null,
         PASSED_STATUS_IDS.has(r.StatusID) ? 1 : 0,
-        r.CommitteeID ?? null, committeeName,
+        r.CommitteeID ?? null,
+        committeeName,
         r.SummaryLaw?.trim() ?? null,
-        micro, macro,
+        micro,
+        macro,
         r.PublicationDate ?? null,
-        (() => { const m = (r.Name ?? '').trimEnd().match(/-(\d{4})$/); return m ? m[1] : null; })(),
+        (() => {
+          const m = (r.Name ?? "").trimEnd().match(/-(\d{4})$/);
+          return m ? m[1] : null;
+        })(),
       );
       for (const init of r.KNS_BillInitiator ?? []) {
         if (init.PersonID) insertInitiator.run(r.Id, init.PersonID);
@@ -459,16 +769,17 @@ async function sync() {
 
   const bills = await fetchAll(
     `${API}/KNS_Bill` +
-    `?$filter=${encodeURIComponent(`KnessetNum eq 25 and LastUpdatedDate ge ${sinceStr}`)}` +
-    `&$expand=KNS_BillInitiator($select=PersonID),KNS_Status($select=Desc)` +
-    `&$select=Id,Name,SubTypeDesc,StatusID,CommitteeID,SummaryLaw,PublicationDate`,
+      `?$filter=${encodeURIComponent(`KnessetNum eq 25 and LastUpdatedDate ge ${sinceStr}`)}` +
+      `&$expand=KNS_BillInitiator($select=PersonID),KNS_Status($select=Desc)` +
+      `&$select=Id,Name,SubTypeDesc,StatusID,CommitteeID,SummaryLaw,PublicationDate`,
   );
   insertBillsBatch(bills);
 
   // Update doc URLs for newly synced bills
-  const normPath = (p: string) => p.replace(/\\/g, '/').replace(/\/\//g, '/').replace('https:/', 'https://');
+  const normPath = (p: string) =>
+    p.replace(/\\/g, "/").replace(/\/\//g, "/").replace("https:/", "https://");
   if (bills.length > 0) {
-    const newBillIds = bills.map(r => r.Id);
+    const newBillIds = bills.map((r) => r.Id);
     const idSet = new Set(newBillIds);
     const docRows = await fetchAll(
       `${API}/KNS_DocumentBill?$filter=${encodeURIComponent(`GroupTypeID eq 1 and LastUpdatedDate ge ${sinceStr}`)}&$select=BillID,FilePath,ApplicationID`,
@@ -478,7 +789,8 @@ async function sync() {
       if (!idSet.has(r.BillID)) continue;
       const existing = docMap.get(r.BillID);
       // prefer PDF (ApplicationID=4) over DOC (ApplicationID=1)
-      if (!existing || r.ApplicationID === 4) docMap.set(r.BillID, normPath(r.FilePath));
+      if (!existing || r.ApplicationID === 4)
+        docMap.set(r.BillID, normPath(r.FilePath));
     }
     const updateDocUrl = db.prepare(`UPDATE bill SET doc_url = ? WHERE id = ?`);
     db.transaction(() => {
@@ -488,17 +800,29 @@ async function sync() {
 
   // ── Queries ───────────────────────────────────────────────────────────────
   // Ensure mk_query table has all columns
-  const queryCols = (db.prepare(`PRAGMA table_info(mk_query)`).all() as { name: string }[]).map(r => r.name);
-  if (!queryCols.includes('body'))                   db.exec(`ALTER TABLE mk_query ADD COLUMN body TEXT`);
-  if (!queryCols.includes('ministry_response'))      db.exec(`ALTER TABLE mk_query ADD COLUMN ministry_response TEXT`);
-  if (!queryCols.includes('enriched_at'))            db.exec(`ALTER TABLE mk_query ADD COLUMN enriched_at TEXT`);
-  if (!queryCols.includes('source_url'))             db.exec(`ALTER TABLE mk_query ADD COLUMN source_url TEXT`);
-  if (!queryCols.includes('ministry_response_url'))  db.exec(`ALTER TABLE mk_query ADD COLUMN ministry_response_url TEXT`);
-  if (!queryCols.includes('gov_ministry_id'))        db.exec(`ALTER TABLE mk_query ADD COLUMN gov_ministry_id INTEGER`);
-  if (!queryCols.includes('gov_ministry_name'))      db.exec(`ALTER TABLE mk_query ADD COLUMN gov_ministry_name TEXT`);
-  if (!queryCols.includes('query_number'))           db.exec(`ALTER TABLE mk_query ADD COLUMN query_number INTEGER`);
-  if (!queryCols.includes('type_desc'))              db.exec(`ALTER TABLE mk_query ADD COLUMN type_desc TEXT`);
-  if (!queryCols.includes('reply_date'))             db.exec(`ALTER TABLE mk_query ADD COLUMN reply_date TEXT`);
+  const queryCols = (
+    db.prepare(`PRAGMA table_info(mk_query)`).all() as { name: string }[]
+  ).map((r) => r.name);
+  if (!queryCols.includes("body"))
+    db.exec(`ALTER TABLE mk_query ADD COLUMN body TEXT`);
+  if (!queryCols.includes("ministry_response"))
+    db.exec(`ALTER TABLE mk_query ADD COLUMN ministry_response TEXT`);
+  if (!queryCols.includes("enriched_at"))
+    db.exec(`ALTER TABLE mk_query ADD COLUMN enriched_at TEXT`);
+  if (!queryCols.includes("source_url"))
+    db.exec(`ALTER TABLE mk_query ADD COLUMN source_url TEXT`);
+  if (!queryCols.includes("ministry_response_url"))
+    db.exec(`ALTER TABLE mk_query ADD COLUMN ministry_response_url TEXT`);
+  if (!queryCols.includes("gov_ministry_id"))
+    db.exec(`ALTER TABLE mk_query ADD COLUMN gov_ministry_id INTEGER`);
+  if (!queryCols.includes("gov_ministry_name"))
+    db.exec(`ALTER TABLE mk_query ADD COLUMN gov_ministry_name TEXT`);
+  if (!queryCols.includes("query_number"))
+    db.exec(`ALTER TABLE mk_query ADD COLUMN query_number INTEGER`);
+  if (!queryCols.includes("type_desc"))
+    db.exec(`ALTER TABLE mk_query ADD COLUMN type_desc TEXT`);
+  if (!queryCols.includes("reply_date"))
+    db.exec(`ALTER TABLE mk_query ADD COLUMN reply_date TEXT`);
 
   // Fetch ministry names for gov_ministry_name lookup
   const ministryRows = await fetchAll(`${API}/KNS_GovMinistry?$select=Id,Name`);
@@ -524,11 +848,18 @@ async function sync() {
     for (const r of rows) {
       if (r.PersonID) {
         const ministryId = r.GovMinistryID ?? null;
-        const ministryName = ministryId != null ? (ministryMap.get(ministryId) ?? null) : null;
+        const ministryName =
+          ministryId != null ? (ministryMap.get(ministryId) ?? null) : null;
         insertQuery.run(
-          r.Id, r.PersonID, r.Name ?? '', r.SubmitDate ?? '',
-          ministryId, ministryName,
-          r.Number ?? null, r.TypeDesc ?? null, r.ReplyMinisterDate ?? null,
+          r.Id,
+          r.PersonID,
+          r.Name ?? "",
+          r.SubmitDate ?? "",
+          ministryId,
+          ministryName,
+          r.Number ?? null,
+          r.TypeDesc ?? null,
+          r.ReplyMinisterDate ?? null,
         );
       }
     }
@@ -536,7 +867,7 @@ async function sync() {
 
   const queries = await fetchAll(
     `${API}/KNS_Query` +
-    `?$filter=${encodeURIComponent(`KnessetNum eq 25 and LastUpdatedDate ge ${sinceStr}`)}`,
+      `?$filter=${encodeURIComponent(`KnessetNum eq 25 and LastUpdatedDate ge ${sinceStr}`)}`,
   );
   insertQueriesBatch(queries);
 
@@ -572,16 +903,21 @@ async function sync() {
   const syncGovMinistries = async () => {
     const insertMinistry = db.prepare(
       `INSERT OR REPLACE INTO gov_ministry (id, name, is_active, last_updated)
-       VALUES (?, ?, ?, ?)`
+       VALUES (?, ?, ?, ?)`,
     );
 
     const ministries = await fetchAll(
-      `${API}/KNS_GovMinistry?$select=Id,Name,IsActive,LastUpdatedDate`
+      `${API}/KNS_GovMinistry?$select=Id,Name,IsActive,LastUpdatedDate`,
     );
 
     db.transaction(() => {
       for (const m of ministries) {
-        insertMinistry.run(m.Id ?? null, m.Name ?? '', m.IsActive ? 1 : 0, m.LastUpdatedDate ?? null);
+        insertMinistry.run(
+          m.Id ?? null,
+          m.Name ?? "",
+          m.IsActive ? 1 : 0,
+          m.LastUpdatedDate ?? null,
+        );
       }
     })();
 
@@ -592,8 +928,11 @@ async function sync() {
 
   // ── Positions ─────────────────────────────────────────────────────────────
   // Ensure mk_position has government_num column
-  const posCols = (db.prepare(`PRAGMA table_info(mk_position)`).all() as { name: string }[]).map(r => r.name);
-  if (!posCols.includes('government_num')) db.exec(`ALTER TABLE mk_position ADD COLUMN government_num INTEGER`);
+  const posCols = (
+    db.prepare(`PRAGMA table_info(mk_position)`).all() as { name: string }[]
+  ).map((r) => r.name);
+  if (!posCols.includes("government_num"))
+    db.exec(`ALTER TABLE mk_position ADD COLUMN government_num INTEGER`);
 
   const insertPosition = db.prepare(
     `INSERT OR REPLACE INTO mk_position
@@ -603,10 +942,15 @@ async function sync() {
   const insertPositionsBatch = db.transaction((rows: any[]) => {
     for (const r of rows) {
       insertPosition.run(
-        r.Id, r.PersonID, r.DutyDesc ?? null,
-        r.CommitteeID ?? null, r.CommitteeName ?? null,
-        r.GovMinistryID ?? null, r.GovMinistryName ?? null,
-        r.StartDate ?? '', r.FinishDate ?? null,
+        r.Id,
+        r.PersonID,
+        r.DutyDesc ?? null,
+        r.CommitteeID ?? null,
+        r.CommitteeName ?? null,
+        r.GovMinistryID ?? null,
+        r.GovMinistryName ?? null,
+        r.StartDate ?? "",
+        r.FinishDate ?? null,
         r.IsCurrent ? 1 : 0,
         classifyRoleType(r),
         r.GovernmentNum ?? null,
@@ -616,8 +960,8 @@ async function sync() {
 
   const positions = await fetchAll(
     `${API}/KNS_PersonToPosition` +
-    `?$filter=${encodeURIComponent(`KnessetNum eq 25`)}` +
-    `&$select=Id,PersonID,DutyDesc,CommitteeID,CommitteeName,GovMinistryID,GovMinistryName,StartDate,FinishDate,IsCurrent,GovernmentNum`,
+      `?$filter=${encodeURIComponent(`KnessetNum eq 25`)}` +
+      `&$select=Id,PersonID,DutyDesc,CommitteeID,CommitteeName,GovMinistryID,GovMinistryName,StartDate,FinishDate,IsCurrent,GovernmentNum`,
   );
   insertPositionsBatch(positions);
 
@@ -640,11 +984,11 @@ async function sync() {
   db.close();
   console.log(
     `Done. votes=${votes.length}, results=${results.length.toLocaleString()}, ` +
-    `bills=${bills.length}, queries=${queries.length}, positions=${positions.length}`,
+      `bills=${bills.length}, queries=${queries.length}, positions=${positions.length}`,
   );
 }
 
-sync().catch(err => {
-  console.error('Sync failed:', err.message);
+sync().catch((err) => {
+  console.error("Sync failed:", err.message);
   process.exit(1);
 });
