@@ -9,6 +9,11 @@
  *    P_I — אחוזון מספר הצעות החוק שיזם באג'נדה.
  *    P_V — אחוזון שיעור ההצבעות שבהן תמך בכיוון האג'נדה.
  *
+ *  P_V סופר אך ורק הצבעות שהן בעד האג'נדה: בעד חוק שכיוונו תואם לעמדת
+ *  המשתמש, או נגד חוק שכיוונו מנוגד לה. הצבעה שכיוון החוק שלה לא ידוע
+ *  אינה נספרת — לא במונה וגם לא במכנה. כשאין באג'נדה אף הצבעה מסווגת,
+ *  רכיב ההצבעות אינו קיים והציון נשען על החקיקה בלבד (votingAvailable).
+ *
  *  ההבדל מ-getEngagementIndex ב-knesset-db.ts: שם המדד כללי ומודד כמה ח"כ
  *  פעיל בכלל; כאן הוא ממוקד בנושא ותלוי בעמדה שהמשתמש בחר.
  *
@@ -118,6 +123,11 @@ export interface AgendaScore {
 
   pInitiative: number;
   pVoting: number;
+  /**
+   * האם היו באג'נדה הצבעות עם כיוון ידוע. כשאין — pVoting הוא 0 מחוסר
+   * נתונים ולא מחוסר פעילות, והציון נשען על החקיקה בלבד.
+   */
+  votingAvailable: boolean;
   /** הציון לאג'נדה הזו, 0 עד 100 */
   score: number;
 
@@ -143,6 +153,8 @@ export interface AgendaCoverage {
   label: string;
   billCount: number;
   voteCount: number;
+  /** מתוכן, כמה הצבעות כיוון החוק שלהן ידוע. רק הן נכנסות לרכיב ההצבעות */
+  votesWithStance: number;
   /** כמה ח"כים מכהנים פעילים באג'נדה — קבוצת הדירוג */
   activeMks: number;
   source: AgendaSource;
@@ -304,15 +316,15 @@ function emptyTally(): MkTally {
 /**
  * תמיכה בכיוון האג'נדה.
  *
- * כשהעמדה ידועה — הצבעה בעד חוק תואם, או נגד חוק מנוגד, שתיהן תמיכה.
- * כשאינה ידועה — נופלים למדידת השתתפות: כל הצבעה שבה נקט עמדה (בעד או
- * נגד) נספרת, כי לקיחת צד היא מעורבות ואילו הימנעות אינה. הכיוון עצמו
- * אינו מבדיל בין ח"כים ממילא — 99.83% מההצבעות תואמות את רוב הסיעה.
+ * נספרות רק הצבעות שהן בעד האג'נדה בפועל: בעד חוק שכיוונו תואם לעמדת
+ * המשתמש, או נגד חוק שכיוונו מנוגד לה. שתיהן תמיכה באותה עמדה.
+ *
+ * הצבעה שכיוון החוק שלה אינו ידוע (אין סיווג) אינה נספרת כתמיכה — וגם
+ * אינה נספרת במכנה. אחרת שיעור התמיכה היה יורד באג'נדות שהסיווג בהן
+ * חלקי, והמדד היה מעניש ח"כים על פערים בנתונים במקום על התנהגות.
  */
 function isSupportive(resultCode: number, matchesStance: boolean | null): boolean {
-  if (matchesStance === null) {
-    return resultCode === RESULT_FOR || resultCode === RESULT_AGAINST;
-  }
+  if (matchesStance === null) return false;
   if (matchesStance) return resultCode === RESULT_FOR;
   return resultCode === RESULT_AGAINST;
 }
@@ -509,7 +521,15 @@ export function computeAgendaActivity(
       const initiatorsByBill = tallyBills(db, bills, tallies, opts.countOnlyAdvancedBills === true);
       tallyVotes(db, votes, tallies, initiatorsByBill);
 
-      const voteDates = votes.map(v => v.date);
+      /**
+       * רק הצבעות שכיוון החוק שלהן ידוע נכנסות למכנה. הצבעה שאי אפשר
+       * לדעת אם היא בעד או נגד האג'נדה אינה הזדמנות שהוחמצה — היא פער
+       * בנתונים, ואסור שתיזקף לחובת הח"כ.
+       */
+      const stanceKnownDates = votes.filter(v => v.matchesStance !== null).map(v => v.date);
+
+      /** בלי אף הצבעה מסווגת אין רכיב הצבעות כלל, והציון נשען על החקיקה בלבד */
+      const votingAvailable = stanceKnownDates.length > 0;
 
       // קבוצת הדירוג: רק מי שעשה משהו באג'נדה. ראו מלכודת 1 בראש הקובץ
       const active = [...tallies.entries()].filter(
@@ -518,17 +538,17 @@ export function computeAgendaActivity(
 
       const billValues = active.map(([, t]) => t.billsInitiated);
       const rateValues = active.map(([mkId, t]) => {
-        const opportunities = countVotesDuringTenure(voteDates, mks.get(mkId)!.tenure);
+        const opportunities = countVotesDuringTenure(stanceKnownDates, mks.get(mkId)!.tenure);
         return opportunities > 0 ? t.supportingVotes / opportunities : 0;
       });
 
       for (const [mkId, tally] of active) {
         const meta = mks.get(mkId)!;
-        const opportunities = countVotesDuringTenure(voteDates, meta.tenure);
+        const opportunities = countVotesDuringTenure(stanceKnownDates, meta.tenure);
         const rate = opportunities > 0 ? tally.supportingVotes / opportunities : 0;
 
         const pInitiative = percentileAmongActive(billValues, tally.billsInitiated);
-        const pVoting = percentileAmongActive(rateValues, rate);
+        const pVoting = votingAvailable ? percentileAmongActive(rateValues, rate) : 0;
 
         const list = scoresByMk.get(mkId) ?? [];
         list.push({
@@ -545,7 +565,17 @@ export function computeAgendaActivity(
           supportRate: round1(rate * 100),
           pInitiative: round1(pInitiative),
           pVoting: round1(pVoting),
-          score: round1(WEIGHT_INITIATIVE * pInitiative + WEIGHT_VOTING * pVoting),
+          votingAvailable,
+          /**
+           * כשאין הצבעות מסווגות, רכיב ההצבעות אינו קיים — לא אפס.
+           * שקלול ב-0.6 היה מוריד לכולם 40 נקודות ומשדר "פעילות נמוכה"
+           * במקום "אין נתונים", לכן החקיקה נושאת את מלוא המשקל.
+           */
+          score: round1(
+            votingAvailable
+              ? WEIGHT_INITIATIVE * pInitiative + WEIGHT_VOTING * pVoting
+              : pInitiative,
+          ),
           flags: {
             rebelVotes: tally.rebelVotes,
             contradictedOwnBill: tally.contradictedOwnBill,
@@ -557,6 +587,7 @@ export function computeAgendaActivity(
       coverage.push({
         issueId: issue.id,
         label: issue.label,
+        votesWithStance: stanceKnownDates.length,
         billCount: bills.length,
         voteCount: votes.length,
         activeMks: active.length,
