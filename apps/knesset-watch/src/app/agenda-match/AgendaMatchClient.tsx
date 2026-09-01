@@ -35,6 +35,7 @@ interface AgendaScore {
   supportRate: number;
   pInitiative: number;
   pVoting: number;
+  votingAvailable: boolean;
   score: number;
   flags: AgendaFlags;
 }
@@ -56,6 +57,7 @@ interface Coverage {
   billCount: number;
   voteCount: number;
   activeMks: number;
+  votesWithStance: number;
   source: 'classification' | 'keywords';
   belowThreshold: boolean;
 }
@@ -550,11 +552,24 @@ export default function AgendaMatchClient() {
                                   <p className="text-xs text-gray-600 font-medium mt-1 leading-relaxed">
                                     יזם {a.billsInitiated} הצעות חוק
                                     {a.billsAdvanced > 0 && ` (${a.billsAdvanced} התקדמו)`}
-                                    {' · '}
-                                    תמך ב-{a.supportingVotes} מתוך {a.voteOpportunities} הצבעות
-                                    {' · '}
-                                    אחוזונים {a.pInitiative} / {a.pVoting}
+                                    {a.votingAvailable ? (
+                                      <>
+                                        {' · '}
+                                        תמך ב-{a.supportingVotes} מתוך {a.voteOpportunities} הצבעות
+                                        {' · '}
+                                        אחוזונים {a.pInitiative} / {a.pVoting}
+                                      </>
+                                    ) : (
+                                      <> · אחוזון חקיקה {a.pInitiative}</>
+                                    )}
                                   </p>
+
+                                  {!a.votingAvailable && (
+                                    <p className="text-[11px] text-amber-800 font-medium mt-1.5 leading-relaxed">
+                                      אין בנושא הזה הצבעות שכיוונן ידוע, ולכן הציון מבוסס על
+                                      יוזמה חקיקתית בלבד — לא על הצבעות.
+                                    </p>
+                                  )}
 
                                   {a.bills.length > 0 && (
                                     <ul className="mt-2.5 flex flex-col gap-1.5">
