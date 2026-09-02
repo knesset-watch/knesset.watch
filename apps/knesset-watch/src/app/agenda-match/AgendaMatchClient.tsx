@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { DOMAINS, POLITICAL_ISSUES } from '@/lib/agendas';
+import { MkAvatar, MkBackground } from '@/components/MkIdentity';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
@@ -52,46 +53,12 @@ interface Row {
   perAgenda: AgendaScore[];
   /** תמונה מ-Wikimedia Commons. null אצל 7 ח"כים שאינם ב-Wikidata */
   photo: string | null;
-  /** עיסוק והשכלה בשורה אחת, למשל "עורך דין · האוניברסיטה העברית" */
-  background: string | null;
-}
-
-/** ראשי תיבות, כשאין תמונה. אותו דפוס כמו EntityTooltip */
-function initials(name: string): string {
-  return name.split(' ').filter(Boolean).slice(0, 2).map(p => p[0]).join('');
-}
-
-/**
- * אווטאר: תמונה כשיש, אחרת ראשי תיבות על רקע צבעוני.
- * הצבע מבחין בין קואליציה לאופוזיציה, כמו בשאר האתר.
- */
-function MkAvatar({ row }: { row: Row }) {
-  const [failed, setFailed] = useState(false);
-  const ring = row.isCoalition ? 'ring-green-600/30' : 'ring-blue-600/30';
-
-  if (row.photo && !failed) {
-    return (
-      /* eslint-disable-next-line @next/next/no-img-element */
-      <img
-        src={row.photo}
-        alt=""
-        loading="lazy"
-        onError={() => setFailed(true)}
-        className={`w-12 h-12 rounded-full object-cover object-top shrink-0 ring-2 ${ring} bg-gray-100`}
-      />
-    );
-  }
-
-  return (
-    <div
-      className={`w-12 h-12 rounded-full shrink-0 ring-2 ${ring} flex items-center justify-center text-sm font-black text-white ${
-        row.isCoalition ? 'bg-green-600' : 'bg-blue-600'
-      }`}
-      aria-hidden="true"
-    >
-      {initials(row.name)}
-    </div>
-  );
+  /** "עיתונאי · מנחה טלוויזיה" */
+  occupation: string | null;
+  /** "האוניברסיטה העברית בירושלים" */
+  education: string | null;
+  /** "מכהן מאז 1988 · 38 שנים" */
+  tenure: string | null;
 }
 
 interface Coverage {
@@ -551,7 +518,7 @@ export default function AgendaMatchClient() {
                             <span className="text-sm font-black text-gray-400 w-6 shrink-0 tabular-nums">
                               {idx + 1}
                             </span>
-                            <MkAvatar row={row} />
+                            <MkAvatar name={row.name} photo={row.photo} isCoalition={row.isCoalition} />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
                                 <h3 className="text-base font-black">{row.name}</h3>
@@ -574,11 +541,12 @@ export default function AgendaMatchClient() {
                               <p className="text-xs text-gray-500 font-medium mt-0.5">
                                 {row.faction ?? 'ללא סיעה'} · {row.isCoalition ? 'קואליציה' : 'אופוזיציה'}
                               </p>
-                              {row.background && (
-                                <p className="text-xs text-gray-400 font-medium mt-0.5 truncate">
-                                  {row.background}
-                                </p>
-                              )}
+                              <MkBackground
+                                occupation={row.occupation}
+                                education={row.education}
+                                tenure={row.tenure}
+                                className="mt-1"
+                              />
                             </div>
                             <div className="shrink-0 text-left">
                               <div className="text-xl font-black tabular-nums">{row.overallScore}</div>

@@ -3,6 +3,8 @@
 import { useState, useEffect, useMemo, useRef, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { MkAvatar, MkBackground } from '@/components/MkIdentity';
+import { getMkProfile, occupationLine, educationLine, tenureLabel } from '@/lib/mk-profiles';
 import TimelineChart from '@/components/TimelineChart';
 import AllianceGraph from '@/components/AllianceGraph';
 import FilterChips from '@/components/FilterChips';
@@ -1603,12 +1605,20 @@ export default function KnessetWatchPage() {
                   className={`relative group ${cardBg} p-8 rounded-2xl border shadow-sm hover:shadow-2xl hover:-translate-y-2 hover:border-gray-400 cursor-pointer transition-all flex flex-col min-h-[280px] ${isStale && !statsLoading ? 'opacity-75' : ''}`}
                   style={displaySegments?.length ? buildCardStyleFromSegments(displaySegments) : buildCardStyle(item.coalitionPct, item.IsCoalition, activeFrac)}
                 >
-                  <h3 className="text-2xl font-black leading-tight mb-2 transition-colors">
-                    <Link href={`/mk/${item.slug ?? item.Id}`} className="hover:underline" prefetch={false}>
-                      {item.FirstName} {item.LastName}
-                    </Link>
-                  </h3>
-                  <div className="flex items-center gap-2 mb-4 min-h-[1.5rem] flex-wrap">
+                  <div className="flex items-start gap-3 mb-2">
+                    <MkAvatar
+                      name={`${item.FirstName ?? ''} ${item.LastName ?? ''}`.trim()}
+                      photo={getMkProfile(item.Id)?.photo}
+                      isCoalition={item.IsCoalition}
+                      size="lg"
+                    />
+                    <h3 className="text-2xl font-black leading-tight transition-colors min-w-0">
+                      <Link href={`/mk/${item.slug ?? item.Id}`} className="hover:underline" prefetch={false}>
+                        {item.FirstName} {item.LastName}
+                      </Link>
+                    </h3>
+                  </div>
+                  <div className="flex items-center gap-2 mb-2 min-h-[1.5rem] flex-wrap">
                     {item.FactionName && (
                       <span className="text-xs text-gray-600 font-medium truncate">{item.FactionName}</span>
                     )}
@@ -1630,6 +1640,14 @@ export default function KnessetWatchPage() {
                       </span>
                     )}
                   </div>
+
+                  {/* רקע תעסוקתי, אקדמי וותק — מ-Wikidata דרך lib/mk-profiles */}
+                  <MkBackground
+                    occupation={occupationLine(getMkProfile(item.Id))}
+                    education={educationLine(getMkProfile(item.Id))}
+                    tenure={tenureLabel(getMkProfile(item.Id))}
+                    className="mb-4"
+                  />
 
                   {/* MK Top Agendas */}
                   {topAgendas.length > 0 && (
