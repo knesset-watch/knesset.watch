@@ -23,9 +23,38 @@ export interface MkProfile {
   occupations: string[];
   /** השנה שבה נכנס לכנסת לראשונה, מכל קדנציה שהיא */
   sinceYear: number | null;
+  /** תפקידים שמילא (P39 ב-Wikidata) */
+  positions: string[];
   /** תפקיד בכיר נוכחי מ-mk_position, כתחליף לעיסוק חסר */
   role: string | null;
   qid: string;
+}
+
+/**
+ * תפקידים פרלמנטריים פנימיים — אינם רקע תעסוקתי.
+ *
+ * ההבחנה: תפקיד שממלאים *בתוך* הכנסת נובע מעצם היותם חברי כנסת ואינו
+ * מעיד על הכשרה או ניסיון קודם. תפקיד *מחוץ* לכנסת — ראש עיר, מנכ"ל
+ * ארגון, ראש המטה הכללי, שגריר — הוא ניסיון ניהולי ממשי ולכן כן נכלל.
+ */
+const PARLIAMENTARY_ROLE = /^(חבר|חברת) הכנסת$|^(יושב ראש|יו"ר|סגן יושב ראש|סגנית יושבת ראש) הכנסת|^ראש האופוזיציה|^(יו"ר|יושב ראש) (ועדת|הוועדה|סיעת|הסיעה)|^מ"מ |^משקיף|^חבר פרלמנט/;
+
+/**
+ * תוויות עיסוק כלליות מדי מכדי לומר משהו. "שר" בלי ציון המשרד, או
+ * "מנהל" בלי ציון של מה. הן נשמרות רק אם אין שום דבר טוב יותר.
+ */
+const VAGUE_OCCUPATIONS = new Set(['שר', 'מנהל', 'עובד ציבור', 'איש ציבור']);
+
+/**
+ * תפקידי ממשלה. פוליטיים באופיים ולכן אינם רקע תעסוקתי, אבל אצל
+ * פוליטיקאי בקריירה הם המידע המשמעותי היחיד — ולכן משמשים מוצא אחרון
+ * בלבד, ולעולם לא דוחקים עיסוק אמיתי.
+ */
+const GOVERNMENT_ROLE = /^(שר|שרה|השר|השרה|סגן שר|סגנית שר|ראש הממשלה|ראש ממשלת|סגן ראש ממשלת|המשנה לראש)/;
+
+/** תפקיד חיצוני לכנסת — ניסיון ניהולי שנחשב רקע תעסוקתי */
+function isBackgroundPosition(position: string): boolean {
+  return !PARLIAMENTARY_ROLE.test(position) && !GOVERNMENT_ROLE.test(position);
 }
 
 /**
@@ -71,6 +100,12 @@ const OVERRIDES: Record<number, Partial<Pick<MkProfile, 'education' | 'occupatio
   30693: { occupations: ['עורך דין'] },                 // איתן גינזבורג — "עורך דין בהכשרתו"
   30799: { occupations: ['סגן שר החוץ'] },              // מישל בוסקילה
   30765: { occupations: ['סגן ראש עיריית פתח תקווה'] }, // אוריאל בוסו
+
+  // "מנכ"ל" ו"מנהל כללי" בלי ציון הארגון אינם אומרים דבר, ו-Wikidata
+  // לא מחזיק את המעסיק (P108 ריק אצל כולם). הפירוט מפתיח הערך בוויקיפדיה.
+  30804: { occupations: ['מנכ"ל רשת מעיין החינוך', 'מנכ"ל מוסדות מגדל אור'] }, // חיים ביטון
+  30846: { occupations: ['ראש סיעת יהדות התורה'] },                            // יצחק גולדקנופ
+  23639: { occupations: ['יו"ר התאחדות הסטודנטים בישראל'] },                   // בועז טופורובסקי
 
   // כך מוסיפים עוד:
   //   <person_id>: { occupations: [...] }   דריסת עיסוק
@@ -169,10 +204,50 @@ export function educationLine(profile: MkProfile | null): string | null {
 export function occupationLine(profile: MkProfile | null): string | null {
   if (!profile) return null;
 
-  const occupations = profile.occupations
-    .filter(o => o !== 'פוליטיקאי' && !BLOCKED_OCCUPATIONS.has(o))
-    .slice(0, 3);
-  if (occupations.length > 0) return occupations.join(' · ');
+  // תיקון ידני גובר על הכל — הוא נכתב בדיוק כדי לתקן את מה שהמקורות מפספסים
+  if (OVERRIDES[profile.personId]?.occupations) {
+    const manual = OVERRIDES[profile.personId].occupations!;
+    return manual.length > 0 ? manual.slice(0, 3).join(' · ') : null;
+  }
 
-  return profile.role ?? null;
+  const positions = profile.positions ?? [];
+
+  /**
+   * תפקיד חיצוני שמפרט תיאור גנרי מחליף אותו: "ראש עירייה" הופך
+   * ל"ראש עיריית ירושלים", "מנהל כללי" ל"ראש המטה הכללי".
+   */
+  const specific = positions.filter(isBackgroundPosition);
+
+  /**
+   * תיאור גנרי שהתפקיד הספציפי כבר מכסה נזרק — "ראש עירייה" מיותר
+   * לצד "ראש עיריית ירושלים".
+   *
+   * ההשוואה על שתי המילים הראשונות אחרי הסרת נטיית סמיכות (עירייה
+   * ועיריית מתלכדות). מילה אחת אינה מספיקה: "איש עסקים" ו"איש צבא"
+   * היו מתלכדות בטעות ואחת מהן הייתה נעלמת.
+   */
+  const stem = (s: string) =>
+    s
+      .split(' ')
+      .slice(0, 2)
+      .map(w => w.replace(/[הת]$/, ''))
+      .join(' ');
+  const covered = new Set(specific.map(stem));
+
+  const occupations = profile.occupations.filter(
+    o =>
+      o !== 'פוליטיקאי' &&
+      !BLOCKED_OCCUPATIONS.has(o) &&
+      !VAGUE_OCCUPATIONS.has(o) &&
+      !covered.has(stem(o)),
+  );
+
+  const combined = [...specific, ...occupations].slice(0, 3);
+  if (combined.length > 0) return combined.join(' · ');
+
+  // מוצא אחרון: תפקיד ממשלתי, לפוליטיקאים בקריירה שאין להם רקע אחר
+  const government = positions.find(p => GOVERNMENT_ROLE.test(p));
+  if (government) return government;
+
+  return profile.role && !PARLIAMENTARY_ROLE.test(profile.role) ? profile.role : null;
 }
