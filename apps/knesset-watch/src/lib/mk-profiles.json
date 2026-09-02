@@ -1,0 +1,1837 @@
+[
+  {
+    "personId": 427,
+    "name": "אביגדור ליברמן",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Avigdor%20Lieberman%202017.jpg?width=200",
+    "education": [
+      "האוניברסיטה החקלאית המדינתית של מולדובה",
+      "האוניברסיטה העברית בירושלים"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "שר",
+      "מנהל כללי"
+    ],
+    "qid": "Q58311"
+  },
+  {
+    "personId": 468,
+    "name": "ישראל כץ",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%99%D7%A9%D7%A8%D7%90%D7%9C%20%D7%9B%D7%A5%20(cropped).jpg?width=200",
+    "education": [
+      "האוניברסיטה העברית בירושלים"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "שר"
+    ],
+    "qid": "Q487304"
+  },
+  {
+    "personId": 526,
+    "name": "משה גפני",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Moshe%20Gafni%20(E32J1400).jpg?width=200",
+    "education": [
+      "ישיבת סלובודקה"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "רב"
+    ],
+    "qid": "Q2386604"
+  },
+  {
+    "personId": 532,
+    "name": "יולי יואל אדלשטיין",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%99%D7%95%D7%9C%D7%99%20%D7%90%D7%93%D7%9C%D7%A9%D7%98%D7%99%D7%99%D7%9F%20-%20%D7%AA%D7%9E%D7%95%D7%A0%D7%AA%20%D7%A4%D7%A8%D7%95%D7%A4%D7%99%D7%9C.jpg?width=200",
+    "education": [],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q1711779"
+  },
+  {
+    "personId": 556,
+    "name": "חיים כץ",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Haim%20Katz%202023.jpg?width=200",
+    "education": [],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q2583214"
+  },
+  {
+    "personId": 560,
+    "name": "אחמד טיבי",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Ahmad%20Tibi%202021%20(cropped).png?width=200",
+    "education": [
+      "האוניברסיטה העברית בירושלים"
+    ],
+    "occupations": [
+      "רופא",
+      "פוליטיקאי",
+      "גינקולוג"
+    ],
+    "qid": "Q2420712"
+  },
+  {
+    "personId": 563,
+    "name": "מאיר פרוש",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Meirporush.JPG?width=200",
+    "education": [
+      "ישיבת סלובודקה"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q1391548"
+  },
+  {
+    "personId": 965,
+    "name": "בנימין נתניהו",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Benjamin%20Netanyahu%2C%20February%202023.jpg?width=200",
+    "education": [
+      "תיכון צ'לטנהם",
+      "בית הספר לניהול MIT סלואן",
+      "המכון הטכנולוגי של מסצ'וסטס"
+    ],
+    "occupations": [
+      "איש צבא",
+      "פוליטיקאי",
+      "כלכלן",
+      "דיפלומט",
+      "מדינאי",
+      "ראש הרשות המבצעת",
+      "חייל",
+      "חוקר מדע המדינה",
+      "סופר פוליטי"
+    ],
+    "qid": "Q43723"
+  },
+  {
+    "personId": 1025,
+    "name": "גילה גמליאל",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Gila%20Gamliel%201.jpg?width=200",
+    "education": [
+      "הקריה האקדמית אונו",
+      "אוניברסיטת בר-אילן",
+      "אוניברסיטת בן-גוריון בנגב"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "איש איגוד מקצועי"
+    ],
+    "qid": "Q445611"
+  },
+  {
+    "personId": 1027,
+    "name": "גדעון סער",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Gideon%20Saar%20new.jpg?width=200",
+    "education": [
+      "אוניברסיטת תל אביב"
+    ],
+    "occupations": [
+      "עורך דין",
+      "פוליטיקאי",
+      "עיתונאי"
+    ],
+    "qid": "Q966349"
+  },
+  {
+    "personId": 1056,
+    "name": "יעקב מרגי",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Yaakov%20Margi.jpg?width=200",
+    "education": [],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q2330483"
+  },
+  {
+    "personId": 1057,
+    "name": "ישראל אייכלר",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Israel%20Eichler%20(ISH%207968).jpg?width=200",
+    "education": [],
+    "occupations": [
+      "סופר",
+      "פוליטיקאי",
+      "עיתונאי",
+      "עורך עיתון"
+    ],
+    "qid": "Q2614420"
+  },
+  {
+    "personId": 2291,
+    "name": "אריה מכלוף דרעי",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%90%D7%A8%D7%99%D7%94%20%D7%93%D7%A8%D7%A2%D7%99%202.jpg?width=200",
+    "education": [
+      "ישיבת חברון כנסת ישראל",
+      "ישיבת פורת יוסף"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q2670985"
+  },
+  {
+    "personId": 4395,
+    "name": "אבי דיכטר",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Avi%20dichter.jpg?width=200",
+    "education": [
+      "אוניברסיטת בר-אילן",
+      "אוניברסיטת תל אביב"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "חייל"
+    ],
+    "qid": "Q790699"
+  },
+  {
+    "personId": 4397,
+    "name": "זאב אלקין",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%96%D7%90%D7%91%20%D7%90%D7%9C%D7%A7%D7%99%D7%9F%20(cropped).png?width=200",
+    "education": [
+      "ישיבת הר עציון",
+      "האוניברסיטה העברית בירושלים"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "היסטוריון",
+      "עיתונאי"
+    ],
+    "qid": "Q2583898"
+  },
+  {
+    "personId": 11835,
+    "name": "אורי מקלב",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Uri%20Maklev.JPG?width=200",
+    "education": [
+      "ישיבת קול תורה"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "רב",
+      "חבר פרלמנט"
+    ],
+    "qid": "Q2330547"
+  },
+  {
+    "personId": 12937,
+    "name": "אופיר אקוניס",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%90%D7%95%D7%A4%D7%99%D7%A8%20%D7%90%D7%A7%D7%95%D7%A0%D7%99%D7%A1.jpg?width=200",
+    "education": [
+      "הגימנסיה העברית \"הרצליה\""
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "עיתונאי"
+    ],
+    "qid": "Q2919288"
+  },
+  {
+    "personId": 12938,
+    "name": "חמד עמאר",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Hamad%20Amar%2C%20November%202018%20(cropped).jpg?width=200",
+    "education": [
+      "אוניברסיטת בר-אילן"
+    ],
+    "occupations": [
+      "עורך דין",
+      "פוליטיקאי",
+      "פרקליט"
+    ],
+    "qid": "Q1572575"
+  },
+  {
+    "personId": 12944,
+    "name": "דני דנון",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Danny%20danon2.jpg?width=200",
+    "education": [
+      "אוניברסיטת פלורידה אינטרנשיונל",
+      "האוניברסיטה העברית בירושלים"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "שגריר",
+      "דיפלומט"
+    ],
+    "qid": "Q2919440"
+  },
+  {
+    "personId": 12951,
+    "name": "יריב לוין",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Yariv%20Levin%201%20(cropped).jpg?width=200",
+    "education": [
+      "האוניברסיטה העברית בירושלים"
+    ],
+    "occupations": [
+      "עורך דין",
+      "פוליטיקאי",
+      "פרקליט"
+    ],
+    "qid": "Q2330458"
+  },
+  {
+    "personId": 12959,
+    "name": "מירי מרים רגב",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Tat%20aluf%20Miri%20Regev.jpg?width=200",
+    "education": [
+      "הקריה האקדמית אונו",
+      "המכללה האקדמית בית ברל"
+    ],
+    "occupations": [
+      "דובר",
+      "פוליטיקאי",
+      "קצין"
+    ],
+    "qid": "Q128949"
+  },
+  {
+    "personId": 23551,
+    "name": "אורית מלכה סטרוק",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Orit%20Strook%20(E32J026291).jpg?width=200",
+    "education": [
+      "התיכון ליד האוניברסיטה"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "פעיל חברתי"
+    ],
+    "qid": "Q3593944"
+  },
+  {
+    "personId": 23558,
+    "name": "דוד ביטן",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%97%D7%91%D7%A8%20%D7%94%D7%9B%D7%A0%D7%A1%D7%AA%20%D7%93%D7%95%D7%93%20%D7%91%D7%99%D7%98%D7%9F.jpg?width=200",
+    "education": [
+      "אוניברסיטת תל אביב"
+    ],
+    "occupations": [
+      "עורך דין",
+      "פוליטיקאי",
+      "פרקליט"
+    ],
+    "qid": "Q18755548"
+  },
+  {
+    "personId": 23560,
+    "name": "יוליה מלינובסקי",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%99%D7%95%D7%9C%D7%99%D7%94%20%D7%9E%D7%9C%D7%99%D7%A0%D7%95%D7%91%D7%A1%D7%A7%D7%99.jpg?width=200",
+    "education": [
+      "האוניברסיטה הלאומית האוקראינית המזרחית על שם וולדימיר דאל"
+    ],
+    "occupations": [
+      "עורך דין",
+      "פוליטיקאי"
+    ],
+    "qid": "Q24276432"
+  },
+  {
+    "personId": 23564,
+    "name": "דוד אמסלם",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Dudi%20Amsalem%202.jpg?width=200",
+    "education": [
+      "אוניברסיטת בר-אילן"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "כלכלן"
+    ],
+    "qid": "Q19201160"
+  },
+  {
+    "personId": 23565,
+    "name": "מרב מיכאלי",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Merav%20Michaeli%20by%20Ron%20Kedmi.jpg?width=200",
+    "education": [
+      "אוניברסיטת תל אביב"
+    ],
+    "occupations": [
+      "סופר",
+      "פוליטיקאי",
+      "עיתונאי",
+      "מנחה טלוויזיה",
+      "פובליציסט"
+    ],
+    "qid": "Q391262"
+  },
+  {
+    "personId": 23591,
+    "name": "אלעזר שטרן",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Launch%20of%20'British%20Club'%20for%20Holocaust%20survivors%20(6885477889)%20(cropped).jpg?width=200",
+    "education": [
+      "אוניברסיטת בר-אילן",
+      "אוניברסיטת תל אביב",
+      "אוניברסיטת נורת'ווסטרן"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "קצין"
+    ],
+    "qid": "Q4358424"
+  },
+  {
+    "personId": 23594,
+    "name": "יאיר לפיד",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Yair%20Lapid%20(D1237-011).jpg?width=200",
+    "education": [
+      "הגימנסיה העברית \"הרצליה\""
+    ],
+    "occupations": [
+      "שחקן",
+      "סופר",
+      "פוליטיקאי",
+      "עיתונאי",
+      "מנחה טלוויזיה",
+      "פובליציסט",
+      "שחקן קולנוע",
+      "עורך עיתון"
+    ],
+    "qid": "Q1396120"
+  },
+  {
+    "personId": 23597,
+    "name": "מאיר כהן",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%A8%D7%90%D7%A9%20%D7%A2%D7%99%D7%A8%D7%99%D7%99%D7%AA%20%D7%93%D7%99%D7%9E%D7%95%D7%A0%D7%94%20%D7%9E%D7%90%D7%99%D7%A8%20%D7%9B%D7%94%D7%9F.jpg?width=200",
+    "education": [
+      "אוניברסיטת בן-גוריון בנגב"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q3663051"
+  },
+  {
+    "personId": 23601,
+    "name": "יואל רזבוזוב",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%99%D7%95%D7%90%D7%9C%20%D7%A8%D7%96%D7%91%D7%95%D7%96%D7%95%D7%91.jpg?width=200",
+    "education": [],
+    "occupations": [
+      "פוליטיקאי",
+      "ג'ודוקא"
+    ],
+    "qid": "Q2468984"
+  },
+  {
+    "personId": 23631,
+    "name": "קארין אלהרר",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%A7%D7%90%D7%A8%D7%99%D7%9F%20%D7%90%D7%9C%D7%94%D7%A8%D7%A8.jpg?width=200",
+    "education": [
+      "הקולג' למשפטים של ושינגטון"
+    ],
+    "occupations": [
+      "עורך דין",
+      "פוליטיקאי",
+      "פרקליט",
+      "איש חינוך",
+      "פעיל חברתי"
+    ],
+    "qid": "Q3663042"
+  },
+  {
+    "personId": 23632,
+    "name": "מיקי לוי",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Mickey%20Levy%20(SHL%208861).jpg?width=200",
+    "education": [
+      "אוניברסיטת דרבי",
+      "אוניברסיטת חיפה"
+    ],
+    "occupations": [
+      "איש עסקים",
+      "פוליטיקאי",
+      "שוטר"
+    ],
+    "qid": "Q3701621"
+  },
+  {
+    "personId": 23635,
+    "name": "פנינה תמנו",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%A4%D7%A0%D7%99%D7%A0%D7%94%20%D7%AA%D7%9E%D7%A0%D7%95%20%D7%A9%D7%98%D7%94.jpg?width=200",
+    "education": [
+      "הקריה האקדמית אונו",
+      "אוניברסיטת תל אביב"
+    ],
+    "occupations": [
+      "עורך דין",
+      "פוליטיקאי",
+      "משפטן",
+      "פרקליט",
+      "עיתונאי",
+      "מנחה טלוויזיה",
+      "פעיל חברתי"
+    ],
+    "qid": "Q3663047"
+  },
+  {
+    "personId": 23639,
+    "name": "בועז טופורובסקי",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Boaz%20Toporovsky.JPG?width=200",
+    "education": [
+      "בית הספר חביב",
+      "אוניברסיטת תל אביב"
+    ],
+    "occupations": [
+      "איש עסקים",
+      "פוליטיקאי"
+    ],
+    "qid": "Q3818024"
+  },
+  {
+    "personId": 23641,
+    "name": "יעקב אשר",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Jacob%20Asher%20(E32J026298).jpg?width=200",
+    "education": [],
+    "occupations": [
+      "פוליטיקאי",
+      "רב"
+    ],
+    "qid": "Q2899261"
+  },
+  {
+    "personId": 28513,
+    "name": "יואב בן צור",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%99%D7%95%D7%90%D7%91%20%D7%91%D7%9F%20%D7%A6%D7%95%D7%A8%20%D7%A1%D7%92%D7%9F%20%D7%A9%D7%A8%20%D7%94%D7%A4%D7%A0%D7%99%D7%9D%20%D7%A9%D7%9C%20%D7%99%D7%A9%D7%A8%D7%90%D7%9C%20.jpg?width=200",
+    "education": [
+      "אוניברסיטת מנצ'סטר"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "רב",
+      "מנהל כללי",
+      "מחנך",
+      "מנהל"
+    ],
+    "qid": "Q17280189"
+  },
+  {
+    "personId": 30055,
+    "name": "בצלאל סמוטריץ'",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Bezalel%20Smotrich.jpg?width=200",
+    "education": [
+      "הקריה האקדמית אונו"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q18759744"
+  },
+  {
+    "personId": 30057,
+    "name": "יואב קיש",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Yoav%20Kish%20(SHL%209437).jpg?width=200",
+    "education": [
+      "INSEAD"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "טייס"
+    ],
+    "qid": "Q18785311"
+  },
+  {
+    "personId": 30058,
+    "name": "מכלוף מיקי זוהר",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Miki%20Zohar.jpg?width=200",
+    "education": [
+      "המרכז האקדמי למשפט ולעסקים",
+      "אוניברסיטת בר-אילן"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q19615491"
+  },
+  {
+    "personId": 30066,
+    "name": "איימן עודה",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Ayman%20Odeh%202021%20(cropped).png?width=200",
+    "education": [],
+    "occupations": [
+      "סופר",
+      "עורך דין",
+      "פוליטיקאי",
+      "משפטן",
+      "פרקליט",
+      "חבר מועצת העיר",
+      "פעיל זכויות אדם",
+      "איש ציבור"
+    ],
+    "qid": "Q12181439"
+  },
+  {
+    "personId": 30067,
+    "name": "עאידה תומא סלימאן",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Aida%20Touma-Suleiman%202021.png?width=200",
+    "education": [
+      "אוניברסיטת חיפה"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "פסיכולוג",
+      "פעיל חברתי"
+    ],
+    "qid": "Q12410181"
+  },
+  {
+    "personId": 30077,
+    "name": "יואב גלנט",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Yoav%20Galant%201.jpg?width=200",
+    "education": [
+      "אוניברסיטת חיפה"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "איש צבא",
+      "שר",
+      "עובד ציבור"
+    ],
+    "qid": "Q723506"
+  },
+  {
+    "personId": 30082,
+    "name": "יפעת שאשא ביטון",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%99%D7%A4%D7%A2%D7%AA%20%D7%A9%D7%90%D7%A9%D7%90%20%D7%91%D7%99%D7%98%D7%95%D7%9F.jpg?width=200",
+    "education": [
+      "אוניברסיטת חיפה"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "מחנך"
+    ],
+    "qid": "Q19634043"
+  },
+  {
+    "personId": 30083,
+    "name": "אלי כהן",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%A9%D7%A8%20%D7%94%D7%9B%D7%9C%D7%9B%D7%9C%D7%94%20%D7%95%D7%94%D7%AA%D7%A2%D7%A9%D7%99%D7%99%D7%94%2C%20%D7%97%D7%91%D7%A8%20%D7%94%D7%A7%D7%91%D7%99%D7%A0%D7%98%20%D7%94%D7%91%D7%98%D7%97%D7%95%D7%A0%D7%99%20%D7%9E%D7%93%D7%99%D7%A0%D7%99%20%D7%90%D7%9C%D7%99%20%D7%9B%D7%94%D7%9F.%20%D7%9C%D7%99%D7%9B%D7%95%D7%93.jpg?width=200",
+    "education": [
+      "האוניברסיטה הפתוחה",
+      "אוניברסיטת תל אביב"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "כלכלן",
+      "רואה חשבון"
+    ],
+    "qid": "Q19634024"
+  },
+  {
+    "personId": 30102,
+    "name": "מירב בן ארי",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%9E%D7%99%D7%A8%D7%91%20%D7%91%D7%9F%20%D7%90%D7%A8%D7%99.jpg?width=200",
+    "education": [
+      "אוניברסיטת רייכמן"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "יועץ ניהול"
+    ],
+    "qid": "Q19634029"
+  },
+  {
+    "personId": 30106,
+    "name": "נעמה לזימי",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Naama%20lazimi.jpg?width=200",
+    "education": [
+      "אוניברסיטת חיפה"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "פעיל חברתי"
+    ],
+    "qid": "Q107264625"
+  },
+  {
+    "personId": 30118,
+    "name": "שרן מרים השכל",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Sharren%20Haskel%201.jpg?width=200",
+    "education": [
+      "האוניברסיטה הפתוחה"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q20824112"
+  },
+  {
+    "personId": 30121,
+    "name": "עודד פורר",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Oded%20Forer%20(SHL%208651).jpg?width=200",
+    "education": [
+      "אוניברסיטת רייכמן",
+      "אוניברסיטת תל אביב"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q20898016"
+  },
+  {
+    "personId": 30300,
+    "name": "אמיר אוחנה",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Amir%20Ohana%20-%20Official.jpg?width=200",
+    "education": [
+      "מבואות הנגב",
+      "המסלול האקדמי המכללה למינהל"
+    ],
+    "occupations": [
+      "עורך דין",
+      "פוליטיקאי",
+      "קצין",
+      "פרקליט"
+    ],
+    "qid": "Q21794010"
+  },
+  {
+    "personId": 30470,
+    "name": "מיכאל מלכיאלי",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Michael%20malkieli.jpg?width=200",
+    "education": [
+      "האוניברסיטה העברית בירושלים"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q27670547"
+  },
+  {
+    "personId": 30480,
+    "name": "אברהם בצלאל",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/21.04.2023%20%E2%80%93%20%C3%8Entrevederea%20Pre%C8%99edintelui%20Parlamentului%2C%20Igor%20Grosu%2C%20cu%20pre%C8%99edintele%20Grupului%20parlamentar%20de%20prietenie%20a%20Knesset-ului%20Statului%20Israel%20%E2%80%93%20Republica%20Moldova%2C%20Avraham%20Benayahu%20Bezalel%2003%20(cropped).jpg?width=200",
+    "education": [
+      "הקריה האקדמית אונו"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q115095945"
+  },
+  {
+    "personId": 30558,
+    "name": "יוסף עטאונה",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Youssef%20Atauna%20(ISH%209163).jpg?width=200",
+    "education": [
+      "אוניברסיטת בן-גוריון בנגב"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q42317837"
+  },
+  {
+    "personId": 30601,
+    "name": "ינון אזולאי",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Yinon%20Azulai%20(SHL%209064).jpg?width=200",
+    "education": [],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q50424294"
+  },
+  {
+    "personId": 30657,
+    "name": "בנימין גנץ",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Israeli%20Minister%20Benny%20Gantz%20at%20the%20Department%20of%20State%20in%20Washington%2C%20D.C.%20on%20March%205%2C%202024%20(cropped).jpg?width=200",
+    "education": [
+      "האוניברסיטה לביטחון לאומי בארה\"ב (NDU)",
+      "אוניברסיטת חיפה",
+      "אוניברסיטת תל אביב"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "איש צבא",
+      "מפקד עליון"
+    ],
+    "qid": "Q557436"
+  },
+  {
+    "personId": 30660,
+    "name": "משה ארבל",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Moshe%20Arbel.jpg?width=200",
+    "education": [
+      "הקריה האקדמית אונו",
+      "ישיבת נחלת דוד"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "רב",
+      "פרקליט"
+    ],
+    "qid": "Q63200127"
+  },
+  {
+    "personId": 30662,
+    "name": "מתן כהנא",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/MatanK-DSC%200053a.jpg?width=200",
+    "education": [
+      "אוניברסיטת בר-אילן"
+    ],
+    "occupations": [
+      "איש צבא"
+    ],
+    "qid": "Q60951122"
+  },
+  {
+    "personId": 30671,
+    "name": "יעקב טסלר",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Jacob%20Tessler.jpg?width=200",
+    "education": [],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q61359772"
+  },
+  {
+    "personId": 30672,
+    "name": "יצחק פינדרוס",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%99%D7%A6%D7%97%D7%A7%20%D7%A4%D7%99%D7%A0%D7%93%D7%A8%D7%95%D7%A1.jpg?width=200",
+    "education": [],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q7007279"
+  },
+  {
+    "personId": 30681,
+    "name": "אורנה ברביבאי",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Orna%20Barbivai%20cropped.jpg?width=200",
+    "education": [
+      "אוניברסיטת בן-גוריון בנגב"
+    ],
+    "occupations": [
+      "חבר הכנסת"
+    ],
+    "qid": "Q2783222"
+  },
+  {
+    "personId": 30682,
+    "name": "מיכאל מרדכי ביטון",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Michel%20Biton.jpg?width=200",
+    "education": [
+      "אוניברסיטת בן-גוריון בנגב",
+      "האוניברסיטה העברית בירושלים"
+    ],
+    "occupations": [
+      "פעיל חברתי"
+    ],
+    "qid": "Q6890749"
+  },
+  {
+    "personId": 30683,
+    "name": "חילי טרופר",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%97%D7%99%D7%9C%D7%99%20%D7%98%D7%A8%D7%95%D7%A4%D7%A8%20-%20%D7%97%D7%95%D7%A1%D7%9F%20%D7%9C%D7%99%D7%A9%D7%A8%D7%90%D7%9C.jpg?width=200",
+    "education": [
+      "מכון לנדר - מרכז אקדמי ירושלים",
+      "האוניברסיטה הפתוחה"
+    ],
+    "occupations": [
+      "מורה",
+      "פוליטיקאי",
+      "מחנך",
+      "פעיל חברתי"
+    ],
+    "qid": "Q6940081"
+  },
+  {
+    "personId": 30685,
+    "name": "אורית פרקש הכהן",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%90%D7%95%D7%A8%D7%99%D7%AA%20%D7%A4%D7%A8%D7%A7%D7%A9%20%D7%94%D7%9B%D7%94%D7%9F-%20%D7%97%D7%95%D7%A1%D7%9F%20%D7%9C%D7%99%D7%A9%D7%A8%D7%90%D7%9C.jpg?width=200",
+    "education": [
+      "אולפנת בני עקיבא אמנה",
+      "האוניברסיטה העברית בירושלים",
+      "אוניברסיטת הרווארד"
+    ],
+    "occupations": [
+      "עורך דין",
+      "פוליטיקאי",
+      "פרקליט"
+    ],
+    "qid": "Q20071724"
+  },
+  {
+    "personId": 30686,
+    "name": "מירב כהן",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Meirav%20Cohen%20(ISH%206928).jpg?width=200",
+    "education": [
+      "האוניברסיטה העברית בירושלים"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "פעיל חברתי"
+    ],
+    "qid": "Q7030786"
+  },
+  {
+    "personId": 30691,
+    "name": "רם בן ברק",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Ram%20Ben-Barak%20(cropped).jpg?width=200",
+    "education": [
+      "המכללה לביטחון לאומי",
+      "אוניברסיטת חיפה"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "מרגל"
+    ],
+    "qid": "Q18577963"
+  },
+  {
+    "personId": 30694,
+    "name": "אלון שוסטר",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Alon%20Schuster%20(R%20H%204454).jpg?width=200",
+    "education": [
+      "אוניברסיטת בן-גוריון בנגב"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q6965078"
+  },
+  {
+    "personId": 30695,
+    "name": "יואב סגלוביץ'",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Yoav%20Segalovic%20-%20Israel%20Police.jpg?width=200",
+    "education": [
+      "אוניברסיטת תל אביב"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "שוטר"
+    ],
+    "qid": "Q6832388"
+  },
+  {
+    "personId": 30700,
+    "name": "ניר ברקת",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Nir%20Barkat%202018.jpg?width=200",
+    "education": [
+      "האוניברסיטה העברית בירושלים"
+    ],
+    "occupations": [
+      "ראש עירייה",
+      "איש עסקים",
+      "פוליטיקאי",
+      "יזם"
+    ],
+    "qid": "Q468394"
+  },
+  {
+    "personId": 30701,
+    "name": "אופיר כץ",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Ofir%20Katz%20(ISH%207141).jpg?width=200",
+    "education": [
+      "המכללה האקדמית עמק יזרעאל"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q63107922"
+  },
+  {
+    "personId": 30702,
+    "name": "חוה אתי עטייה",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%97%22%D7%9B%20%D7%90%D7%AA%D7%99%20%D7%97%D7%95%D7%94%20%D7%A2%D7%98%D7%99%D7%94.png?width=200",
+    "education": [
+      "אוניברסיטת בר-אילן"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q63111202"
+  },
+  {
+    "personId": 30704,
+    "name": "שלמה קרעי",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%97%D7%91%D7%A8%20%D7%94%D7%9B%D7%A0%D7%A1%D7%AA%20%D7%93%D7%B4%D7%A8%20%D7%A9%D7%9C%D7%9E%D7%94%20%D7%A7%D7%A8%D7%A2%D7%99.jpg?width=200",
+    "education": [
+      "ישיבת כסא רחמים",
+      "ישיבת מרכז הרב",
+      "אוניברסיטת בן-גוריון בנגב",
+      "המרכז האקדמי לב"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "מרצה באוניברסיטה"
+    ],
+    "qid": "Q63124881"
+  },
+  {
+    "personId": 30706,
+    "name": "קטי קטרין שטרית",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/MK%20Keti%20Shitrit.jpg?width=200",
+    "education": [
+      "אוניברסיטת בר-אילן"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q63166467"
+  },
+  {
+    "personId": 30708,
+    "name": "מאי גולן",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/May%20Golan%20(cropped).jpg?width=200",
+    "education": [],
+    "occupations": [
+      "פעיל חברתי"
+    ],
+    "qid": "Q25490011"
+  },
+  {
+    "personId": 30710,
+    "name": "אריאל קלנר",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Ariel%20Kallner.jpg?width=200",
+    "education": [
+      "הטכניון – מכון טכנולוגי לישראל",
+      "אוניברסיטת חיפה"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q63197463"
+  },
+  {
+    "personId": 30711,
+    "name": "עמית הלוי",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Amit%20Halevi.jpg?width=200",
+    "education": [
+      "ישיבה גדולה",
+      "תיכון דתי יבנה"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "מהנדס תוכנה"
+    ],
+    "qid": "Q97816805"
+  },
+  {
+    "personId": 30713,
+    "name": "מנסור עבאס",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Mansour%20Abbas%2C%20April%203%202023%20(cropped).jpg?width=200",
+    "education": [
+      "אוניברסיטת חיפה",
+      "האוניברסיטה העברית בירושלים"
+    ],
+    "occupations": [
+      "רופא שיניים",
+      "פוליטיקאי",
+      "פעיל פוליטי"
+    ],
+    "qid": "Q62394296"
+  },
+  {
+    "personId": 30717,
+    "name": "אופיר סופר",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%90%D7%95%D7%A4%D7%99%D7%A8%20%D7%A1%D7%95%D7%A4%D7%A8.jpg?width=200",
+    "education": [
+      "מדרשיית נעם",
+      "ישיבת שבי חברון",
+      "אוניברסיטת חיפה"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q63176626"
+  },
+  {
+    "personId": 30718,
+    "name": "עידית סילמן",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%A2%D7%99%D7%93%D7%99%D7%AA%20%D7%A1%D7%99%D7%9C%D7%9E%D7%9F%20(cropped).jpg?width=200",
+    "education": [
+      "המכללה האקדמית בוינגייט",
+      "המרכז האקדמי פרס"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q63181940"
+  },
+  {
+    "personId": 30719,
+    "name": "עופר כסיף",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Ofer%20Cassif.png?width=200",
+    "education": [
+      "בית הספר לכלכלה של לונדון",
+      "האוניברסיטה העברית בירושלים"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q61718702"
+  },
+  {
+    "personId": 30720,
+    "name": "יוראי להב הרצנו",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Yorai%20Lahav-Hertzanu%20(ISH%207394).jpg?width=200",
+    "education": [
+      "אוניברסיטת נורת'ווסטרן",
+      "אוניברסיטת תל אביב"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q63203042"
+  },
+  {
+    "personId": 30721,
+    "name": "עידן רול",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%97%D7%91%D7%A8%20%D7%94%D7%9B%D7%A0%D7%A1%D7%AA%20%D7%A2%D7%99%D7%93%D7%9F%20%D7%A8%D7%95%D7%9C%20(cropped).jpg?width=200",
+    "education": [
+      "אוניברסיטת תל אביב"
+    ],
+    "occupations": [
+      "עורך דין",
+      "פוליטיקאי",
+      "דוגמן"
+    ],
+    "qid": "Q59519064"
+  },
+  {
+    "personId": 30722,
+    "name": "יבגני סובה",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Evgeny%20Sova%20(SHL%208643).jpg?width=200",
+    "education": [
+      "אוניברסיטת בר-אילן"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "מנחה טלוויזיה",
+      "עיתונאי"
+    ],
+    "qid": "Q63183722"
+  },
+  {
+    "personId": 30749,
+    "name": "משה אבוטבול",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%9E%D7%A9%D7%94%20%D7%90%D7%91%D7%95%D7%98%D7%91%D7%95%D7%9C%20%D7%A0%D7%95%D7%91%D7%9E%D7%91%D7%A8%202018.jpg?width=200",
+    "education": [
+      "ישיבת איתרי"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q7054034"
+  },
+  {
+    "personId": 30752,
+    "name": "ווליד טאהא",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Walid%20Taha%20(SHL%208811).jpg?width=200",
+    "education": [
+      "אוניברסיטת תל אביב"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q67958229"
+  },
+  {
+    "personId": 30758,
+    "name": "אימאן ח'טיב יאסין",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Iman%20Khatib%20Yassin%201.jpg?width=200",
+    "education": [
+      "אוניברסיטת חיפה",
+      "אוניברסיטת תל אביב"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "עובד סוציאלי"
+    ],
+    "qid": "Q87125690"
+  },
+  {
+    "personId": 30765,
+    "name": "אוריאל בוסו",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%90%D7%95%D7%A8%D7%99%D7%90%D7%9C%20%D7%91%D7%95%D7%A1%D7%95%20%D7%9C%D7%A2%D7%9E.jpg?width=200",
+    "education": [
+      "הקריה האקדמית אונו"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q96369448"
+  },
+  {
+    "personId": 30768,
+    "name": "אליהו ברוכי",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%97%D7%B4%D7%9B%20%D7%90%D7%9C%D7%99%D7%94%D7%95%20%D7%91%D7%A8%D7%95%D7%9B%D7%99.jpg?width=200",
+    "education": [],
+    "occupations": [],
+    "qid": "Q96603638"
+  },
+  {
+    "personId": 30770,
+    "name": "יוסף טייב",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%99%D7%95%D7%A1%D7%99%20%D7%98%D7%99%D7%99%D7%91.jpg?width=200",
+    "education": [
+      "ישיבת מיר"
+    ],
+    "occupations": [],
+    "qid": "Q96754353"
+  },
+  {
+    "personId": 30772,
+    "name": "ניסים ואטורי",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Nissim%20Vaturi.jpg?width=200",
+    "education": [
+      "האוניברסיטה הבין-לאומית לעסקים ומשפטים",
+      "המרכז האקדמי שערי מדע ומשפט"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q104051298"
+  },
+  {
+    "personId": 30775,
+    "name": "יעל רון בן משה",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%99%D7%A2%D7%9C%20%D7%A8%D7%95%D7%9F%20%D7%91%D7%9F%20%D7%9E%D7%A9%D7%942.jpg?width=200",
+    "education": [
+      "אוניברסיטת תל אביב",
+      "אוניברסיטת הרווארד"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q104465875"
+  },
+  {
+    "personId": 30776,
+    "name": "ולדימיר בליאק",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%91%D7%9C%D7%99%D7%90%D7%A7.jpg?width=200",
+    "education": [
+      "אוניברסיטת תל אביב"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "רואה חשבון"
+    ],
+    "qid": "Q104696632"
+  },
+  {
+    "personId": 30777,
+    "name": "משה טור פז",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%9E%D7%A9%D7%94%20%D7%98%D7%95%D7%A8%D7%A4%D7%96%20%D7%97%D7%91%D7%A8%20%D7%9B%D7%A0%D7%A1%D7%AA%20%D7%99%D7%A9%20%D7%A2%D7%AA%D7%99%D7%93.jpg?width=200",
+    "education": [
+      "ישיבת נווה שמואל",
+      "האוניברסיטה העברית בירושלים"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "מחנך"
+    ],
+    "qid": "Q104696368"
+  },
+  {
+    "personId": 30780,
+    "name": "רון כץ",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%97%22%D7%9B%20%D7%A8%D7%95%D7%9F%20%D7%9B%D7%A5.jpg?width=200",
+    "education": [],
+    "occupations": [
+      "עורך דין"
+    ],
+    "qid": "Q106226063"
+  },
+  {
+    "personId": 30782,
+    "name": "טטיאנה מזרסקי",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Tatiana%20Mazarsky%20(tatiana).jpg?width=200",
+    "education": [
+      "אוניברסיטת חיפה"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q107224738"
+  },
+  {
+    "personId": 30783,
+    "name": "יסמין פרידמן",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Yasmin%20Fridman.jpg?width=200",
+    "education": [
+      "מכון מנדל למנהיגות",
+      "האוניברסיטה הפתוחה"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "פעיל זכויות בעלי חיים"
+    ],
+    "qid": "Q107225905"
+  },
+  {
+    "personId": 30786,
+    "name": "עמיחי שיקלי",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%A2%D7%9E%D7%99%D7%97%D7%99%20%D7%A9%D7%99%D7%A7%D7%9C%D7%99%20%D7%A6%D7%99%D7%9C%D7%95%D7%9D%20%D7%A8%D7%90%D7%95%D7%91%D7%9F%20%D7%A7%D7%A4%D7%95%D7%A6%D7%B3%D7%99%D7%A0%D7%A1%D7%A7%D7%99%20(cropped).jpg?width=200",
+    "education": [
+      "המכללה למדינאות",
+      "המכללה לפיקוד טקטי",
+      "אוניברסיטת חיפה",
+      "אוניברסיטת תל אביב"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q105581659"
+  },
+  {
+    "personId": 30799,
+    "name": "מישל בוסקילה",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Mishel%20Buskila%20(busquila).jpg?width=200",
+    "education": [],
+    "occupations": [],
+    "qid": "Q105628745"
+  },
+  {
+    "personId": 30804,
+    "name": "חיים ביטון",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%97%D7%99%D7%99%D7%9D%20%D7%91%D7%99%D7%98%D7%95%D7%9F.jpg?width=200",
+    "education": [],
+    "occupations": [
+      "מנהל כללי"
+    ],
+    "qid": "Q106427258"
+  },
+  {
+    "personId": 30807,
+    "name": "גלעד קריב",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Gilad%20Kariv.png?width=200",
+    "education": [
+      "היברו יוניון קולג'",
+      "האוניברסיטה העברית בירושלים"
+    ],
+    "occupations": [
+      "עורך דין",
+      "פעיל חברתי"
+    ],
+    "qid": "Q868609"
+  },
+  {
+    "personId": 30809,
+    "name": "גלית דיסטל אטבריאן",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Galit%20Distel-Atbaryan.jpg?width=200",
+    "education": [
+      "אוניברסיטת תל אביב"
+    ],
+    "occupations": [
+      "סופר",
+      "פוליטיקאי",
+      "איש עסקים",
+      "מחנך",
+      "פובליציסט"
+    ],
+    "qid": "Q18822566"
+  },
+  {
+    "personId": 30810,
+    "name": "מיכל מרים וולדיגר",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Michal%20Waldiger.jpg?width=200",
+    "education": [
+      "אולפנית בני עקיבא תל אביב",
+      "אוניברסיטת בר-אילן"
+    ],
+    "occupations": [
+      "עורך דין",
+      "פוליטיקאי",
+      "פעיל חברתי"
+    ],
+    "qid": "Q106226075"
+  },
+  {
+    "personId": 30811,
+    "name": "איתמר בן גביר",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Itamar%20Ben%20Gvir%203%20(cropped).jpg?width=200",
+    "education": [
+      "הקריה האקדמית אונו"
+    ],
+    "occupations": [
+      "עורך דין",
+      "פוליטיקאי",
+      "שר"
+    ],
+    "qid": "Q12403861"
+  },
+  {
+    "personId": 30812,
+    "name": "שמחה רוטמן",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Simcha%20Rothman.jpg?width=200",
+    "education": [
+      "הפקולטה למשפטים, אוניברסיטת בר-אילן",
+      "ישיבת תורת החיים",
+      "ישיבת מקור חיים",
+      "ישיבת כרם ביבנה",
+      "אוניברסיטת נורת'ווסטרן"
+    ],
+    "occupations": [
+      "עורך דין",
+      "פוליטיקאי"
+    ],
+    "qid": "Q105127281"
+  },
+  {
+    "personId": 30814,
+    "name": "אבי מעוז",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Avi%20Maoz%2C%202021.jpeg?width=200",
+    "education": [
+      "ישיבת מרכז הרב"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q105103347"
+  },
+  {
+    "personId": 30820,
+    "name": "סימון דוידסון",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Simon%20Davidson%202.jpg?width=200",
+    "education": [
+      "המכללה האקדמית בוינגייט"
+    ],
+    "occupations": [],
+    "qid": "Q55649413"
+  },
+  {
+    "personId": 30830,
+    "name": "אוהד טל",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Ohad%20Tal2.jpg?width=200",
+    "education": [
+      "אוניברסיטת בר-אילן",
+      "האוניברסיטה העברית בירושלים"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q115051874"
+  },
+  {
+    "personId": 30831,
+    "name": "אלי דלל",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Eli%20Dalal%2C%20July%202022%20(cropped).jpg?width=200",
+    "education": [
+      "אוניברסיטת תל אביב"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "מהנדס מכונות"
+    ],
+    "qid": "Q115051872"
+  },
+  {
+    "personId": 30832,
+    "name": "אליהו רביבו",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Eliyahu%20Revivo%20(NOAM9415).jpg?width=200",
+    "education": [
+      "הקריה האקדמית אונו"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "יזם"
+    ],
+    "qid": "Q115004221"
+  },
+  {
+    "personId": 30833,
+    "name": "אלמוג כהן",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Almog%20Cohen.jpg?width=200",
+    "education": [],
+    "occupations": [
+      "פוליטיקאי",
+      "שוטר"
+    ],
+    "qid": "Q113389177"
+  },
+  {
+    "personId": 30835,
+    "name": "בועז ביסמוט",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Boaz%20Bismuth.jpeg?width=200",
+    "education": [
+      "אוניברסיטת בר-אילן",
+      "סורבון"
+    ],
+    "occupations": [
+      "דיפלומט",
+      "עיתונאי",
+      "פובליציסט",
+      "עורך עיתון"
+    ],
+    "qid": "Q12404410"
+  },
+  {
+    "personId": 30836,
+    "name": "גדי איזנקוט",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Gadi%20Eisenkot%202%20(cropped%20-%20WD).jpg?width=200",
+    "education": [
+      "אוניברסיטת חיפה",
+      "אוניברסיטת תל אביב"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "קצין",
+      "היסטוריון"
+    ],
+    "qid": "Q796885"
+  },
+  {
+    "personId": 30839,
+    "name": "דן אילוז",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Dan%20Illouz%20(cropped).jpg?width=200",
+    "education": [
+      "אוניברסיטת מקגיל",
+      "האוניברסיטה העברית בירושלים"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "פרקליט"
+    ],
+    "qid": "Q116065776"
+  },
+  {
+    "personId": 30840,
+    "name": "ואליד אלהואשלה",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Waleed%20Al-Hwashla%20closeup.jpg?width=200",
+    "education": [
+      "אוניברסיטת חיפה"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q115051875"
+  },
+  {
+    "personId": 30843,
+    "name": "יאסר חוג'יראת",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Yasir%20Hujeirat%20(R%20H%203858).jpg?width=200",
+    "education": [
+      "האוניברסיטה העברית בירושלים"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q115095747"
+  },
+  {
+    "personId": 30847,
+    "name": "יצחק שמעון וסרלאוף",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Itshak%20Waserlauf.jpg?width=200",
+    "education": [
+      "ישיבת בני עקיבא נתיב מאיר",
+      "ישיבת מעלות"
+    ],
+    "occupations": [
+      "עורך דין"
+    ],
+    "qid": "Q114025577"
+  },
+  {
+    "personId": 30849,
+    "name": "לימור סון הר מלך",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Limor%20Son%20Har-Melech.jpg?width=200",
+    "education": [
+      "מכללת אורות ישראל",
+      "מדרשת בינת"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q115092610"
+  },
+  {
+    "personId": 30851,
+    "name": "מטי צרפתי הרכבי",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%93%22%D7%A8%20%D7%9E%D7%AA%D7%99%20%D7%94%D7%A8%D7%9B%D7%91%D7%99%20%D7%A6%D7%A8%D7%A4%D7%AA%D7%99.jpg?width=200",
+    "education": [
+      "האוניברסיטה העברית בירושלים"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q19311088"
+  },
+  {
+    "personId": 30852,
+    "name": "משה סולומון",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Israeli%20legislative%20election%2C%20November%202022%20(KBG%20GPO1%205).jpeg?width=200",
+    "education": [
+      "הקריה האקדמית אונו",
+      "ישיבת הר עציון",
+      "המכללה האקדמית הרצוג"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "רב"
+    ],
+    "qid": "Q115051897"
+  },
+  {
+    "personId": 30853,
+    "name": "משה סעדה",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%9E%D7%A9%D7%94%20%D7%A1%D7%A2%D7%93%D7%94.jpg?width=200",
+    "education": [
+      "ישיבת ההסדר שעלבים",
+      "המרכז האקדמי שערי מדע ומשפט"
+    ],
+    "occupations": [
+      "עורך דין",
+      "עובד ציבור"
+    ],
+    "qid": "Q113289336"
+  },
+  {
+    "personId": 30854,
+    "name": "נאור שירי",
+    "photo": null,
+    "education": [
+      "כפר הנוער ע\"ש ב.צ. מוסינזון",
+      "אוניברסיטת בן-גוריון בנגב"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q115051871"
+  },
+  {
+    "personId": 30857,
+    "name": "עמיחי אליהו",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Amichai%20Eliyahu.jpg?width=200",
+    "education": [],
+    "occupations": [
+      "פוליטיקאי",
+      "רב"
+    ],
+    "qid": "Q115005935"
+  },
+  {
+    "personId": 30859,
+    "name": "צביקה פוגל",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Zvika%20Fogel%20(cropped).jpg?width=200",
+    "education": [
+      "תיכון בית ירח"
+    ],
+    "occupations": [
+      "קצין"
+    ],
+    "qid": "Q16131836"
+  },
+  {
+    "personId": 30860,
+    "name": "טלי גוטליב",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Tali%20Gottlieb.jpg?width=200",
+    "education": [
+      "אוניברסיטת בר-אילן"
+    ],
+    "occupations": [
+      "עורך דין",
+      "פוליטיקאי"
+    ],
+    "qid": "Q113989783"
+  },
+  {
+    "personId": 30861,
+    "name": "שלום דנינו",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Shlom%20Danino.jpg?width=200",
+    "education": [
+      "אוניברסיטת בן-גוריון בנגב"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q114071116"
+  },
+  {
+    "personId": 30863,
+    "name": "שרון ניר",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Sharon%20Nir%2C%20March%202019.jpg?width=200",
+    "education": [
+      "אוניברסיטת בן-גוריון בנגב"
+    ],
+    "occupations": [
+      "קצין"
+    ],
+    "qid": "Q21789584"
+  },
+  {
+    "personId": 30867,
+    "name": "יצחק קרויזר",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Itzik%20Kreuzer.jpg?width=200",
+    "education": [
+      "הטכניון – מכון טכנולוגי לישראל"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q115952982"
+  },
+  {
+    "personId": 30868,
+    "name": "יונתן מישרקי",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Yonatan%20Mishriki.jpg?width=200",
+    "education": [
+      "ישיבת מיר"
+    ],
+    "occupations": [],
+    "qid": "Q115974304"
+  },
+  {
+    "personId": 30870,
+    "name": "משה רוט",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Moshe%20Roth%20(9109)%20(cropped).jpg?width=200",
+    "education": [
+      "הקריה האקדמית אונו"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q116447577"
+  },
+  {
+    "personId": 30871,
+    "name": "שלי טל מירון",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%98%D7%9C%20%D7%A9%D7%9C%D7%99%20%D7%9E%D7%99%D7%A8%D7%95%D7%9F%20%D7%97%22%D7%9B.jpg?width=200",
+    "education": [
+      "אוניברסיטת תל אביב"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q116603688"
+  },
+  {
+    "personId": 30872,
+    "name": "סימון מושיאשוילי",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%A1%D7%99%D7%9E%D7%99%D7%95%D7%9F%20%D7%9E%D7%95%D7%A9%D7%99%D7%90%D7%A9%D7%95%D7%99%D7%9C%D7%99%20%D7%95%D7%A8%D7%95%D7%A2%D7%99%20%D7%9C%D7%95%D7%99%20%D7%91%D7%90%D7%99%D7%A8%D7%95%D7%A2%20100%20%D7%A9%D7%A0%D7%99%D7%9D%20%D7%9C%D7%A0%D7%A9%D7%A8%20(cropped).jpg?width=200",
+    "education": [
+      "הקריה האקדמית אונו"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q116693877"
+  },
+  {
+    "personId": 30873,
+    "name": "ארז מלול",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Erez%20Malul%20(NOAM9168).jpg?width=200",
+    "education": [
+      "הקריה האקדמית אונו"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q116689968"
+  },
+  {
+    "personId": 30874,
+    "name": "צבי ידידיה סוכות",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%A6%D7%91%D7%99%20%D7%A1%D7%95%D7%9B%D7%95%D7%AA.jpg?width=200",
+    "education": [
+      "ישיבת אדרת אליהו"
+    ],
+    "occupations": [],
+    "qid": "Q50379434"
+  },
+  {
+    "personId": 30875,
+    "name": "צגה מלקו",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%A6%D7%92%D7%94%20%D7%9E%D7%9C%D7%A7%D7%95%20(cropped).jpg?width=200",
+    "education": [
+      "אוניברסיטת בר-אילן"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "עיתונאי"
+    ],
+    "qid": "Q19668451"
+  },
+  {
+    "personId": 30876,
+    "name": "אושר שקלים",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D0%9E%D1%88%D0%B5%D1%80%20%D0%A8%D0%B5%D0%BA%D0%B0%D0%BB%D0%B8%D0%BC%202.jpg?width=200",
+    "education": [
+      "מכון וינגייט",
+      "אוניברסיטת בר-אילן"
+    ],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q116771555"
+  },
+  {
+    "personId": 30877,
+    "name": "משה פסל",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Moshe%20Passal%20(NOAM9349).jpg?width=200",
+    "education": [],
+    "occupations": [],
+    "qid": "Q117035716"
+  },
+  {
+    "personId": 30879,
+    "name": "ששון ששי גואטה",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Sasson%20Guetta%20(NOAM0791).jpg?width=200",
+    "education": [],
+    "occupations": [
+      "פוליטיקאי",
+      "חקלאי"
+    ],
+    "qid": "Q117284084"
+  },
+  {
+    "personId": 30880,
+    "name": "אביחי אברהם בוארון",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/%D7%90%D7%91%D7%99%D7%97%D7%99%20%D7%91%D7%95%D7%90%D7%A8%D7%95%D7%9F.jpg?width=200",
+    "education": [
+      "מכון מאיר",
+      "ישיבת עטרת ירושלים"
+    ],
+    "occupations": [
+      "עורך דין",
+      "פוליטיקאי",
+      "מוציא לאור"
+    ],
+    "qid": "Q117323692"
+  },
+  {
+    "personId": 30881,
+    "name": "ירון לוי",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Yaron%20Levi%20(yaron).jpg?width=200",
+    "education": [
+      "מכון וינגייט"
+    ],
+    "occupations": [
+      "פוליטיקאי",
+      "ג'ודוקא"
+    ],
+    "qid": "Q121076655"
+  },
+  {
+    "personId": 30893,
+    "name": "עפיף עבד",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Afef%20Abed%20(OAM2668).jpg?width=200",
+    "education": [],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q131618719"
+  },
+  {
+    "personId": 30894,
+    "name": "סמיר בן סעיד",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Sameer%20Bin%20Said.jpg?width=200",
+    "education": [],
+    "occupations": [
+      "פוליטיקאי"
+    ],
+    "qid": "Q134973008"
+  },
+  {
+    "personId": 30895,
+    "name": "עדי עזוז",
+    "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Adi%20Ezuz%20(cropped).jpg?width=200",
+    "education": [
+      "המסלול האקדמי המכללה למינהל",
+      "האוניברסיטה העברית בירושלים"
+    ],
+    "occupations": [
+      "עורך דין"
+    ],
+    "qid": "Q135686494"
+  }
+]
