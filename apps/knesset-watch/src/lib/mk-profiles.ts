@@ -24,7 +24,52 @@ export interface MkProfile {
   qid: string;
 }
 
-const PROFILES: MkProfile[] = profilesData as MkProfile[];
+/**
+ * מוסדות בגיל בית ספר, שאינם אומרים דבר על הרקע המקצועי.
+ *
+ * הרשימה מפורשת ולא דפוס כללי, כי "בית הספר" מופיע גם במוסדות
+ * אקדמיים לגיטימיים ("בית הספר לניהול MIT סלואן"), וישיבות הן רקע
+ * מהותי אצל ח"כים חרדים ולכן נשארות.
+ */
+const SCHOOL_LEVEL = new Set([
+  'הגימנסיה העברית "הרצליה"',
+  'תיכון צ\'לטנהם',
+  'התיכון ליד האוניברסיטה',
+  'בית הספר חביב',
+  'אולפנת בני עקיבא אמנה',
+]);
+
+/**
+ * תיקונים ידניים לח"כים ספציפיים, מעל מה שהגיע מ-Wikidata.
+ *
+ * להוספה: המפתח הוא person_id מ-mk_person. אפשר לדרוס השכלה, עיסוקים
+ * או שניהם. מערך ריק מסתיר את השדה לגמרי.
+ *
+ * הערכים כאן שורדים הרצה מחדש של scripts/fetch-mk-profiles.ts, כי
+ * הם חיים בקוד ולא ב-JSON.
+ */
+const OVERRIDES: Record<number, Partial<Pick<MkProfile, 'education' | 'occupations'>>> = {
+  // יאיר לפיד. Wikidata מחזיר "שחקן" ו"סופר" ראשונים, שאינם מתארים
+  // אותו. אין לו השכלה אקדמית, ולכן הרקע נשען על העיסוק בלבד.
+  23594: { occupations: ['עיתונאי', 'מנחה טלוויזיה'] },
+
+  // כך מוסיפים עוד:
+  //   <person_id>: { occupations: [...] }   דריסת עיסוק
+  //   <person_id>: { education: [] }        הסתרת השכלה
+  //
+  // ה-person_id מופיע ב-mk-profiles.json ליד כל שם.
+};
+
+const RAW: MkProfile[] = profilesData as MkProfile[];
+
+const PROFILES: MkProfile[] = RAW.map(p => {
+  const override = OVERRIDES[p.personId] ?? {};
+  return {
+    ...p,
+    education: override.education ?? p.education.filter(e => !SCHOOL_LEVEL.has(e)),
+    occupations: override.occupations ?? p.occupations,
+  };
+});
 
 const BY_ID = new Map<number, MkProfile>(PROFILES.map(p => [p.personId, p]));
 
