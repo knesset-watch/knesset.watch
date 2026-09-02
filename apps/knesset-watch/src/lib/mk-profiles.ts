@@ -61,12 +61,29 @@ const OVERRIDES: Record<number, Partial<Pick<MkProfile, 'education' | 'occupatio
   // אותו. אין לו השכלה אקדמית, ולכן הרקע נשען על העיסוק בלבד.
   23594: { occupations: ['עיתונאי', 'מנחה טלוויזיה'] },
 
+  // רם בן ברק. Wikidata מתייג אותו "מרגל" — תיוג שאינו ראוי לתצוגה
+  // ואינו מדויק. לפי ויקיפדיה העברית: "איש מערכת הביטחון, כיהן
+  // כמשנה לראש המוסד".
+  30691: { occupations: ['איש ביטחון', 'משנה לראש המוסד'] },
+
+  // שלושה שהיו ריקים או כמעט ריקים ב-Wikidata. המקור לכולם הוא
+  // פתיח הערך בוויקיפדיה העברית.
+  30693: { occupations: ['עורך דין'] },                 // איתן גינזבורג — "עורך דין בהכשרתו"
+  30799: { occupations: ['סגן שר החוץ'] },              // מישל בוסקילה
+  30765: { occupations: ['סגן ראש עיריית פתח תקווה'] }, // אוריאל בוסו
+
   // כך מוסיפים עוד:
   //   <person_id>: { occupations: [...] }   דריסת עיסוק
   //   <person_id>: { education: [] }        הסתרת השכלה
   //
   // ה-person_id מופיע ב-mk-profiles.json ליד כל שם.
 };
+
+/**
+ * תוויות עיסוק מ-Wikidata שאינן ראויות לתצוגה או שאינן מדויקות בעברית.
+ * נחסמות גלובלית, כדי שלא יחזרו בהרצה מחדש של הסקריפט אצל ח"כ אחר.
+ */
+const BLOCKED_OCCUPATIONS = new Set(['מרגל']);
 
 const RAW: MkProfile[] = profilesData as MkProfile[];
 
@@ -152,7 +169,9 @@ export function educationLine(profile: MkProfile | null): string | null {
 export function occupationLine(profile: MkProfile | null): string | null {
   if (!profile) return null;
 
-  const occupations = profile.occupations.filter(o => o !== 'פוליטיקאי').slice(0, 3);
+  const occupations = profile.occupations
+    .filter(o => o !== 'פוליטיקאי' && !BLOCKED_OCCUPATIONS.has(o))
+    .slice(0, 3);
   if (occupations.length > 0) return occupations.join(' · ');
 
   return profile.role ?? null;
