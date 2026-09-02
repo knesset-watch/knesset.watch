@@ -39,12 +39,18 @@ const MANUAL_QID: Record<number, string> = {
   // דבי ביטון, חנוך דב מלביצקי, יצחק גולדקנופ
 };
 
+/**
+ * ?firstTerm הוא המוקדם מבין תחילות הכהונה כחבר כנסת — לא רק הכנסת
+ * ה-25. כך "מכהן מאז 1988" משקף ותק אמיתי ולא את תחילת הקדנציה הנוכחית.
+ * mk_person.segments מחזיק רק את חלון הכנסת ה-25 ולכן אינו מספיק.
+ */
 const QUERY = `
-SELECT ?mk ?mkLabel ?image
+SELECT ?mk ?mkLabel ?image (MIN(?start) AS ?firstTerm)
        (GROUP_CONCAT(DISTINCT ?educLabel; separator="|") AS ?educ)
        (GROUP_CONCAT(DISTINCT ?occLabel;  separator="|") AS ?occ) WHERE {
   ?mk p:P39 ?st .
   ?st ps:P39 ${KNESSET_MEMBER} ; pq:P2937 ${KNESSET_25} .
+  OPTIONAL { ?mk p:P39 ?any . ?any ps:P39 ${KNESSET_MEMBER} ; pq:P580 ?start . }
   OPTIONAL { ?mk wdt:P18 ?image . }
   OPTIONAL { ?mk wdt:P69 ?e . ?e rdfs:label ?educLabel . FILTER(lang(?educLabel) = "he") }
   OPTIONAL { ?mk wdt:P106 ?o . ?o rdfs:label ?occLabel . FILTER(lang(?occLabel) = "he") }
@@ -56,6 +62,7 @@ interface WikidataRow {
   mk: { value: string };
   mkLabel: { value: string };
   image?: { value: string };
+  firstTerm?: { value: string };
   educ?: { value: string };
   occ?: { value: string };
 }
@@ -69,6 +76,8 @@ export interface MkProfile {
   education: string[];
   /** עיסוקים לפני או לצד הכהונה */
   occupations: string[];
+  /** השנה שבה נכנס לכנסת לראשונה, מכל קדנציה שהיא */
+  sinceYear: number | null;
   /** מזהה Wikidata, לצורך בדיקה ידנית */
   qid: string;
 }
@@ -164,6 +173,7 @@ async function main() {
       photo: match.row.image ? thumbnail(match.row.image.value) : null,
       education: splitList(match.row.educ?.value),
       occupations: splitList(match.row.occ?.value),
+      sinceYear: match.row.firstTerm ? Number(match.row.firstTerm.value.slice(0, 4)) || null : null,
       qid: match.row.mk.value.split('/').pop() ?? '',
     });
   }

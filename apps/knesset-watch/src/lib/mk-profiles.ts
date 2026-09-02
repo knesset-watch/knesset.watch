@@ -21,6 +21,8 @@ export interface MkProfile {
   photo: string | null;
   education: string[];
   occupations: string[];
+  /** השנה שבה נכנס לכנסת לראשונה, מכל קדנציה שהיא */
+  sinceYear: number | null;
   qid: string;
 }
 
@@ -96,4 +98,34 @@ export function profileSummary(profile: MkProfile | null): string | null {
 
 export function profileCount(): number {
   return PROFILES.length;
+}
+
+/**
+ * ותק בכנסת כטקסט, למשל "מכהן מאז 1988 · 38 שנים".
+ *
+ * השנה מגיעה מהקדנציה המוקדמת ביותר, לא מהנוכחית, כך שהיא משקפת ותק
+ * ולא את תחילת הכנסת ה-25. הכהונה אינה בהכרח רציפה — ח"כ יכול היה
+ * לצאת ולחזור — ולכן הניסוח הוא "מאז" ולא "ברציפות".
+ */
+export function tenureLabel(profile: MkProfile | null, now = new Date()): string | null {
+  if (!profile?.sinceYear) return null;
+
+  const years = now.getFullYear() - profile.sinceYear;
+  if (years < 1) return `נכנס לכנסת ב-${profile.sinceYear}`;
+
+  const suffix = years === 1 ? 'שנה' : 'שנים';
+  return `מכהן מאז ${profile.sinceYear} · ${years} ${suffix}`;
+}
+
+/** ההשכלה האקדמית, מופרדת מהעיסוק לצורך תצוגה בשתי שורות */
+export function educationLine(profile: MkProfile | null): string | null {
+  if (!profile || profile.education.length === 0) return null;
+  return profile.education.slice(0, 2).join(' · ');
+}
+
+/** העיסוק בלבד, בלי "פוליטיקאי" שנכון לכולם ולכן אינו מוסיף מידע */
+export function occupationLine(profile: MkProfile | null): string | null {
+  if (!profile) return null;
+  const occupations = profile.occupations.filter(o => o !== 'פוליטיקאי').slice(0, 3);
+  return occupations.length > 0 ? occupations.join(' · ') : null;
 }

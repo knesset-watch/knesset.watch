@@ -3,7 +3,7 @@ import { validateApiAuth } from '@/lib/ui/auth-utils';
 import { dbAvailable } from '@/lib/knesset-db';
 import { computeAgendaActivity, type AgendaSelection } from '@/lib/agenda-activity';
 import { POLITICAL_ISSUES } from '@/lib/agendas';
-import { getMkProfile, profileSummary } from '@/lib/mk-profiles';
+import { getMkProfile, occupationLine, educationLine, tenureLabel } from '@/lib/mk-profiles';
 
 /** תקרה שמונעת בקשה שתסרוק את כל האג'נדות בבת אחת */
 const MAX_SELECTIONS = 10;
@@ -77,7 +77,9 @@ export async function POST(request: Request) {
       return {
         ...row,
         photo: profile?.photo ?? null,
-        background: profileSummary(profile),
+        occupation: occupationLine(profile),
+        education: educationLine(profile),
+        tenure: tenureLabel(profile),
       };
     });
 
