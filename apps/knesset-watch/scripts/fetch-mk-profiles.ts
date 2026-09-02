@@ -107,6 +107,27 @@ interface DegreeRow {
 }
 
 /**
+ * שאילתה שלישית: תפקידים שהח"כ מילא (P39).
+ *
+ * זה מה שמאפשר להחליף תיאור גנרי בתפקיד ממשי — "ראש עירייה" הופך
+ * ל"ראש עיריית ירושלים", ו"מנהל כללי" מתגלה כ"ראש המטה הכללי".
+ *
+ * הסינון לתפקידים שמהווים רקע תעסוקתי נעשה בתצוגה (mk-profiles.ts)
+ * ולא כאן, כדי שאפשר יהיה לשנות את ההגדרה בלי לשלוף מחדש.
+ */
+const POSITION_QUERY = `
+SELECT ?mk (GROUP_CONCAT(DISTINCT ?posLabel; separator="|") AS ?positions) WHERE {
+  ?mk p:P39 ?st . ?st ps:P39 ${KNESSET_MEMBER} ; pq:P2937 ${KNESSET_25} .
+  ?mk p:P39 ?s2 . ?s2 ps:P39 ?p . ?p rdfs:label ?posLabel . FILTER(lang(?posLabel) = "he")
+} GROUP BY ?mk
+`;
+
+interface PositionRow {
+  mk: { value: string };
+  positions?: { value: string };
+}
+
+/**
  * כשלישות ב-Wikidata אין תווית עברית, השירות מחזיר את המזהה הגולמי
  * ("Q5207064"). כזה ערך לא אמור להגיע למסך.
  */
@@ -139,6 +160,8 @@ export interface MkProfile {
   occupations: string[];
   /** השנה שבה נכנס לכנסת לראשונה, מכל קדנציה שהיא */
   sinceYear: number | null;
+  /** תפקידים שמילא (P39). הסינון לרקע תעסוקתי נעשה בתצוגה */
+  positions: string[];
   /** תפקיד בכיר נוכחי מ-mk_position, כתחליף לעיסוק חסר */
   role: string | null;
   /** מזהה Wikidata, לצורך בדיקה ידנית */
@@ -243,20 +266,42 @@ function seniorRole(db: Database.Database, personId: number): string | null {
   return chair ?? null;
 }
 
+/**
+ * Wikidata מחזיר 502 ו-429 מדי פעם תחת עומס. שלושה ניסיונות עם השהיה
+ * גדלה מספיקים — בלעדיהם הרצה שלמה נופלת בגלל תקלה רגעית אחת.
+ */
 async function runQuery<T>(query: string): Promise<T[]> {
   const url = `${ENDPOINT}?query=${encodeURIComponent(query)}`;
-  const res = await fetch(url, {
-    headers: {
-      Accept: 'application/sparql-results+json',
-      // Wikidata דורש User-Agent מזהה, אחרת חוסם
-      'User-Agent': 'knesset-watch/1.0 (https://knesset.watch)',
-    },
-    signal: AbortSignal.timeout(120_000),
-  });
+  let lastError = '';
 
-  if (!res.ok) throw new Error(`Wikidata returned ${res.status}`);
-  const json = await res.json();
-  return json.results.bindings as T[];
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const res = await fetch(url, {
+        headers: {
+          Accept: 'application/sparql-results+json',
+          // Wikidata דורש User-Agent מזהה, אחרת חוסם
+          'User-Agent': 'knesset-watch/1.0 (https://knesset.watch)',
+        },
+        signal: AbortSignal.timeout(120_000),
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        return json.results.bindings as T[];
+      }
+      lastError = `HTTP ${res.status}`;
+    } catch (err) {
+      lastError = err instanceof Error ? err.message : String(err);
+    }
+
+    if (attempt < 3) {
+      const wait = attempt * 5000;
+      console.log(`  retry ${attempt}/2 after ${lastError}, waiting ${wait / 1000}s...`);
+      await new Promise(resolve => setTimeout(resolve, wait));
+    }
+  }
+
+  throw new Error(`Wikidata query failed after 3 attempts: ${lastError}`);
 }
 
 async function main() {
@@ -267,6 +312,12 @@ async function main() {
   console.log('Querying Wikidata...');
   const rows = await runQuery<WikidataRow>(QUERY);
   console.log(`  ${rows.length} profile rows`);
+
+  const positionRows = await runQuery<PositionRow>(POSITION_QUERY);
+  const positionsByQid = new Map<string, string[]>(
+    positionRows.map(r => [r.mk.value.split("/").pop() ?? "", splitList(r.positions?.value)]),
+  );
+  console.log(`  ${positionRows.length} rows carry held positions`);
 
   const degreeRows = await runQuery<DegreeRow>(DEGREE_QUERY);
   console.log(`  ${degreeRows.length} education rows carry a degree or major`);
@@ -343,6 +394,7 @@ async function main() {
       education: splitList(match.row.educ?.value).map(inst => degrees?.get(inst) ?? inst),
       occupations: splitList(match.row.occ?.value),
       sinceYear: match.row.firstTerm ? Number(match.row.firstTerm.value.slice(0, 4)) || null : null,
+      positions: positionsByQid.get(qid) ?? [],
       role: seniorRole(db, mk.personId),
       qid,
     });
