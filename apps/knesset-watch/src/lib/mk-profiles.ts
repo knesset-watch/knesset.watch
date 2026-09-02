@@ -118,10 +118,23 @@ export function tenureLabel(profile: MkProfile | null, now = new Date()): string
   return `מכהן מאז ${profile.sinceYear} · ${years} ${suffix}`;
 }
 
-/** ההשכלה האקדמית, מופרדת מהעיסוק לצורך תצוגה בשתי שורות */
+/**
+ * ההשכלה, מוגבלת לשני פריטים כדי שהשורה תישאר קריאה.
+ *
+ * פריט שכולל תואר ("דוקטור לפילוסופיה, אוניברסיטת בן-גוריון") מוצג
+ * ראשון. בלי זה שלמה קרעי היה מוצג כשתי ישיבות והדוקטורט שלו היה
+ * נחתך, רק משום שסדר הפריטים ב-Wikidata שרירותי.
+ */
 export function educationLine(profile: MkProfile | null): string | null {
   if (!profile || profile.education.length === 0) return null;
-  return profile.education.slice(0, 2).join(' · ');
+
+  const hasDegree = (entry: string) => entry.includes(', ');
+  const ordered = [
+    ...profile.education.filter(hasDegree),
+    ...profile.education.filter(e => !hasDegree(e)),
+  ];
+
+  return ordered.slice(0, 2).join(' · ');
 }
 
 /** העיסוק בלבד, בלי "פוליטיקאי" שנכון לכולם ולכן אינו מוסיף מידע */
