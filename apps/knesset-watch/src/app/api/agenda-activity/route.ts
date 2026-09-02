@@ -3,6 +3,7 @@ import { validateApiAuth } from '@/lib/ui/auth-utils';
 import { dbAvailable } from '@/lib/knesset-db';
 import { computeAgendaActivity, type AgendaSelection } from '@/lib/agenda-activity';
 import { POLITICAL_ISSUES } from '@/lib/agendas';
+import { getMkProfile, profileSummary } from '@/lib/mk-profiles';
 
 /** תקרה שמונעת בקשה שתסרוק את כל האג'נדות בבת אחת */
 const MAX_SELECTIONS = 10;
@@ -69,8 +70,19 @@ export async function POST(request: Request) {
   try {
     const result = computeAgendaActivity(parsed.selections);
 
+    // תמונה ושורת רקע מ-Wikidata. חסרים אצל 7 ח"כים — התצוגה נופלת
+    // חזרה לראשי תיבות, כפי שהיה קודם.
+    const rows = result.rows.slice(0, RESULT_LIMIT).map(row => {
+      const profile = getMkProfile(row.mkId);
+      return {
+        ...row,
+        photo: profile?.photo ?? null,
+        background: profileSummary(profile),
+      };
+    });
+
     return NextResponse.json({
-      rows: result.rows.slice(0, RESULT_LIMIT),
+      rows,
       // כמה ח"כים בכלל נכנסו לדירוג, לפני החיתוך
       totalRanked: result.rows.length,
       coverage: result.coverage,
