@@ -23,6 +23,8 @@ export interface MkProfile {
   occupations: string[];
   /** השנה שבה נכנס לכנסת לראשונה, מכל קדנציה שהיא */
   sinceYear: number | null;
+  /** תפקיד בכיר נוכחי מ-mk_position, כתחליף לעיסוק חסר */
+  role: string | null;
   qid: string;
 }
 
@@ -40,6 +42,9 @@ const SCHOOL_LEVEL = new Set([
   'בית הספר חביב',
   'אולפנת בני עקיבא אמנה',
   'מבואות הנגב',
+  'תיכון דתי יבנה',
+  'תיכון בית ירח',
+  'כפר הנוער ע"ש ב.צ. מוסינזון',
 ]);
 
 /**
@@ -137,9 +142,18 @@ export function educationLine(profile: MkProfile | null): string | null {
   return ordered.slice(0, 2).join(' · ');
 }
 
-/** העיסוק בלבד, בלי "פוליטיקאי" שנכון לכולם ולכן אינו מוסיף מידע */
+/**
+ * העיסוק, בלי "פוליטיקאי" שנכון לכל ח"כ ולכן אינו מוסיף מידע.
+ *
+ * למי שאין עיסוק אחר — רובם פוליטיקאים בקריירה בלי מקצוע קודם מתועד
+ * ב-Wikidata — מוצג במקומו התפקיד הבכיר הנוכחי מ-mk_position, למשל
+ * "שר האוצר". זה המידע האמיתי שכן קיים עליהם, והוא מהמאגר שלנו.
+ */
 export function occupationLine(profile: MkProfile | null): string | null {
   if (!profile) return null;
+
   const occupations = profile.occupations.filter(o => o !== 'פוליטיקאי').slice(0, 3);
-  return occupations.length > 0 ? occupations.join(' · ') : null;
+  if (occupations.length > 0) return occupations.join(' · ');
+
+  return profile.role ?? null;
 }
