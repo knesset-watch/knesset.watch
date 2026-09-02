@@ -505,13 +505,32 @@ export function getMkAgendaStats(mkId: number): AgendaStat[] {
   const db = getDb();
   if (!db) return [];
 
-  const pushed = db.prepare(`
-    SELECT b.macro_agenda, COUNT(*) as cnt
-    FROM bill b
-    JOIN bill_initiator i ON i.bill_id = b.id
-    WHERE i.mk_id = ? AND b.macro_agenda IS NOT NULL
-    GROUP BY b.macro_agenda
-  `).all(mkId) as Array<{ macro_agenda: string; cnt: number }>;
+  /**
+   * הצעות החוק שהח"כ יזם, לפי אג'נדה.
+   *
+   * השאילתה הקודמת סיננה על b.macro_agenda, שריק בכל 7,296 החוקים,
+   * ולכן החזירה תמיד רשימה ריקה. התוצאה: עמוד הפרופיל הציג אפס הצעות
+   * חוק בכל נושא לכל ח"כ — כולל ח"כ אחד שיזם 399.
+   *
+   * החוק יורש את האג'נדה מההצבעה שנערכה עליו. מכסה רק חוקים שהגיעו
+   * להצבעת מליאה, אבל זה נכון במקום אפס.
+   *
+   * plenary_vote.bill_id חסר ב-knesset-deploy.db (הבנייה בפרודקשן),
+   * ולכן נבדק לפני השימוש.
+   */
+  const hasVoteBillId = (db
+    .prepare(`SELECT COUNT(*) AS n FROM pragma_table_info('plenary_vote') WHERE name = 'bill_id'`)
+    .get() as { n: number }).n > 0;
+
+  const pushed = hasVoteBillId
+    ? (db.prepare(`
+        SELECT pv.macro_agenda, COUNT(DISTINCT pv.bill_id) as cnt
+        FROM bill_initiator i
+        JOIN plenary_vote pv ON pv.bill_id = i.bill_id
+        WHERE i.mk_id = ? AND pv.macro_agenda IS NOT NULL
+        GROUP BY pv.macro_agenda
+      `).all(mkId) as Array<{ macro_agenda: string; cnt: number }>)
+    : [];
 
   const supported = db.prepare(`
     SELECT pv.macro_agenda, COUNT(*) as cnt

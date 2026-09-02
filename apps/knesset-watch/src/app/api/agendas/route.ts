@@ -17,13 +17,31 @@ export async function GET() {
   const db = new Database(DB_PATH, { readonly: true });
 
   try {
-    // Get distinct macro agendas from bills and votes
-    const bills = db.prepare(`
-      SELECT macro_agenda as id, COUNT(*) as billCount
-      FROM bill
-      WHERE macro_agenda IS NOT NULL
-      GROUP BY macro_agenda
-    `).all() as any[];
+    /**
+     * ספירת הצעות החוק לכל אג'נדה.
+     *
+     * bill.macro_agenda ריק בכל 7,296 השורות, ולכן השאילתה הקודמת
+     * (WHERE macro_agenda IS NOT NULL על bill) החזירה תמיד אפס שורות —
+     * וכל אחד עשר הכרטיסים בעמוד הציגו "0 הצעות חוק" לצד מאות הצבעות.
+     *
+     * במקום זה החוק יורש את האג'נדה מההצבעה שנערכה עליו. מכסה 946
+     * חוקים שהגיעו להצבעת מליאה — לא את כולם, אבל נכון ולא אפס.
+     *
+     * plenary_vote.bill_id לא קיים ב-knesset-deploy.db, שהוא מה שנפרס
+     * בפרודקשן. בלעדיו נשארת ההתנהגות הישנה במקום קריסה.
+     */
+    const hasVoteBillId = (db
+      .prepare(`SELECT COUNT(*) AS n FROM pragma_table_info('plenary_vote') WHERE name = 'bill_id'`)
+      .get() as { n: number }).n > 0;
+
+    const bills = hasVoteBillId
+      ? (db.prepare(`
+          SELECT macro_agenda as id, COUNT(DISTINCT bill_id) as billCount
+          FROM plenary_vote
+          WHERE bill_id IS NOT NULL AND macro_agenda IS NOT NULL
+          GROUP BY macro_agenda
+        `).all() as any[])
+      : [];
 
     const votes = db.prepare(`
       SELECT macro_agenda as id, COUNT(*) as voteCount
