@@ -67,6 +67,54 @@ interface WikidataRow {
   occ?: { value: string };
 }
 
+/**
+ * שאילתה שנייה: תואר ותחום לימוד, שיושבים כמאפיינים על רשומת הלימודים
+ * (P512 ו-P812) ולא על האדם.
+ *
+ * הכיסוי דל — 9 מתוך 208 רשומות השכלה מחזיקות תואר, ו-5 מחזיקות תחום.
+ * לכן זו תוספת ולא החלפה: מי שיש לו תואר יוצג כ"בוגר במשפטים,
+ * האוניברסיטה העברית", וכל השאר יישארו עם שם המוסד בלבד.
+ */
+const DEGREE_QUERY = `
+SELECT ?mk ?instLabel ?degLabel ?majorLabel WHERE {
+  ?mk p:P39 ?st . ?st ps:P39 ${KNESSET_MEMBER} ; pq:P2937 ${KNESSET_25} .
+  ?mk p:P69 ?ed . ?ed ps:P69 ?inst .
+  OPTIONAL { ?ed pq:P512 ?deg . }
+  OPTIONAL { ?ed pq:P812 ?major . }
+  FILTER(BOUND(?deg) || BOUND(?major))
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "he". }
+}
+`;
+
+interface DegreeRow {
+  mk: { value: string };
+  instLabel: { value: string };
+  degLabel?: { value: string };
+  majorLabel?: { value: string };
+}
+
+/**
+ * כשלישות ב-Wikidata אין תווית עברית, השירות מחזיר את המזהה הגולמי
+ * ("Q5207064"). כזה ערך לא אמור להגיע למסך.
+ */
+function isUsableLabel(label: string | undefined): label is string {
+  return Boolean(label) && !/^Q\d+$/.test(label!.trim());
+}
+
+/**
+ * מרכיב את התיאור: "בוגר במשפטים, האוניברסיטה העברית".
+ * כשיש תואר ותחום — התחום מחליף את סיומת התואר הגנרית.
+ */
+function composeDegree(inst: string, degree?: string, major?: string): string {
+  const deg = isUsableLabel(degree) ? degree : undefined;
+  const maj = isUsableLabel(major) ? major : undefined;
+
+  if (deg && maj) return `${deg} ב${maj}, ${inst}`;
+  if (deg) return `${deg}, ${inst}`;
+  if (maj) return `${maj}, ${inst}`;
+  return inst;
+}
+
 export interface MkProfile {
   personId: number;
   name: string;
@@ -105,8 +153,8 @@ function splitList(value: string | undefined): string[] {
   return [...new Set(value.split('|').map(s => s.trim()).filter(Boolean))];
 }
 
-async function fetchWikidata(): Promise<WikidataRow[]> {
-  const url = `${ENDPOINT}?query=${encodeURIComponent(QUERY)}`;
+async function runQuery<T>(query: string): Promise<T[]> {
+  const url = `${ENDPOINT}?query=${encodeURIComponent(query)}`;
   const res = await fetch(url, {
     headers: {
       Accept: 'application/sparql-results+json',
@@ -118,7 +166,7 @@ async function fetchWikidata(): Promise<WikidataRow[]> {
 
   if (!res.ok) throw new Error(`Wikidata returned ${res.status}`);
   const json = await res.json();
-  return json.results.bindings as WikidataRow[];
+  return json.results.bindings as T[];
 }
 
 async function main() {
@@ -127,8 +175,24 @@ async function main() {
   }
 
   console.log('Querying Wikidata...');
-  const rows = await fetchWikidata();
-  console.log(`  ${rows.length} rows returned`);
+  const rows = await runQuery<WikidataRow>(QUERY);
+  console.log(`  ${rows.length} profile rows`);
+
+  const degreeRows = await runQuery<DegreeRow>(DEGREE_QUERY);
+  console.log(`  ${degreeRows.length} education rows carry a degree or major`);
+
+  /** qid → { מוסד → תיאור מלא עם תואר } */
+  const degreeByQid = new Map<string, Map<string, string>>();
+  for (const d of degreeRows) {
+    const qid = d.mk.value.split('/').pop() ?? '';
+    if (!degreeByQid.has(qid)) degreeByQid.set(qid, new Map());
+    degreeByQid
+      .get(qid)!
+      .set(
+        d.instLabel.value,
+        composeDegree(d.instLabel.value, d.degLabel?.value, d.majorLabel?.value),
+      );
+  }
 
   const candidates = rows.map(r => ({ norm: normalizeName(r.mkLabel.value), row: r }));
 
@@ -167,14 +231,18 @@ async function main() {
       continue;
     }
 
+    const qid = match.row.mk.value.split('/').pop() ?? '';
+    const degrees = degreeByQid.get(qid);
+
     profiles.push({
       personId: mk.personId,
       name: `${mk.firstName} ${mk.lastName}`.trim(),
       photo: match.row.image ? thumbnail(match.row.image.value) : null,
-      education: splitList(match.row.educ?.value),
+      // כשידוע התואר, שם המוסד מוחלף בתיאור המלא
+      education: splitList(match.row.educ?.value).map(inst => degrees?.get(inst) ?? inst),
       occupations: splitList(match.row.occ?.value),
       sinceYear: match.row.firstTerm ? Number(match.row.firstTerm.value.slice(0, 4)) || null : null,
-      qid: match.row.mk.value.split('/').pop() ?? '',
+      qid,
     });
   }
 
@@ -189,6 +257,9 @@ async function main() {
   console.log(`  with photo:      ${withPhoto}`);
   console.log(`  with education:  ${withEdu}`);
   console.log(`  with occupation: ${withOcc}`);
+  // תיאור שמכיל פסיק הוא כזה שהתואר שולב בו
+  const withDegree = profiles.filter(p => p.education.some(e => e.includes(', '))).length;
+  console.log(`  with a named degree: ${withDegree}`);
   if (unmatched.length > 0) {
     console.log(`\n  unmatched (${unmatched.length}) — add to MANUAL_QID if needed:`);
     unmatched.forEach(n => console.log(`    · ${n}`));
