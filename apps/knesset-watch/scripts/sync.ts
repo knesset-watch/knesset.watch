@@ -196,9 +196,19 @@ async function sync() {
   const since = new Date();
   since.setDate(since.getDate() - LOOKBACK_DAYS);
   const sinceStr = since.toISOString().replace(/\.\d{3}Z$/, "+00:00");
-
+  const voteSinceArg = process.argv.find((arg) =>
+    arg.startsWith("--vote-since="),
+  );
+  const voteSince = voteSinceArg
+    ? new Date(`${voteSinceArg.split("=")[1]}T00:00:00Z`)
+    : since;
+  if (Number.isNaN(voteSince.getTime())) {
+    throw new Error("Invalid --vote-since date. Use YYYY-MM-DD");
+  }
+  const voteSinceStr = voteSince
+    .toISOString()
+    .replace(/\.\d{3}Z$/, "+00:00");
   console.log(`Syncing records updated since ${since.toLocaleDateString()} …`);
-
   // ── Votes ─────────────────────────────────────────────────────────────────
   const voteCols = (
     db.prepare(`PRAGMA table_info(plenary_vote)`).all() as { name: string }[]
@@ -240,7 +250,7 @@ async function sync() {
 
   const votes = await fetchAll(
     `${API}/KNS_PlenumVote` +
-      `?$filter=${encodeURIComponent(`VoteDateTime ge ${sinceStr}`)}`,
+      `?$filter=${encodeURIComponent(`VoteDateTime ge ${voteSinceStr}`)}`,
   );
 
   insertVotesBatch(votes);
@@ -263,7 +273,7 @@ async function sync() {
   // Fetch with FirstName/LastName so we can resolve any new KnsIDs on the fly
   const results = await fetchAll(
     `${API}/KNS_PlenumVoteResult` +
-      `?$filter=${encodeURIComponent(`VoteDate ge ${sinceStr}`)}` +
+      `?$filter=${encodeURIComponent(`VoteDate ge ${voteSinceStr}`)}` +
       `&$select=VoteID,MkId,ResultCode,FirstName,LastName`,
   );
 
