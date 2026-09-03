@@ -27,8 +27,15 @@ apps/.DS_Store
 # Bill source PDFs — kept on disk, never in git (see README: save originals, don't commit them)
 apps/knesset-watch/bill-documents/
 
-# Local DB snapshots (85MB each, regenerable).
+# Local DB snapshots (85-180MB each, regenerable).
 # NOTE: knesset-deploy.db stays tracked — it is the build artifact source.
-apps/knesset-watch/knesset-backup.db
-apps/knesset-watch/knesset-before-august-sync.db
-apps/knesset-watch/knesset.local-backup.db
+#
+# הרשימה הייתה מפורשת לפי שם, ולכן כל גיבוי חדש נכנס לא-מוגן:
+# knesset.before-extract.db ו-knesset.before-analysis.db יחד הם 260MB
+# שהיו נכנסים לריפו ב-`git add -A` אחד. הדפוס מכסה גם גיבויים עתידיים,
+# והחריג שומר על קובץ הבנייה.
+apps/knesset-watch/*.db
+!apps/knesset-watch/knesset-deploy.db
+
+# Runtime artifacts from the analysis scripts (PIDs of detached processes)
+apps/knesset-watch/*.pid
