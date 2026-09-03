@@ -6,6 +6,7 @@
  *   npx tsx scripts/analyze-bill-policies.ts --limit=200
  *   npx tsx scripts/analyze-bill-policies.ts --bill-id=2196203
  *   npx tsx scripts/analyze-bill-policies.ts --retry-failed
+ *   npx tsx scripts/analyze-bill-policies.ts --concurrency=8
  *   npx tsx scripts/analyze-bill-policies.ts --force --bill-id=...
  *
  * כל חוק נשמר מיד אחרי שהתשובה אומתה, ולכן עצירה באמצע לא מאבדת דבר
@@ -42,8 +43,20 @@ const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODE
 /** ניסיונות לכל חוק. מעבר לזה זו כנראה בעיה בחוק ולא תקלה רגעית */
 const MAX_ATTEMPTS = 3;
 
-/** השהיה בין חוקים, כדי לא להיחסם על קצב */
-const DELAY_MS = 250;
+/**
+ * כמה חוקים מנותחים בו-זמנית.
+ *
+ * הריצה הראשונה הייתה טורית: 9 שניות לחוק, כמעט כולן המתנה לתשובת
+ * ה-API, מה שנתן 17.6 שעות ל-7,067 חוקים. העלות זהה — אותן קריאות —
+ * ורק ההמתנה מתבזבזת.
+ *
+ * שמונה הוא פשרה: מהיר פי שמונה בערך, ועדיין רחוק ממגבלת הקצב של
+ * המסלול בתשלום. אפשר לשנות ב---concurrency.
+ */
+const DEFAULT_CONCURRENCY = 8;
+
+/** השהיה בין קריאות באותו עובד, כדי לפזר את העומס */
+const DELAY_MS = 150;
 
 interface Args {
   limit: number | null;
@@ -54,6 +67,7 @@ interface Args {
   progress: boolean;
   version: string;
   dryRun: boolean;
+  concurrency: number;
 }
 
 function parseArgs(): Args {
@@ -75,6 +89,7 @@ function parseArgs(): Args {
     progress: argv.includes('--progress'),
     version: str('--analysis-version', ANALYSIS_VERSION),
     dryRun: argv.includes('--dry-run'),
+    concurrency: Math.max(1, Math.min(24, num('--concurrency') ?? DEFAULT_CONCURRENCY)),
   };
 }
 
@@ -306,9 +321,17 @@ async function main() {
 
   let ok = 0;
   let failed = 0;
+  let done = 0;
   const startedAt = Date.now();
 
-  for (const [index, bill] of bills.entries()) {
+  /**
+   * מנתח חוק אחד ומחזיר האם נשמר.
+   *
+   * הכתיבה ל-SQLite נשארת סינכרונית ולכן בטוחה גם כשכמה עובדים רצים
+   * במקביל: better-sqlite3 חוסם, ו-saveAnalysis כבר עטוף בטרנזקציה.
+   * מה שמקבילי הוא ההמתנה לרשת, וזה כל מה שהיה צוואר הבקבוק.
+   */
+  async function analyseOne(bill: BillRow): Promise<void> {
     const prompt = buildPrompt(bill);
     const sent = bill.text_content.slice(0, MAX_TEXT_CHARS);
 
@@ -317,7 +340,7 @@ async function main() {
     let saved = false;
 
     for (let attempt = 1; attempt <= MAX_ATTEMPTS && !saved; attempt++) {
-      const result = await callGemini(prompt, apiKey);
+      const result = await callGemini(prompt, apiKey!);
 
       if (!result.text) {
         lastError = result.error ?? 'no response';
@@ -346,17 +369,6 @@ async function main() {
       });
       saved = true;
       ok++;
-
-      const flags = [
-        validated.value.needs_review ? 'review' : null,
-        bill.is_gazette ? 'gazette' : null,
-        grounding < 0.5 ? `grounding ${(grounding * 100).toFixed(0)}%` : null,
-      ].filter(Boolean).join(' ');
-
-      console.log(
-        `  ✓ ${String(bill.id).padEnd(8)} ${String(bill.text_len).padStart(7)}ch  ` +
-        `${validated.value.issues.length} issue(s)  ${flags}`,
-      );
     }
 
     if (!saved) {
@@ -365,14 +377,44 @@ async function main() {
       console.log(`  ✗ ${String(bill.id).padEnd(8)} ${lastError.slice(0, 90)}`);
     }
 
-    if ((index + 1) % 25 === 0) {
-      const rate = (index + 1) / ((Date.now() - startedAt) / 1000);
-      const left = Math.round((bills.length - index - 1) / rate);
-      console.log(`    — ${index + 1}/${bills.length}  ok=${ok} failed=${failed}  eta ${Math.floor(left / 60)}m`);
+    done++;
+    if (done % 50 === 0) {
+      const rate = done / ((Date.now() - startedAt) / 1000);
+      const left = Math.round((bills.length - done) / rate);
+      console.log(
+        `    — ${done}/${bills.length}  ok=${ok} failed=${failed}  ` +
+        `${rate.toFixed(1)}/s  eta ${Math.floor(left / 60)}m`,
+      );
     }
 
     await sleep(DELAY_MS);
   }
+
+  /**
+   * מאגר עבודה משותף: כל עובד מושך את החוק הבא בתור עד שהתור מתרוקן.
+   * עדיף על חלוקה מראש לקבוצות שוות, כי אורכי החוקים נעים בין 1,000
+   * ל-1.6 מיליון תווים — חלוקה שווה הייתה משאירה עובד אחד תקוע על
+   * הארוכים בזמן שהשאר סיימו.
+   */
+  let cursor = 0;
+  const worker = async (): Promise<void> => {
+    while (cursor < bills.length) {
+      const bill = bills[cursor++];
+      try {
+        await analyseOne(bill);
+      } catch (err) {
+        failed++;
+        done++;
+        recordFailure(
+          db, bill.id, args.version,
+          err instanceof Error ? err.message : 'unexpected error', null,
+        );
+      }
+    }
+  };
+
+  console.log(`concurrency: ${args.concurrency}\n`);
+  await Promise.all(Array.from({ length: args.concurrency }, () => worker()));
 
   console.log(`\nDone. ok=${ok} failed=${failed}`);
   showProgress(db, args.version);
