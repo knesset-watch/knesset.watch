@@ -20,6 +20,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          ref: dev
           token: ${{ secrets.GH_PAT }}
 
       - name: Setup Node.js
