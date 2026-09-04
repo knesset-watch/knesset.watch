@@ -340,6 +340,90 @@ async function sync() {
   if (!personCols.includes("segments"))
     db.exec(`ALTER TABLE mk_person ADD COLUMN segments TEXT`);
 
+  // Older DBs may have mk_person without person_id as a PRIMARY KEY.
+  // In that case INSERT OR REPLACE / ON CONFLICT cannot identify the same MK,
+  // causing a new row to be appended on every sync.
+  const personSchema = db
+    .prepare(`PRAGMA table_info(mk_person)`)
+    .all() as { name: string; pk: number }[];
+
+  const personIdColumn = personSchema.find((c) => c.name === "person_id");
+
+  if (!personIdColumn || personIdColumn.pk !== 1) {
+    console.log(
+      "Migrating mk_person: restoring PRIMARY KEY on person_id and removing duplicate snapshots...",
+    );
+
+    const nullPersonIds = (
+      db
+        .prepare(`SELECT COUNT(*) AS count FROM mk_person WHERE person_id IS NULL`)
+        .get() as { count: number }
+    ).count;
+
+    if (nullPersonIds > 0) {
+      throw new Error(
+        `Cannot migrate mk_person: found ${nullPersonIds} rows with NULL person_id`,
+      );
+    }
+
+    db.transaction(() => {
+      db.exec(`
+        DROP TABLE IF EXISTS mk_person_new;
+
+        CREATE TABLE mk_person_new (
+          person_id      INTEGER PRIMARY KEY,
+          first_name     TEXT    NOT NULL DEFAULT '',
+          last_name      TEXT    NOT NULL DEFAULT '',
+          faction_id     INTEGER,
+          faction_name   TEXT,
+          slug           TEXT,
+          is_current     INTEGER NOT NULL DEFAULT 0,
+          is_coalition   INTEGER,
+          coalition_pct  REAL,
+          non_mk_pct     REAL,
+          segments       TEXT
+        );
+
+        INSERT INTO mk_person_new (
+          person_id,
+          first_name,
+          last_name,
+          faction_id,
+          faction_name,
+          slug,
+          is_current,
+          is_coalition,
+          coalition_pct,
+          non_mk_pct,
+          segments
+        )
+        SELECT
+          person_id,
+          COALESCE(first_name, ''),
+          COALESCE(last_name, ''),
+          faction_id,
+          faction_name,
+          slug,
+          COALESCE(is_current, 0),
+          is_coalition,
+          coalition_pct,
+          non_mk_pct,
+          segments
+        FROM mk_person
+        WHERE rowid IN (
+          SELECT MAX(rowid)
+          FROM mk_person
+          GROUP BY person_id
+        );
+
+        DROP TABLE mk_person;
+        ALTER TABLE mk_person_new RENAME TO mk_person;
+      `);
+    })();
+
+    console.log("mk_person migration complete.");
+  }
+
   const K25_START = new Date("2022-11-15");
   const K25_COALITION_PERIODS: Array<{
     factionId: number;
@@ -465,10 +549,33 @@ async function sync() {
     return totalMs > 0 ? coalitionMs / totalMs : 0;
   }
 
-  const insertPerson = db.prepare(
-    `INSERT OR REPLACE INTO mk_person (person_id, first_name, last_name, faction_id, faction_name, slug, is_current, is_coalition, coalition_pct, non_mk_pct, segments)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  );
+  const insertPerson = db.prepare(`
+    INSERT INTO mk_person (
+      person_id,
+      first_name,
+      last_name,
+      faction_id,
+      faction_name,
+      slug,
+      is_current,
+      is_coalition,
+      coalition_pct,
+      non_mk_pct,
+      segments
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(person_id) DO UPDATE SET
+      first_name = excluded.first_name,
+      last_name = excluded.last_name,
+      faction_id = excluded.faction_id,
+      faction_name = excluded.faction_name,
+      slug = excluded.slug,
+      is_current = excluded.is_current,
+      is_coalition = excluded.is_coalition,
+      coalition_pct = excluded.coalition_pct,
+      non_mk_pct = excluded.non_mk_pct,
+      segments = excluded.segments
+  `);
 
   const factionRows = await fetchAll(
     `${API}/KNS_Faction?$filter=${encodeURIComponent("KnessetNum eq 25")}`,

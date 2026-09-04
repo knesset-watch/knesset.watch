@@ -89,6 +89,18 @@ async function seedExtra() {
     CREATE INDEX IF NOT EXISTS idx_position_mk  ON mk_position    (mk_id);
   `);
 
+  const personSchema = db
+    .prepare(`PRAGMA table_info(mk_person)`)
+    .all() as { name: string; pk: number }[];
+
+  const personIdColumn = personSchema.find((c) => c.name === 'person_id');
+
+  if (!personIdColumn || personIdColumn.pk !== 1) {
+    throw new Error(
+      'mk_person.person_id is not a PRIMARY KEY. Run db:sync first to migrate the database.',
+    );
+  }
+
   // ── MK person identity ────────────────────────────────────────────────────
   console.log('Step 0/3 — downloading K25 MK identities …');
 
@@ -99,10 +111,23 @@ async function seedExtra() {
     return String(id);
   }
 
-  const insertPerson = db.prepare(
-    `INSERT OR REPLACE INTO mk_person (person_id, first_name, last_name, faction_id, faction_name, slug)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-  );
+  const insertPerson = db.prepare(`
+    INSERT INTO mk_person (
+      person_id,
+      first_name,
+      last_name,
+      faction_id,
+      faction_name,
+      slug
+    )
+    VALUES (?, ?, ?, ?, ?, ?)
+    ON CONFLICT(person_id) DO UPDATE SET
+      first_name = excluded.first_name,
+      last_name = excluded.last_name,
+      faction_id = excluded.faction_id,
+      faction_name = excluded.faction_name,
+      slug = excluded.slug
+  `);
 
   // Fetch persons and factions in two separate requests (API doesn't support multi-expand
   // or $select on the outer entity when using $expand with $select)
