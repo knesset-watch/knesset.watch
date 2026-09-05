@@ -9,7 +9,7 @@ import { CLUSTER_TOPICS } from '@/lib/axis-clusters';
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
 /** כמה תחומים נבחרים כאן. זהה ל-MAX_TOPICS ב-/agenda-keywords */
-const HOME_DOMAIN_PICKS = 2;
+const HOME_DOMAIN_PICKS = 3;
 
 /**
  * שמונת נושאי-העל של הטקסונומיה הקנונית.
@@ -172,7 +172,7 @@ export default function HomepageClient() {
           <div className="text-[11px] font-black text-teal-700 uppercase tracking-widest mb-1">
             מי עובד בשבילך
           </div>
-          <h2 className="text-xl font-black mb-1">בחרי עד שני תחומים שחשובים לך</h2>
+          <h2 className="text-xl font-black mb-1">בחרי עד שלושה תחומים שחשובים לך</h2>
           <p className="text-sm text-gray-600 mb-4 font-medium leading-relaxed">
             נשאל אותך מה העמדה שלך בכל נושא, ונדרג את חברי הכנסת לפי מידת הפעילות שלהם —
             הצעות חוק שיזמו והצבעות שתמכו בהן.
@@ -212,16 +212,8 @@ export default function HomepageClient() {
             <span className="text-xs text-gray-500 font-medium">
               {homeDomains.length > 0
                 ? `נבחרו ${homeDomains.length} מתוך ${HOME_DOMAIN_PICKS}`
-                : 'אפשר גם לדלג ולבחור בשאלון עצמו'}
+                : `בחרי עד ${HOME_DOMAIN_PICKS} תחומים כדי להתחיל`}
             </span>
-            {homeDomains.length === 0 && (
-              <Link
-                href="/agenda-keywords"
-                className="text-xs font-black underline text-gray-600 hover:text-black"
-              >
-                לשאלון המלא ←
-              </Link>
-            )}
           </div>
         </div>
       </div>
