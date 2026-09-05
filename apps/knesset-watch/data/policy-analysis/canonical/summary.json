@@ -1,0 +1,37 @@
+{
+  "semantic_canonical_issues": 5131,
+  "issue_instances_mapped": 8447,
+  "taxonomy_topics": 8,
+  "subtopics_total": 64,
+  "all_64_subtopics_used": true,
+  "review_required": 1076,
+  "review_not_required": 4055,
+  "confidence_counts": {
+    "high": 2275,
+    "medium": 1906,
+    "low": 950
+  },
+  "topic_counts": {
+    "משפט, ממשל ודמוקרטיה": 1161,
+    "סביבה, חקלאות ושלטון מקומי": 346,
+    "חינוך, תרבות ודת": 604,
+    "עבודה, זכויות ושוויון": 606,
+    "ביטחון, חוץ ויחסי ישראל–פלסטינים": 451,
+    "בריאות ורווחה": 912,
+    "דיור, תחבורה ותשתיות": 368,
+    "כלכלה, מיסים ויוקר המחיה": 683
+  },
+  "validation": {
+    "unique_canonical_issue_ids": 5131,
+    "taxonomy_assignment_rows": 5131,
+    "taxonomy_ids_match_cluster_ids": true,
+    "all_issue_instances_reference_known_canonical_issue": true,
+    "exactly_8_topics": true,
+    "each_topic_has_5_to_10_subtopics": true
+  },
+  "notes": [
+    "Primary topic/subtopic is assigned to every canonical issue.",
+    "Cross-domain or weak classifications retain an alternative topic and are flagged review_required.",
+    "The taxonomy layer does not alter raw issue text or the bill-to-canonical-issue mapping."
+  ]
+}
