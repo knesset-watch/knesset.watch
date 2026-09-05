@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { DOMAINS, POLITICAL_ISSUES } from '@/lib/agendas';
+import { DOMAINS, POLITICAL_ISSUES, questionnaireIssues } from '@/lib/canonical-agendas';
 import { MkAvatar, MkBackground } from '@/components/MkIdentity';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
@@ -50,6 +50,10 @@ interface Row {
   isCoalition: boolean;
   isMinister: boolean;
   overallScore: number;
+  /** כמה פעולות מתועדות עמדו מאחורי הציון — הצעות שיזם והצבעות תומכות */
+  evidenceCount: number;
+  /** 0–100. גודל המדגם, לא טיב ההתאמה */
+  confidencePercent: number;
   perAgenda: AgendaScore[];
   /** תמונה מ-Wikimedia Commons. null אצל 7 ח"כים שאינם ב-Wikidata */
   photo: string | null;
@@ -149,13 +153,27 @@ export default function AgendaMatchClient() {
     }
   }, [step, rows.length, searchParams]);
 
-  /** האג'נדות ששייכות לתחומים שנבחרו, מקובצות לפי התחום שלהן */
+  /**
+   * האג'נדות ששייכות לתחומים שנבחרו, מקובצות לפי התחום שלהן.
+   *
+   * מוצגות חמש לכל תחום ולא כולן: התחומים מחזיקים 13 עד 29 שאלות כל
+   * אחד, ושלוש בחירות היו נותנות 62 עד 82 שאלות — שאלון שנוטשים
+   * באמצע. questionnaireIssues בוחר אותן מפוזרות על תתי-נושאים, כדי
+   * שחמש שאלות באותו תחום לא יישמעו כווריאציות זו של זו.
+   */
   const issuesByDomain = useMemo(
     () =>
       domains
         .map(id => ({
           domain: DOMAINS.find(d => d.id === id)!,
-          issues: POLITICAL_ISSUES.filter(i => i.domainId === id),
+          issues: questionnaireIssues(id).map(i => ({
+            id: i.id,
+            domainId: i.topicId,
+            label: i.question,
+            description: `${i.topic} ▸ ${i.subtopic}`,
+            keywords: [] as string[],
+            stances: i.stances,
+          })),
         }))
         .filter(g => g.domain && g.issues.length > 0),
     [domains],
@@ -466,20 +484,55 @@ export default function AgendaMatchClient() {
                     {totalRanked} חברי כנסת בדירוג
                   </span>
                 </div>
-                <p className="text-xs text-gray-500 mb-5 font-medium leading-relaxed">
-                  {coverage.every(c => c.stanceAware) ? (
-                    <>
-                      נספרות רק הצעות חוק שדוחפות <strong>לכיוון שבחרת</strong>, והצבעות שתומכות
-                      בו. הציון משקלל 60% יוזמה חקיקתית ו-40% תמיכה בהצבעות, שניהם כאחוזון ביחס
-                      לשאר הפעילים באותו נושא.
-                    </>
-                  ) : (
-                    <>
-                      הציון משקלל 60% יוזמה חקיקתית ו-40% תמיכה בהצבעות, שניהם כאחוזון ביחס לשאר
-                      הפעילים באותו נושא. המדד מודד <strong>מידת פעילות בנושא</strong> — לא כיוון.
-                    </>
-                  )}
-                </p>
+                {/*
+                  ההסבר קבוע ובולט ולא נסתר מאחורי "מידע נוסף": שני
+                  המספרים אומרים דברים שונים, ובלי הבחנה ביניהם ח"כ עם
+                  ראיה אחת נראה זהה לח"כ עם ארבעים.
+                */}
+                <div className="rounded-xl border-2 border-indigo-600/20 bg-indigo-50/50 p-4 mb-5">
+                  <div className="text-[11px] font-black text-indigo-700 uppercase tracking-widest mb-2">
+                    איך לקרוא את המספרים
+                  </div>
+
+                  <dl className="text-xs font-medium leading-relaxed text-gray-700 flex flex-col gap-2">
+                    <div>
+                      <dt className="inline font-black text-gray-900">ציון מתוך 100 — </dt>
+                      <dd className="inline">
+                        {coverage.every(c => c.stanceAware) ? (
+                          <>
+                            כמה חבר הכנסת פעל <strong>לכיוון שבחרת</strong>. נספרות רק הצעות חוק
+                            שדוחפות לכיוון הזה והצבעות שתומכות בו. הציון משקלל 60% יוזמה חקיקתית
+                            ו-40% תמיכה בהצבעות, שניהם כאחוזון ביחס לשאר הפעילים באותו נושא.
+                          </>
+                        ) : (
+                          <>
+                            מידת הפעילות בנושא — <strong>לא הכיוון</strong>. משקלל 60% יוזמה
+                            חקיקתית ו-40% תמיכה בהצבעות, כאחוזון ביחס לשאר הפעילים באותו נושא.
+                          </>
+                        )}
+                      </dd>
+                    </div>
+
+                    <div>
+                      <dt className="inline font-black text-gray-900">רמת ביטחון — </dt>
+                      <dd className="inline">
+                        כמה פעולות מתועדות עמדו מאחורי הציון. <strong>זו אמירה על כמות המידע
+                        ולא על טיב ההתאמה:</strong> ציון 90 שנשען על שתי פעולות וציון 90 שנשען על
+                        ארבעים אינם אותו דבר.
+                      </dd>
+                    </div>
+
+                    <div className="pt-1 border-t border-indigo-600/15">
+                      <dt className="inline font-black text-gray-900">שימו לב — </dt>
+                      <dd className="inline">
+                        רוב הצעות החוק הפרטיות לעולם אינן מגיעות להצבעה במליאה, ולכן יוזמת חקיקה
+                        היא האות המרכזי. <strong>לחברי אופוזיציה יש בממוצע יותר יוזמות</strong> —
+                        הם מגישים יותר הצעות פרטיות — ולכן רמת הביטחון שלהם נוטה להיות גבוהה יותר.
+                        זה אינו אומר שהם מתאימים לך יותר, רק שיש עליהם יותר מידע.
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
 
                 {coverage.some(c => !c.stanceAware) && (
                   <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 mb-5">
@@ -551,6 +604,22 @@ export default function AgendaMatchClient() {
                             <div className="shrink-0 text-left">
                               <div className="text-xl font-black tabular-nums">{row.overallScore}</div>
                               <div className="text-[10px] text-gray-400 font-black">מתוך 100</div>
+                              {/*
+                                ביטחון נמוך אינו "ציון גרוע" אלא מעט מידע,
+                                ולכן צבע ניטרלי-אזהרה ולא אדום.
+                              */}
+                              <div
+                                className={`text-[10px] font-black mt-1 tabular-nums ${
+                                  row.confidencePercent >= 70
+                                    ? 'text-emerald-700'
+                                    : row.confidencePercent >= 40
+                                      ? 'text-amber-700'
+                                      : 'text-gray-400'
+                                }`}
+                                title={`${row.evidenceCount} פעולות מתועדות`}
+                              >
+                                ביטחון {row.confidencePercent}%
+                              </div>
                             </div>
                           </div>
 
@@ -559,6 +628,18 @@ export default function AgendaMatchClient() {
                               className="h-full bg-black rounded-full"
                               style={{ width: `${Math.min(100, row.overallScore)}%` }}
                             />
+                          </div>
+
+                          <div className="mt-1.5 flex items-center gap-2">
+                            <div className="flex-1 h-1 rounded-full bg-gray-100 overflow-hidden">
+                              <div
+                                className="h-full bg-indigo-300 rounded-full"
+                                style={{ width: `${row.confidencePercent}%` }}
+                              />
+                            </div>
+                            <span className="text-[10px] text-gray-400 font-medium shrink-0 tabular-nums">
+                              {row.evidenceCount} פעולות
+                            </span>
                           </div>
                         </button>
 

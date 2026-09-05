@@ -4,17 +4,22 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePeriod, periodToDateRange } from '@/lib/period-context';
-import { DOMAINS, POLITICAL_ISSUES } from '@/lib/agendas';
+import { CLUSTER_TOPICS } from '@/lib/axis-clusters';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
-/** כמה תחומים נבחרים כאן לפני המעבר לשאלון. זהה ל-DOMAIN_PICKS ב-/agenda-match */
-const HOME_DOMAIN_PICKS = 3;
+/** כמה תחומים נבחרים כאן. זהה ל-MAX_TOPICS ב-/agenda-keywords */
+const HOME_DOMAIN_PICKS = 2;
 
-/** רק תחומים שיש להם אג'נדות. תחום ריק לא ניתן לבחירה ואין טעם להציגו כאן */
-const PICKABLE_DOMAINS = DOMAINS.filter(d =>
-  POLITICAL_ISSUES.some(i => i.domainId === d.id),
-);
+/**
+ * שמונת נושאי-העל של הטקסונומיה הקנונית.
+ *
+ * הוחלפו מ-DOMAINS של agendas.ts: אלה נכתבו ידנית מראש, ואלה נגזרו
+ * מ-7,067 הצעות חוק. הבחירה כאן ממשיכה ל-/agenda-keywords, שמציג את
+ * הנושאים שבתוך התחום לפני שהוא שואל — כדי שלא ייבחרו שאלות במקום
+ * המשתמשת, כפי שקרה במסלול הקודם.
+ */
+const PICKABLE_DOMAINS = CLUSTER_TOPICS;
 
 interface Stats {
   mks: number;
@@ -73,7 +78,7 @@ export default function HomepageClient() {
   /** התחומים עוברים ב-query string, והשאלון פותח ישר בשלב העמדות */
   function startQuestionnaire() {
     if (homeDomains.length === 0) return;
-    router.push(`/agenda-match?domains=${homeDomains.join(',')}`);
+    router.push(`/agenda-keywords?topics=${homeDomains.join(',')}`);
   }
 
   const fetchData = useCallback(async () => {
@@ -167,7 +172,7 @@ export default function HomepageClient() {
           <div className="text-[11px] font-black text-teal-700 uppercase tracking-widest mb-1">
             מי עובד בשבילך
           </div>
-          <h2 className="text-xl font-black mb-1">בחרי עד שלושה תחומים שחשובים לך</h2>
+          <h2 className="text-xl font-black mb-1">בחרי עד שני תחומים שחשובים לך</h2>
           <p className="text-sm text-gray-600 mb-4 font-medium leading-relaxed">
             נשאל אותך מה העמדה שלך בכל נושא, ונדרג את חברי הכנסת לפי מידת הפעילות שלהם —
             הצעות חוק שיזמו והצבעות שתמכו בהן.
@@ -211,7 +216,7 @@ export default function HomepageClient() {
             </span>
             {homeDomains.length === 0 && (
               <Link
-                href="/agenda-match"
+                href="/agenda-keywords"
                 className="text-xs font-black underline text-gray-600 hover:text-black"
               >
                 לשאלון המלא ←
