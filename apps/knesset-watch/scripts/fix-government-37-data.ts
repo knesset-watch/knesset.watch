@@ -111,13 +111,22 @@ export function fixGovernment37Data() {
           WHERE id = ?
         `).run(existingPosition.id);
       } else {
-        // Insert new position
-        const posResult = db.prepare(`
+        // Insert new manually-created position using a negative ID so it
+        // cannot collide with Knesset position IDs.
+        const nextPositionId = (
+          db.prepare(`
+            SELECT COALESCE(MIN(id), 0) - 1 AS id
+            FROM mk_position
+          `).get() as { id: number }
+        ).id;
+
+        db.prepare(`
           INSERT INTO mk_position (
-            mk_id, duty_desc, ministry_id, ministry,
+            id, mk_id, duty_desc, ministry_id, ministry,
             start_date, government_num, is_current
-          ) VALUES (?, ?, ?, ?, ?, ?, 1)
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, 1)
         `).run(
+          nextPositionId,
           mkId,
           correction.role,
           strategicMinistryId,
@@ -125,7 +134,7 @@ export function fixGovernment37Data() {
           correction.startDate,
           correction.governmentNum,
         );
-        console.log(`  ✓ Created new position record (ID: ${posResult.lastInsertRowid})`);
+        console.log(`  ✓ Created new position record (ID: ${nextPositionId})`);
       }
 
       // Ensure canonical office mapping exists
