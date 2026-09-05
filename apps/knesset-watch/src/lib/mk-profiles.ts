@@ -13,6 +13,63 @@
  */
 
 import profilesData from './mk-profiles.json';
+import backgroundData from './mk-backgrounds.json';
+
+/**
+ * רקע מוויקיפדיה העברית, שנשלף על ידי scripts/fetch-mk-backgrounds.ts.
+ *
+ * Wikidata לא מחזיקה את המידע הזה: P512 ו-P812 ריקים לח"כים ישראלים,
+ * ולכן רק 6 מתוך 120 שורות השכלה כללו תואר בפועל ו-35 ח"כים היו בלי
+ * עיסוק כלל. ויקיפדיה מחזיקה אותו, אך רק כפרוזה בגוף הערך.
+ *
+ * הוא גובר על Wikidata כשהשניים מתנגשים. ההשוואה מכריעה: לליברמן
+ * Wikidata נותנת "שר · מנהל כללי", וויקיפדיה נותנת "מנכ״ל משרד ראש
+ * הממשלה · מוציא לאור · איש עסקים".
+ */
+interface MkBackground {
+  personId: number;
+  occupations: string[];
+  degrees: string[];
+  priorRole: string | null;
+  confidence: number;
+}
+
+const BACKGROUND_BY_ID = new Map<number, MkBackground>(
+  (backgroundData as MkBackground[]).map(b => [b.personId, b]),
+);
+
+/** תפקידים בכירים, שראויים להופיע לפני תחנות מוקדמות בקריירה */
+const SENIOR_PREFIX = /^(מנכ|סמנכ|יו|ראש|אלוף|תא"ל|שגריר|נשיא|משנה|מפקד|רב |עורך דין|רופא|פרופ)/;
+
+/**
+ * דירוג התפקידים מוויקיפדיה לפי משמעות.
+ *
+ * הערך כרונולוגי, ולכן חיתוך פשוט של שלושת הראשונים נתן לליברמן
+ * "מזכיר הסניף הירושלמי של הסתדרות העובדים הלאומית" והשאיר את
+ * "מנכ״ל משרד ראש הממשלה" ו"איש עסקים" בחוץ.
+ *
+ * שני סימנים: תואר בכיר בתחילת המחרוזת, ואורך — תיאור קצר הוא בדרך
+ * כלל זהות מקצועית ("איש עסקים"), וארוך הוא תחנה היסטורית ספציפית.
+ */
+function occupationRank(entry: string): number {
+  const senior = SENIOR_PREFIX.test(entry) ? 0 : 1;
+  const lengthBand = entry.length <= 14 ? 0 : entry.length <= 28 ? 1 : 2;
+  return senior * 3 + lengthBand;
+}
+
+/**
+ * "מוסמך אוניברסיטת חיפה במדע המדינה, אוניברסיטת חיפה" — שם המוסד
+ * מופיע פעמיים, כי החילוץ שתל אותו גם בתיאור התואר וגם אחרי הפסיק.
+ */
+function dedupeInstitution(degree: string): string {
+  const comma = degree.lastIndexOf(', ');
+  if (comma === -1) return degree;
+
+  const head = degree.slice(0, comma);
+  const institution = degree.slice(comma + 2).trim();
+
+  return institution && head.includes(institution) ? head : degree;
+}
 
 export interface MkProfile {
   personId: number;
@@ -47,7 +104,7 @@ const PARLIAMENTARY_ROLE = /^(חבר|חברת) הכנסת$|^(יושב ראש|י�
  * (P108 ריק אצל כולם). היא הופיעה אצל ארבעה ח"כים ולא אמרה על אף
  * אחד מהם דבר.
  */
-const VAGUE_OCCUPATIONS = new Set(['שר', 'מנהל', 'מנהל כללי', 'עובד ציבור', 'איש ציבור']);
+const VAGUE_OCCUPATIONS = new Set(['שר', 'מנהל', 'מנהל כללי', 'סמנכ״ל', 'סמנכ"ל', 'משנה למנכ״ל', 'משנה למנכ"ל', 'עובד ציבור', 'איש ציבור']);
 
 /**
  * תפקידי ממשלה. פוליטיים באופיים ולכן אינם רקע תעסוקתי, אבל אצל
@@ -199,7 +256,17 @@ export function tenureLabel(profile: MkProfile | null, now = new Date()): string
  * נחתך, רק משום שסדר הפריטים ב-Wikidata שרירותי.
  */
 export function educationLine(profile: MkProfile | null): string | null {
-  if (!profile || profile.education.length === 0) return null;
+  if (!profile) return null;
+
+  /**
+   * תואר מוויקיפדיה קודם לשם מוסד מ-Wikidata. הוא נושא גם את התואר וגם
+   * את התחום — "תואר ראשון בכלכלה ובמנהל עסקים, אוניברסיטת חיפה" מול
+   * "אוניברסיטת חיפה" בלבד. 101 ח"כים מקבלים כך תואר שלא היה להם.
+   */
+  const degrees = BACKGROUND_BY_ID.get(profile.personId)?.degrees ?? [];
+  if (degrees.length > 0) return degrees.slice(0, 2).map(dedupeInstitution).join(' · ');
+
+  if (profile.education.length === 0) return null;
 
   const hasDegree = (entry: string) => entry.includes(', ');
   const ordered = [
@@ -224,6 +291,29 @@ export function occupationLine(profile: MkProfile | null): string | null {
   if (OVERRIDES[profile.personId]?.occupations) {
     const manual = OVERRIDES[profile.personId].occupations!;
     return manual.length > 0 ? manual.slice(0, 3).join(' · ') : null;
+  }
+
+  /**
+   * ויקיפדיה גוברת על Wikidata. היא מחזירה עד שמונה תפקידים, ולכן
+   * נחתכת לשלושה — הראשונים הם המשמעותיים, כי החילוץ התבקש להתחיל
+   * במה שאדם היה מציג כרקע שלו היום.
+   */
+  /**
+   * אותו סינון מעורפלות שחל על Wikidata חל גם כאן. החילוץ מוויקיפדיה
+   * מייצר את אותה תקלה בצורה חדשה: "סמנכ״ל" ו"משנה למנכ״ל" בלי שם
+   * הארגון אינם אומרים דבר, בדיוק כמו "מנהל כללי" שהוסר קודם.
+   */
+  const background = BACKGROUND_BY_ID.get(profile.personId);
+  if (background) {
+    const usable = background.occupations.filter(
+      o => !VAGUE_OCCUPATIONS.has(o) && !BLOCKED_OCCUPATIONS.has(o),
+    );
+    if (usable.length > 0) {
+      return usable
+        .sort((a, b) => occupationRank(a) - occupationRank(b))
+        .slice(0, 3)
+        .join(' · ');
+    }
   }
 
   const positions = profile.positions ?? [];
