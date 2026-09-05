@@ -149,6 +149,14 @@ export interface AgendaActivityRow {
   /** התצוגה חייבת להוסיף הערה — ראו מלכודת 3 למעלה */
   isMinister: boolean;
 
+  /**
+   * סיים את כהונתו. התצוגה חייבת לסמן זאת — אחרת המשתמש מקבל שם של
+   * מי שפעל בכנסת ה-25 ומניח שאפשר לפנות אליו היום.
+   */
+  isFormer: boolean;
+  /** התאריך האחרון שבו כיהן, YYYY-MM-DD. null אצל מכהנים. */
+  tenureEnd: string | null;
+
   /** ממוצע הציונים על כל האג'נדות שנבחרו */
   overallScore: number;
 
@@ -447,37 +455,114 @@ interface MkMeta {
   slug: string | null;
   isCoalition: boolean;
   isMinister: boolean;
+  /** סיים את כהונתו לפני תום הכנסת ה-25 */
+  isFormer: boolean;
+  /** התאריך האחרון שבו כיהן, YYYY-MM-DD. null אצל מכהנים. */
+  tenureEnd: string | null;
+  /** סך ימי הכהונה, לנרמול היוזמה */
+  tenureDays: number;
   tenure: ReturnType<typeof parseTenure>;
 }
 
+/** סך הימים בכל מקטעי הכהונה */
+function tenureDays(segments: ReturnType<typeof parseTenure>): number {
+  let days = 0;
+  for (const s of segments) {
+    if (!s.startDate || !s.endDate) continue;
+    const from = Date.parse(s.startDate);
+    const to = Date.parse(s.endDate);
+    if (Number.isNaN(from) || Number.isNaN(to) || to <= from) continue;
+    days += (to - from) / 86_400_000;
+  }
+  return Math.round(days);
+}
+
+/**
+ * כל ח"כי הכנסת ה-25, כולל 27 שסיימו את כהונתם.
+ *
+ * הסינון הקודם ל-is_current = 1 השמיט אותם לגמרי, ולכן גדי איזנקוט —
+ * שכיהן שנתיים ושמונה חודשים, יזם חמש הצעות חוק שכולן מסווגות והשתתף
+ * ב-2,769 הצבעות — לא הופיע כלל. האתר הוא כלי שקיפות על הכנסת ה-25
+ * ולא רשימת המכהנים היום, ולכן מי שפעל בה שייך לתמונה.
+ *
+ * הם מסומנים isFormer עם תאריך הסיום, כדי שהתצוגה תאמר "כיהן עד
+ * 7.2025" ולא תיצור רושם שאפשר לפנות אליהם היום.
+ */
 function loadCurrentMks(db: Database.Database): Map<number, MkMeta> {
   const rows = db
     .prepare(
       `SELECT person_id AS mkId, first_name AS firstName, last_name AS lastName,
-              faction_name AS faction, slug, is_coalition AS isCoalition, segments
-       FROM mk_person
-       WHERE is_current = 1`,
+              faction_name AS faction, slug, is_coalition AS isCoalition,
+              is_current AS isCurrent, segments
+       FROM mk_person`,
     )
     .all() as Array<{
       mkId: number; firstName: string; lastName: string;
-      faction: string | null; slug: string | null; isCoalition: number; segments: string | null;
+      faction: string | null; slug: string | null; isCoalition: number;
+      isCurrent: number; segments: string | null;
     }>;
 
   const ministers = loadMinisters(db);
 
+  /**
+   * תאריך סיום הכהונה, מ-mk_position ולא מ-segments.
+   *
+   * segments.endDate מתמלא בתאריך הסנכרון האחרון אצל כולם, ולכן כל 27
+   * הפורשים הוצגו כאילו סיימו באותו יום. mk_position.finish_date נושא
+   * את התאריך האמיתי: איזנקוט 4.7.2025, דנון 30.6.2024.
+   */
+  const endDates = new Map<number, string>(
+    (
+      db
+        .prepare(
+          `SELECT mk_id AS mkId, MAX(finish_date) AS finishDate
+           FROM mk_position
+           WHERE finish_date IS NOT NULL
+           GROUP BY mk_id`,
+        )
+        .all() as Array<{ mkId: number; finishDate: string }>
+    ).map(r => [r.mkId, r.finishDate.slice(0, 10)]),
+  );
+
   return new Map(
-    rows.map(r => [
-      r.mkId,
-      {
-        mkId: r.mkId,
-        name: `${r.firstName ?? ''} ${r.lastName ?? ''}`.trim(),
-        faction: r.faction,
-        slug: r.slug,
-        isCoalition: r.isCoalition === 1,
-        isMinister: ministers.has(r.mkId),
-        tenure: parseTenure(r.segments),
-      },
-    ]),
+    rows.map(r => {
+      const tenure = parseTenure(r.segments);
+      const isFormer = r.isCurrent !== 1;
+      const lastDate = endDates.get(r.mkId) ?? null;
+
+      /**
+       * חיתוך מקטעי הכהונה בתאריך הפרישה האמיתי.
+       *
+       * segments.endDate מתמלא בתאריך הסנכרון, ולכן countVotesDuringTenure
+       * זקף לאיזנקוט הזדמנויות הצבעה משמונה חודשים אחרי שפרש — והוריד
+       * את שיעור התמיכה שלו על הצבעות שלא היה יכול להשתתף בהן.
+       */
+      const effective =
+        isFormer && lastDate
+          ? tenure
+              .filter(s => !s.startDate || s.startDate <= lastDate)
+              .map(s => ({
+                ...s,
+                endDate: s.endDate && s.endDate > lastDate ? lastDate : s.endDate,
+              }))
+          : tenure;
+
+      return [
+        r.mkId,
+        {
+          mkId: r.mkId,
+          name: `${r.firstName ?? ''} ${r.lastName ?? ''}`.trim(),
+          faction: r.faction,
+          slug: r.slug,
+          isCoalition: r.isCoalition === 1,
+          isMinister: ministers.has(r.mkId),
+          isFormer,
+          tenureEnd: isFormer ? lastDate : null,
+          tenureDays: tenureDays(effective),
+          tenure: effective,
+        },
+      ];
+    }),
   );
 }
 
@@ -567,7 +652,22 @@ export function computeAgendaActivity(
         ([, t]) => t.billsInitiated > 0 || t.supportingVotes > 0,
       );
 
-      const billValues = active.map(([, t]) => t.billsInitiated);
+      /**
+       * היוזמה מנורמלת לקצב ולא נספרת במוחלט.
+       *
+       * רכיב ההצבעות כבר היה מנורמל — supportingVotes חלקי ההזדמנויות
+       * שהיו בזמן הכהונה. היוזמה לא הייתה, ולכן מי שכיהן שנתיים התחרה
+       * במי שכיהן ארבע על ספירה גולמית ונענש על הפרישה ולא על חוסר
+       * פעילות. איזנקוט, עם חמש הצעות מסווגות, דורג במקום 114 מ-138.
+       *
+       * הרצפה של 90 יום מונעת התפוצצות: מי שכיהן שבועיים ויזם הצעה אחת
+       * היה מקבל קצב אסטרונומי ומדלג לראש הדירוג.
+       */
+      const MIN_TENURE_DAYS = 90;
+      const initiativeRate = (mkId: number, bills: number) =>
+        bills / Math.max(mks.get(mkId)!.tenureDays, MIN_TENURE_DAYS);
+
+      const billValues = active.map(([mkId, t]) => initiativeRate(mkId, t.billsInitiated));
       const rateValues = active.map(([mkId, t]) => {
         const opportunities = countVotesDuringTenure(stanceKnownDates, mks.get(mkId)!.tenure);
         return opportunities > 0 ? t.supportingVotes / opportunities : 0;
@@ -578,7 +678,10 @@ export function computeAgendaActivity(
         const opportunities = countVotesDuringTenure(stanceKnownDates, meta.tenure);
         const rate = opportunities > 0 ? tally.supportingVotes / opportunities : 0;
 
-        const pInitiative = percentileAmongActive(billValues, tally.billsInitiated);
+        const pInitiative = percentileAmongActive(
+          billValues,
+          initiativeRate(mkId, tally.billsInitiated),
+        );
         const pVoting = votingAvailable ? percentileAmongActive(rateValues, rate) : 0;
 
         const list = scoresByMk.get(mkId) ?? [];
@@ -659,6 +762,8 @@ export function computeAgendaActivity(
         slug: meta.slug,
         isCoalition: meta.isCoalition,
         isMinister: meta.isMinister,
+        isFormer: meta.isFormer,
+        tenureEnd: meta.tenureEnd,
         overallScore: round1(sum / selections.length),
         evidenceCount,
         confidencePercent: confidenceFromEvidence(evidenceCount),

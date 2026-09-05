@@ -41,6 +41,10 @@ interface Row {
   slug: string | null;
   isCoalition: boolean;
   isMinister: boolean;
+  /** סיים את כהונתו בכנסת ה-25 */
+  isFormer: boolean;
+  /** YYYY-MM-DD, רק אצל מי שסיים */
+  tenureEnd: string | null;
   overallScore: number;
   evidenceCount: number;
   confidencePercent: number;
@@ -509,6 +513,15 @@ export default function KeywordMatchClient() {
                                 שר/ה
                               </span>
                             )}
+                            {/*
+                              בלי התווית הזו המשתמשת מקבלת שם של מי שפעל
+                              בכנסת ה-25 ומניחה שאפשר לפנות אליו היום.
+                            */}
+                            {row.isFormer && (
+                              <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
+                                {row.tenureEnd ? `כיהן עד ${formatMonth(row.tenureEnd)}` : 'סיים כהונה'}
+                              </span>
+                            )}
                           </div>
                           <p className="text-xs text-gray-500 font-medium mt-0.5">
                             {row.faction ?? 'ללא סיעה'} · {row.isCoalition ? 'קואליציה' : 'אופוזיציה'}
@@ -601,6 +614,12 @@ export default function KeywordMatchClient() {
       </div>
     </div>
   );
+}
+
+/** "2025-07-04" → "7.2025". חודש מספיק — היום המדויק אינו מוסיף. */
+function formatMonth(iso: string): string {
+  const [y, m] = iso.split('-');
+  return m && y ? `${Number(m)}.${y}` : iso;
 }
 
 function StickyBar({ children }: { children: React.ReactNode }) {
