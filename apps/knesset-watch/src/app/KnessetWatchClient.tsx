@@ -416,7 +416,16 @@ export default function KnessetWatchPage() {
   const [networkLoading, setNetworkLoading] = useState(false);
   const [coalitionFilter, setCoalitionFilter] = useState<CoalitionFilter>((searchParams.get('coalition') as CoalitionFilter) || 'all');
   const [activeOnly, setActiveOnly]     = useState(searchParams.get('activeOnly') === 'true');
-  const [showDeparted, setShowDeparted] = useState(false);
+  /**
+   * ברירת מחדל: מציגים גם את מי שעזב.
+   *
+   * הטווח הנבחר הוא הכנסת ה-25, ומי שכיהן בה שייך לרשימה — 27 ח"כים
+   * הוסתרו, ובהם גדי איזנקוט שכיהן שנתיים ושמונה חודשים. הכרטיסים
+   * שלהם מסומנים "לשעבר" באפור, והתיבה נשארת למי שרוצה רק מכהנים.
+   *
+   * זה מיישר את הדף עם השאלון, שכולל לשעבר מאותה סיבה.
+   */
+  const [showDeparted, setShowDeparted] = useState(true);
   const [search, setSearch]             = useState(searchParams.get('search') || '');
   const [billTypeFilter, setBillTypeFilter] = useState<'all' | 'private' | 'gov'>('all');
   const [error, setError]               = useState<string | null>(null);
