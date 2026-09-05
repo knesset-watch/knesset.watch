@@ -53,6 +53,17 @@ const MANUAL_QID: Record<number, string> = {
 };
 
 /**
+ * שמות שבוויקיפדיה העברית כתובים אחרת מאשר במאגר הכנסת.
+ *
+ * הנפילה לתמונה מוויקיפדיה מחפשת לפי השם מ-mk_person, וכשהוא אינו
+ * תואם היא מחזירה כלום. "מוחמד אבו אל היג'א" מול "מוחמד אבו אל-היג'א"
+ * נבדלים במקף אחד, וזה הספיק כדי שהתמונה לא תימצא.
+ */
+const WIKIPEDIA_TITLE: Record<number, string> = {
+  30917: "מוחמד אבו אל-היג'א",
+};
+
+/**
  * תפקידים ב-mk_position שאינם מוסיפים מידע — חברוּת בוועדה היא נחלת
  * כמעט כל ח"כ. מחפשים תפקיד מזהה: שר, סגן שר, יו"ר.
  */
@@ -416,7 +427,7 @@ async function main() {
   if (missingPhoto.length > 0) {
     console.log(`\nLooking up ${missingPhoto.length} missing photos on he.wikipedia...`);
     for (const profile of missingPhoto) {
-      profile.photo = await wikipediaImage(profile.name);
+      profile.photo = await wikipediaImage(WIKIPEDIA_TITLE[profile.personId] ?? profile.name);
     }
     console.log(`  recovered ${missingPhoto.filter(p => p.photo).length}`);
   }
