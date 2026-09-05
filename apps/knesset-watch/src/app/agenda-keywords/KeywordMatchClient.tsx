@@ -8,19 +8,19 @@ import { MkAvatar, MkBackground } from '@/components/MkIdentity';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
-/** עד כמה נושאי-על. שניים נותנים 10-16 אשכולות במסך אחד. */
-const MAX_TOPICS = 2;
+/** עד כמה נושאי-על */
+const MAX_TOPICS = 3;
 
-/** עד כמה אשכולות. שלושה נותנים 6-12 שאלות — שאלון שאפשר לסיים. */
-const MAX_CLUSTERS = 3;
+/** עד כמה אשכולות. שישה נותנים 12 עד 30 שאלות, לפי מה שנבחר. */
+const MAX_CLUSTERS = 6;
 
 type Step = 'topics' | 'clusters' | 'stances' | 'results';
 
 const STEPS: Array<{ id: Step; label: string }> = [
-  { id: 'topics', label: '1. תחומים' },
-  { id: 'clusters', label: '2. נושאים' },
-  { id: 'stances', label: '3. עמדות' },
-  { id: 'results', label: '4. תוצאות' },
+  { id: 'topics', label: 'תחומים' },
+  { id: 'clusters', label: 'נושאים' },
+  { id: 'stances', label: 'עמדות' },
+  { id: 'results', label: 'תוצאות' },
 ];
 
 interface AgendaScore {
@@ -83,6 +83,16 @@ export default function KeywordMatchClient() {
       setStep('clusters');
     }
   }, [searchParams]);
+
+  /**
+   * מעבר שלב מחזיר לראש העמוד.
+   *
+   * בלי זה המשתמשת נוחתת באמצע הרשימה: שלב העמדות ארוך, והדפדפן שומר
+   * את מיקום הגלילה — כך שמסך התוצאות נפתח כשהמדורגים הראשונים מעליה.
+   */
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [step]);
 
   const visibleClusters = useMemo(
     () => topics.map(id => ({ topic: CLUSTER_TOPICS.find(t => t.id === id)!, list: clustersOfTopic(id) })),
@@ -193,18 +203,41 @@ export default function KeywordMatchClient() {
           </Link>
         </div>
 
-        <div className="flex items-center gap-1.5 mb-7 flex-wrap">
-          {STEPS.map(s => {
-            const active = step === s.id;
+        {/*
+          מחוון התקדמות עם מצב "הושלם" ולא רק "פעיל". בלי זה המשתמשת
+          אינה יודעת כמה נשאר, וזו אחת הסיבות שנוטשים שאלון באמצע.
+        */}
+        <div className="flex items-center gap-0 mb-8">
+          {STEPS.map((s, i) => {
+            const current = STEPS.findIndex(x => x.id === step);
+            const done = i < current;
+            const active = i === current;
             return (
-              <span
-                key={s.id}
-                className={`text-[11px] font-black px-2.5 py-1 rounded-full ${
-                  active ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'
-                }`}
-              >
-                {s.label}
-              </span>
+              <div key={s.id} className="flex items-center flex-1 last:flex-none">
+                <div className="flex items-center gap-2 shrink-0">
+                  <span
+                    className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black transition-colors ${
+                      active
+                        ? 'bg-teal-600 text-white'
+                        : done
+                          ? 'bg-teal-100 text-teal-700'
+                          : 'bg-gray-100 text-gray-300'
+                    }`}
+                  >
+                    {done ? '✓' : i + 1}
+                  </span>
+                  <span
+                    className={`text-[11px] font-black hidden sm:inline ${
+                      active ? 'text-gray-900' : done ? 'text-teal-700' : 'text-gray-300'
+                    }`}
+                  >
+                    {s.label}
+                  </span>
+                </div>
+                {i < STEPS.length - 1 && (
+                  <div className={`h-0.5 flex-1 mx-2 rounded-full ${done ? 'bg-teal-200' : 'bg-gray-100'}`} />
+                )}
+              </div>
             );
           })}
         </div>
@@ -327,31 +360,60 @@ export default function KeywordMatchClient() {
                 </div>
 
                 <div className="flex flex-col gap-3">
-                  {cluster.questions.map(q => (
-                    <div key={q.issueId} className="rounded-xl border-2 border-black/8 p-4">
-                      <h3 className="text-sm font-black mb-1 leading-relaxed">{q.question}</h3>
-                      <p className="text-[11px] text-gray-400 font-medium mb-3">
-                        {q.keyword} · {q.billCount} הצעות חוק
-                      </p>
+                  {cluster.questions.map(q => {
+                    const answeredHere = Boolean(stances[q.issueId]);
+                    return (
+                      <div
+                        key={q.issueId}
+                        className={`rounded-xl border-2 p-4 transition-colors ${
+                          answeredHere ? 'border-teal-600/40 bg-teal-50/30' : 'border-black/8'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-3 mb-1">
+                          <h3 className="text-sm font-black leading-relaxed flex-1">{q.question}</h3>
+                          {answeredHere && (
+                            <span className="shrink-0 w-5 h-5 rounded-full bg-teal-600 text-white text-[11px] font-black flex items-center justify-center">
+                              ✓
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-gray-400 font-medium mb-3">
+                          {q.keyword} · {q.billCount} הצעות חוק
+                        </p>
 
-                      <div className="flex flex-col gap-2">
-                        {q.stances.map(s => {
-                          const on = stances[q.issueId] === s.id;
-                          return (
-                            <button
-                              key={s.id}
-                              onClick={() => pickStance(q.issueId, s.id)}
-                              className={`text-right text-xs font-black px-3 py-2.5 rounded-lg border-2 transition-colors leading-relaxed ${
-                                on ? 'border-teal-600 bg-teal-600 text-white' : 'border-black/10 bg-white hover:border-teal-400'
-                              }`}
-                            >
-                              {s.label}
-                            </button>
-                          );
-                        })}
+                        {/*
+                          מספור הצדדים ולא רק צבע: שתי העמדות ארוכות ודומות
+                          באורכן, ובלי עוגן ויזואלי קשה לראות שאלו שתי
+                          אפשרויות ולא שתי פסקאות.
+                        */}
+                        <div className="flex flex-col gap-2">
+                          {q.stances.map((s, si) => {
+                            const on = stances[q.issueId] === s.id;
+                            return (
+                              <button
+                                key={s.id}
+                                onClick={() => pickStance(q.issueId, s.id)}
+                                className={`flex items-start gap-2.5 text-right text-xs font-black px-3 py-2.5 rounded-lg border-2 transition-all leading-relaxed ${
+                                  on
+                                    ? 'border-teal-600 bg-teal-600 text-white shadow-sm'
+                                    : 'border-black/10 bg-white hover:border-teal-400 hover:bg-teal-50/40'
+                                }`}
+                              >
+                                <span
+                                  className={`shrink-0 mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center text-[9px] ${
+                                    on ? 'border-white bg-white text-teal-600' : 'border-gray-300 text-gray-400'
+                                  }`}
+                                >
+                                  {on ? '✓' : si === 0 ? 'א' : 'ב'}
+                                </span>
+                                <span className="flex-1">{s.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ))}
@@ -424,9 +486,20 @@ export default function KeywordMatchClient() {
 
                 <ol className="flex flex-col gap-3">
                   {rows.slice(0, 10).map((row, idx) => (
-                    <li key={row.mkId} className="rounded-xl border border-black/8 p-4">
+                    <li
+                      key={row.mkId}
+                      className={`rounded-xl border p-4 transition-colors ${
+                        idx === 0 ? 'border-teal-600/40 bg-teal-50/25' : 'border-black/8'
+                      }`}
+                    >
                       <div className="flex items-center gap-3">
-                        <span className="text-sm font-black text-gray-400 w-6 shrink-0 tabular-nums">{idx + 1}</span>
+                        <span
+                          className={`text-sm font-black w-6 shrink-0 tabular-nums text-center ${
+                            idx < 3 ? 'text-teal-700' : 'text-gray-300'
+                          }`}
+                        >
+                          {idx + 1}
+                        </span>
                         <MkAvatar name={row.name} photo={row.photo} isCoalition={row.isCoalition} />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
@@ -466,7 +539,42 @@ export default function KeywordMatchClient() {
                       </div>
 
                       <div className="mt-3 h-1.5 rounded-full bg-gray-100 overflow-hidden">
-                        <div className="h-full bg-black rounded-full" style={{ width: `${Math.min(100, row.overallScore)}%` }} />
+                        <div
+                          className={`h-full rounded-full transition-all ${idx === 0 ? 'bg-teal-600' : 'bg-black'}`}
+                          style={{ width: `${Math.min(100, row.overallScore)}%` }}
+                        />
+                      </div>
+
+                      {/*
+                        פירוט הפעילות מתחת לציון. בלי זה המשתמשת רואה מספר
+                        ואינה יודעת ממה הוא מורכב — שלוש הצעות חוק ועשרים
+                        הצבעות נראים זהים לשלוש הצבעות ועשרים הצעות.
+                      */}
+                      <div className="mt-2.5 flex items-center gap-3 flex-wrap text-[11px] font-medium text-gray-500">
+                        <span>
+                          <strong className="text-gray-900 font-black tabular-nums">
+                            {row.perAgenda.reduce((s, a) => s + a.billsInitiated, 0)}
+                          </strong>{' '}
+                          הצעות חוק שיזם
+                        </span>
+                        <span className="text-gray-200">·</span>
+                        <span>
+                          <strong className="text-gray-900 font-black tabular-nums">
+                            {row.perAgenda.reduce((s, a) => s + a.supportingVotes, 0)}
+                          </strong>{' '}
+                          הצבעות תומכות
+                        </span>
+                        {row.perAgenda.reduce((s, a) => s + a.billsAdvanced, 0) > 0 && (
+                          <>
+                            <span className="text-gray-200">·</span>
+                            <span className="text-teal-700">
+                              <strong className="font-black tabular-nums">
+                                {row.perAgenda.reduce((s, a) => s + a.billsAdvanced, 0)}
+                              </strong>{' '}
+                              עברו קריאה טרומית
+                            </span>
+                          </>
+                        )}
                       </div>
                     </li>
                   ))}
