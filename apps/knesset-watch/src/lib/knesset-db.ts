@@ -2920,23 +2920,6 @@ export interface EngagementRow {
  * מקרה מיוחד: הצעה שנעצרה. הסטטוס לא מגלה באיזה שלב היא נעצרה,
  * אז אם היא הגיעה להצבעה במליאה, סימן שהספיקה להתקדם.
  */
-/**
- * שלב ההצעה במילים, לתצוגה.
- *
- * status_desc ריק בכל 7,296 השורות, ולכן הכל נגזר מ-status_id. בלי
- * זה התצוגה יכולה רק לומר "עבר" או "לא עבר", ו-96% מההצעות הפרטיות
- * נופלות לקטגוריה השנייה — כלומר רוב עבודתו של חבר הכנסת מוצגת
- * כגוש אחד חסר משמעות.
- */
-export function billStageLabel(statusId: number | null): { label: string; tone: 'passed' | 'advanced' | 'stopped' | 'pending' } {
-  if (statusId === STATUS_BECAME_LAW) return { label: 'עבר בקריאה שלישית', tone: 'passed' };
-  if (statusId !== null && STATUS_PASSED_PRELIMINARY.includes(statusId)) {
-    return { label: 'עבר קריאה טרומית', tone: 'advanced' };
-  }
-  if (statusId === STATUS_STOPPED) return { label: 'נעצרה', tone: 'stopped' };
-  return { label: 'הוגשה', tone: 'pending' };
-}
-
 export function billAdvanced(statusId: number, reachedPlenaryVote: boolean): boolean {
   if (STATUS_PASSED_PRELIMINARY.includes(statusId)) return true;
   if (statusId === STATUS_STOPPED && reachedPlenaryVote) return true;

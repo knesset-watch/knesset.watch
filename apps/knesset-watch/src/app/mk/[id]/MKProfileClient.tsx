@@ -7,7 +7,7 @@ import MKAgendaView from './MKAgendaView';
 import PresenceHeatmap from '@/components/PresenceHeatmap';
 import { VOTE_RESULT_COLORS, CODE_TO_LABEL } from '@/lib/vote-utils';
 import { usePeriod, periodToDateRange } from '@/lib/period-context';
-import { billStageLabel } from '@/lib/knesset-db';
+import { billStageLabel } from '@/lib/bill-stage';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
