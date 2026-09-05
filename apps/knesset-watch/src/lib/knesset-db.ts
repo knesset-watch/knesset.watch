@@ -169,6 +169,8 @@ export interface BillSummary {
   title: string;
   subtype: string;
   isPassed: boolean;
+  /** מזהה השלב בהליך החקיקה. ראו billStageLabel. */
+  statusId: number | null;
   committeeId: number | null;
   committeeName: string | null;
   summary: string | null;
@@ -194,18 +196,24 @@ export function getMkBills(mkId: number): BillSummary[] {
   return (
     db
       .prepare(
-        `SELECT b.id, b.title, b.subtype, b.is_passed, b.committee_id, b.committee_name, b.summary, b.doc_url, b.micro_agenda, b.macro_agenda, b.init_date
+        `SELECT b.id, b.title, b.subtype, b.is_passed, b.status_id, b.committee_id, b.committee_name, b.summary, b.doc_url, b.micro_agenda, b.macro_agenda, b.init_date
          FROM bill b
          JOIN bill_initiator i ON i.bill_id = b.id
          WHERE i.mk_id = ?
          ORDER BY b.is_passed DESC, b.id DESC`,
       )
-      .all(mkId) as Array<{ id: number; title: string; subtype: string; is_passed: number; committee_id: number | null; committee_name: string | null; summary: string | null; doc_url: string | null; micro_agenda: string | null; macro_agenda: string | null; init_date: string | null }>
+      .all(mkId) as Array<{ id: number; title: string; subtype: string; is_passed: number; status_id: number | null; committee_id: number | null; committee_name: string | null; summary: string | null; doc_url: string | null; micro_agenda: string | null; macro_agenda: string | null; init_date: string | null }>
   ).map(r => ({
     billId: r.id,
     title: r.title,
     subtype: r.subtype,
     isPassed: r.is_passed === 1,
+    /**
+     * נדרש לתצוגת שלב ההליך. is_passed לבדו מבחין רק בין "עבר" ל"לא
+     * עבר", ו-96% מההצעות הפרטיות נופלות בצד השני — נעמה לזימי יזמה
+     * 332 והדף הציג 14.
+     */
+    statusId: r.status_id,
     committeeId: r.committee_id,
     committeeName: r.committee_name,
     summary: r.summary,
@@ -2912,6 +2920,23 @@ export interface EngagementRow {
  * מקרה מיוחד: הצעה שנעצרה. הסטטוס לא מגלה באיזה שלב היא נעצרה,
  * אז אם היא הגיעה להצבעה במליאה, סימן שהספיקה להתקדם.
  */
+/**
+ * שלב ההצעה במילים, לתצוגה.
+ *
+ * status_desc ריק בכל 7,296 השורות, ולכן הכל נגזר מ-status_id. בלי
+ * זה התצוגה יכולה רק לומר "עבר" או "לא עבר", ו-96% מההצעות הפרטיות
+ * נופלות לקטגוריה השנייה — כלומר רוב עבודתו של חבר הכנסת מוצגת
+ * כגוש אחד חסר משמעות.
+ */
+export function billStageLabel(statusId: number | null): { label: string; tone: 'passed' | 'advanced' | 'stopped' | 'pending' } {
+  if (statusId === STATUS_BECAME_LAW) return { label: 'עבר בקריאה שלישית', tone: 'passed' };
+  if (statusId !== null && STATUS_PASSED_PRELIMINARY.includes(statusId)) {
+    return { label: 'עבר קריאה טרומית', tone: 'advanced' };
+  }
+  if (statusId === STATUS_STOPPED) return { label: 'נעצרה', tone: 'stopped' };
+  return { label: 'הוגשה', tone: 'pending' };
+}
+
 export function billAdvanced(statusId: number, reachedPlenaryVote: boolean): boolean {
   if (STATUS_PASSED_PRELIMINARY.includes(statusId)) return true;
   if (statusId === STATUS_STOPPED && reachedPlenaryVote) return true;

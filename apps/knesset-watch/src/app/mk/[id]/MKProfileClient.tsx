@@ -7,6 +7,7 @@ import MKAgendaView from './MKAgendaView';
 import PresenceHeatmap from '@/components/PresenceHeatmap';
 import { VOTE_RESULT_COLORS, CODE_TO_LABEL } from '@/lib/vote-utils';
 import { usePeriod, periodToDateRange } from '@/lib/period-context';
+import { billStageLabel } from '@/lib/knesset-db';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
@@ -27,6 +28,8 @@ interface BillSummary {
   billId: number;
   title: string;
   subtype: string;
+  /** מזהה השלב בהליך — נדרש לתווית "עבר / נעצרה / הוגשה" */
+  statusId: number | null;
   isPassed: boolean;
   committeeId: number | null;
   committeeName: string | null;
@@ -868,20 +871,31 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
               </div>
             )}
 
-            {/* Passed bills */}
-            {!profileLoading && profile && profile.bills.filter(b => b.isPassed).length > 0 && (
+            {/*
+              הצעות החוק שיזם — כולן, לא רק שעברו.
+
+              הסינון הקודם ל-isPassed הסתיר את רוב העבודה: נעמה לזימי
+              יזמה 332 הצעות ו-14 עברו, כלומר הדף הציג 4% ממה שעשתה.
+              רוב ההצעות הפרטיות אינן עוברות, וזו בדיוק הפעילות שהמדד
+              מודד — הסתרתה מציגה ח"כ פעיל כמי שכמעט לא עשה דבר.
+            */}
+            {!profileLoading && profile && profile.bills.length > 0 && (
               <div className="rounded-2xl border border-black/8 p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide">חוקים שעברו</div>
+                <div className="flex items-center justify-between mb-1">
+                  <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide">הצעות חוק שיזם</div>
                   <button
-                    onClick={() => { setTab('bills'); setShowPassedOnly(true); }}
+                    onClick={() => { setTab('bills'); setShowPassedOnly(false); }}
                     className="text-xs font-black text-gray-500 hover:text-black transition-colors"
                   >
                     הצג הכל ←
                   </button>
                 </div>
+                <p className="text-[11px] text-gray-400 font-medium mb-4">
+                  {profile.bills.length} הצעות · {profile.bills.filter(b => b.isPassed).length} עברו בקריאה שלישית
+                </p>
                 <div className="flex flex-col gap-2">
-                  {profile.bills.filter(b => b.isPassed).slice(0, 5).map(b => {
+                  {profile.bills.slice(0, 6).map(b => {
+                    const stage = billStageLabel(b.statusId ?? null);
                     const isExpanded = expandedBills.has(b.billId);
                     const toggleExpand = () => setExpandedBills(prev => {
                       const next = new Set(prev);
@@ -891,14 +905,27 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                     return (
                       <div key={b.billId} className="rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
                         <div className="flex items-start gap-2 px-3 py-2">
-                          <span className="shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full bg-teal-500" />
+                          <span
+                            className={`shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full ${
+                              stage.tone === 'passed'
+                                ? 'bg-teal-500'
+                                : stage.tone === 'advanced'
+                                  ? 'bg-blue-400'
+                                  : stage.tone === 'stopped'
+                                    ? 'bg-red-300'
+                                    : 'bg-gray-300'
+                            }`}
+                          />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
-                              <span className="text-sm font-bold text-gray-800 leading-snug">{b.title}</span>
+                              {/* הכותרת הייתה span. יש billId ויש /bill/[id] — היה חסר רק הקישור. */}
+                              <Link
+                                href={`/bill/${b.billId}`}
+                                className="text-sm font-bold text-gray-800 leading-snug hover:text-teal-700 hover:underline"
+                              >
+                                {b.title}
+                              </Link>
                               <div className="flex items-center gap-1 shrink-0">
-                                {b.docUrl && (
-                                  <a href={b.docUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] font-black text-gray-400 hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">PDF</a>
-                                )}
                                 {b.summary && (
                                   <button onClick={toggleExpand} className="text-[11px] font-black text-gray-400 hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">
                                     {isExpanded ? '▲' : '▼'}
@@ -906,9 +933,24 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                                 )}
                               </div>
                             </div>
-                            {b.initDate && (
-                              <span className="text-[11px] text-gray-500">{b.initDate}</span>
-                            )}
+                            <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                              <span
+                                className={`text-[10px] font-black px-1.5 py-0.5 rounded ${
+                                  stage.tone === 'passed'
+                                    ? 'bg-teal-100 text-teal-800'
+                                    : stage.tone === 'advanced'
+                                      ? 'bg-blue-50 text-blue-700'
+                                      : stage.tone === 'stopped'
+                                        ? 'bg-red-50 text-red-700'
+                                        : 'bg-gray-100 text-gray-500'
+                                }`}
+                              >
+                                {stage.label}
+                              </span>
+                              {b.initDate && (
+                                <span className="text-[11px] text-gray-500">{b.initDate}</span>
+                              )}
+                            </div>
                           </div>
                         </div>
                         {b.summary && isExpanded && (
