@@ -190,10 +190,22 @@ async function seedExtra() {
   console.log(`  ${committeeMap.size} committees\n`);
 
   const insertBill = db.prepare(
-    'INSERT OR REPLACE INTO bill (id, title, subtype, status_id, is_passed, committee_id, committee_name, summary) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    `INSERT INTO bill (
+       id, title, subtype, status_id, is_passed,
+       committee_id, committee_name, summary
+     )
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET
+       title = excluded.title,
+       subtype = COALESCE(excluded.subtype, bill.subtype),
+       status_id = excluded.status_id,
+       is_passed = excluded.is_passed,
+       committee_id = COALESCE(excluded.committee_id, bill.committee_id),
+       committee_name = COALESCE(excluded.committee_name, bill.committee_name),
+       summary = COALESCE(excluded.summary, bill.summary)`,
   );
   const insertInitiator = db.prepare(
-    'INSERT OR REPLACE INTO bill_initiator (bill_id, mk_id) VALUES (?, ?)',
+    'INSERT OR IGNORE INTO bill_initiator (bill_id, mk_id) VALUES (?, ?)',
   );
   const insertBillsBatch = db.transaction((rows: any[]) => {
     for (const r of rows) {
@@ -286,9 +298,19 @@ async function seedExtra() {
   console.log('Step 3/3 — downloading K25 positions and committee memberships …');
 
   const insertPosition = db.prepare(
-    `INSERT OR REPLACE INTO mk_position
+    `INSERT INTO mk_position
        (id, mk_id, duty_desc, committee_id, committee, ministry_id, ministry, start_date, finish_date, is_current)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET
+       mk_id = excluded.mk_id,
+       duty_desc = COALESCE(excluded.duty_desc, mk_position.duty_desc),
+       committee_id = excluded.committee_id,
+       committee = excluded.committee,
+       ministry_id = excluded.ministry_id,
+       ministry = excluded.ministry,
+       start_date = excluded.start_date,
+       finish_date = excluded.finish_date,
+       is_current = excluded.is_current`,
   );
   const insertPositionsBatch = db.transaction((rows: any[]) => {
     for (const r of rows) {

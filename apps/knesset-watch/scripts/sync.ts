@@ -226,10 +226,22 @@ async function sync() {
   if (!voteCols.includes("bill_id_source"))
     db.exec(`ALTER TABLE plenary_vote ADD COLUMN bill_id_source TEXT`);
 
+  db.exec(`
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_plenary_vote_id_unique
+    ON plenary_vote(id)
+  `);
+
   const insertVote = db.prepare(
-    `INSERT OR REPLACE INTO plenary_vote
+    `INSERT INTO plenary_vote
    (id, title, date, micro_agenda, macro_agenda, bill_id, bill_id_source)
-   VALUES (?, ?, ?, ?, ?, ?, ?)`,
+   VALUES (?, ?, ?, ?, ?, ?, ?)
+   ON CONFLICT(id) DO UPDATE SET
+     title = excluded.title,
+     date = excluded.date,
+     micro_agenda = excluded.micro_agenda,
+     macro_agenda = excluded.macro_agenda,
+     bill_id = excluded.bill_id,
+     bill_id_source = excluded.bill_id_source`,
   );
 
   const insertVotesBatch = db.transaction((rows: any[]) => {
@@ -716,7 +728,25 @@ async function sync() {
     db.exec(`ALTER TABLE bill ADD COLUMN init_date TEXT`);
 
   const insertBill = db.prepare(
-    "INSERT OR REPLACE INTO bill (id, title, subtype, status_id, status_desc, is_passed, committee_id, committee_name, summary, micro_agenda, macro_agenda, publication_date, init_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    `INSERT INTO bill (
+      id, title, subtype, status_id, status_desc, is_passed,
+      committee_id, committee_name, summary,
+      micro_agenda, macro_agenda, publication_date, init_date
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(id) DO UPDATE SET
+      title = excluded.title,
+      subtype = COALESCE(excluded.subtype, bill.subtype),
+      status_id = excluded.status_id,
+      status_desc = COALESCE(excluded.status_desc, bill.status_desc),
+      is_passed = excluded.is_passed,
+      committee_id = COALESCE(excluded.committee_id, bill.committee_id),
+      committee_name = COALESCE(excluded.committee_name, bill.committee_name),
+      summary = COALESCE(excluded.summary, bill.summary),
+      micro_agenda = COALESCE(excluded.micro_agenda, bill.micro_agenda),
+      macro_agenda = COALESCE(excluded.macro_agenda, bill.macro_agenda),
+      publication_date = COALESCE(excluded.publication_date, bill.publication_date),
+      init_date = COALESCE(excluded.init_date, bill.init_date)`,
   );
 
   // Simple categorization helper (copied from generation script)
@@ -851,7 +881,7 @@ async function sync() {
   }
 
   const insertInitiator = db.prepare(
-    "INSERT OR REPLACE INTO bill_initiator (bill_id, mk_id) VALUES (?, ?)",
+    "INSERT OR IGNORE INTO bill_initiator (bill_id, mk_id) VALUES (?, ?)",
   );
   const insertBillsBatch = db.transaction((rows: any[]) => {
     for (const r of rows) {
@@ -1052,9 +1082,21 @@ async function sync() {
     db.exec(`ALTER TABLE mk_position ADD COLUMN government_num INTEGER`);
 
   const insertPosition = db.prepare(
-    `INSERT OR REPLACE INTO mk_position
+    `INSERT INTO mk_position
        (id, mk_id, duty_desc, committee_id, committee, ministry_id, ministry, start_date, finish_date, is_current, role_type, government_num)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET
+       mk_id = excluded.mk_id,
+       duty_desc = COALESCE(excluded.duty_desc, mk_position.duty_desc),
+       committee_id = excluded.committee_id,
+       committee = excluded.committee,
+       ministry_id = excluded.ministry_id,
+       ministry = excluded.ministry,
+       start_date = excluded.start_date,
+       finish_date = excluded.finish_date,
+       is_current = excluded.is_current,
+       role_type = excluded.role_type,
+       government_num = excluded.government_num`,
   );
   const insertPositionsBatch = db.transaction((rows: any[]) => {
     for (const r of rows) {
