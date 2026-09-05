@@ -43,7 +43,7 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
-import { POLITICAL_ISSUES } from './agendas';
+import { POLITICAL_ISSUES } from './canonical-agendas';
 import {
   percentileRank,
   parseTenure,
@@ -151,6 +151,20 @@ export interface AgendaActivityRow {
 
   /** ממוצע הציונים על כל האג'נדות שנבחרו */
   overallScore: number;
+
+  /**
+   * כמה אירועים מתועדים עמדו מאחורי הציון — הצעות חוק שיזם ועוד
+   * הצבעות שהיו לו הזדמנות להשתתף בהן, על פני כל האג'נדות שנבחרו.
+   */
+  evidenceCount: number;
+
+  /**
+   * 0–100. אמירה על גודל המדגם ולא על טיב ההתאמה: ציון 90 שנשען על
+   * שתי ראיות וציון 90 שנשען על ארבעים אינם אותו דבר, והמשתמש אינו
+   * יכול להבחין ביניהם בלי המספר הזה.
+   */
+  confidencePercent: number;
+
   perAgenda: AgendaScore[];
 }
 
@@ -621,6 +635,23 @@ export function computeAgendaActivity(
       // ממוצע על האג'נדות שנבחרו. אג'נדה שהח"כ לא נגע בה נספרת כאפס,
       // אחרת מי שפעיל באחת מתוך שלוש היה מדורג כמו מי שפעיל בכולן.
       const sum = perAgenda.reduce((s, a) => s + a.score, 0);
+
+      /**
+       * נספרות פעולות שהח"כ עשה בפועל, ולא הזדמנויות שעמדו בפניו.
+       *
+       * הניסיון הראשון חיבר voteOpportunities, שהוא מספר ההצבעות
+       * שהתקיימו בזמן כהונתו — 60 עד 95 לכל ח"כ, וכתוצאה מכך הביטחון
+       * הראה 100% אצל כולם ולא הבחין בין כלום.
+       *
+       * יוזמה והצבעה תומכת נספרות שווה: שתיהן אירוע מתועד אחד. זה שונה
+       * ממשקלן בציון (60/40), ובכוונה — המשקל שואל כמה כל אות מלמד,
+       * המניין שואל כמה חומר עמד מאחורי החישוב.
+       */
+      const evidenceCount = perAgenda.reduce(
+        (s, a) => s + a.billsInitiated + a.supportingVotes,
+        0,
+      );
+
       rows.push({
         mkId,
         name: meta.name,
@@ -629,6 +660,8 @@ export function computeAgendaActivity(
         isCoalition: meta.isCoalition,
         isMinister: meta.isMinister,
         overallScore: round1(sum / selections.length),
+        evidenceCount,
+        confidencePercent: confidenceFromEvidence(evidenceCount),
         perAgenda: perAgenda.sort((a, b) => b.score - a.score),
       });
     }
@@ -733,4 +766,17 @@ function percentileAmongActive(allValues: number[], value: number): number {
 
 function round1(n: number): number {
   return Math.round(n * 10) / 10;
+}
+
+/**
+ * עקומת ביטחון: 15 ראיות ≈ 63%, 30 ≈ 86%, 45 ≈ 95%.
+ *
+ * היעד הוא 15 ולא 30 משום שהטקסונומיה גדלה מ-12 סוגיות רחבות ל-166
+ * צירים צרים. שאלה צרה מייצרת פחות ראיות לכל ח"כ, ועם היעד הישן כמעט
+ * כל תוצאה הייתה נקראת "לא בטוחה" — קריאה מטעה של דירוג שנשען על
+ * ראיות מוצקות.
+ */
+function confidenceFromEvidence(evidenceCount: number): number {
+  if (evidenceCount <= 0) return 0;
+  return Math.round((1 - Math.exp(-evidenceCount / 15)) * 100);
 }

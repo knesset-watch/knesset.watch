@@ -2,11 +2,18 @@ import { NextResponse } from 'next/server';
 import { validateApiAuth } from '@/lib/ui/auth-utils';
 import { dbAvailable } from '@/lib/knesset-db';
 import { computeAgendaActivity, type AgendaSelection } from '@/lib/agenda-activity';
-import { POLITICAL_ISSUES } from '@/lib/agendas';
+import { POLITICAL_ISSUES } from '@/lib/canonical-agendas';
 import { getMkProfile, occupationLine, educationLine, tenureLabel } from '@/lib/mk-profiles';
 
-/** תקרה שמונעת בקשה שתסרוק את כל האג'נדות בבת אחת */
-const MAX_SELECTIONS = 10;
+/**
+ * תקרה שמונעת בקשה שתסרוק את כל האג'נדות בבת אחת.
+ *
+ * הועלתה מ-10 ל-30. הטקסונומיה גדלה מ-12 סוגיות ל-166 צירים, והמשתמש
+ * מקבל חמש שאלות לכל תחום — 15 בשלושה תחומים. התקרה הישנה דחתה את
+ * הבקשה אחרי שהוא כבר ענה על כולן, וזו שגיאה שנראית לו כמו תקלה ולא
+ * כמו מגבלה.
+ */
+const MAX_SELECTIONS = 30;
 
 /** כמה ח"כים מוחזרים. התצוגה מראה עשרה, השאר לגלילה */
 const RESULT_LIMIT = 25;
