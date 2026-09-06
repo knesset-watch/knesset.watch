@@ -34,7 +34,7 @@ type TableConfig = {
 
 const tables: TableConfig[] = [
   { name: "bill", key: ["id"], exclude: ["text_content", "local_path"] },
-  { name: "bill_political_classification", key: ["bill_id"] },
+  { name: "bill_political_classification", key: ["bill_id", "issue_id"] },
   { name: "bill_initiator", key: ["bill_id", "mk_id"] },
   { name: "committee", key: ["id"] },
   { name: "committee_attendance", key: ["session_id", "mk_id"] },
