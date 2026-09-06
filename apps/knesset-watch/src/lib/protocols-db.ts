@@ -113,6 +113,8 @@ export async function searchProtocolsVec(
              vector_distance_cos(embedding, vector32(?)) as distance
       FROM committee_session cs
       WHERE cs.embedding IS NOT NULL
+        AND cs.protocol_url IS NOT NULL
+        AND cs.protocol_url <> ''
         ${committee ? 'AND cs.committee_name = ?' : ''}
       ORDER BY distance ASC
       LIMIT ?
@@ -164,6 +166,8 @@ export async function searchProtocols(
                vector_distance_cos(embedding, vector32(?)) as distance
         FROM committee_session cs
         WHERE cs.embedding IS NOT NULL
+        AND cs.protocol_url IS NOT NULL
+        AND cs.protocol_url <> ''
           ${committee ? 'AND cs.committee_name = ?' : ''}
           ${dateFilter}
         ORDER BY distance ASC
@@ -191,6 +195,8 @@ export async function searchProtocols(
     const totalRes = await client.execute({
       sql: `SELECT COUNT(*) as cnt FROM committee_session cs
             WHERE embedding IS NOT NULL
+            AND protocol_url IS NOT NULL
+            AND protocol_url <> ''
             ${committee ? 'AND committee_name = ?' : ''}
             ${from ? 'AND cs.date >= ?' : ''}
             ${to   ? 'AND cs.date <= ?' : ''}`,
@@ -204,8 +210,8 @@ export async function searchProtocols(
   // Fallback: LIKE search on rag_card
   const term = `%${query}%`;
   const baseWhere = committee
-    ? 'WHERE rag_card LIKE ? AND committee_name = ?'
-    : 'WHERE rag_card LIKE ?';
+    ? "WHERE rag_card LIKE ? AND committee_name = ? AND protocol_url IS NOT NULL AND protocol_url <> ''"
+    : "WHERE rag_card LIKE ? AND protocol_url IS NOT NULL AND protocol_url <> ''";
   const baseArgs: (string | number)[] = committee ? [term, committee] : [term];
   const fullWhere = baseWhere
     + (from ? ' AND date >= ?' : '')
