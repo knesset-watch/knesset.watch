@@ -38,7 +38,7 @@ const tables: TableConfig[] = [
   { name: "bill_initiator", key: ["bill_id", "mk_id"] },
   { name: "committee", key: ["id"] },
   { name: "committee_attendance", key: ["session_id", "mk_id"] },
-  { name: "committee_session", key: ["id"], exclude: ["protocol_text"] },
+  { name: "committee_session", key: ["id"], exclude: ["protocol_text", "rag_card"] },
   { name: "faction_coalition_history", key: ["id"] },
   { name: "gov_ministry", key: ["id"] },
   { name: "mk_id_map", key: ["person_id", "kns_id"] },
