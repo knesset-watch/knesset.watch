@@ -8,6 +8,8 @@ import path from "path";
 const DB_PATH = path.join(process.cwd(), "knesset.db");
 const BATCH_SIZE = 200;
 const DRY_RUN = process.argv.includes("--dry-run");
+const tableArg = process.argv.find((arg) => arg.startsWith("--table="));
+const ONLY_TABLE = tableArg?.split("=", 2)[1] || null;
 
 if (!process.env.TURSO_URL) {
   throw new Error("TURSO_URL not set in .env.local");
@@ -32,6 +34,7 @@ type TableConfig = {
 
 const tables: TableConfig[] = [
   { name: "bill", key: ["id"], exclude: ["text_content", "local_path"] },
+  { name: "bill_political_classification", key: ["bill_id"] },
   { name: "bill_initiator", key: ["bill_id", "mk_id"] },
   { name: "committee", key: ["id"] },
   { name: "committee_attendance", key: ["session_id", "mk_id"] },
@@ -329,15 +332,23 @@ async function syncTable(config: TableConfig) {
 async function main() {
   console.log(DRY_RUN ? "=== DRY RUN ===" : "=== TURSO SYNC ===");
 
+  const selectedTables = ONLY_TABLE
+    ? tables.filter((config) => config.name === ONLY_TABLE)
+    : tables;
+
+  if (ONLY_TABLE && selectedTables.length === 0) {
+    throw new Error(`Unknown table: ${ONLY_TABLE}`);
+  }
+
   console.log("\nChecking schema...");
-  for (const config of tables) {
+  for (const config of selectedTables) {
     console.log(`\n${config.name}`);
     validateLocal(config);
     await ensureSchema(config);
   }
 
   console.log("\nSyncing data...");
-  for (const config of tables) {
+  for (const config of selectedTables) {
     await syncTable(config);
   }
 
