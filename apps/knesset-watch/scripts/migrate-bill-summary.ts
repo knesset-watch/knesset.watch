@@ -250,9 +250,40 @@ async function migrate() {
       ).map(row => row.id),
     );
 
-    const billIds = [...currentBillIds].filter(
-      id => !billsWithDoc.has(id),
+    const repairDocumentLinks = process.argv.includes(
+      '--repair-document-links',
     );
+
+    const repairBillIds = new Set<number>();
+
+    if (repairDocumentLinks) {
+      const rows = db.prepare(`
+        SELECT DISTINCT id
+        FROM bill
+        WHERE doc_url IS NOT NULL
+          AND TRIM(doc_url) <> ''
+          AND (
+            LOWER(doc_url) LIKE '%ls_gd%'
+            OR LOWER(doc_url) LIKE '%ls_bk%'
+          )
+          AND (
+            text_content IS NULL
+            OR TRIM(text_content) = ''
+          )
+      `).all() as { id: number }[];
+
+      for (const row of rows) {
+        repairBillIds.add(row.id);
+      }
+
+      console.log(
+        `  Document links to repair: ${repairBillIds.size.toLocaleString()}`,
+      );
+    }
+
+    const billIds = repairDocumentLinks
+      ? [...currentBillIds].filter(id => repairBillIds.has(id))
+      : [...currentBillIds].filter(id => !billsWithDoc.has(id));
 
     console.log(
       `  Bills already with document URL: ${billsWithDoc.size.toLocaleString()}`,
@@ -288,7 +319,7 @@ async function migrate() {
           let next: string | null =
             `${API}/KNS_DocumentBill?$filter=${encodeURIComponent(
               filter,
-            )}&$select=BillID,FilePath,ApplicationID`;
+            )}&$select=BillID,FilePath,ApplicationID,GroupTypeID`;
 
           const rows: any[] = [];
 
@@ -303,21 +334,65 @@ async function migrate() {
             }
           }
 
-          // Prefer PDF (ApplicationID = 4)
-          // and use DOC (ApplicationID = 1) only as fallback.
-          const pdf = rows.find(
+          // Prefer legislative document types in order:
+          // original proposal (Group 1), first-reading text (Group 2),
+          // second-reading text (Group 4), then final law DOC/DOCX (Group 8).
+          // Fall back to any available PDF or DOC/DOCX.
+          const group1Pdf = rows.find(
+            r =>
+              Number(r.GroupTypeID) === 1 &&
+              Number(r.ApplicationID) === 4 &&
+              r.FilePath,
+          );
+
+          const group1Doc = rows.find(
+            r =>
+              Number(r.GroupTypeID) === 1 &&
+              Number(r.ApplicationID) === 1 &&
+              r.FilePath,
+          );
+
+          const group2Pdf = rows.find(
+            r =>
+              Number(r.GroupTypeID) === 2 &&
+              Number(r.ApplicationID) === 4 &&
+              r.FilePath,
+          );
+
+          const group4Pdf = rows.find(
+            r =>
+              Number(r.GroupTypeID) === 4 &&
+              Number(r.ApplicationID) === 4 &&
+              r.FilePath,
+          );
+
+          const group8Doc = rows.find(
+            r =>
+              Number(r.GroupTypeID) === 8 &&
+              Number(r.ApplicationID) === 1 &&
+              r.FilePath,
+          );
+
+          const anyPdf = rows.find(
             r =>
               Number(r.ApplicationID) === 4 &&
               r.FilePath,
           );
 
-          const doc = rows.find(
+          const anyDoc = rows.find(
             r =>
               Number(r.ApplicationID) === 1 &&
               r.FilePath,
           );
 
-          const chosen = pdf ?? doc;
+          const chosen =
+            group1Pdf ??
+            group1Doc ??
+            group2Pdf ??
+            group4Pdf ??
+            group8Doc ??
+            anyPdf ??
+            anyDoc;
 
           if (chosen) {
             const fileUrl = normalise(chosen.FilePath);

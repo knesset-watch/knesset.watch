@@ -6,8 +6,13 @@ import { DOMAINS, POLITICAL_ISSUES } from "../src/lib/agendas";
 
 const DB_PATH = path.join(process.cwd(), "knesset.db");
 const ENV_PATH = path.join(process.cwd(), ".env.local");
-const TEST_LIMIT = 9000;
-const MAX_TEXT_LENGTH = 900;
+const limitArg = process.argv.find(arg => arg.startsWith("--limit="));
+
+const TEST_LIMIT = limitArg
+  ? Number(limitArg.split("=")[1])
+  : 9000;
+
+const MAX_TEXT_LENGTH = 8000;
 const MODEL = "gemini-3.5-flash-lite";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
