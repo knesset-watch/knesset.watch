@@ -24,6 +24,21 @@ function migrate(db: Database.Database) {
     console.log('  Added parsed_at to committee_session.');
   }
 
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS session_guest (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      session_id   INTEGER NOT NULL,
+      name         TEXT NOT NULL,
+      role         TEXT,
+      organization TEXT,
+      lobbyist_id  INTEGER,
+      person_type  TEXT
+    );
+    CREATE INDEX IF NOT EXISTS idx_guest_session  ON session_guest (session_id);
+    CREATE INDEX IF NOT EXISTS idx_guest_name     ON session_guest (name);
+    CREATE INDEX IF NOT EXISTS idx_guest_lobbyist ON session_guest (lobbyist_id);
+  `);
+
   const guestCols = (db.prepare('PRAGMA table_info(session_guest)').all() as any[]).map((c: any) => c.name);
   if (!guestCols.includes('attendance_method')) {
     db.exec("ALTER TABLE session_guest ADD COLUMN attendance_method TEXT DEFAULT 'in_person'");
@@ -564,7 +579,9 @@ async function main() {
 
   const updateHeader = db.prepare(`
     UPDATE committee_session
-    SET protocol_number = ?, session_term = ?, start_time = ?, end_time = ?,
+    SET protocol_number = ?, session_term = ?,
+        start_time = COALESCE(NULLIF(start_time, ''), ?),
+        end_time = COALESCE(NULLIF(end_time, ''), ?),
         attendance_disclaimer = ?, is_revision = ?, parsed_at = datetime('now')
     WHERE id = ?
   `);
@@ -682,9 +699,19 @@ async function main() {
           }
 
           done++;
-        } catch (_err) {
+        } catch (err) {
           errors++;
-          markParsed.run(id); // mark so we don't retry broken sessions
+
+          // Leave failed sessions unparsed so they can be retried safely.
+          // Remove any partial derived data written before the failure.
+          clearAttendance.run(id);
+          clearGuest.run(id);
+          clearStaff.run(id);
+          clearAgenda.run(id);
+          clearTurns.run(id);
+          clearVotes.run(id);
+
+          console.error(`\n    ERROR session ${id}:`, err);
         }
       }
     })();

@@ -88,6 +88,14 @@ function migrate(db: Database.Database) {
 // ── Phase 1: Bulk-fetch protocol URLs ────────────────────────────────────────
 
 async function fetchProtocolUrls(db: Database.Database) {
+  // Older runs stored '' when no protocol existed yet. Convert those back
+  // to NULL so future runs can retry when the protocol is eventually published.
+  db.prepare(`
+    UPDATE committee_session
+    SET protocol_url = NULL
+    WHERE protocol_url = ''
+  `).run();
+
   const remaining = (db.prepare(
     "SELECT COUNT(*) as cnt FROM committee_session WHERE protocol_url IS NULL"
   ).get() as { cnt: number }).cnt;
@@ -98,7 +106,7 @@ async function fetchProtocolUrls(db: Database.Database) {
   }
 
   const alreadyDone = (db.prepare(
-    "SELECT COUNT(*) as cnt FROM committee_session WHERE protocol_url IS NOT NULL"
+    "SELECT COUNT(*) as cnt FROM committee_session WHERE protocol_url IS NOT NULL AND protocol_url != ''"
   ).get() as { cnt: number }).cnt;
 
   console.log(`  Fetching protocol URLs from OData (${alreadyDone} already done, ${remaining} remaining)...`);
@@ -123,17 +131,29 @@ async function fetchProtocolUrls(db: Database.Database) {
     "SELECT id FROM committee_session WHERE protocol_url IS NULL"
   ).all() as { id: number }[];
 
-  const updateUrl = db.prepare('UPDATE committee_session SET protocol_url = ? WHERE id = ?');
+  const updateUrl = db.prepare(
+    'UPDATE committee_session SET protocol_url = ? WHERE id = ?'
+  );
+
   let found = 0;
+
   db.transaction(() => {
     for (const s of sessions) {
-      const url = urlMap.get(s.id) ?? '';
+      const url = urlMap.get(s.id);
+
+      // If no protocol exists yet, leave protocol_url as NULL so a later
+      // run will check this session again.
+      if (!url) continue;
+
       updateUrl.run(url, s.id);
-      if (url) found++;
+      found++;
     }
   })();
 
-  console.log(`  URLs done: ${found} protocols found, ${sessions.length - found} sessions without protocol.`);
+  console.log(
+    `  URLs done: ${found} protocols found, ` +
+    `${sessions.length - found} sessions still without protocol.`
+  );
 }
 
 // ── Phase 2: Download DOCXs and save raw text ─────────────────────────────────

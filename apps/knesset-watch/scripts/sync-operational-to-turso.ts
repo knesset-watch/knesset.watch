@@ -35,7 +35,7 @@ const tables: TableConfig[] = [
   { name: "bill_initiator", key: ["bill_id", "mk_id"] },
   { name: "committee", key: ["id"] },
   { name: "committee_attendance", key: ["session_id", "mk_id"] },
-  { name: "committee_session", key: ["id"] },
+  { name: "committee_session", key: ["id"], exclude: ["protocol_text"] },
   { name: "faction_coalition_history", key: ["id"] },
   { name: "gov_ministry", key: ["id"] },
   { name: "mk_id_map", key: ["person_id", "kns_id"] },
@@ -45,6 +45,9 @@ const tables: TableConfig[] = [
   { name: "mk_vote_result", key: ["vote_id", "mk_id"] },
   { name: "plenary_vote", key: ["id"] },
   { name: "session_agenda_item", key: ["id"] },
+  { name: "session_guest", key: ["id"] },
+  { name: "session_staff", key: ["id"] },
+  { name: "session_speaker_turn", key: ["id"] },
   { name: "session_bill", key: ["session_id", "bill_id"] },
   { name: "session_committee", key: ["session_id", "committee_id"] },
   {
