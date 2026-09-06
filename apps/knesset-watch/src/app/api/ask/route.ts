@@ -31,6 +31,8 @@ import {
   getVoteMeta,
 } from "@/lib/knesset-db";
 import { MK_NICKNAMES } from "@/lib/nicknames";
+import { rateLimit } from "@/lib/ui/rate-limit";
+import { getTursoClient } from "@/lib/turso-db";
 
 export const dynamic = "force-dynamic";
 
@@ -107,6 +109,58 @@ async function setCached(key: string, value: AskResponse): Promise<void> {
   }
 }
 
+const DAILY_ASK_LIMIT = 100;
+
+async function checkDailyQuota(
+  request: NextRequest,
+): Promise<{ isLimited: boolean; remaining: number }> {
+  const client = getTursoClient();
+
+  if (!client) {
+    return {
+      isLimited: false,
+      remaining: DAILY_ASK_LIMIT,
+    };
+  }
+
+  const ip =
+    request.headers.get("x-real-ip") ||
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    "127.0.0.1";
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  try {
+    const result = await client.execute({
+      sql: `
+        INSERT INTO api_daily_usage (
+          usage_date,
+          client_ip,
+          request_count
+        )
+        VALUES (?, ?, 1)
+        ON CONFLICT(usage_date, client_ip)
+        DO UPDATE SET request_count = request_count + 1
+        RETURNING request_count
+      `,
+      args: [today, ip],
+    });
+
+    const count = Number(result.rows[0]?.request_count ?? 0);
+
+    return {
+      isLimited: count > DAILY_ASK_LIMIT,
+      remaining: Math.max(0, DAILY_ASK_LIMIT - count),
+    };
+  } catch (error) {
+    console.error("Daily quota error:", error);
+
+    return {
+      isLimited: false,
+      remaining: DAILY_ASK_LIMIT,
+    };
+  }
+}
 // ── Gemini helpers ────────────────────────────────────────────────────────────
 
 const SYSTEM_PROMPT_GENERAL = `אתה אנליסט נתוני הכנסת הישראלית. ענה בעברית בלבד, בצורה ממוקדת ואנליטית.
@@ -477,6 +531,17 @@ export async function GET(req: NextRequest) {
   );
   if (authError) return authError;
 
+  const { isLimited } = rateLimit(req, {
+    limit: 10,
+    windowMs: 60_000,
+  });
+
+  if (isLimited) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again shortly." },
+      { status: 429 },
+    );
+  }
   const q = req.nextUrl.searchParams.get("q")?.trim() ?? "";
   if (!q || q.length < 2)
     return NextResponse.json({ error: "שאלה קצרה מדי" }, { status: 400 });
@@ -493,6 +558,17 @@ export async function GET(req: NextRequest) {
   if (!hasPrevContext) {
     const cached = await getCached(cacheKey);
     if (cached) return NextResponse.json(cached);
+  }
+
+  const quota = await checkDailyQuota(req);
+
+  if (quota.isLimited) {
+    return NextResponse.json(
+      {
+        error: "Daily AI usage limit reached. Please try again tomorrow.",
+      },
+      { status: 429 },
+    );
   }
 
   try {
