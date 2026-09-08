@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 const NAV = [
   {
@@ -26,18 +26,21 @@ const NAV = [
       { href: '/pulse',        label: 'פולס בזמן אמת', prefixes: ['/pulse'] },
       { href: '/track-record', label: 'מעקב חקיקה',   prefixes: ['/track-record'] },
       { href: '/agendas',      label: 'אג\'נדות',     prefixes: ['/agendas', '/agenda/'] },
-      { href: '/?groupBy=alliances', label: 'רשת קשרים',  prefixes: ['/'] },
+      { href: '/?groupBy=alliances', label: 'רשת קשרים',  prefixes: [] },
     ],
   },
 ];
 
 export default function AppSidebar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   if (pathname === '/login') return null;
 
   function isActive(prefixes: string[]) {
     return prefixes.some(p => pathname === p || pathname.startsWith(p));
   }
+
+  const isAlliancesActive = pathname === '/' && searchParams.get('groupBy') === 'alliances';
 
   return (
     <aside
@@ -61,7 +64,7 @@ export default function AppSidebar() {
                 key={href}
                 href={href}
                 className={`flex items-center px-2 py-1.5 rounded-lg text-sm font-black transition-colors ${
-                  isActive(prefixes)
+                  (href === '/?groupBy=alliances' ? isAlliancesActive : isActive(prefixes))
                     ? 'bg-blue-50 text-blue-700'
                     : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }`}
