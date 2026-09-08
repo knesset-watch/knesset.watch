@@ -23,6 +23,9 @@ const BATCH_DELAY_MS = 400;
 
 const limitArg = process.argv.find((arg) => arg.startsWith("--limit="));
 
+const REPAIR_LOW_TEXT = process.argv.includes("--repair-low-text");
+const LOW_TEXT_THRESHOLD = 1000;
+
 const LIMIT = limitArg
   ? Number(limitArg.split("=")[1])
   : null;
@@ -78,6 +81,14 @@ function getExtension(url: string): string {
   return "bin";
 }
 
+function cleanExtractedText(value: string): string | null {
+  const cleaned = value
+    .replace(/^--\s*\d+\s+of\s+\d+\s*--$/gim, "")
+    .trim();
+
+  return cleaned || null;
+}
+
 // ── Text extraction ───────────────────────────────────────────────────────────
 
 async function extractText(buf: Buffer, ext: string): Promise<string | null> {
@@ -89,7 +100,7 @@ async function extractText(buf: Buffer, ext: string): Promise<string | null> {
         buffer: buf,
       });
 
-      return result.value.trim() || null;
+      return cleanExtractedText(result.value);
     } catch (err) {
       console.warn("DOC/DOCX text extraction failed.");
       return null;
@@ -101,7 +112,7 @@ async function extractText(buf: Buffer, ext: string): Promise<string | null> {
       const parser = new PDFParse({ data: buf });
       const result = await parser.getText();
 
-      return result.text.trim() || null;
+      return cleanExtractedText(result.text);
     } catch (err) {
       console.warn("PDF text extraction failed.");
       return null;
@@ -157,11 +168,13 @@ async function main() {
     FROM bill
     WHERE doc_url IS NOT NULL
       AND TRIM(doc_url) != ''
-      AND (
-        text_content IS NULL
-        OR TRIM(text_content) = ''
-      )
     GROUP BY id
+    HAVING
+      MAX(LENGTH(TRIM(COALESCE(text_content, '')))) = 0
+      OR (
+        ${REPAIR_LOW_TEXT ? "1" : "0"} = 1
+        AND MAX(LENGTH(TRIM(COALESCE(text_content, '')))) < ${LOW_TEXT_THRESHOLD}
+      )
     ORDER BY id ASC
   `,
   )

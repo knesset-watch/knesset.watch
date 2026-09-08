@@ -26,7 +26,8 @@ async function fetchAll(url: string, limit = 50000): Promise<any[]> {
     const page = await fetchPage(next);
     results.push(...page.value);
     next = page.next;
-    if (results.length % 500 === 0 && results.length > 0) process.stdout.write(`    ${results.length.toLocaleString()} records...`);
+    if (results.length % 500 === 0 && results.length > 0) process.stdout.write(`
+    ${results.length.toLocaleString()} records...`);
   }
   return results;
 }
@@ -50,7 +51,22 @@ async function sync() {
   if (newBills.length > 0) {
     // A bill is passed when it has been published in the Official Gazette (Reshumot).
     // PublicationDate being set is the reliable proxy for is_passed = 1.
-    const insertBill = db.prepare('INSERT OR REPLACE INTO bill (id, title, subtype, status_id, is_passed, status_desc, committee_id, publication_date, init_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    const insertBill = db.prepare(`
+      INSERT INTO bill (
+        id, title, subtype, status_id, is_passed,
+        status_desc, committee_id, publication_date, init_date
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        title = excluded.title,
+        subtype = COALESCE(excluded.subtype, bill.subtype),
+        status_id = excluded.status_id,
+        is_passed = excluded.is_passed,
+        status_desc = COALESCE(excluded.status_desc, bill.status_desc),
+        committee_id = COALESCE(excluded.committee_id, bill.committee_id),
+        publication_date = COALESCE(excluded.publication_date, bill.publication_date),
+        init_date = COALESCE(excluded.init_date, bill.init_date)
+    `);
     db.transaction((rows) => {
       for (const r of rows) {
         const isPassed = r.PublicationDate != null ? 1 : 0;

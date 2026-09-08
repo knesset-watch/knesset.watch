@@ -196,9 +196,19 @@ async function sync() {
   const since = new Date();
   since.setDate(since.getDate() - LOOKBACK_DAYS);
   const sinceStr = since.toISOString().replace(/\.\d{3}Z$/, "+00:00");
-
+  const voteSinceArg = process.argv.find((arg) =>
+    arg.startsWith("--vote-since="),
+  );
+  const voteSince = voteSinceArg
+    ? new Date(`${voteSinceArg.split("=")[1]}T00:00:00Z`)
+    : since;
+  if (Number.isNaN(voteSince.getTime())) {
+    throw new Error("Invalid --vote-since date. Use YYYY-MM-DD");
+  }
+  const voteSinceStr = voteSince
+    .toISOString()
+    .replace(/\.\d{3}Z$/, "+00:00");
   console.log(`Syncing records updated since ${since.toLocaleDateString()} …`);
-
   // ── Votes ─────────────────────────────────────────────────────────────────
   const voteCols = (
     db.prepare(`PRAGMA table_info(plenary_vote)`).all() as { name: string }[]
@@ -216,10 +226,22 @@ async function sync() {
   if (!voteCols.includes("bill_id_source"))
     db.exec(`ALTER TABLE plenary_vote ADD COLUMN bill_id_source TEXT`);
 
+  db.exec(`
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_plenary_vote_id_unique
+    ON plenary_vote(id)
+  `);
+
   const insertVote = db.prepare(
-    `INSERT OR REPLACE INTO plenary_vote
+    `INSERT INTO plenary_vote
    (id, title, date, micro_agenda, macro_agenda, bill_id, bill_id_source)
-   VALUES (?, ?, ?, ?, ?, ?, ?)`,
+   VALUES (?, ?, ?, ?, ?, ?, ?)
+   ON CONFLICT(id) DO UPDATE SET
+     title = excluded.title,
+     date = excluded.date,
+     micro_agenda = excluded.micro_agenda,
+     macro_agenda = excluded.macro_agenda,
+     bill_id = excluded.bill_id,
+     bill_id_source = excluded.bill_id_source`,
   );
 
   const insertVotesBatch = db.transaction((rows: any[]) => {
@@ -240,7 +262,7 @@ async function sync() {
 
   const votes = await fetchAll(
     `${API}/KNS_PlenumVote` +
-      `?$filter=${encodeURIComponent(`VoteDateTime ge ${sinceStr}`)}`,
+      `?$filter=${encodeURIComponent(`VoteDateTime ge ${voteSinceStr}`)}`,
   );
 
   insertVotesBatch(votes);
@@ -263,7 +285,7 @@ async function sync() {
   // Fetch with FirstName/LastName so we can resolve any new KnsIDs on the fly
   const results = await fetchAll(
     `${API}/KNS_PlenumVoteResult` +
-      `?$filter=${encodeURIComponent(`VoteDate ge ${sinceStr}`)}` +
+      `?$filter=${encodeURIComponent(`VoteDate ge ${voteSinceStr}`)}` +
       `&$select=VoteID,MkId,ResultCode,FirstName,LastName`,
   );
 
@@ -329,6 +351,90 @@ async function sync() {
     db.exec(`ALTER TABLE mk_person ADD COLUMN non_mk_pct REAL`);
   if (!personCols.includes("segments"))
     db.exec(`ALTER TABLE mk_person ADD COLUMN segments TEXT`);
+
+  // Older DBs may have mk_person without person_id as a PRIMARY KEY.
+  // In that case INSERT OR REPLACE / ON CONFLICT cannot identify the same MK,
+  // causing a new row to be appended on every sync.
+  const personSchema = db
+    .prepare(`PRAGMA table_info(mk_person)`)
+    .all() as { name: string; pk: number }[];
+
+  const personIdColumn = personSchema.find((c) => c.name === "person_id");
+
+  if (!personIdColumn || personIdColumn.pk !== 1) {
+    console.log(
+      "Migrating mk_person: restoring PRIMARY KEY on person_id and removing duplicate snapshots...",
+    );
+
+    const nullPersonIds = (
+      db
+        .prepare(`SELECT COUNT(*) AS count FROM mk_person WHERE person_id IS NULL`)
+        .get() as { count: number }
+    ).count;
+
+    if (nullPersonIds > 0) {
+      throw new Error(
+        `Cannot migrate mk_person: found ${nullPersonIds} rows with NULL person_id`,
+      );
+    }
+
+    db.transaction(() => {
+      db.exec(`
+        DROP TABLE IF EXISTS mk_person_new;
+
+        CREATE TABLE mk_person_new (
+          person_id      INTEGER PRIMARY KEY,
+          first_name     TEXT    NOT NULL DEFAULT '',
+          last_name      TEXT    NOT NULL DEFAULT '',
+          faction_id     INTEGER,
+          faction_name   TEXT,
+          slug           TEXT,
+          is_current     INTEGER NOT NULL DEFAULT 0,
+          is_coalition   INTEGER,
+          coalition_pct  REAL,
+          non_mk_pct     REAL,
+          segments       TEXT
+        );
+
+        INSERT INTO mk_person_new (
+          person_id,
+          first_name,
+          last_name,
+          faction_id,
+          faction_name,
+          slug,
+          is_current,
+          is_coalition,
+          coalition_pct,
+          non_mk_pct,
+          segments
+        )
+        SELECT
+          person_id,
+          COALESCE(first_name, ''),
+          COALESCE(last_name, ''),
+          faction_id,
+          faction_name,
+          slug,
+          COALESCE(is_current, 0),
+          is_coalition,
+          coalition_pct,
+          non_mk_pct,
+          segments
+        FROM mk_person
+        WHERE rowid IN (
+          SELECT MAX(rowid)
+          FROM mk_person
+          GROUP BY person_id
+        );
+
+        DROP TABLE mk_person;
+        ALTER TABLE mk_person_new RENAME TO mk_person;
+      `);
+    })();
+
+    console.log("mk_person migration complete.");
+  }
 
   const K25_START = new Date("2022-11-15");
   const K25_COALITION_PERIODS: Array<{
@@ -455,10 +561,33 @@ async function sync() {
     return totalMs > 0 ? coalitionMs / totalMs : 0;
   }
 
-  const insertPerson = db.prepare(
-    `INSERT OR REPLACE INTO mk_person (person_id, first_name, last_name, faction_id, faction_name, slug, is_current, is_coalition, coalition_pct, non_mk_pct, segments)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  );
+  const insertPerson = db.prepare(`
+    INSERT INTO mk_person (
+      person_id,
+      first_name,
+      last_name,
+      faction_id,
+      faction_name,
+      slug,
+      is_current,
+      is_coalition,
+      coalition_pct,
+      non_mk_pct,
+      segments
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(person_id) DO UPDATE SET
+      first_name = excluded.first_name,
+      last_name = excluded.last_name,
+      faction_id = excluded.faction_id,
+      faction_name = excluded.faction_name,
+      slug = excluded.slug,
+      is_current = excluded.is_current,
+      is_coalition = excluded.is_coalition,
+      coalition_pct = excluded.coalition_pct,
+      non_mk_pct = excluded.non_mk_pct,
+      segments = excluded.segments
+  `);
 
   const factionRows = await fetchAll(
     `${API}/KNS_Faction?$filter=${encodeURIComponent("KnessetNum eq 25")}`,
@@ -599,7 +728,25 @@ async function sync() {
     db.exec(`ALTER TABLE bill ADD COLUMN init_date TEXT`);
 
   const insertBill = db.prepare(
-    "INSERT OR REPLACE INTO bill (id, title, subtype, status_id, status_desc, is_passed, committee_id, committee_name, summary, micro_agenda, macro_agenda, publication_date, init_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    `INSERT INTO bill (
+      id, title, subtype, status_id, status_desc, is_passed,
+      committee_id, committee_name, summary,
+      micro_agenda, macro_agenda, publication_date, init_date
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(id) DO UPDATE SET
+      title = excluded.title,
+      subtype = COALESCE(excluded.subtype, bill.subtype),
+      status_id = excluded.status_id,
+      status_desc = COALESCE(excluded.status_desc, bill.status_desc),
+      is_passed = excluded.is_passed,
+      committee_id = COALESCE(excluded.committee_id, bill.committee_id),
+      committee_name = COALESCE(excluded.committee_name, bill.committee_name),
+      summary = COALESCE(excluded.summary, bill.summary),
+      micro_agenda = COALESCE(excluded.micro_agenda, bill.micro_agenda),
+      macro_agenda = COALESCE(excluded.macro_agenda, bill.macro_agenda),
+      publication_date = COALESCE(excluded.publication_date, bill.publication_date),
+      init_date = COALESCE(excluded.init_date, bill.init_date)`,
   );
 
   // Simple categorization helper (copied from generation script)
@@ -734,7 +881,7 @@ async function sync() {
   }
 
   const insertInitiator = db.prepare(
-    "INSERT OR REPLACE INTO bill_initiator (bill_id, mk_id) VALUES (?, ?)",
+    "INSERT OR IGNORE INTO bill_initiator (bill_id, mk_id) VALUES (?, ?)",
   );
   const insertBillsBatch = db.transaction((rows: any[]) => {
     for (const r of rows) {
@@ -935,9 +1082,21 @@ async function sync() {
     db.exec(`ALTER TABLE mk_position ADD COLUMN government_num INTEGER`);
 
   const insertPosition = db.prepare(
-    `INSERT OR REPLACE INTO mk_position
+    `INSERT INTO mk_position
        (id, mk_id, duty_desc, committee_id, committee, ministry_id, ministry, start_date, finish_date, is_current, role_type, government_num)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET
+       mk_id = excluded.mk_id,
+       duty_desc = COALESCE(excluded.duty_desc, mk_position.duty_desc),
+       committee_id = excluded.committee_id,
+       committee = excluded.committee,
+       ministry_id = excluded.ministry_id,
+       ministry = excluded.ministry,
+       start_date = excluded.start_date,
+       finish_date = excluded.finish_date,
+       is_current = excluded.is_current,
+       role_type = excluded.role_type,
+       government_num = excluded.government_num`,
   );
   const insertPositionsBatch = db.transaction((rows: any[]) => {
     for (const r of rows) {

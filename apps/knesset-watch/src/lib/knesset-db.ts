@@ -169,6 +169,8 @@ export interface BillSummary {
   title: string;
   subtype: string;
   isPassed: boolean;
+  /** מזהה השלב בהליך החקיקה. ראו billStageLabel. */
+  statusId: number | null;
   committeeId: number | null;
   committeeName: string | null;
   summary: string | null;
@@ -194,18 +196,24 @@ export function getMkBills(mkId: number): BillSummary[] {
   return (
     db
       .prepare(
-        `SELECT b.id, b.title, b.subtype, b.is_passed, b.committee_id, b.committee_name, b.summary, b.doc_url, b.micro_agenda, b.macro_agenda, b.init_date
+        `SELECT b.id, b.title, b.subtype, b.is_passed, b.status_id, b.committee_id, b.committee_name, b.summary, b.doc_url, b.micro_agenda, b.macro_agenda, b.init_date
          FROM bill b
          JOIN bill_initiator i ON i.bill_id = b.id
          WHERE i.mk_id = ?
          ORDER BY b.is_passed DESC, b.id DESC`,
       )
-      .all(mkId) as Array<{ id: number; title: string; subtype: string; is_passed: number; committee_id: number | null; committee_name: string | null; summary: string | null; doc_url: string | null; micro_agenda: string | null; macro_agenda: string | null; init_date: string | null }>
+      .all(mkId) as Array<{ id: number; title: string; subtype: string; is_passed: number; status_id: number | null; committee_id: number | null; committee_name: string | null; summary: string | null; doc_url: string | null; micro_agenda: string | null; macro_agenda: string | null; init_date: string | null }>
   ).map(r => ({
     billId: r.id,
     title: r.title,
     subtype: r.subtype,
     isPassed: r.is_passed === 1,
+    /**
+     * נדרש לתצוגת שלב ההליך. is_passed לבדו מבחין רק בין "עבר" ל"לא
+     * עבר", ו-96% מההצעות הפרטיות נופלות בצד השני — נעמה לזימי יזמה
+     * 332 והדף הציג 14.
+     */
+    statusId: r.status_id,
     committeeId: r.committee_id,
     committeeName: r.committee_name,
     summary: r.summary,
@@ -505,13 +513,32 @@ export function getMkAgendaStats(mkId: number): AgendaStat[] {
   const db = getDb();
   if (!db) return [];
 
-  const pushed = db.prepare(`
-    SELECT b.macro_agenda, COUNT(*) as cnt
-    FROM bill b
-    JOIN bill_initiator i ON i.bill_id = b.id
-    WHERE i.mk_id = ? AND b.macro_agenda IS NOT NULL
-    GROUP BY b.macro_agenda
-  `).all(mkId) as Array<{ macro_agenda: string; cnt: number }>;
+  /**
+   * הצעות החוק שהח"כ יזם, לפי אג'נדה.
+   *
+   * השאילתה הקודמת סיננה על b.macro_agenda, שריק בכל 7,296 החוקים,
+   * ולכן החזירה תמיד רשימה ריקה. התוצאה: עמוד הפרופיל הציג אפס הצעות
+   * חוק בכל נושא לכל ח"כ — כולל ח"כ אחד שיזם 399.
+   *
+   * החוק יורש את האג'נדה מההצבעה שנערכה עליו. מכסה רק חוקים שהגיעו
+   * להצבעת מליאה, אבל זה נכון במקום אפס.
+   *
+   * plenary_vote.bill_id חסר ב-knesset-deploy.db (הבנייה בפרודקשן),
+   * ולכן נבדק לפני השימוש.
+   */
+  const hasVoteBillId = (db
+    .prepare(`SELECT COUNT(*) AS n FROM pragma_table_info('plenary_vote') WHERE name = 'bill_id'`)
+    .get() as { n: number }).n > 0;
+
+  const pushed = hasVoteBillId
+    ? (db.prepare(`
+        SELECT pv.macro_agenda, COUNT(DISTINCT pv.bill_id) as cnt
+        FROM bill_initiator i
+        JOIN plenary_vote pv ON pv.bill_id = i.bill_id
+        WHERE i.mk_id = ? AND pv.macro_agenda IS NOT NULL
+        GROUP BY pv.macro_agenda
+      `).all(mkId) as Array<{ macro_agenda: string; cnt: number }>)
+    : [];
 
   const supported = db.prepare(`
     SELECT pv.macro_agenda, COUNT(*) as cnt

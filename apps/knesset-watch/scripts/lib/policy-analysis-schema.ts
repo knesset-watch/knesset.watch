@@ -1,0 +1,346 @@
+/**
+ * Schema, validation and storage for bottom-up bill policy analysis.
+ *
+ * ולידציה היא לא פורמליות כאן: תשובה פגומה שנרשמת כהצלחה נשארת פגומה
+ * לנצח, כי מנגנון ה-resume ידלג עליה. לכן חוק נחשב מושלם רק אחרי
+ * שהמבנה אומת, ורק אז נכתב.
+ */
+
+import Database from 'better-sqlite3';
+
+export interface Evidence {
+  section: string | null;
+  text: string;
+}
+
+export interface PolicyIssue {
+  domain_candidate: string;
+  issue_candidate: string;
+  policy_change: string;
+  pro_stance: string;
+  con_stance: string;
+  explanation: string;
+  evidence: Evidence[];
+  confidence: number;
+  is_primary: boolean;
+}
+
+export interface PolicyAnalysis {
+  bill_id: number;
+  summary: string;
+  issues: PolicyIssue[];
+  needs_review: boolean;
+}
+
+export type ValidationResult =
+  | { ok: true; value: PolicyAnalysis }
+  | { ok: false; error: string };
+
+/**
+ * האם הטקסט הוא באמת נוסח חוק בעברית, ולא פלט חילוץ שנכשל.
+ *
+ * חוק 2227226 המחיש את הצורך: החילוץ החזיר 4,913 תווים של בייטים
+ * גולמיים (NUL, SOH, STX...) במקום עברית. SQLite עוצר את LENGTH()
+ * על null byte ולכן הוא נראה כאורך 0 ועבר את הסינון `!= ''`, אבל
+ * ל-Gemini היו נשלחים כמעט 5,000 תווי זבל — וניתוח שמבוסס עליהם הוא
+ * המצאה גמורה.
+ *
+ * הסף: לפחות 200 תווים, ולפחות 30% מהם אותיות עבריות.
+ */
+export function isUsableBillText(text: string | null | undefined): boolean {
+  if (!text) return false;
+  const clean = text.replace(/\s+/g, ' ').trim();
+  if (clean.length < 200) return false;
+
+  const hebrew = (clean.match(/[֐-׿]/g) ?? []).length;
+  return hebrew / clean.length >= 0.3;
+}
+
+/**
+ * מרכאה כפולה עברית בתוך מילה, שסוגרת מחרוזת JSON באמצע.
+ *
+ * בעברית משפטית המרכאה היא חלק מהמילה — התשפ"ה, בג"ץ, צה"ל — והמודל
+ * מחזיר אותה כתו רגיל. התוצאה היא {"title": "חוק ... התשפ"ה-2025"},
+ * שנשבר בדיוק שם. זה קרה על שתי תשובות בריצה של 7,067 חוקים, ושתיהן
+ * נחלצו בדיעבד בלי קריאת API נוספת.
+ *
+ * הכלל מחייב תו עברי משני צדי המרכאה, ולכן מרכאה שסוגרת מחרוזת באמת —
+ * אחריה פסיק, סוגר או רווח — אינה נוגעת.
+ */
+export function escapeHebrewQuotes(raw: string): string {
+  return raw.replace(/([֐-׿])"([֐-׿])/g, '$1\\"$2');
+}
+
+/** מודלים נוטים לעטוף JSON בגדרות קוד למרות ההוראה. מסירים לפני הניתוח */
+export function stripCodeFence(raw: string): string {
+  const trimmed = raw.trim();
+  const fenced = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/);
+  if (fenced) return fenced[1].trim();
+
+  // לפעמים יש טקסט לפני או אחרי — נחלץ את האובייקט החיצוני
+  const first = trimmed.indexOf('{');
+  const last = trimmed.lastIndexOf('}');
+  if (first >= 0 && last > first) return trimmed.slice(first, last + 1);
+
+  return trimmed;
+}
+
+function isNonEmptyString(v: unknown): v is string {
+  return typeof v === 'string' && v.trim().length > 0;
+}
+
+/**
+ * @param billId מזהה החוק שהתבקש, לאימות שהמודל לא ענה על חוק אחר
+ */
+export function validateAnalysis(raw: string, billId: number): ValidationResult {
+  /**
+   * פרסור דו-שלבי. הניסיון הראשון הוא על התשובה כמות שהיא, כי ברוב
+   * המכריע של המקרים היא תקינה ואין סיבה לגעת בה. רק כשהוא נכשל
+   * מנוסה שוב עם escape לגרשיים עבריים — התיקון היחיד שנמדד כמציל
+   * תשובות שנשברו, ולא ניחוש כללי על טקסט פגום.
+   */
+  const cleaned = stripCodeFence(raw);
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(cleaned);
+  } catch (first) {
+    try {
+      parsed = JSON.parse(escapeHebrewQuotes(cleaned));
+    } catch {
+      const msg = first instanceof Error ? first.message : 'unknown';
+      return { ok: false, error: `invalid JSON: ${msg}` };
+    }
+  }
+
+  if (typeof parsed !== 'object' || parsed === null) {
+    return { ok: false, error: 'response is not an object' };
+  }
+
+  const obj = parsed as Record<string, unknown>;
+
+  if (!isNonEmptyString(obj.summary)) {
+    return { ok: false, error: 'missing or empty summary' };
+  }
+  if (!Array.isArray(obj.issues)) {
+    return { ok: false, error: 'issues is not an array' };
+  }
+
+  // המודל עלול להחזיר מזהה אחר. הערך שלנו קובע, אבל חוסר התאמה מסמן בעיה
+  if (obj.bill_id !== undefined && Number(obj.bill_id) !== billId) {
+    return { ok: false, error: `bill_id mismatch: got ${String(obj.bill_id)}, expected ${billId}` };
+  }
+
+  const issues: PolicyIssue[] = [];
+
+  for (const [index, rawIssue] of obj.issues.entries()) {
+    if (typeof rawIssue !== 'object' || rawIssue === null) {
+      return { ok: false, error: `issue ${index} is not an object` };
+    }
+    const issue = rawIssue as Record<string, unknown>;
+
+    for (const field of [
+      'domain_candidate',
+      'issue_candidate',
+      'policy_change',
+      'pro_stance',
+      'con_stance',
+    ]) {
+      if (!isNonEmptyString(issue[field])) {
+        return { ok: false, error: `issue ${index}: missing ${field}` };
+      }
+    }
+
+    // issue_candidate שחוזר על שם החוק מפספס את מטרת השדה
+    const candidate = (issue.issue_candidate as string).trim();
+    if (candidate.startsWith('הצעת חוק') || candidate.startsWith('חוק ')) {
+      return { ok: false, error: `issue ${index}: issue_candidate repeats the bill name` };
+    }
+
+    const confidence = Number(issue.confidence);
+    if (!Number.isFinite(confidence) || confidence < 0 || confidence > 1) {
+      return { ok: false, error: `issue ${index}: confidence must be 0..1` };
+    }
+
+    const evidence: Evidence[] = [];
+    if (Array.isArray(issue.evidence)) {
+      for (const rawEv of issue.evidence) {
+        if (typeof rawEv !== 'object' || rawEv === null) continue;
+        const ev = rawEv as Record<string, unknown>;
+        if (!isNonEmptyString(ev.text)) continue;
+        evidence.push({
+          section: isNonEmptyString(ev.section) ? ev.section : null,
+          text: (ev.text as string).slice(0, 600),
+        });
+      }
+    }
+
+    issues.push({
+      domain_candidate: (issue.domain_candidate as string).trim(),
+      issue_candidate: candidate,
+      policy_change: (issue.policy_change as string).trim(),
+      pro_stance: (issue.pro_stance as string).trim(),
+      con_stance: (issue.con_stance as string).trim(),
+      explanation: isNonEmptyString(issue.explanation) ? (issue.explanation as string).trim() : '',
+      evidence,
+      confidence,
+      is_primary: issue.is_primary === true,
+    });
+  }
+
+  if (issues.length > 0 && !issues.some(i => i.is_primary)) {
+    issues[0].is_primary = true;
+  }
+
+  return {
+    ok: true,
+    value: {
+      bill_id: billId,
+      summary: (obj.summary as string).trim(),
+      issues,
+      needs_review: obj.needs_review === true,
+    },
+  };
+}
+
+/**
+ * כמה מהראיות באמת מופיעות בנוסח. לא חוסם — מודלים מנסחים מחדש ציטוטים
+ * ולעיתים משנים ניקוד או רווחים — אבל שיעור נמוך הוא סימן להמצאה,
+ * ולכן נשמר כדי שאפשר יהיה למדוד אותו על פני כל הריצה.
+ */
+export function evidenceGroundingRate(analysis: PolicyAnalysis, sourceText: string): number {
+  const normalized = sourceText.replace(/\s+/g, ' ');
+  const all = analysis.issues.flatMap(i => i.evidence);
+  if (all.length === 0) return 0;
+
+  const found = all.filter(e => {
+    const probe = e.text.replace(/\s+/g, ' ').trim().slice(0, 40);
+    return probe.length >= 12 && normalized.includes(probe);
+  }).length;
+
+  return found / all.length;
+}
+
+/* ─────────────────────────── storage ─────────────────────────── */
+
+export function ensureAnalysisTables(db: Database.Database): void {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS bill_policy_analysis (
+      bill_id INTEGER NOT NULL,
+      analysis_version TEXT NOT NULL,
+      overall_summary TEXT,
+      confidence REAL,
+      needs_review INTEGER DEFAULT 0,
+      evidence_grounding REAL,
+      status TEXT NOT NULL DEFAULT 'completed',
+      error TEXT,
+      attempts INTEGER DEFAULT 1,
+      raw_response TEXT,
+      text_chars INTEGER,
+      analyzed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (bill_id, analysis_version)
+    );
+
+    CREATE TABLE IF NOT EXISTS bill_policy_issue (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      bill_id INTEGER NOT NULL,
+      analysis_version TEXT NOT NULL,
+      domain_candidate TEXT,
+      issue_candidate TEXT,
+      policy_change TEXT,
+      pro_stance TEXT,
+      con_stance TEXT,
+      explanation TEXT,
+      confidence REAL,
+      is_primary INTEGER DEFAULT 0,
+      evidence_json TEXT
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_policy_issue_bill
+      ON bill_policy_issue (bill_id, analysis_version);
+    CREATE INDEX IF NOT EXISTS idx_policy_issue_candidate
+      ON bill_policy_issue (issue_candidate);
+  `);
+}
+
+/**
+ * כתיבה אטומית: הניתוח והסוגיות נכנסים יחד או בכלל לא. בלי זה, עצירה
+ * באמצע משאירה חוק שנרשם כמושלם אבל בלי סוגיות, ו-resume ידלג עליו.
+ */
+export function saveAnalysis(
+  db: Database.Database,
+  analysis: PolicyAnalysis,
+  meta: { version: string; rawResponse: string; textChars: number; grounding: number },
+): void {
+  const run = db.transaction(() => {
+    db.prepare(
+      `DELETE FROM bill_policy_issue WHERE bill_id = ? AND analysis_version = ?`,
+    ).run(analysis.bill_id, meta.version);
+
+    const avgConfidence =
+      analysis.issues.length > 0
+        ? analysis.issues.reduce((s, i) => s + i.confidence, 0) / analysis.issues.length
+        : 0;
+
+    db.prepare(
+      `INSERT INTO bill_policy_analysis
+         (bill_id, analysis_version, overall_summary, confidence, needs_review,
+          evidence_grounding, status, error, attempts, raw_response, text_chars, analyzed_at)
+       VALUES (?, ?, ?, ?, ?, ?, 'completed', NULL,
+               COALESCE((SELECT attempts FROM bill_policy_analysis
+                         WHERE bill_id = ? AND analysis_version = ?), 0) + 1,
+               ?, ?, CURRENT_TIMESTAMP)
+       ON CONFLICT(bill_id, analysis_version) DO UPDATE SET
+         overall_summary = excluded.overall_summary,
+         confidence = excluded.confidence,
+         needs_review = excluded.needs_review,
+         evidence_grounding = excluded.evidence_grounding,
+         status = 'completed',
+         error = NULL,
+         attempts = bill_policy_analysis.attempts + 1,
+         raw_response = excluded.raw_response,
+         text_chars = excluded.text_chars,
+         analyzed_at = CURRENT_TIMESTAMP`,
+    ).run(
+      analysis.bill_id, meta.version, analysis.summary, avgConfidence,
+      analysis.needs_review ? 1 : 0, meta.grounding,
+      analysis.bill_id, meta.version,
+      meta.rawResponse.slice(0, 200_000), meta.textChars,
+    );
+
+    const insertIssue = db.prepare(
+      `INSERT INTO bill_policy_issue
+         (bill_id, analysis_version, domain_candidate, issue_candidate, policy_change,
+          pro_stance, con_stance, explanation, confidence, is_primary, evidence_json)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    );
+
+    for (const issue of analysis.issues) {
+      insertIssue.run(
+        analysis.bill_id, meta.version, issue.domain_candidate, issue.issue_candidate,
+        issue.policy_change, issue.pro_stance, issue.con_stance, issue.explanation,
+        issue.confidence, issue.is_primary ? 1 : 0, JSON.stringify(issue.evidence),
+      );
+    }
+  });
+
+  run();
+}
+
+export function recordFailure(
+  db: Database.Database,
+  billId: number,
+  version: string,
+  error: string,
+  rawResponse: string | null,
+): void {
+  db.prepare(
+    `INSERT INTO bill_policy_analysis
+       (bill_id, analysis_version, status, error, attempts, raw_response)
+     VALUES (?, ?, 'failed', ?, 1, ?)
+     ON CONFLICT(bill_id, analysis_version) DO UPDATE SET
+       status = 'failed',
+       error = excluded.error,
+       attempts = bill_policy_analysis.attempts + 1,
+       raw_response = excluded.raw_response`,
+  ).run(billId, version, error.slice(0, 1000), rawResponse?.slice(0, 20_000) ?? null);
+}

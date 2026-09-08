@@ -4,17 +4,22 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePeriod, periodToDateRange } from '@/lib/period-context';
-import { DOMAINS, POLITICAL_ISSUES } from '@/lib/agendas';
+import { CLUSTER_TOPICS } from '@/lib/axis-clusters';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
-/** כמה תחומים נבחרים כאן לפני המעבר לשאלון. זהה ל-DOMAIN_PICKS ב-/agenda-match */
+/** כמה תחומים נבחרים כאן. זהה ל-MAX_TOPICS ב-/agenda-keywords */
 const HOME_DOMAIN_PICKS = 3;
 
-/** רק תחומים שיש להם אג'נדות. תחום ריק לא ניתן לבחירה ואין טעם להציגו כאן */
-const PICKABLE_DOMAINS = DOMAINS.filter(d =>
-  POLITICAL_ISSUES.some(i => i.domainId === d.id),
-);
+/**
+ * שמונת נושאי-העל של הטקסונומיה הקנונית.
+ *
+ * הוחלפו מ-DOMAINS של agendas.ts: אלה נכתבו ידנית מראש, ואלה נגזרו
+ * מ-7,067 הצעות חוק. הבחירה כאן ממשיכה ל-/agenda-keywords, שמציג את
+ * הנושאים שבתוך התחום לפני שהוא שואל — כדי שלא ייבחרו שאלות במקום
+ * המשתמשת, כפי שקרה במסלול הקודם.
+ */
+const PICKABLE_DOMAINS = CLUSTER_TOPICS;
 
 interface Stats {
   mks: number;
@@ -53,7 +58,7 @@ const SECTIONS = [
   { label: 'הצבעות', sublabel: 'הצבעות מליאה', href: '/votes', icon: '🗳' },
 ];
 
-export default function HomepageClient() {
+export default function HomepageClient({ aiEnabled }: { aiEnabled: boolean }) {
   const [query, setQuery] = useState('');
   const [stats, setStats] = useState<Stats | null>(null);
   const [recentBills, setRecentBills] = useState<RecentBill[]>([]);
@@ -73,7 +78,7 @@ export default function HomepageClient() {
   /** התחומים עוברים ב-query string, והשאלון פותח ישר בשלב העמדות */
   function startQuestionnaire() {
     if (homeDomains.length === 0) return;
-    router.push(`/agenda-match?domains=${homeDomains.join(',')}`);
+    router.push(`/agenda-keywords?topics=${homeDomains.join(',')}`);
   }
 
   const fetchData = useCallback(async () => {
@@ -103,30 +108,32 @@ export default function HomepageClient() {
         </p>
 
         {/* Search */}
-        <form onSubmit={handleSearch} className="flex items-center gap-2 max-w-xl mx-auto">
-          <div className="flex-1 flex items-center border border-black/20 rounded-xl px-4 py-3 bg-gray-50 focus-within:border-black/50 focus-within:bg-white transition-colors">
-            <svg className="w-4 h-4 text-gray-400 shrink-0 ml-2" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="6.5" cy="6.5" r="4.5"/><path d="m10 10 4 4"/>
-            </svg>
-            <input
-              ref={inputRef}
-              type="text"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              placeholder="שאלו שאלה על פעילות הכנסת..."
-              className="flex-1 bg-transparent text-sm font-black outline-none placeholder:text-gray-400 placeholder:font-normal"
-              dir="rtl"
-              autoFocus
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={query.trim().length < 2}
-            className="px-5 py-3 rounded-xl bg-black text-white text-sm font-black disabled:opacity-30 hover:bg-gray-800 transition-colors shrink-0"
-          >
-            שאל
-          </button>
-        </form>
+        {aiEnabled && (
+          <form onSubmit={handleSearch} className="flex items-center gap-2 max-w-xl mx-auto">
+            <div className="flex-1 flex items-center border border-black/20 rounded-xl px-4 py-3 bg-gray-50 focus-within:border-black/50 focus-within:bg-white transition-colors">
+              <svg className="w-4 h-4 text-gray-400 shrink-0 ml-2" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="6.5" cy="6.5" r="4.5"/><path d="m10 10 4 4"/>
+              </svg>
+              <input
+                ref={inputRef}
+                type="text"
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                placeholder="שאלו שאלה על פעילות הכנסת..."
+                className="flex-1 bg-transparent text-sm font-black outline-none placeholder:text-gray-400 placeholder:font-normal"
+                dir="rtl"
+                autoFocus
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={query.trim().length < 2}
+              className="px-5 py-3 rounded-xl bg-black text-white text-sm font-black disabled:opacity-30 hover:bg-gray-800 transition-colors shrink-0"
+            >
+              שאל
+            </button>
+          </form>
+        )}
       </div>
 
       {/* Stats row */}
@@ -207,16 +214,8 @@ export default function HomepageClient() {
             <span className="text-xs text-gray-500 font-medium">
               {homeDomains.length > 0
                 ? `נבחרו ${homeDomains.length} מתוך ${HOME_DOMAIN_PICKS}`
-                : 'אפשר גם לדלג ולבחור בשאלון עצמו'}
+                : `בחרי עד ${HOME_DOMAIN_PICKS} תחומים כדי להתחיל`}
             </span>
-            {homeDomains.length === 0 && (
-              <Link
-                href="/agenda-match"
-                className="text-xs font-black underline text-gray-600 hover:text-black"
-              >
-                לשאלון המלא ←
-              </Link>
-            )}
           </div>
         </div>
       </div>
