@@ -17,6 +17,7 @@ export async function GET(request: Request) {
     if (!ministry) return NextResponse.json({ error: 'Ministry not found' }, { status: 404 });
     return NextResponse.json(ministry);
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    console.error('ministry error:', e.message);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

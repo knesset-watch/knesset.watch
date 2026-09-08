@@ -33,7 +33,8 @@ export async function GET() {
 
     return NextResponse.json({ alliances });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('alliances error:', error.message);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   } finally {
     db.close();
   }

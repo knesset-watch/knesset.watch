@@ -57,7 +57,7 @@ export async function GET(request: Request) {
     });
   } catch (error: any) {
     console.error('Track record DB error:', error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   } finally {
     db.close();
   }

@@ -90,6 +90,6 @@ export async function GET(
     });
   } catch (err: any) {
     console.error('vote results fetch error:', err.message);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
