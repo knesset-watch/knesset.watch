@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { rateLimit } from '@/lib/ui/rate-limit';
 
 const KNESSET_API_BASE = (process.env.KNESSET_PROXY_URL ?? 'https://knesset.gov.il') + '/OdataV4/ParliamentInfo';
 
@@ -28,6 +29,11 @@ interface VoteResult {
 }
 
 export async function GET(request: Request) {
+  const { isLimited } = rateLimit(request, { limit: 20, windowMs: 60_000 });
+  if (isLimited) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   const { searchParams } = new URL(request.url);
   const mkId = searchParams.get('mkId');
 

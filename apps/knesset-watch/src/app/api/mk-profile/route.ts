@@ -21,6 +21,23 @@ export const dynamic = 'force-dynamic';
 // Current K25 coalition faction IDs (same source as persons/route.ts)
 const COALITION_FACTION_IDS = new Set([1095, 1096, 1101, 1105, 1106, 1107, 1108]);
 
+/**
+ * getPersonTimeline queries a mk_faction_history schema (person_id,
+ * faction_name, knesset_num) that doesn't match what any table-creation
+ * script in this repo actually produces (mk_id, faction_id, no
+ * knesset_num) — it throws today. Isolated here so that one broken
+ * section degrades to an empty timeline instead of taking down the
+ * whole profile response with a raw SQL error.
+ */
+function safeGetPersonTimeline(mkId: number): ReturnType<typeof getPersonTimeline> {
+  try {
+    return getPersonTimeline(mkId);
+  } catch (err) {
+    console.error('getPersonTimeline error:', err instanceof Error ? err.message : err);
+    return [];
+  }
+}
+
 export async function GET(request: Request) {
   const authError = await validateApiAuth('SITE_PASSWORD', 'knesset-watch_auth_token');
   if (authError) return authError;
@@ -42,7 +59,7 @@ export async function GET(request: Request) {
     const billTopics        = dbAvailable() ? getMkBillTopics(mkId)        : [];
     const queries           = dbAvailable() ? getMkQueries(mkId)           : [];
     const positions         = dbAvailable() ? getMkPositions(mkId)         : [];
-    const timeline          = dbAvailable() ? getPersonTimeline(mkId)      : [];
+    const timeline          = dbAvailable() ? safeGetPersonTimeline(mkId)  : [];
     const voteStats         = getMkVoteStats(mkId);
     const withMajorityVotes = dbAvailable() ? getMkWithMajorityVotes(mkId) : [];
     const agendaStats       = dbAvailable() ? getMkAgendaStats(mkId)       : [];
