@@ -27,6 +27,11 @@ export function validateAuth(
   const rawSitePassword = process.env[passwordEnvVar] || '';
   const sitePassword = rawSitePassword.trim();
 
+  // No password configured — the site is public.
+  if (!sitePassword) {
+    return { isAllowed: true };
+  }
+
   // Bypass for system paths and static files
   if (
     pathname.startsWith('/_next/') ||
@@ -55,9 +60,11 @@ export async function checkServerAuth(
   passwordEnvVar: string = 'SITE_PASSWORD',
   cookieName: string = 'auth_token'
 ) {
+  const sitePassword = (process.env[passwordEnvVar] || '').trim();
+  if (!sitePassword) return true;
+
   const cookieStore = await cookies();
   const authToken = cookieStore.get(cookieName);
-  const sitePassword = (process.env[passwordEnvVar] || '').trim();
   const expectedToken = generateSessionToken(sitePassword);
 
   if (!authToken || authToken.value !== expectedToken) {
@@ -73,9 +80,11 @@ export async function validateApiAuth(
   passwordEnvVar: string = 'SITE_PASSWORD',
   cookieName: string = 'auth_token'
 ) {
+  const sitePassword = (process.env[passwordEnvVar] || '').trim();
+  if (!sitePassword) return null;
+
   const cookieStore = await cookies();
   const authToken = cookieStore.get(cookieName);
-  const sitePassword = (process.env[passwordEnvVar] || '').trim();
   const expectedToken = generateSessionToken(sitePassword);
 
   if (!authToken || authToken.value !== expectedToken) {
