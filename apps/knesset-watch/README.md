@@ -32,7 +32,7 @@ npm run build    # production build
 npm run lint     # eslint
 ```
 
-The site password gate is active locally too — sign in via the cookie that gets set on first auth, or temporarily comment out the middleware in `src/proxy.ts` for unhindered local dev.
+The site password gate is active locally too — sign in via the cookie that gets set on first auth, or leave `SITE_PASSWORD` empty/unset in `.env.local` for unhindered local dev (the site opens with no login prompt when it's unset).
 
 ## Architecture
 
@@ -61,7 +61,7 @@ Caching: `@upstash/redis` keys responses by canonicalized query, TTL 2h.
 
 ### Auth / site password
 
-`src/proxy.ts` is the Next.js middleware that enforces the site password. Server components also call `checkServerAuth('SITE_PASSWORD', 'knesset-watch_auth_token')` per page. The token is normalized lowercase server-side.
+`src/proxy.ts` is the Next.js middleware that enforces the site password. Server components also call `checkServerAuth('SITE_PASSWORD', 'knesset-watch_auth_token')` per page, and API routes call `validateApiAuth(...)`. The token is normalized lowercase server-side. All three checks (`validateAuth`, `checkServerAuth`, `validateApiAuth` in `src/lib/ui/auth-utils.ts`) short-circuit to "allowed" when `SITE_PASSWORD` is empty/unset — that's the toggle for opening the site to the public, no code changes needed.
 
 ### Knesset OData proxying
 
