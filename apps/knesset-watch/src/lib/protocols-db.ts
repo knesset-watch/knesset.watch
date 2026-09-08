@@ -11,7 +11,20 @@
 
 import { createClient, type Client } from '@libsql/client/http';
 
+/**
+ * committee_session.embedding holds a mix of dimensions: an in-progress
+ * migration (scripts/embed-sessions.ts, embed-plenary.ts,
+ * embed-speaker-turns.ts all now write 768) has only reached 1,197 of
+ * 10,808 rows — the other 9,611 are still 256 from the original run.
+ * vector_distance_cos throws on any length mismatch mid-scan (it
+ * doesn't skip mismatched rows), so this constant must match the
+ * dimension actually used by the WHERE-clause length filter below,
+ * not just whatever the ingestion scripts currently target. 256 is
+ * the majority today — revisit once the migration finishes and
+ * flip both to 768.
+ */
 const DIMS = 256;
+const DIMS_BYTES = DIMS * 4; // F32_BLOB — 4 bytes per float
 
 // ── Clients (singletons) ──────────────────────────────────────────────────────
 
@@ -113,6 +126,7 @@ export async function searchProtocolsVec(
              vector_distance_cos(embedding, vector32(?)) as distance
       FROM committee_session cs
       WHERE cs.embedding IS NOT NULL
+        AND LENGTH(cs.embedding) = ${DIMS_BYTES}
         AND cs.protocol_url IS NOT NULL
         AND cs.protocol_url <> ''
         ${committee ? 'AND cs.committee_name = ?' : ''}
@@ -166,6 +180,7 @@ export async function searchProtocols(
                vector_distance_cos(embedding, vector32(?)) as distance
         FROM committee_session cs
         WHERE cs.embedding IS NOT NULL
+        AND LENGTH(cs.embedding) = ${DIMS_BYTES}
         AND cs.protocol_url IS NOT NULL
         AND cs.protocol_url <> ''
           ${committee ? 'AND cs.committee_name = ?' : ''}
@@ -195,6 +210,7 @@ export async function searchProtocols(
     const totalRes = await client.execute({
       sql: `SELECT COUNT(*) as cnt FROM committee_session cs
             WHERE embedding IS NOT NULL
+            AND LENGTH(embedding) = ${DIMS_BYTES}
             AND protocol_url IS NOT NULL
             AND protocol_url <> ''
             ${committee ? 'AND committee_name = ?' : ''}
