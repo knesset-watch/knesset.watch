@@ -43,9 +43,10 @@ interface CommitteeOption {
 
 interface Props {
   committees: CommitteeOption[];
+  aiEnabled: boolean;
 }
 
-export default function ProtocolsClient({ committees }: Props) {
+export default function ProtocolsClient({ committees, aiEnabled }: Props) {
   const router = useRouter();
   const { period } = usePeriod();
 
@@ -173,6 +174,7 @@ export default function ProtocolsClient({ committees }: Props) {
         <h1 className="text-3xl font-black mb-6">פרוטוקולים</h1>
 
         {/* AI Ask section */}
+        {aiEnabled && (
         <div className="mb-8">
           <p className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-2">שאל בינה מלאכותית</p>
           <div className="flex gap-2">
@@ -253,6 +255,7 @@ export default function ProtocolsClient({ committees }: Props) {
             </div>
           )}
         </div>
+        )}
 
         <p className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-2">חיפוש מילות מפתח</p>
 

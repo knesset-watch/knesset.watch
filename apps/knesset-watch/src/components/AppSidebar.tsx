@@ -31,7 +31,7 @@ const NAV = [
   },
 ];
 
-export default function AppSidebar() {
+export default function AppSidebar({ aiEnabled }: { aiEnabled: boolean }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   if (pathname === '/login') return null;
@@ -77,19 +77,21 @@ export default function AppSidebar() {
       </nav>
 
       {/* AI ask — pinned at bottom */}
-      <div className="px-2 pb-4 border-t border-black/8 pt-3">
-        <Link
-          href="/ask"
-          className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm font-black transition-colors ${
-            isActive(['/ask'])
-              ? 'bg-blue-600 text-white'
-              : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
-          }`}
-        >
-          <span className="text-xs">✦</span>
-          שאל AI
-        </Link>
-      </div>
+      {aiEnabled && (
+        <div className="px-2 pb-4 border-t border-black/8 pt-3">
+          <Link
+            href="/ask"
+            className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm font-black transition-colors ${
+              isActive(['/ask'])
+                ? 'bg-blue-600 text-white'
+                : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+            }`}
+          >
+            <span className="text-xs">✦</span>
+            שאל AI
+          </Link>
+        </div>
+      )}
     </aside>
   );
 }
