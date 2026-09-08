@@ -42,8 +42,17 @@ const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODE
 /** ניסיונות לכל חוק. מעבר לזה זו כנראה בעיה בחוק ולא תקלה רגעית */
 const MAX_ATTEMPTS = 3;
 
-/** השהיה בין חוקים, כדי לא להיחסם על קצב */
-const DELAY_MS = 250;
+/**
+ * השהיה בין קריאות של אותו עובד. עם מקביליות היא קטנה יותר, כי הקצב
+ * הכולל נקבע ממספר העובדים ולא מההשהיה.
+ */
+const DELAY_MS = 150;
+
+/**
+ * ברירת מחדל למקביליות. שמונה נמדדו כ-2.4 חוקים לשנייה במסלול
+ * המשולם; במסלול החינמי הם מחזירים 429 וצריך לרדת ל-1 או 2.
+ */
+const DEFAULT_CONCURRENCY = 8;
 
 interface Args {
   limit: number | null;
@@ -54,6 +63,7 @@ interface Args {
   progress: boolean;
   version: string;
   dryRun: boolean;
+  concurrency: number;
 }
 
 function parseArgs(): Args {
@@ -75,6 +85,8 @@ function parseArgs(): Args {
     progress: argv.includes('--progress'),
     version: str('--analysis-version', ANALYSIS_VERSION),
     dryRun: argv.includes('--dry-run'),
+    /** 1 מחזיר בדיוק את ההתנהגות הטורית; 24 היא תקרה שמונעת הצפה */
+    concurrency: Math.max(1, Math.min(24, num('--concurrency') ?? DEFAULT_CONCURRENCY)),
   };
 }
 
@@ -306,9 +318,14 @@ async function main() {
 
   let ok = 0;
   let failed = 0;
+  let done = 0;
   const startedAt = Date.now();
 
-  for (const [index, bill] of bills.entries()) {
+  /**
+   * ניתוח חוק אחד. הוצא מהלולאה כדי שכמה עובדים יריצו אותו במקביל.
+   * הגוף עצמו לא השתנה — אותם ניסיונות חוזרים, אותה שמירה, אותו דיווח.
+   */
+  const analyseOne = async (bill: BillRow): Promise<void> => {
     const prompt = buildPrompt(bill);
     const sent = bill.text_content.slice(0, MAX_TEXT_CHARS);
 
@@ -365,14 +382,48 @@ async function main() {
       console.log(`  ✗ ${String(bill.id).padEnd(8)} ${lastError.slice(0, 90)}`);
     }
 
-    if ((index + 1) % 25 === 0) {
-      const rate = (index + 1) / ((Date.now() - startedAt) / 1000);
-      const left = Math.round((bills.length - index - 1) / rate);
-      console.log(`    — ${index + 1}/${bills.length}  ok=${ok} failed=${failed}  eta ${Math.floor(left / 60)}m`);
+    done++;
+    if (done % 25 === 0) {
+      const rate = done / ((Date.now() - startedAt) / 1000);
+      const left = Math.round((bills.length - done) / rate);
+      console.log(
+        `    — ${done}/${bills.length}  ok=${ok} failed=${failed}  ` +
+        `${rate.toFixed(1)}/s  eta ${Math.floor(left / 60)}m`,
+      );
     }
 
     await sleep(DELAY_MS);
-  }
+  };
+
+  /**
+   * בריכת עובדים עם סמן משותף.
+   *
+   * הריצה הטורית עשתה 9 שניות לחוק — 17.6 שעות ל-7,167. עם שמונה
+   * עובדים זה 2.4 חוקים לשנייה, כלומר כשעה. הסמן משותף ולכן אין
+   * חלוקה מראש: עובד שסיים לוקח את הבא בתור, וחוק ארוך אינו מעכב
+   * את השאר.
+   *
+   * המקביליות ניתנת לכוונון כי המסלול החינמי של Gemini נחנק ב-8
+   * ומחזיר 429, והמשולם לא. אחד מחזיר בדיוק את ההתנהגות הטורית.
+   */
+  let cursor = 0;
+  const worker = async (): Promise<void> => {
+    while (cursor < bills.length) {
+      const bill = bills[cursor++];
+      try {
+        await analyseOne(bill);
+      } catch (err) {
+        failed++;
+        done++;
+        const msg = err instanceof Error ? err.message : 'unknown';
+        recordFailure(db, bill.id, args.version, msg, null);
+        console.log(`  ✗ ${String(bill.id).padEnd(8)} ${msg.slice(0, 90)}`);
+      }
+    }
+  };
+
+  console.log(`concurrency: ${args.concurrency}\n`);
+  await Promise.all(Array.from({ length: args.concurrency }, () => worker()));
 
   console.log(`\nDone. ok=${ok} failed=${failed}`);
   showProgress(db, args.version);
