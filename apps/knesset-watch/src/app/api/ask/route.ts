@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Redis } from "@upstash/redis";
 import { validateApiAuth } from "@/lib/ui/auth-utils";
+import { aiFeaturesEnabled } from "@/lib/feature-flags";
 import {
   embedQueryPublic,
   searchProtocols,
@@ -530,6 +531,10 @@ export async function GET(req: NextRequest) {
     "knesset-watch_auth_token",
   );
   if (authError) return authError;
+
+  if (!aiFeaturesEnabled()) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
   const { isLimited } = rateLimit(req, {
     limit: 10,

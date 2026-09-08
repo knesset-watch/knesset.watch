@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 const NAV = [
   {
@@ -26,18 +26,21 @@ const NAV = [
       { href: '/pulse',        label: 'פולס בזמן אמת', prefixes: ['/pulse'] },
       { href: '/track-record', label: 'מעקב חקיקה',   prefixes: ['/track-record'] },
       { href: '/agendas',      label: 'אג\'נדות',     prefixes: ['/agendas', '/agenda/'] },
-      { href: '/?groupBy=alliances', label: 'רשת קשרים',  prefixes: ['/'] },
+      { href: '/?groupBy=alliances', label: 'רשת קשרים',  prefixes: [] },
     ],
   },
 ];
 
-export default function AppSidebar() {
+export default function AppSidebar({ aiEnabled }: { aiEnabled: boolean }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   if (pathname === '/login') return null;
 
   function isActive(prefixes: string[]) {
     return prefixes.some(p => pathname === p || pathname.startsWith(p));
   }
+
+  const isAlliancesActive = pathname === '/' && searchParams.get('groupBy') === 'alliances';
 
   return (
     <aside
@@ -61,7 +64,7 @@ export default function AppSidebar() {
                 key={href}
                 href={href}
                 className={`flex items-center px-2 py-1.5 rounded-lg text-sm font-black transition-colors ${
-                  isActive(prefixes)
+                  (href === '/?groupBy=alliances' ? isAlliancesActive : isActive(prefixes))
                     ? 'bg-blue-50 text-blue-700'
                     : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }`}
@@ -74,19 +77,21 @@ export default function AppSidebar() {
       </nav>
 
       {/* AI ask — pinned at bottom */}
-      <div className="px-2 pb-4 border-t border-black/8 pt-3">
-        <Link
-          href="/ask"
-          className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm font-black transition-colors ${
-            isActive(['/ask'])
-              ? 'bg-blue-600 text-white'
-              : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
-          }`}
-        >
-          <span className="text-xs">✦</span>
-          שאל AI
-        </Link>
-      </div>
+      {aiEnabled && (
+        <div className="px-2 pb-4 border-t border-black/8 pt-3">
+          <Link
+            href="/ask"
+            className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm font-black transition-colors ${
+              isActive(['/ask'])
+                ? 'bg-blue-600 text-white'
+                : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+            }`}
+          >
+            <span className="text-xs">✦</span>
+            שאל AI
+          </Link>
+        </div>
+      )}
     </aside>
   );
 }

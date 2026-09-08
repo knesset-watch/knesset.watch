@@ -58,7 +58,7 @@ const SECTIONS = [
   { label: 'הצבעות', sublabel: 'הצבעות מליאה', href: '/votes', icon: '🗳' },
 ];
 
-export default function HomepageClient() {
+export default function HomepageClient({ aiEnabled }: { aiEnabled: boolean }) {
   const [query, setQuery] = useState('');
   const [stats, setStats] = useState<Stats | null>(null);
   const [recentBills, setRecentBills] = useState<RecentBill[]>([]);
@@ -108,30 +108,32 @@ export default function HomepageClient() {
         </p>
 
         {/* Search */}
-        <form onSubmit={handleSearch} className="flex items-center gap-2 max-w-xl mx-auto">
-          <div className="flex-1 flex items-center border border-black/20 rounded-xl px-4 py-3 bg-gray-50 focus-within:border-black/50 focus-within:bg-white transition-colors">
-            <svg className="w-4 h-4 text-gray-400 shrink-0 ml-2" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="6.5" cy="6.5" r="4.5"/><path d="m10 10 4 4"/>
-            </svg>
-            <input
-              ref={inputRef}
-              type="text"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              placeholder="שאלו שאלה על פעילות הכנסת..."
-              className="flex-1 bg-transparent text-sm font-black outline-none placeholder:text-gray-400 placeholder:font-normal"
-              dir="rtl"
-              autoFocus
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={query.trim().length < 2}
-            className="px-5 py-3 rounded-xl bg-black text-white text-sm font-black disabled:opacity-30 hover:bg-gray-800 transition-colors shrink-0"
-          >
-            שאל
-          </button>
-        </form>
+        {aiEnabled && (
+          <form onSubmit={handleSearch} className="flex items-center gap-2 max-w-xl mx-auto">
+            <div className="flex-1 flex items-center border border-black/20 rounded-xl px-4 py-3 bg-gray-50 focus-within:border-black/50 focus-within:bg-white transition-colors">
+              <svg className="w-4 h-4 text-gray-400 shrink-0 ml-2" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="6.5" cy="6.5" r="4.5"/><path d="m10 10 4 4"/>
+              </svg>
+              <input
+                ref={inputRef}
+                type="text"
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                placeholder="שאלו שאלה על פעילות הכנסת..."
+                className="flex-1 bg-transparent text-sm font-black outline-none placeholder:text-gray-400 placeholder:font-normal"
+                dir="rtl"
+                autoFocus
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={query.trim().length < 2}
+              className="px-5 py-3 rounded-xl bg-black text-white text-sm font-black disabled:opacity-30 hover:bg-gray-800 transition-colors shrink-0"
+            >
+              שאל
+            </button>
+          </form>
+        )}
       </div>
 
       {/* Stats row */}
