@@ -17,6 +17,7 @@ export async function GET(request: Request) {
     if (!faction) return NextResponse.json({ error: 'Faction not found' }, { status: 404 });
     return NextResponse.json(faction);
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    console.error('faction error:', e.message);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

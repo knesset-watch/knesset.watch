@@ -35,7 +35,8 @@ export async function GET() {
 
     return NextResponse.json({ rebels });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('rebels error:', error.message);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   } finally {
     db.close();
   }

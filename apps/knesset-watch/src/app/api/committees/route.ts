@@ -73,7 +73,7 @@ export async function GET() {
     return NextResponse.json({ committees: result });
   } catch (error: any) {
     console.error('Committees DB error:', error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   } finally {
     db.close();
   }

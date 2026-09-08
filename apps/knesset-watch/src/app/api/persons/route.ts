@@ -125,6 +125,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ value: [] });
 
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('persons error:', error.message);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
