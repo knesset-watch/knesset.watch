@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
+import { rateLimit } from '@/lib/ui/rate-limit';
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { isLimited } = rateLimit(request, { limit: 10, windowMs: 60_000 });
+  if (isLimited) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   const v2Url = 'https://knesset.gov.il/OData/KnessetData.svc/KNS_Bill?$top=1';
   const v4Url = 'https://knesset.gov.il/OdataV4/ParliamentInfo/KNS_Bill?$top=1';
 
