@@ -12,6 +12,7 @@ export async function GET() {
     const graph = getNetworkGraph();
     return NextResponse.json(graph);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('network error:', error.message);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

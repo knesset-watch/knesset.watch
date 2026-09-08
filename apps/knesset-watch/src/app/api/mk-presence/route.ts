@@ -17,6 +17,7 @@ export async function GET(request: Request) {
     const heatmap = getMkPresenceHeatmap(mkId);
     return NextResponse.json({ heatmap });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('mk-presence error:', error.message);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

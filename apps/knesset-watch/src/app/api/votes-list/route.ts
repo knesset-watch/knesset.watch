@@ -24,6 +24,7 @@ export async function GET(request: Request) {
     const result = getVoteList({ passedOnly, failedOnly, maxMargin, search, limit, offset, from, to });
     return NextResponse.json({ ...result, page, limit });
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    console.error('votes-list error:', e.message);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

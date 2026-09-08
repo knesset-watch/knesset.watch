@@ -69,6 +69,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ source: 'api', votes });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    console.error('mk-votes error:', err.message);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
