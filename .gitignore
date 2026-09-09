@@ -23,3 +23,18 @@ apps/.DS_Store
 
 # Playwright MCP session cache
 .playwright-mcp/
+
+# Bill source PDFs — kept on disk, never in git (see README: save originals, do not commit them)
+apps/knesset-watch/bill-documents/
+
+# Local DB snapshots (82-222MB each, regenerable). Listing them by name left
+# every new backup unprotected: three of them are 482MB that a single
+# `git add -A` would have pulled in. The pattern covers future ones too, and
+# the exception keeps knesset-deploy.db tracked — it is the build artifact.
+apps/knesset-watch/*.db
+apps/knesset-watch/*.db-shm
+apps/knesset-watch/*.db-wal
+!apps/knesset-watch/knesset-deploy.db
+
+# Runtime artifacts from the analysis scripts (PIDs of detached processes)
+apps/knesset-watch/*.pid
