@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server';
+import { rateLimit } from '@/lib/ui/rate-limit';
 
 const KNESSET_ORIGIN = 'https://knesset.gov.il';
 const PROXY_BASE = process.env.KNESSET_PROXY_URL ?? KNESSET_ORIGIN;
 
 export async function GET(request: Request) {
+  const { isLimited } = rateLimit(request, { limit: 20, windowMs: 60_000 });
+  if (isLimited) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   const { searchParams } = new URL(request.url);
   const path = searchParams.get('path');
 
@@ -25,6 +31,7 @@ export async function GET(request: Request) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('knesset-raw error:', error.message);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

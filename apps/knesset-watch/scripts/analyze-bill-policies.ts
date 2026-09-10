@@ -6,7 +6,6 @@
  *   npx tsx scripts/analyze-bill-policies.ts --limit=200
  *   npx tsx scripts/analyze-bill-policies.ts --bill-id=2196203
  *   npx tsx scripts/analyze-bill-policies.ts --retry-failed
- *   npx tsx scripts/analyze-bill-policies.ts --concurrency=8
  *   npx tsx scripts/analyze-bill-policies.ts --force --bill-id=...
  *
  * כל חוק נשמר מיד אחרי שהתשובה אומתה, ולכן עצירה באמצע לא מאבדת דבר
@@ -44,19 +43,16 @@ const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODE
 const MAX_ATTEMPTS = 3;
 
 /**
- * כמה חוקים מנותחים בו-זמנית.
- *
- * הריצה הראשונה הייתה טורית: 9 שניות לחוק, כמעט כולן המתנה לתשובת
- * ה-API, מה שנתן 17.6 שעות ל-7,067 חוקים. העלות זהה — אותן קריאות —
- * ורק ההמתנה מתבזבזת.
- *
- * שמונה הוא פשרה: מהיר פי שמונה בערך, ועדיין רחוק ממגבלת הקצב של
- * המסלול בתשלום. אפשר לשנות ב---concurrency.
+ * השהיה בין קריאות של אותו עובד. עם מקביליות היא קטנה יותר, כי הקצב
+ * הכולל נקבע ממספר העובדים ולא מההשהיה.
+ */
+const DELAY_MS = 150;
+
+/**
+ * ברירת מחדל למקביליות. שמונה נמדדו כ-2.4 חוקים לשנייה במסלול
+ * המשולם; במסלול החינמי הם מחזירים 429 וצריך לרדת ל-1 או 2.
  */
 const DEFAULT_CONCURRENCY = 8;
-
-/** השהיה בין קריאות באותו עובד, כדי לפזר את העומס */
-const DELAY_MS = 150;
 
 interface Args {
   limit: number | null;
@@ -89,6 +85,7 @@ function parseArgs(): Args {
     progress: argv.includes('--progress'),
     version: str('--analysis-version', ANALYSIS_VERSION),
     dryRun: argv.includes('--dry-run'),
+    /** 1 מחזיר בדיוק את ההתנהגות הטורית; 24 היא תקרה שמונעת הצפה */
     concurrency: Math.max(1, Math.min(24, num('--concurrency') ?? DEFAULT_CONCURRENCY)),
   };
 }
@@ -325,13 +322,10 @@ async function main() {
   const startedAt = Date.now();
 
   /**
-   * מנתח חוק אחד ומחזיר האם נשמר.
-   *
-   * הכתיבה ל-SQLite נשארת סינכרונית ולכן בטוחה גם כשכמה עובדים רצים
-   * במקביל: better-sqlite3 חוסם, ו-saveAnalysis כבר עטוף בטרנזקציה.
-   * מה שמקבילי הוא ההמתנה לרשת, וזה כל מה שהיה צוואר הבקבוק.
+   * ניתוח חוק אחד. הוצא מהלולאה כדי שכמה עובדים יריצו אותו במקביל.
+   * הגוף עצמו לא השתנה — אותם ניסיונות חוזרים, אותה שמירה, אותו דיווח.
    */
-  async function analyseOne(bill: BillRow): Promise<void> {
+  const analyseOne = async (bill: BillRow): Promise<void> => {
     const prompt = buildPrompt(bill);
     const sent = bill.text_content.slice(0, MAX_TEXT_CHARS);
 
@@ -340,7 +334,7 @@ async function main() {
     let saved = false;
 
     for (let attempt = 1; attempt <= MAX_ATTEMPTS && !saved; attempt++) {
-      const result = await callGemini(prompt, apiKey!);
+      const result = await callGemini(prompt, apiKey);
 
       if (!result.text) {
         lastError = result.error ?? 'no response';
@@ -369,6 +363,17 @@ async function main() {
       });
       saved = true;
       ok++;
+
+      const flags = [
+        validated.value.needs_review ? 'review' : null,
+        bill.is_gazette ? 'gazette' : null,
+        grounding < 0.5 ? `grounding ${(grounding * 100).toFixed(0)}%` : null,
+      ].filter(Boolean).join(' ');
+
+      console.log(
+        `  ✓ ${String(bill.id).padEnd(8)} ${String(bill.text_len).padStart(7)}ch  ` +
+        `${validated.value.issues.length} issue(s)  ${flags}`,
+      );
     }
 
     if (!saved) {
@@ -378,7 +383,7 @@ async function main() {
     }
 
     done++;
-    if (done % 50 === 0) {
+    if (done % 25 === 0) {
       const rate = done / ((Date.now() - startedAt) / 1000);
       const left = Math.round((bills.length - done) / rate);
       console.log(
@@ -388,13 +393,18 @@ async function main() {
     }
 
     await sleep(DELAY_MS);
-  }
+  };
 
   /**
-   * מאגר עבודה משותף: כל עובד מושך את החוק הבא בתור עד שהתור מתרוקן.
-   * עדיף על חלוקה מראש לקבוצות שוות, כי אורכי החוקים נעים בין 1,000
-   * ל-1.6 מיליון תווים — חלוקה שווה הייתה משאירה עובד אחד תקוע על
-   * הארוכים בזמן שהשאר סיימו.
+   * בריכת עובדים עם סמן משותף.
+   *
+   * הריצה הטורית עשתה 9 שניות לחוק — 17.6 שעות ל-7,167. עם שמונה
+   * עובדים זה 2.4 חוקים לשנייה, כלומר כשעה. הסמן משותף ולכן אין
+   * חלוקה מראש: עובד שסיים לוקח את הבא בתור, וחוק ארוך אינו מעכב
+   * את השאר.
+   *
+   * המקביליות ניתנת לכוונון כי המסלול החינמי של Gemini נחנק ב-8
+   * ומחזיר 429, והמשולם לא. אחד מחזיר בדיוק את ההתנהגות הטורית.
    */
   let cursor = 0;
   const worker = async (): Promise<void> => {
@@ -405,10 +415,9 @@ async function main() {
       } catch (err) {
         failed++;
         done++;
-        recordFailure(
-          db, bill.id, args.version,
-          err instanceof Error ? err.message : 'unexpected error', null,
-        );
+        const msg = err instanceof Error ? err.message : 'unknown';
+        recordFailure(db, bill.id, args.version, msg, null);
+        console.log(`  ✗ ${String(bill.id).padEnd(8)} ${msg.slice(0, 90)}`);
       }
     }
   };

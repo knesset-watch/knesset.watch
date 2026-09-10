@@ -4,6 +4,7 @@ import "./globals.css";
 import SiteHeader from "@/components/SiteHeader";
 import AppSidebar from "@/components/AppSidebar";
 import { PeriodProvider } from "@/lib/period-context";
+import { aiFeaturesEnabled } from "@/lib/feature-flags";
 
 /** תוכן — כותרות, שמות ח"כים, כותרות חוקים */
 const frankRuhl = Frank_Ruhl_Libre({
@@ -33,6 +34,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const aiEnabled = aiFeaturesEnabled();
   return (
     /*
       משתני next/font חייבים לשבת על <html>, לא על <body>.
@@ -54,7 +56,7 @@ export default function RootLayout({
         </a>
         <PeriodProvider>
           <div className="flex min-h-screen" dir="rtl">
-            <AppSidebar />
+            <AppSidebar aiEnabled={aiEnabled} />
             <div className="flex-1 flex flex-col min-w-0">
               <SiteHeader />
               <main id="main" className="flex-1">{children}</main>

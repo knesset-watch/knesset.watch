@@ -58,7 +58,8 @@ const SECTIONS = [
   { label: 'הצבעות', sublabel: 'הצבעות מליאה', href: '/votes', icon: '🗳' },
 ];
 
-export default function HomepageClient() {
+/** aiEnabled מגיע מ-page: דגל שרת שמאפשר לכבות את פיצ׳רי ה-AI */
+export default function HomepageClient({ aiEnabled = true }: { aiEnabled?: boolean }) {
   const [query, setQuery] = useState('');
   const [stats, setStats] = useState<Stats | null>(null);
   const [recentBills, setRecentBills] = useState<RecentBill[]>([]);
@@ -121,6 +122,7 @@ export default function HomepageClient() {
         </p>
 
         {/* Search */}
+        {aiEnabled && (
         <form onSubmit={handleSearch} className="flex items-center gap-2 max-w-xl mx-auto">
           <div className="flex-1 flex items-center border border-black/20 rounded-xl px-4 py-3 bg-gray-50 focus-within:border-black/50 focus-within:bg-white transition-colors">
             <svg className="w-4 h-4 text-mute shrink-0 ml-2" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
@@ -144,6 +146,7 @@ export default function HomepageClient() {
             שאל
           </button>
         </form>
+        )}
       </div>
 
       {loadError && (

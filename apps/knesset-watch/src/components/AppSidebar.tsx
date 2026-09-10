@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { NAV_GROUPS, AI_LINK, isNavActive } from '@/lib/nav';
 
-export default function AppSidebar() {
+/** aiEnabled מגיע מ-layout: דגל שרת שמאפשר לכבות את פיצ׳רי ה-AI */
+export default function AppSidebar({ aiEnabled = true }: { aiEnabled?: boolean }) {
   const pathname = usePathname();
   if (pathname === '/login') return null;
 
@@ -47,6 +48,7 @@ export default function AppSidebar() {
         ))}
       </nav>
 
+      {aiEnabled && (
       <div className="px-2 pb-4 border-t border-line pt-3">
         <Link
           href={AI_LINK.href}
@@ -61,6 +63,7 @@ export default function AppSidebar() {
           {AI_LINK.label}
         </Link>
       </div>
+      )}
     </aside>
   );
 }

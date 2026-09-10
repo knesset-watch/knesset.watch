@@ -21,6 +21,15 @@ const DOCS_DIR = path.join(process.cwd(), "bill-documents");
 const CONCURRENCY = 5;
 const BATCH_DELAY_MS = 400;
 
+const limitArg = process.argv.find((arg) => arg.startsWith("--limit="));
+
+const REPAIR_LOW_TEXT = process.argv.includes("--repair-low-text");
+const LOW_TEXT_THRESHOLD = 1000;
+
+const LIMIT = limitArg
+  ? Number(limitArg.split("=")[1])
+  : null;
+
 // ── HTTP ─────────────────────────────────────────────────────────────────────
 
 async function downloadBuffer(url: string): Promise<Buffer> {
@@ -72,6 +81,14 @@ function getExtension(url: string): string {
   return "bin";
 }
 
+function cleanExtractedText(value: string): string | null {
+  const cleaned = value
+    .replace(/^--\s*\d+\s+of\s+\d+\s*--$/gim, "")
+    .trim();
+
+  return cleaned || null;
+}
+
 // ── Text extraction ───────────────────────────────────────────────────────────
 
 async function extractText(buf: Buffer, ext: string): Promise<string | null> {
@@ -83,7 +100,7 @@ async function extractText(buf: Buffer, ext: string): Promise<string | null> {
         buffer: buf,
       });
 
-      return result.value.trim() || null;
+      return cleanExtractedText(result.value);
     } catch (err) {
       console.warn("DOC/DOCX text extraction failed.");
       return null;
@@ -95,7 +112,7 @@ async function extractText(buf: Buffer, ext: string): Promise<string | null> {
       const parser = new PDFParse({ data: buf });
       const result = await parser.getText();
 
-      return result.text.trim() || null;
+      return cleanExtractedText(result.text);
     } catch (err) {
       console.warn("PDF text extraction failed.");
       return null;
@@ -141,25 +158,35 @@ async function main() {
     recursive: true,
   });
 
-  const bills = db
-    .prepare(
-      `
-      SELECT
-        id,
-        title,
-        doc_url
-      FROM bill
-      WHERE doc_url IS NOT NULL
-        AND doc_url != ''
-        AND local_path IS NULL
-      ORDER BY id ASC
-    `,
-    )
-    .all() as {
-    id: number;
-    title: string;
-    doc_url: string;
-  }[];
+  let bills = db
+  .prepare(
+    `
+    SELECT
+      id,
+      MAX(title) AS title,
+      MAX(doc_url) AS doc_url
+    FROM bill
+    WHERE doc_url IS NOT NULL
+      AND TRIM(doc_url) != ''
+    GROUP BY id
+    HAVING
+      MAX(LENGTH(TRIM(COALESCE(text_content, '')))) = 0
+      OR (
+        ${REPAIR_LOW_TEXT ? "1" : "0"} = 1
+        AND MAX(LENGTH(TRIM(COALESCE(text_content, '')))) < ${LOW_TEXT_THRESHOLD}
+      )
+    ORDER BY id ASC
+  `,
+  )
+  .all() as {
+  id: number;
+  title: string;
+  doc_url: string;
+}[];
+
+if (LIMIT !== null) {
+  bills = bills.slice(0, LIMIT);
+}
 
   if (bills.length === 0) {
     console.log("  No bill documents left to download.");
@@ -195,9 +222,14 @@ async function main() {
         const relPath = path.relative(process.cwd(), localPath);
 
         try {
-          const buf = await downloadBuffer(bill.doc_url);
+          let buf: Buffer;
 
-          fs.writeFileSync(localPath, buf);
+          if (fs.existsSync(localPath)) {
+            buf = fs.readFileSync(localPath);
+          } else {
+            buf = await downloadBuffer(bill.doc_url);
+            fs.writeFileSync(localPath, buf);
+          }
 
           const text = await extractText(buf, ext);
 

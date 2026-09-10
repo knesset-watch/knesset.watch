@@ -29,7 +29,8 @@ export async function GET() {
 
     return NextResponse.json({ timeline: spikes });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('timeline error:', error.message);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   } finally {
     db.close();
   }
