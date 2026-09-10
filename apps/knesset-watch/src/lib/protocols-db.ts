@@ -870,3 +870,47 @@ export async function getRecentPassedBillsFromTurso(
     return null;
   }
 }
+
+// ── Headline counts ──────────────────────────────────────────────────────────
+
+/**
+ * הספירות שמופיעות בדף הבית, מהמסד המעודכן.
+ *
+ * knesset.db המקומי עוצר ב-25.2.2026 ואילו Turso מגיע ל-28.7.2026, ולכן
+ * דף הבית הראה 6,358 הצבעות בזמן שעמוד ההצבעות — שכבר נקרא מ-Turso —
+ * הראה 7,537. שני מספרים לאותו נתון באותו אתר.
+ *
+ * mks נשאר מקומי: mk_person זהה בשני המסדים.
+ */
+export async function getHeadlineCountsFromTurso(
+  from: string,
+  to: string,
+): Promise<{ committees: number; sessions: number; billsPassed: number; billsTotal: number; votes: number } | null> {
+  const client = getTurso();
+  if (!client) return null;
+
+  try {
+    const res = await client.execute({
+      sql: `SELECT
+              (SELECT COUNT(DISTINCT c.name) FROM committee c
+                 JOIN committee_session cs ON cs.committee_id = c.id
+                 WHERE cs.date >= ? AND cs.date <= ?) AS committees,
+              (SELECT COUNT(*) FROM committee_session WHERE date >= ? AND date <= ?) AS sessions,
+              (SELECT COUNT(*) FROM bill WHERE is_passed = 1 AND publication_date >= ? AND publication_date <= ?) AS billsPassed,
+              (SELECT COUNT(*) FROM bill WHERE publication_date >= ? AND publication_date <= ?) AS billsTotal,
+              (SELECT COUNT(*) FROM plenary_vote WHERE date >= ? AND date <= ?) AS votes`,
+      args: [from, to, from, to, from, to, from, to, from, to],
+    });
+
+    const r = res.rows[0];
+    return {
+      committees: Number(r['committees'] ?? 0),
+      sessions: Number(r['sessions'] ?? 0),
+      billsPassed: Number(r['billsPassed'] ?? 0),
+      billsTotal: Number(r['billsTotal'] ?? 0),
+      votes: Number(r['votes'] ?? 0),
+    };
+  } catch {
+    return null;
+  }
+}

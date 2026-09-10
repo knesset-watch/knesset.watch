@@ -6,6 +6,27 @@ import { cookies } from 'next/headers';
  * Generates a secure session token by hashing the password with a server secret.
  * This ensures the plain-text password is never stored in the browser.
  */
+/**
+ * עקיפת שער הסיסמה בפיתוח מקומי בלבד.
+ *
+ * שני תנאים נדרשים יחד, ושניהם חייבים להתקיים:
+ *   1. NODE_ENV הוא development — next build ו-next start קובעים production,
+ *      ולכן פריסה לעולם לא תעמוד בתנאי הזה
+ *   2. DISABLE_AUTH=true הוצהר במפורש ב-.env.local, שאינו נכנס לגיט
+ *
+ * בלי שניהם ההתנהגות זהה לחלוטין לקודמת.
+ */
+function devAuthBypass(): boolean {
+  const on = process.env.NODE_ENV === 'development' && process.env.DISABLE_AUTH === 'true';
+  if (on && !warnedOnce) {
+    warnedOnce = true;
+    console.warn('[Auth] DISABLE_AUTH=true — שער הסיסמה עקוף. פיתוח מקומי בלבד.');
+  }
+  return on;
+}
+
+let warnedOnce = false;
+
 export function generateSessionToken(password: string) {
   // Normalize password by trimming and lowercasing
   const normalizedPassword = password.trim().toLowerCase();
@@ -23,6 +44,8 @@ export function validateAuth(
   loginPath: string = '/login',
   cookieName: string = 'auth_token'
 ) {
+  if (devAuthBypass()) return { isAllowed: true };
+
   const { pathname } = request.nextUrl;
   const rawSitePassword = process.env[passwordEnvVar] || '';
   const sitePassword = rawSitePassword.trim();
@@ -60,6 +83,8 @@ export async function checkServerAuth(
   passwordEnvVar: string = 'SITE_PASSWORD',
   cookieName: string = 'auth_token'
 ) {
+  if (devAuthBypass()) return true;
+
   const sitePassword = (process.env[passwordEnvVar] || '').trim();
   if (!sitePassword) return true;
 
@@ -80,6 +105,8 @@ export async function validateApiAuth(
   passwordEnvVar: string = 'SITE_PASSWORD',
   cookieName: string = 'auth_token'
 ) {
+  if (devAuthBypass()) return null;
+
   const sitePassword = (process.env[passwordEnvVar] || '').trim();
   if (!sitePassword) return null;
 

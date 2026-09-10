@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { validateApiAuth } from '@/lib/ui/auth-utils';
 import { dbAvailable } from '@/lib/knesset-db';
+import { getHeadlineCountsFromTurso } from '@/lib/protocols-db';
 import Database from 'better-sqlite3';
 import path from 'path';
 
@@ -34,10 +35,16 @@ export async function GET(request: Request) {
       mks: number; committees: number; sessions: number; billsPassed: number; billsTotal: number; votes: number;
     };
 
-    return NextResponse.json(row);
+    /*
+      Turso הוא המקור המעודכן. בלעדיו דף הבית הראה 6,358 הצבעות בזמן
+      שעמוד ההצבעות הראה 7,537 — שני מספרים לאותו נתון.
+      mks נשאר מקומי; mk_person זהה בשני המסדים.
+    */
+    const fresh = await getHeadlineCountsFromTurso(from, to);
+    return NextResponse.json(fresh ? { ...row, ...fresh } : row);
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ error: msg }, { status: 500 });
+    console.error('homepage-stats error:', error instanceof Error ? error.message : error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   } finally {
     db.close();
   }
