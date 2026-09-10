@@ -1,15 +1,136 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #000000;
+/* ───────────────────────────────────────────────────────────────────────────
+   מערכת העיצוב של אפרכסת לכנסת
+
+   מקור אמת אחד לצבע, טיפוגרפיה ורדיוס. לפני זה היו כאן 15 שורות ושני
+   משתנים, וכל עמוד בחר לעצמו — 155 צירופי צבע ו-395 גדלי טקסט שרירותיים.
+
+   הכללים:
+   1. צבע נושא משמעות. pass/fail/warn שמורים למצב אמיתי של חוק או הצבעה,
+      לא לקישוט.
+   2. הדגשה אחת. accent הוא הצבע היחיד לפעולה ולמצב פעיל. אין כחול מתחרה.
+   3. serif לתוכן, sans לממשק. זה מה שיוצר את ההיררכיה.
+   4. הטקסט הקטן ביותר הוא 12.5px. 11px קטן מדי לעברית.
+
+   האתר הוא בהיר בלבד, במכוון. הטוקנים בנויים כך שאפשר להוסיף מצב כהה
+   בהמשך בלי לגעת באף רכיב.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+@theme {
+  /* ── צבע ─────────────────────────────────────────────────────────────── */
+
+  /* טקסט. כמעט-שחור בהטיה טורקיזית, לא שחור מוחלט. */
+  --color-ink:          #0E1618;   /* טקסט ראשי           18.4:1 על נייר */
+  --color-ink-2:        #26383A;   /* טקסט משני חזק       11.2:1 */
+  --color-mute:         #5C6B6C;   /* תוויות ומטא          5.56:1 — עובר AA */
+
+  /* משטחים */
+  --color-paper:        #F6F7F7;   /* רקע האתר */
+  --color-surface:      #FFFFFF;   /* כרטיסים, תפריטים נפתחים */
+  --color-surface-2:    #EDEFEF;   /* רקע משני, מצב hover */
+
+  /* קווים */
+  --color-line:         #D7DCDC;   /* גבול נראה */
+  --color-line-soft:    #E7EAEA;   /* מפריד עדין */
+
+  /* הדגשה — טורקיז. נבחר על פני כחול כי כחול נקרא כברירת המחדל של קישור. */
+  --color-accent:       #0F6E68;   /* פעולה, מצב פעיל      6.09:1 */
+  --color-accent-ink:   #0A4F4A;   /* טקסט על accent-wash  9.2:1 */
+  --color-accent-wash:  #E6F0EF;   /* רקע מצב פעיל */
+
+  /* סמנטי — למצב אמיתי בלבד */
+  --color-pass:         #2E6B45;   /* חוק שעבר, הצבעה בעד   6.4:1 */
+  --color-pass-wash:    #E7F0EA;
+  --color-fail:         #93331F;   /* הצעה שנדחתה, נגד      6.9:1 */
+  --color-fail-wash:    #F7EAE6;
+  --color-warn:         #8A6212;   /* בהליך, נמנע          5.4:1 */
+  --color-warn-wash:    #F6EFE0;
+
+  /* ── טיפוגרפיה ───────────────────────────────────────────────────────── */
+
+  /* ממשק: כפתורים, תוויות, פקדים, מספרים */
+  --font-sans:  var(--font-heebo), "Segoe UI", "Arial Hebrew", system-ui, sans-serif;
+  /* תוכן: כותרות, שמות ח"כים, כותרות חוקים, פרוזה */
+  --font-serif: var(--font-frank-ruhl), var(--font-source-serif), Georgia, serif;
+
+  /* סקאלה בשש דרגות. מחליפה 395 שימושים בגדלים שרירותיים. */
+  --text-meta:    0.78125rem;  /* 12.5px — מטא, הכי קטן שמותר */
+  --text-label:   0.8125rem;   /* 13px   — תוויות */
+  --text-ui:      0.90625rem;  /* 14.5px — ממשק, כפתורים */
+  --text-body:    1.0625rem;   /* 17px   — גוף התוכן */
+  --text-section: 1.375rem;    /* 22px   — כותרת מקטע */
+  --text-page:    2.125rem;    /* 34px   — כותרת עמוד */
+
+  --text-meta--line-height:    1.5;
+  --text-label--line-height:   1.45;
+  --text-ui--line-height:      1.5;
+  --text-body--line-height:    1.65;
+  --text-section--line-height: 1.3;
+  --text-page--line-height:    1.2;
+
+  /* ── רדיוס ───────────────────────────────────────────────────────────── */
+  --radius-control: 5px;   /* כפתורים, שדות, צ'יפים */
+  --radius-card:    6px;   /* כרטיסים */
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  /* Use Frank Ruhl Libre as the primary serif, fallback to Source Serif 4 */
-  font-family: var(--font-frank-ruhl), var(--font-source-serif), serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer base {
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    /* ברירת המחדל היא ממשק. תוכן מקבל serif במפורש. */
+    font-family: var(--font-sans);
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /*
+    כותרות הן תוכן, ולכן serif — בלי לגעת באף רכיב.
+    זה מה שמייצר את ההיררכיה שחסרה כשהכול היה serif במשקל 900.
+  */
+  h1, h2, h3, h4 {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  /*
+    מיקוד מקלדת. לפני זה: 0 שימושים ב-focus-visible ו-27 ב-outline-none,
+    כלומר ניווט מקלדת היה בלתי נראה לחלוטין בכל האתר.
+  */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* מספרים בטורים מיישרים ספרות */
+  th, td, time, [data-numeric] {
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::selection {
+    background: var(--color-accent-wash);
+    color: var(--color-accent-ink);
+  }
+}
+
+@layer utilities {
+  /* תוכן שצריך serif בתוך גוף שהוא sans */
+  .font-content { font-family: var(--font-serif); }
+
+  /*
+    עברית אינה מקבלת ריווח אותיות ואין לה אותיות רישיות.
+    התווית עוברת דרך משקל וצבע, לא דרך tracking ו-uppercase.
+  */
+  .label-he {
+    font-family: var(--font-sans);
+    font-size: var(--text-label);
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--color-mute);
+  }
 }

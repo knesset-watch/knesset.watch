@@ -1,95 +1,161 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
+
+/**
+ * החוקים האחרונים שהתקבלו.
+ *
+ * הגרסה הקודמת הציגה נקודה אדומה מהבהבת עם הכיתוב "Live: דופק הכנסת",
+ * בזמן שהחוק החדש ביותר היה בן חצי שנה — האלמנט המטעה ביותר באתר.
+ * לצדו הופיע מספר בגופן של 120 פיקסלים תחת הכותרת "חוקים שעברו סופית",
+ * שהיה תמיד 8 כי הוא נספר אחרי LIMIT 8.
+ *
+ * כאן מוצג המספר האמיתי, ולצדו התאריך בפועל של הפריט האחרון — כדי
+ * שהטריות תהיה נתון גלוי ולא הבטחה.
+ */
+
+interface PulseBill {
+  id: number;
+  title: string;
+  date: string;
+}
+
+interface PulseData {
+  total: number;
+  bills: PulseBill[];
+  newest: string | null;
+}
+
+function formatDate(iso: string | null): string {
+  if (!iso) return '';
+  try {
+    return new Date(iso).toLocaleDateString('he-IL', {
+      year: 'numeric', month: 'long', day: 'numeric',
+    });
+  } catch {
+    return iso.slice(0, 10);
+  }
+}
+
+function monthsAgo(iso: string | null): number | null {
+  if (!iso) return null;
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return null;
+  return Math.floor((Date.now() - then) / (1000 * 60 * 60 * 24 * 30));
+}
 
 export default function PulsePage() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<PulseData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchPulse = async () => {
+  const fetchPulse = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const res = await fetch('/api/pulse');
-      if (!res.ok) throw new Error(`API error: ${res.status}`);
-      const json = await res.json();
-      setData(json);
-    } catch (err: any) {
-      console.error('Pulse fetch error:', err);
-      setError(err.message || 'Failed to load data');
+      if (!res.ok) throw new Error(`שגיאת שרת ${res.status}`);
+      setData(await res.json());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'שגיאה בטעינת הנתונים');
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchPulse();
   }, []);
 
+  useEffect(() => { fetchPulse(); }, [fetchPulse]);
+
+  const staleMonths = monthsAgo(data?.newest ?? null);
+
   return (
-    <div className="min-h-screen bg-white text-black flex items-center justify-center p-8 font-[family-name:var(--font-frank-ruhl)]" dir="rtl">
-      <div className="max-w-md w-full border-[12px] border-black p-12 shadow-[20px_20px_0px_0px_rgba(0,0,0,0.05)]">
-        <div className="flex items-center gap-2 mb-8">
-          <span className="h-3 w-3 bg-red-600 rounded-full animate-pulse"></span>
-          <span className="text-xs font-black uppercase tracking-widest">Live: דופק הכנסת</span>
+    <div className="mx-auto max-w-3xl px-6 py-12" dir="rtl">
+      <header className="mb-8">
+        <h1 className="text-page mb-2">חקיקה אחרונה</h1>
+        <p className="text-body font-content text-mute max-w-2xl">
+          הצעות החוק האחרונות שהתקבלו בכנסת ה-25 והפכו לחוק.
+        </p>
+      </header>
+
+      {loading && (
+        <>
+          <span className="sr-only" role="status">טוען נתונים</span>
+          <div className="animate-pulse space-y-4" aria-hidden="true">
+            <div className="h-28 rounded-card bg-surface-2" />
+            <div className="h-56 rounded-card bg-surface-2" />
+          </div>
+        </>
+      )}
+
+      {error && (
+        <div role="alert" className="rounded-card border border-fail/30 bg-fail-wash px-4 py-3">
+          <p className="text-ui text-ink mb-1">{error}</p>
+          <button onClick={fetchPulse} className="text-ui font-medium text-accent underline">
+            נסי שוב
+          </button>
         </div>
+      )}
 
-        {loading ? (
-          <div className="space-y-4">
-            <div className="h-20 bg-gray-100 animate-pulse"></div>
-            <div className="h-4 bg-gray-100 animate-pulse w-3/4"></div>
-            <div className="text-xs text-gray-400">טוען...</div>
-          </div>
-        ) : error ? (
-          <div className="space-y-4">
-            <div className="text-red-600 font-bold text-sm">
-              ⚠️ שגיאה בטעינת הנתונים
-            </div>
-            <div className="text-xs text-gray-600 mb-4">
-              {error}
-            </div>
-            <button
-              onClick={() => fetchPulse()}
-              className="w-full px-4 py-2 bg-black text-white font-bold text-sm rounded hover:bg-gray-800 transition-colors"
-            >
-              נסו שנית
-            </button>
-          </div>
-        ) : data && (data.bills?.length > 0 || data.count >= 0) ? (
-          <div className="space-y-6">
-            <div className="text-sm font-bold text-gray-500">חוקים שעברו סופית:</div>
-            <div className="text-[120px] font-black leading-none tracking-tighter">
-              {data.count || data.bills?.length || 0}
-            </div>
-
-            {data.bills && data.bills.length > 0 && (
-              <div className="pt-8 border-t-2 border-black/10 mt-8">
-                <div className="text-[11px] font-black uppercase mb-4 text-gray-400">אחרונות:</div>
-                <ul className="space-y-3">
-                  {data.bills.slice(0, 3).map((bill: any, i: number) => (
-                    <li key={i} className="text-sm font-bold leading-tight">
-                      {typeof bill === 'string' ? bill : bill.title}
-                    </li>
-                  ))}
-                </ul>
+      {!loading && !error && data && (
+        <>
+          <div className="mb-8 grid gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-2">
+            <div className="bg-surface px-5 py-4">
+              <div className="text-meta text-mute mb-1">חוקים שהתקבלו בכנסת ה-25</div>
+              <div className="text-page font-medium text-pass" data-numeric>
+                {data.total.toLocaleString()}
               </div>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="text-gray-600 font-bold text-sm">
-              אין נתונים זמינים
             </div>
-            <button
-              onClick={() => fetchPulse()}
-              className="w-full px-4 py-2 bg-black text-white font-bold text-sm rounded hover:bg-gray-800 transition-colors"
-            >
-              רענן
-            </button>
+            <div className="bg-surface px-5 py-4">
+              <div className="text-meta text-mute mb-1">החוק האחרון שהתקבל</div>
+              <div className="text-section font-medium" data-numeric>
+                {formatDate(data.newest) || '—'}
+              </div>
+              {staleMonths !== null && staleMonths >= 2 && (
+                <p className="text-meta text-mute mt-1">
+                  לפני כ-{staleMonths} חודשים — זה עדכון הנתונים האחרון שיש לנו
+                </p>
+              )}
+            </div>
           </div>
-        )}
-      </div>
+
+          {data.bills.length === 0 ? (
+            <p className="rounded-card border border-line bg-surface px-4 py-3 text-ui text-mute">
+              לא נמצאו חוקים שהתקבלו בטווח הזה.
+            </p>
+          ) : (
+            <section>
+              <h2 className="text-section mb-4">שמונת האחרונים</h2>
+              <ol className="flex flex-col gap-1.5">
+                {data.bills.map(b => (
+                  <li key={b.id}>
+                    <Link
+                      href={`/bill/${b.id}`}
+                      className="flex items-start gap-3 rounded-card border border-line bg-surface px-4 py-3 transition-colors hover:border-accent"
+                    >
+                      <span className="shrink-0 rounded-control bg-pass-wash px-2 py-0.5 text-meta font-medium text-pass">
+                        עבר
+                      </span>
+                      <span className="min-w-0 flex-1 text-ui font-content text-ink leading-snug">
+                        {b.title}
+                      </span>
+                      <span className="shrink-0 text-meta text-mute" data-numeric>
+                        {b.date.slice(0, 10)}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+
+              <Link
+                href="/bills?passedOnly=true"
+                className="mt-4 inline-block text-ui font-medium text-accent hover:underline"
+              >
+                כל החוקים שהתקבלו ←
+              </Link>
+            </section>
+          )}
+        </>
+      )}
     </div>
   );
 }

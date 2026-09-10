@@ -31,14 +31,14 @@ export default function PresenceHeatmap({ mkId }: { mkId: string }) {
   return (
     <div className="bg-white border border-black/8 rounded-2xl p-6" dir="ltr">
       <div className="flex items-center justify-between mb-4" dir="rtl">
-        <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide">מפת נוכחות במליאה (שנה אחרונה)</div>
-        <div className="flex items-center gap-2 text-[11px] font-black text-gray-400 uppercase">
+        <div className="text-meta font-medium text-mute">מפת נוכחות במליאה (שנה אחרונה)</div>
+        <div className="flex items-center gap-2 text-meta font-medium text-mute">
           <span>נעדר</span>
           <div className="flex gap-1">
             <span className="w-3 h-3 rounded-sm bg-rose-500"></span>
             <span className="w-3 h-3 rounded-sm bg-rose-300"></span>
             <span className="w-3 h-3 rounded-sm bg-teal-300"></span>
-            <span className="w-3 h-3 rounded-sm bg-teal-500"></span>
+            <span className="w-3 h-3 rounded-sm bg-accent"></span>
           </div>
           <span>נוכח</span>
         </div>
@@ -51,7 +51,7 @@ export default function PresenceHeatmap({ mkId }: { mkId: string }) {
             if (day.rate === 0) color = 'bg-rose-500';
             else if (day.rate < 0.5) color = 'bg-rose-300';
             else if (day.rate < 0.9) color = 'bg-teal-300';
-            else color = 'bg-teal-500';
+            else color = 'bg-accent';
           }
 
           return (

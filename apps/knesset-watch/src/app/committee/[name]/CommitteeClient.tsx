@@ -119,72 +119,72 @@ export default function CommitteeClient({
     <div className="min-h-screen bg-white" dir="rtl">
       <div className="max-w-4xl mx-auto px-6 py-8">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-1 text-sm text-gray-400 mb-6">
-          <Link href="/" className="font-black hover:text-black transition-colors">ראשי</Link>
+        <nav className="flex items-center gap-1 text-sm text-mute mb-6">
+          <Link href="/" className="font-medium hover:text-black transition-colors">ראשי</Link>
           <span className="mx-1">›</span>
-          <Link href="/committees" className="font-black hover:text-black transition-colors">ועדות</Link>
+          <Link href="/committees" className="font-medium hover:text-black transition-colors">ועדות</Link>
           <span className="mx-1">›</span>
-          <span className="text-black font-black truncate max-w-xs">{data.name}</span>
+          <span className="text-black font-medium truncate max-w-xs">{data.name}</span>
         </nav>
 
         {/* Header */}
-        <h1 className="text-3xl font-black leading-tight mb-2">{data.name}</h1>
+        <h1 className="text-3xl font-medium leading-tight mb-2">{data.name}</h1>
 
         {/* Stats row */}
         <div className="flex gap-x-6 gap-y-3 mb-8 mt-4 flex-wrap">
           {activeBills.length > 0 && (
             <>
               <div className="flex flex-col">
-                <span className="text-[11px] font-black uppercase text-gray-400 mb-1">הצעות חוק</span>
-                <span className="text-3xl font-black">{activeBills.length}</span>
+                <span className="text-meta font-medium text-mute mb-1">הצעות חוק</span>
+                <span className="text-3xl font-medium">{activeBills.length}</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-[11px] font-black uppercase text-gray-400 mb-1">עברו</span>
-                <span className="text-3xl font-black text-teal-600">{activeBills.filter(b => b.isPassed).length}</span>
+                <span className="text-meta font-medium text-mute mb-1">עברו</span>
+                <span className="text-3xl font-medium text-accent">{activeBills.filter(b => b.isPassed).length}</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-[11px] font-black uppercase text-gray-400 mb-1">יחס</span>
-                <span className="text-3xl font-black">{ratio}%</span>
+                <span className="text-meta font-medium text-mute mb-1">יחס</span>
+                <span className="text-3xl font-medium">{ratio}%</span>
               </div>
             </>
           )}
           {activeSessions.length > 0 && (
             <div className="flex flex-col">
-              <span className="text-[11px] font-black uppercase text-gray-400 mb-1">ישיבות</span>
-              <span className="text-3xl font-black">{activeSessions.length}</span>
-              {cancelledCount > 0 && <span className="text-[11px] text-gray-500 mt-0.5">{cancelledCount} בוטלו</span>}
+              <span className="text-meta font-medium text-mute mb-1">ישיבות</span>
+              <span className="text-3xl font-medium">{activeSessions.length}</span>
+              {cancelledCount > 0 && <span className="text-meta text-mute mt-0.5">{cancelledCount} בוטלו</span>}
             </div>
           )}
           {closedCount > 0 && (
             <div className="flex flex-col">
-              <span className="text-[11px] font-black uppercase text-gray-400 mb-1">חסויות</span>
-              <span className="text-3xl font-black text-red-500">{closedCount}</span>
+              <span className="text-meta font-medium text-mute mb-1">חסויות</span>
+              <span className="text-3xl font-medium text-red-500">{closedCount}</span>
             </div>
           )}
           {jointCount > 0 && (
             <div className="flex flex-col">
-              <span className="text-[11px] font-black uppercase text-gray-400 mb-1">משותפות</span>
-              <span className="text-3xl font-black text-blue-500">{jointCount}</span>
+              <span className="text-meta font-medium text-mute mb-1">משותפות</span>
+              <span className="text-3xl font-medium text-accent">{jointCount}</span>
             </div>
           )}
           <div className="flex flex-col">
-            <span className="text-[11px] font-black uppercase text-gray-400 mb-1">חברים</span>
-            <span className="text-3xl font-black">{data.members.length}</span>
+            <span className="text-meta font-medium text-mute mb-1">חברים</span>
+            <span className="text-3xl font-medium">{data.members.length}</span>
           </div>
         </div>
 
         {/* Members */}
         {data.members.length > 0 && (
           <div className="rounded-2xl border border-black/8 p-6 mb-6">
-            <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-3">חברי הוועדה</div>
+            <div className="text-meta font-medium text-mute mb-3">חברי הוועדה</div>
             <div className="flex flex-col gap-4">
               {coalitionMembers.length > 0 && (
                 <div>
-                  <div className="text-[11px] font-black text-[#16A34A] uppercase tracking-widest mb-2">קואליציה</div>
+                  <div className="text-meta font-medium text-[#16A34A] mb-2">קואליציה</div>
                   <div className="flex flex-wrap gap-1.5">
                     {coalitionMembers.map(m => (
                       <EntityTooltip key={m.id} href={`/mk/${m.slug ?? m.id}`} type="mk" id={m.slug ?? m.id}
-                        className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-green-50 border border-green-200 text-green-800 hover:bg-green-100 transition-colors">
+                        className="text-meta font-bold px-2.5 py-1 rounded-full bg-green-50 border border-green-200 text-green-800 hover:bg-green-100 transition-colors">
                         {m.name}
                       </EntityTooltip>
                     ))}
@@ -193,11 +193,11 @@ export default function CommitteeClient({
               )}
               {oppositionMembers.length > 0 && (
                 <div>
-                  <div className="text-[11px] font-black text-[#2563EB] uppercase tracking-widest mb-2">אופוזיציה</div>
+                  <div className="text-meta font-medium text-[#2563EB] mb-2">אופוזיציה</div>
                   <div className="flex flex-wrap gap-1.5">
                     {oppositionMembers.map(m => (
                       <EntityTooltip key={m.id} href={`/mk/${m.slug ?? m.id}`} type="mk" id={m.slug ?? m.id}
-                        className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-800 hover:bg-blue-100 transition-colors">
+                        className="text-meta font-bold px-2.5 py-1 rounded-full bg-accent-wash border border-line text-accent hover:bg-accent-wash transition-colors">
                         {m.name}
                       </EntityTooltip>
                     ))}
@@ -208,7 +208,7 @@ export default function CommitteeClient({
                 <div className="flex flex-wrap gap-1.5">
                   {otherMembers.map(m => (
                     <EntityTooltip key={m.id} href={`/mk/${m.slug ?? m.id}`} type="mk" id={m.slug ?? m.id}
-                      className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gray-200 transition-colors">
+                      className="text-meta font-bold px-2.5 py-1 rounded-full bg-gray-100 border border-gray-200 text-ink-2 hover:bg-gray-200 transition-colors">
                       {m.name}
                     </EntityTooltip>
                   ))}
@@ -222,8 +222,8 @@ export default function CommitteeClient({
         <div className="flex gap-1 mb-6 border-b border-black/8">
           <button
             onClick={() => setActiveTab('bills')}
-            className={`text-xs font-black px-4 py-2.5 transition-colors border-b-2 -mb-px ${
-              activeTab === 'bills' ? 'border-black text-black' : 'border-transparent text-gray-400 hover:text-black'
+            className={`text-xs font-medium px-4 py-2.5 transition-colors border-b-2 -mb-px ${
+              activeTab === 'bills' ? 'border-black text-black' : 'border-transparent text-mute hover:text-black'
             }`}
           >
             הצ&quot;ח ({activeBills.length})
@@ -231,8 +231,8 @@ export default function CommitteeClient({
           {activeSessions.length > 0 && (
             <button
               onClick={() => setActiveTab('sessions')}
-              className={`text-xs font-black px-4 py-2.5 transition-colors border-b-2 -mb-px ${
-                activeTab === 'sessions' ? 'border-black text-black' : 'border-transparent text-gray-400 hover:text-black'
+              className={`text-xs font-medium px-4 py-2.5 transition-colors border-b-2 -mb-px ${
+                activeTab === 'sessions' ? 'border-black text-black' : 'border-transparent text-mute hover:text-black'
               }`}
             >
               ישיבות ({activeSessions.length})
@@ -249,18 +249,18 @@ export default function CommitteeClient({
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="חיפוש לפי נושא..."
-                className="flex-1 text-sm px-4 py-2 rounded-full border border-black/10 bg-gray-50 focus:outline-none focus:border-black/30"
+                className="flex-1 text-sm px-4 py-2 rounded-full border border-black/10 bg-gray-50 focus:border-black/30"
                 dir="rtl"
               />
               <button
                 onClick={() => setShowPassedOnly(!showPassedOnly)}
-                className={`text-xs font-black px-4 py-2 rounded-full transition-colors ${showPassedOnly ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                className={`text-xs font-medium px-4 py-2 rounded-full transition-colors ${showPassedOnly ? 'bg-black text-white' : 'bg-gray-100 text-ink-2 hover:bg-gray-200'}`}
               >
                 עברו בלבד
               </button>
             </div>
 
-            <div className="text-xs text-gray-500 font-medium mb-3">
+            <div className="text-xs text-mute font-medium mb-3">
               {filtered.length} מתוך {activeBills.length} הצ&quot;ח
             </div>
 
@@ -270,40 +270,40 @@ export default function CommitteeClient({
                 return (
                   <div key={b.billId} className="rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
                     <div className="flex items-start gap-3 px-4 py-3">
-                      <span className={`shrink-0 mt-0.5 text-[11px] font-black px-2 py-0.5 rounded-full ${b.isPassed ? 'bg-[#16A34A] text-white' : 'bg-gray-200 text-gray-500'}`}>
+                      <span className={`shrink-0 mt-0.5 text-meta font-medium px-2 py-0.5 rounded-full ${b.isPassed ? 'bg-[#16A34A] text-white' : 'bg-gray-200 text-mute'}`}>
                         {b.isPassed ? 'עבר' : (b.statusDesc ?? 'בתהליך')}
                       </span>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-bold leading-snug text-gray-900">{b.title}</p>
+                          <p className="text-sm font-bold leading-snug text-ink">{b.title}</p>
                           <div className="flex items-center gap-1 shrink-0">
                             {b.docUrl && (
                               <a href={b.docUrl} target="_blank" rel="noopener noreferrer"
-                                className="text-[11px] font-black text-gray-400 hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">
+                                className="text-meta font-medium text-mute hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">
                                 PDF
                               </a>
                             )}
                             {b.summary && (
                               <button onClick={() => toggleBill(b.billId)}
-                                className="text-[11px] font-black text-gray-400 hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">
+                                className="text-meta font-medium text-mute hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">
                                 {isExpanded ? '▲' : '▼'}
                               </button>
                             )}
                           </div>
                         </div>
                         <div className="flex items-center gap-2 mt-1 flex-wrap">
-                          {b.initDate && <span className="text-[11px] text-gray-500">{b.initDate}</span>}
+                          {b.initDate && <span className="text-meta text-mute">{b.initDate}</span>}
                           {b.initiators.map(i => (
                             <Link key={i.id} href={`/mk/${i.slug ?? i.id}`}
-                              className="text-[11px] font-bold text-teal-700 hover:underline">
+                              className="text-meta font-bold text-accent hover:underline">
                               {i.name}
                             </Link>
                           ))}
-                          {b.macroAgenda && <span className="text-[11px] font-black text-white bg-black px-1.5 py-0.5 rounded-full">{b.macroAgenda}</span>}
-                          {b.subtype && <span className="text-[11px] text-gray-500">{b.subtype}</span>}
+                          {b.macroAgenda && <span className="text-meta font-medium text-white bg-black px-1.5 py-0.5 rounded-full">{b.macroAgenda}</span>}
+                          {b.subtype && <span className="text-meta text-mute">{b.subtype}</span>}
                           <button
                             onClick={() => setActiveTab('sessions')}
-                            className="text-[11px] font-black text-indigo-600 hover:text-indigo-800 border border-indigo-200 hover:border-indigo-400 px-2 py-1 rounded transition-colors"
+                            className="text-meta font-medium text-indigo-600 hover:text-indigo-800 border border-indigo-200 hover:border-indigo-400 px-2 py-1 rounded transition-colors"
                           >
                             ← ישיבות
                           </button>
@@ -312,7 +312,7 @@ export default function CommitteeClient({
                     </div>
                     {b.summary && isExpanded && (
                       <div className="px-4 pb-3 border-t border-black/5 pt-2">
-                        <p className="text-xs text-gray-600 leading-relaxed">{b.summary}</p>
+                        <p className="text-xs text-ink-2 leading-relaxed">{b.summary}</p>
                       </div>
                     )}
                   </div>
@@ -330,10 +330,10 @@ export default function CommitteeClient({
               value={sessionSearch}
               onChange={e => setSessionSearch(e.target.value)}
               placeholder="חיפוש לפי תאריך או כותרת..."
-              className="w-full text-sm px-4 py-2 rounded-full border border-black/10 bg-gray-50 focus:outline-none focus:border-black/30 mb-4"
+              className="w-full text-sm px-4 py-2 rounded-full border border-black/10 bg-gray-50 focus:border-black/30 mb-4"
               dir="rtl"
             />
-            <div className="text-xs text-gray-500 font-medium mb-3">
+            <div className="text-xs text-mute font-medium mb-3">
               {filteredSessions.length} ישיבות
             </div>
             <div className="flex flex-col gap-1.5">
@@ -359,44 +359,44 @@ export default function CommitteeClient({
                       <div className="flex-1 min-w-0">
                         {/* Date + badges */}
                         <div className="flex items-center gap-1.5 flex-wrap mb-1">
-                          <span className={`text-xs font-bold ${isCancelled ? 'line-through text-gray-400' : 'text-gray-700'}`}>{date}</span>
-                          {timeRange && <span className="text-[11px] text-gray-500">{timeRange}</span>}
-                          {isCancelled && <span className="text-[11px] font-black text-gray-500 bg-gray-200 px-1.5 py-0.5 rounded">בוטלה</span>}
-                          {isClosed && <span className="text-[11px] font-black text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded">🔒 חסויה</span>}
-                          {s.isJoint && <span className="text-[11px] font-black text-blue-600 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">משותפת</span>}
-                          {sessionLabel && <span className="text-[11px] text-gray-500 font-medium">{sessionLabel}</span>}
-                          {s.chunkCount > 0 && <span className="text-[11px] font-black text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded">✓ תמלול</span>}
+                          <span className={`text-xs font-bold ${isCancelled ? 'line-through text-mute' : 'text-ink-2'}`}>{date}</span>
+                          {timeRange && <span className="text-meta text-mute">{timeRange}</span>}
+                          {isCancelled && <span className="text-meta font-medium text-mute bg-gray-200 px-1.5 py-0.5 rounded">בוטלה</span>}
+                          {isClosed && <span className="text-meta font-medium text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded">🔒 חסויה</span>}
+                          {s.isJoint && <span className="text-meta font-medium text-accent bg-accent-wash border border-line px-1.5 py-0.5 rounded">משותפת</span>}
+                          {sessionLabel && <span className="text-meta text-mute font-medium">{sessionLabel}</span>}
+                          {s.chunkCount > 0 && <span className="text-meta font-medium text-accent bg-accent-wash px-1.5 py-0.5 rounded">✓ תמלול</span>}
                         </div>
                         {/* Agenda or bill title as session label */}
                         {(s.firstAgendaTitle || s.firstBillTitle) && (
-                          <p className="text-sm font-bold leading-snug text-gray-900 mt-0.5">
+                          <p className="text-sm font-bold leading-snug text-ink mt-0.5">
                             {s.firstAgendaTitle ?? s.firstBillTitle}
                           </p>
                         )}
                         {/* Cancellation reason */}
-                        {isCancelled && s.noProtocolReason && s.noProtocolReason.toLowerCase() !== 'cancelled' && <p className="text-xs text-gray-500 mt-0.5">{s.noProtocolReason}</p>}
+                        {isCancelled && s.noProtocolReason && s.noProtocolReason.toLowerCase() !== 'cancelled' && <p className="text-xs text-mute mt-0.5">{s.noProtocolReason}</p>}
                         {/* Mini stats */}
                         {!isCancelled && (s.voteCount > 0 || s.linkedBillCount > 0 || s.chunkCount > 0) && (
                           <div className="flex items-center gap-3 mt-1.5">
-                            {s.voteCount > 0 && <span className="text-[11px] text-gray-500 font-medium">🗳️ {s.voteCount} הצבעות</span>}
-                            {s.linkedBillCount > 0 && <span className="text-[11px] text-gray-500 font-medium">📋 {s.linkedBillCount} הצ&quot;ח</span>}
-                            {s.chunkCount > 0 && <span className="text-[11px] text-gray-500">{s.chunkCount} קטעים</span>}
+                            {s.voteCount > 0 && <span className="text-meta text-mute font-medium">🗳️ {s.voteCount} הצבעות</span>}
+                            {s.linkedBillCount > 0 && <span className="text-meta text-mute font-medium">📋 {s.linkedBillCount} הצ&quot;ח</span>}
+                            {s.chunkCount > 0 && <span className="text-meta text-mute">{s.chunkCount} קטעים</span>}
                           </div>
                         )}
                       </div>
                       {/* Actions */}
                       <div className="flex items-center gap-2 mr-3 shrink-0">
                         <Link href={`/session/${s.id}`} onClick={e => e.stopPropagation()}
-                          className="text-[11px] font-black text-gray-400 hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">
+                          className="text-meta font-medium text-mute hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">
                           פתח
                         </Link>
                         {s.protocolUrl && (
                           <a href={s.protocolUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
-                            className="text-[11px] font-black text-teal-700 hover:text-teal-900 border border-teal-200 hover:border-teal-400 px-1.5 py-0.5 rounded transition-colors">
+                            className="text-meta font-medium text-accent hover:text-accent-ink border border-line hover:border-accent px-1.5 py-0.5 rounded transition-colors">
                             PDF
                           </a>
                         )}
-                        <span className="text-gray-400 text-sm">
+                        <span className="text-mute text-sm">
                           {loadingSessions.has(s.id) ? '...' : expandedSessions.has(s.id) ? '▲' : '▼'}
                         </span>
                       </div>
@@ -420,7 +420,7 @@ export default function CommitteeClient({
                       ].filter(t => t.count > 0);
 
                       if (tabs.length === 0) {
-                        return <p className="px-4 py-3 text-xs text-gray-500 border-t border-black/5">אין מידע זמין לישיבה זו.</p>;
+                        return <p className="px-4 py-3 text-xs text-mute border-t border-black/5">אין מידע זמין לישיבה זו.</p>;
                       }
 
                       return (
@@ -430,8 +430,8 @@ export default function CommitteeClient({
                             {tabs.map(t => (
                               <button key={t.key}
                                 onClick={() => setExpandedSessionTabs(prev => new Map(prev).set(s.id, t.key))}
-                                className={`text-[11px] font-black px-3 py-2 border-b-2 -mb-px transition-colors ${
-                                  activeDetailTab === t.key ? 'border-black text-black' : 'border-transparent text-gray-400 hover:text-black'
+                                className={`text-meta font-medium px-3 py-2 border-b-2 -mb-px transition-colors ${
+                                  activeDetailTab === t.key ? 'border-black text-black' : 'border-transparent text-mute hover:text-black'
                                 }`}>
                                 {t.label} ({t.count})
                               </button>
@@ -443,8 +443,8 @@ export default function CommitteeClient({
                             {activeDetailTab === 'agenda' && (
                               <ol className="flex flex-col gap-1.5">
                                 {detail.agendaItems.map((item, i) => (
-                                  <li key={item.itemNumber ?? i} className="text-xs text-gray-700 leading-relaxed flex gap-2">
-                                    {item.itemNumber != null && <span className="font-black text-gray-400 shrink-0">{item.itemNumber}.</span>}
+                                  <li key={item.itemNumber ?? i} className="text-xs text-ink-2 leading-relaxed flex gap-2">
+                                    {item.itemNumber != null && <span className="font-medium text-mute shrink-0">{item.itemNumber}.</span>}
                                     <span>{item.title}</span>
                                   </li>
                                 ))}
@@ -454,12 +454,12 @@ export default function CommitteeClient({
                               <div className="flex flex-col gap-2">
                                 {detail.votes.map((v, i) => (
                                   <div key={i} className="rounded-lg bg-gray-50 px-3 py-2">
-                                    {v.subject && <p className="text-xs font-bold text-gray-800 mb-1">{v.subject}</p>}
-                                    <div className="flex items-center gap-3 text-[11px]">
-                                      {v.result && <span className="text-gray-600">{v.result}</span>}
-                                      {v.forCount != null && <span className="text-green-700 font-black">בעד: {v.forCount}</span>}
-                                      {v.againstCount != null && <span className="text-red-700 font-black">נגד: {v.againstCount}</span>}
-                                      {v.abstainCount != null && <span className="text-gray-500">נמנע: {v.abstainCount}</span>}
+                                    {v.subject && <p className="text-xs font-bold text-ink mb-1">{v.subject}</p>}
+                                    <div className="flex items-center gap-3 text-meta">
+                                      {v.result && <span className="text-ink-2">{v.result}</span>}
+                                      {v.forCount != null && <span className="text-green-700 font-medium">בעד: {v.forCount}</span>}
+                                      {v.againstCount != null && <span className="text-red-700 font-medium">נגד: {v.againstCount}</span>}
+                                      {v.abstainCount != null && <span className="text-mute">נמנע: {v.abstainCount}</span>}
                                     </div>
                                   </div>
                                 ))}
@@ -469,20 +469,20 @@ export default function CommitteeClient({
                               <div className="flex flex-col gap-1.5">
                                 {detail.linkedBills.map(b => (
                                   <div key={b.billId} className="flex items-center gap-2">
-                                    <span className={`text-[11px] font-black px-1.5 py-0.5 rounded-full shrink-0 ${b.isPassed ? 'bg-[#16A34A] text-white' : 'bg-gray-200 text-gray-500'}`}>
+                                    <span className={`text-meta font-medium px-1.5 py-0.5 rounded-full shrink-0 ${b.isPassed ? 'bg-[#16A34A] text-white' : 'bg-gray-200 text-mute'}`}>
                                       {b.isPassed ? 'עבר' : 'בתהליך'}
                                     </span>
-                                    <span className="text-xs text-gray-800">{b.title}</span>
-                                    {b.subtype && <span className="text-[11px] text-gray-500 shrink-0">{b.subtype}</span>}
+                                    <span className="text-xs text-ink">{b.title}</span>
+                                    {b.subtype && <span className="text-meta text-mute shrink-0">{b.subtype}</span>}
                                   </div>
                                 ))}
                               </div>
                             )}
                             {activeDetailTab === 'transcript' && (
-                              <div className="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap">
+                              <div className="text-xs text-ink-2 leading-relaxed whitespace-pre-wrap">
                                 {detail.chunks.map((chunk) => (
                                   <div key={chunk.chunkIndex} className="mb-3">
-                                    {chunk.speaker && <span className="font-black text-gray-800">{chunk.speaker}: </span>}
+                                    {chunk.speaker && <span className="font-medium text-ink">{chunk.speaker}: </span>}
                                     {chunk.text}
                                   </div>
                                 ))}
@@ -492,16 +492,16 @@ export default function CommitteeClient({
                               <div className="flex flex-col gap-1.5">
                                 {detail.documents.map(doc => (
                                   <div key={doc.id} className="flex items-center gap-2">
-                                    <span className="text-[11px] text-gray-500 font-medium shrink-0">{doc.applicationDesc ?? 'DOC'}</span>
+                                    <span className="text-meta text-mute font-medium shrink-0">{doc.applicationDesc ?? 'DOC'}</span>
                                     {doc.filePath ? (
                                       <a href={doc.filePath} target="_blank" rel="noopener noreferrer"
-                                        className="text-xs text-teal-700 hover:underline truncate">
+                                        className="text-xs text-accent hover:underline truncate">
                                         {doc.documentName ?? doc.groupTypeDesc ?? 'מסמך'}
                                       </a>
                                     ) : (
-                                      <span className="text-xs text-gray-600 truncate">{doc.documentName ?? doc.groupTypeDesc ?? 'מסמך'}</span>
+                                      <span className="text-xs text-ink-2 truncate">{doc.documentName ?? doc.groupTypeDesc ?? 'מסמך'}</span>
                                     )}
-                                    {doc.groupTypeDesc && <span className="text-[11px] text-gray-500 shrink-0">({doc.groupTypeDesc})</span>}
+                                    {doc.groupTypeDesc && <span className="text-meta text-mute shrink-0">({doc.groupTypeDesc})</span>}
                                   </div>
                                 ))}
                               </div>

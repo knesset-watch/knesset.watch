@@ -17,16 +17,16 @@ export default function FilterChips({ chips, onClearAll }: FilterChipsProps) {
 
   return (
     <div className="flex flex-wrap gap-2 items-center mt-6 pt-4 border-t border-gray-200">
-      <span className="text-xs font-black uppercase text-gray-500 tracking-widest">מסננים פעילים:</span>
+      <span className="text-xs font-medium text-mute">מסננים פעילים:</span>
       {chips.map((chip, idx) => (
         <div
           key={idx}
-          className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 border border-blue-200 rounded-full text-sm font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+          className="inline-flex items-center gap-2 px-3 py-1 bg-accent-wash border border-line rounded-full text-sm font-medium text-accent hover:bg-accent-wash transition-colors"
         >
           <span>{chip.label}</span>
           <button
             onClick={chip.onRemove}
-            className="ml-1 text-blue-500 hover:text-blue-700 font-bold text-xs leading-none"
+            className="ml-1 text-accent hover:text-accent font-bold text-xs leading-none"
             aria-label={`הסר ${chip.label}`}
           >
             ✕
@@ -36,7 +36,7 @@ export default function FilterChips({ chips, onClearAll }: FilterChipsProps) {
       {onClearAll && chips.length > 1 && (
         <button
           onClick={onClearAll}
-          className="ml-2 text-xs font-bold text-gray-500 hover:text-gray-700 underline"
+          className="ml-2 text-xs font-bold text-mute hover:text-ink-2 underline"
         >
           נקה הכל
         </button>

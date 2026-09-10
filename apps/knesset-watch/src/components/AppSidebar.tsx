@@ -2,89 +2,63 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-
-const NAV = [
-  {
-    group: 'אנשים',
-    links: [
-      { href: '/mks',       label: 'ח"כים',       prefixes: ['/mks', '/mk/'] },
-      { href: '/ministers', label: 'שרים',          prefixes: ['/ministers', '/office/'] },
-    ],
-  },
-  {
-    group: 'עבודת הכנסת',
-    links: [
-      { href: '/votes',      label: 'הצבעות',      prefixes: ['/votes', '/vote/'] },
-      { href: '/bills',      label: 'חוקים',        prefixes: ['/bills', '/bill/'] },
-      { href: '/protocols',  label: 'פרוטוקולים',   prefixes: ['/protocols', '/session/'] },
-      { href: '/committees', label: 'ועדות',        prefixes: ['/committees', '/committee/', '/faction/'] },
-    ],
-  },
-  {
-    group: 'ניתוחים & כלים',
-    links: [
-      { href: '/pulse',        label: 'פולס בזמן אמת', prefixes: ['/pulse'] },
-      { href: '/track-record', label: 'מעקב חקיקה',   prefixes: ['/track-record'] },
-      { href: '/agendas',      label: 'אג\'נדות',     prefixes: ['/agendas', '/agenda/'] },
-      { href: '/?groupBy=alliances', label: 'רשת קשרים',  prefixes: ['/'] },
-    ],
-  },
-];
+import { NAV_GROUPS, AI_LINK, isNavActive } from '@/lib/nav';
 
 export default function AppSidebar() {
   const pathname = usePathname();
   if (pathname === '/login') return null;
 
-  function isActive(prefixes: string[]) {
-    return prefixes.some(p => pathname === p || pathname.startsWith(p));
-  }
-
   return (
     <aside
-      className="hidden md:flex flex-col w-52 shrink-0 border-l border-black/8 bg-white sticky top-0 h-screen overflow-y-auto"
+      className="hidden md:flex flex-col w-52 shrink-0 border-l border-line bg-surface sticky top-0 h-screen overflow-y-auto"
       dir="rtl"
     >
-      {/* Logo */}
-      <div className="px-4 pt-4 pb-3 border-b border-black/8">
-        <Link href="/" className="text-base font-black tracking-tighter hover:opacity-70 transition-opacity block">
-          כנסת ווטש
+      <div className="px-4 pt-4 pb-3 border-b border-line">
+        <Link
+          href="/"
+          className="block font-content text-section font-bold hover:text-accent transition-colors"
+        >
+          אפרכסת לכנסת
         </Link>
       </div>
 
-      {/* Nav groups */}
-      <nav className="flex-1 px-2 py-3 space-y-4">
-        {NAV.map(({ group, links }) => (
+      <nav className="flex-1 px-2 py-3 space-y-6" aria-label="ניווט ראשי">
+        {NAV_GROUPS.map(({ group, links }) => (
           <div key={group}>
-            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-2 mb-1">{group}</p>
-            {links.map(({ href, label, prefixes }) => (
-              <Link
-                key={href}
-                href={href}
-                className={`flex items-center px-2 py-1.5 rounded-lg text-sm font-black transition-colors ${
-                  isActive(prefixes)
-                    ? 'bg-blue-50 text-blue-700'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                }`}
-              >
-                {label}
-              </Link>
-            ))}
+            <p className="text-ui font-bold text-ink px-2 mb-1.5">{group}</p>
+            {links.map(({ href, label, prefixes }) => {
+              const active = isNavActive(pathname, prefixes);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  aria-current={active ? 'page' : undefined}
+                  className={`flex items-center px-2 py-2 rounded-control text-ui border-r-2 transition-colors ${
+                    active
+                      ? 'bg-accent-wash text-accent-ink font-medium border-accent'
+                      : 'text-ink-2 border-transparent hover:bg-surface-2 hover:text-ink'
+                  }`}
+                >
+                  {label}
+                </Link>
+              );
+            })}
           </div>
         ))}
       </nav>
 
-      {/* AI ask — pinned at bottom */}
-      <div className="px-2 pb-4 border-t border-black/8 pt-3">
+      <div className="px-2 pb-4 border-t border-line pt-3">
         <Link
-          href="/ask"
-          className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm font-black transition-colors ${
-            isActive(['/ask'])
-              ? 'bg-blue-600 text-white'
-              : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+          href={AI_LINK.href}
+          aria-current={isNavActive(pathname, AI_LINK.prefixes) ? 'page' : undefined}
+          className={`flex items-center gap-2 px-2 py-2 rounded-control text-ui font-medium transition-colors ${
+            isNavActive(pathname, AI_LINK.prefixes)
+              ? 'bg-accent text-white'
+              : 'bg-accent-wash text-accent-ink hover:bg-accent hover:text-white'
           }`}
         >
-          <span className="text-xs">✦</span>
-          שאל AI
+          <span aria-hidden="true">✦</span>
+          {AI_LINK.label}
         </Link>
       </div>
     </aside>

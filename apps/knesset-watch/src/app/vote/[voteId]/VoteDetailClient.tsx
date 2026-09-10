@@ -35,18 +35,18 @@ function CoalitionBar({ label, data, colorFor, colorAgainst, labelClass }: Coali
 
   return (
     <div className="flex items-center gap-3">
-      <span className={`w-16 shrink-0 text-[11px] font-black ${labelClass}`}>{label}</span>
+      <span className={`w-16 shrink-0 text-meta font-medium ${labelClass}`}>{label}</span>
       <div className="flex-1 flex h-2 rounded-full overflow-hidden bg-black/8 min-w-0">
         <div className={`${colorFor} h-full transition-all`} style={{ width: `${forPct}%` }} />
         <div className={`${colorAgainst} h-full transition-all`} style={{ width: `${againstPct}%` }} />
       </div>
-      <span className="shrink-0 text-[11px] font-medium text-gray-500 whitespace-nowrap">
-        <span className="text-teal-700 font-black">{data.for}</span>
+      <span className="shrink-0 text-meta font-medium text-mute whitespace-nowrap">
+        <span className="text-accent font-medium">{data.for}</span>
         {' בעד · '}
-        <span className="text-rose-600 font-black">{data.against}</span>
+        <span className="text-rose-600 font-medium">{data.against}</span>
         {' נגד'}
-        {data.abstain > 0 && <span className="text-gray-400"> · {data.abstain} נמנע</span>}
-        {total === 0 && <span className="text-gray-400">אין נתונים</span>}
+        {data.abstain > 0 && <span className="text-mute"> · {data.abstain} נמנע</span>}
+        {total === 0 && <span className="text-mute">אין נתונים</span>}
       </span>
     </div>
   );
@@ -150,10 +150,10 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
       <div className="max-w-4xl mx-auto px-4 py-8">
 
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-1 text-sm text-gray-400 mb-4">
-          <Link href="/" className="font-black hover:text-black transition-colors">ראשי</Link>
+        <nav className="flex items-center gap-1 text-sm text-mute mb-4">
+          <Link href="/" className="font-medium hover:text-black transition-colors">ראשי</Link>
           <span className="mx-1">›</span>
-          <span className="text-black font-black">{title || `הצבעה ${voteId}`}</span>
+          <span className="text-black font-medium">{title || `הצבעה ${voteId}`}</span>
         </nav>
 
         {/* Header */}
@@ -163,16 +163,16 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
               <div className="h-6 bg-gray-100 rounded animate-pulse w-64" />
             ) : (
               <>
-                <h1 className="text-xl font-black leading-snug">{title || `הצבעה ${voteId}`}</h1>
+                <h1 className="text-xl font-medium leading-snug">{title || `הצבעה ${voteId}`}</h1>
                 <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                   {date && (
-                    <span className="text-[11px] text-gray-500 font-medium ml-2">{formatDate(date)}</span>
+                    <span className="text-meta text-mute font-medium ml-2">{formatDate(date)}</span>
                   )}
                   {macroAgenda && (
-                    <span className="text-[11px] font-black text-white bg-black/60 px-2 py-0.5 rounded-full">{macroAgenda}</span>
+                    <span className="text-meta font-medium text-white bg-black/60 px-2 py-0.5 rounded-full">{macroAgenda}</span>
                   )}
                   {microAgenda && (
-                    <span className="text-[11px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">#{microAgenda}</span>
+                    <span className="text-meta font-bold text-mute bg-gray-100 px-2 py-0.5 rounded-full">#{microAgenda}</span>
                   )}
                 </div>
               </>
@@ -181,12 +181,12 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
           <button
             onClick={handleCopyLink}
             title="העתק קישור"
-            className="shrink-0 flex items-center gap-1.5 text-xs font-black px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors text-gray-600"
+            className="shrink-0 flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors text-ink-2"
           >
             {copied ? (
               <>
-                <svg className="w-3.5 h-3.5 text-teal-600" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m3 8 4 4 6-8"/></svg>
-                <span className="text-teal-600">הועתק</span>
+                <svg className="w-3.5 h-3.5 text-accent" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m3 8 4 4 6-8"/></svg>
+                <span className="text-accent">הועתק</span>
               </>
             ) : (
               <>
@@ -200,11 +200,11 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
         </div>
 
         {loading && (
-          <div className="py-32 text-center text-xl font-black animate-pulse opacity-20">טוען תוצאות...</div>
+          <div className="py-32 text-center text-xl font-medium animate-pulse opacity-20">טוען תוצאות...</div>
         )}
 
         {error && (
-          <div className="p-8 text-center text-red-600 font-black">{error}</div>
+          <div className="p-8 text-center text-red-600 font-medium">{error}</div>
         )}
 
         {!loading && !error && (
@@ -212,7 +212,7 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
             {/* Summary badges */}
             <div className="flex flex-wrap gap-2 mb-4">
               {(['בעד', 'נגד', 'נמנע', 'נוכח'] as const).map(r => (
-                <span key={r} className={`text-xs font-black px-3 py-1.5 rounded-full ${RESULT_COLORS[r]}`}>
+                <span key={r} className={`text-xs font-medium px-3 py-1.5 rounded-full ${RESULT_COLORS[r]}`}>
                   {r} ({counts[r]})
                 </span>
               ))}
@@ -224,14 +224,14 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
                 <CoalitionBar
                   label="קואליציה"
                   data={coalitionBreakdown.coalition}
-                  colorFor="bg-teal-500"
+                  colorFor="bg-accent"
                   colorAgainst="bg-rose-400"
-                  labelClass="text-teal-800"
+                  labelClass="text-accent"
                 />
                 <CoalitionBar
                   label="אופוזיציה"
                   data={coalitionBreakdown.opposition}
-                  colorFor="bg-teal-500"
+                  colorFor="bg-accent"
                   colorAgainst="bg-rose-400"
                   labelClass="text-slate-600"
                 />
@@ -246,12 +246,12 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
                   <button
                     key={f}
                     onClick={() => setCoalFilter(f)}
-                    className={`text-xs font-black px-2.5 py-1 rounded-full transition-colors ${
+                    className={`text-xs font-medium px-2.5 py-1 rounded-full transition-colors ${
                       coalFilter === f
                         ? f === 'coalition' ? 'bg-[#16A34A] text-white'
                           : f === 'opposition' ? 'bg-[#2563EB] text-white'
                           : 'bg-black text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        : 'bg-gray-100 text-ink-2 hover:bg-gray-200'
                     }`}
                   >
                     {label}
@@ -261,12 +261,12 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
 
               {/* Sort */}
               <div className="flex gap-1 items-center">
-                <span className="text-[11px] font-black uppercase text-gray-400">מיון:</span>
+                <span className="text-meta font-medium text-mute">מיון:</span>
                 {([['party', 'סיעה'], ['name', 'שם'], ['result', 'תוצאה']] as [SortBy, string][]).map(([s, label]) => (
                   <button
                     key={s}
                     onClick={() => setSortBy(s)}
-                    className={`text-xs font-black px-2 py-1 rounded transition-colors ${sortBy === s ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                    className={`text-xs font-medium px-2 py-1 rounded transition-colors ${sortBy === s ? 'bg-black text-white' : 'bg-gray-100 text-ink-2 hover:bg-gray-200'}`}
                   >
                     {label}
                   </button>
@@ -280,29 +280,29 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="חיפוש לפי שם או סיעה..."
-              className="w-full mb-4 px-4 py-2 text-sm border border-black/10 rounded-lg bg-gray-50 focus:outline-none focus:ring-1 focus:ring-black/20"
+              className="w-full mb-4 px-4 py-2 text-sm border border-black/10 rounded-lg bg-gray-50 focus:ring-1 focus:ring-black/20"
             />
 
             {/* Results list */}
             <div className="flex flex-col gap-1">
               {filtered.length === 0 ? (
-                <div className="py-16 text-center text-gray-400 font-black">אין תוצאות</div>
+                <div className="py-16 text-center text-mute font-medium">אין תוצאות</div>
               ) : filtered.map(r => (
                 <div
                   key={r.mkId}
                   className={`flex items-center gap-3 py-2.5 px-4 rounded-xl text-sm ${r.isCoalition === true ? 'bg-[#F0FDF4]/50' : r.isCoalition === false ? 'bg-[#EFF6FF]/50' : 'bg-gray-50'}`}
                 >
-                  <span className={`shrink-0 text-[11px] font-black px-2 py-0.5 rounded-full ${RESULT_COLORS[r.result] ?? 'bg-zinc-100 text-zinc-500'}`}>
+                  <span className={`shrink-0 text-meta font-medium px-2 py-0.5 rounded-full ${RESULT_COLORS[r.result] ?? 'bg-zinc-100 text-zinc-500'}`}>
                     {r.result}
                   </span>
                   {r.slug || r.mkId ? (
-                    <Link href={`/mk/${r.slug ?? r.mkId}`} className="font-bold hover:text-teal-700 transition-colors">
+                    <Link href={`/mk/${r.slug ?? r.mkId}`} className="font-bold hover:text-accent transition-colors">
                       {r.firstName} {r.lastName}
                     </Link>
                   ) : (
                     <span className="font-bold">{r.firstName} {r.lastName}</span>
                   )}
-                  <span className="text-xs text-gray-500 font-medium mr-auto">{r.party ?? '—'}</span>
+                  <span className="text-xs text-mute font-medium mr-auto">{r.party ?? '—'}</span>
                 </div>
               ))}
             </div>

@@ -12,40 +12,40 @@ export default function MinistryClient({ data }: { data: MinistryDetail }) {
   return (
     <div className="min-h-screen bg-white" dir="rtl">
       <div className="max-w-4xl mx-auto px-6 py-8">
-        <nav className="flex items-center gap-1 text-sm text-gray-400 mb-6">
-          <Link href="/" className="font-black hover:text-black transition-colors">ראשי</Link>
+        <nav className="flex items-center gap-1 text-sm text-mute mb-6">
+          <Link href="/" className="font-medium hover:text-black transition-colors">ראשי</Link>
           <span className="mx-1">›</span>
-          <Link href="/ministers" className="font-black hover:text-black transition-colors">שרים</Link>
+          <Link href="/ministers" className="font-medium hover:text-black transition-colors">שרים</Link>
           <span className="mx-1">›</span>
-          <span className="text-black font-black">{name}</span>
+          <span className="text-black font-medium">{name}</span>
         </nav>
 
-        <h1 className="text-4xl font-black mb-6">{name}</h1>
+        <h1 className="text-4xl font-medium mb-6">{name}</h1>
 
         {/* Stats row */}
         <div className="flex flex-wrap gap-6 rounded-xl bg-gray-50 px-6 py-4 mb-8">
           <div className="flex flex-col">
-            <span className="text-[11px] font-black uppercase text-gray-400 mb-0.5">שרים נוכחיים</span>
-            <span className="text-3xl font-black">{currentMinisters.length}</span>
+            <span className="text-meta font-medium text-mute mb-0.5">שרים נוכחיים</span>
+            <span className="text-3xl font-medium">{currentMinisters.length}</span>
           </div>
           <div className="flex flex-col border-r border-black/8 pr-6">
-            <span className="text-[11px] font-black uppercase text-gray-400 mb-0.5">הצעות חוק</span>
-            <span className="text-3xl font-black">{billCount}</span>
+            <span className="text-meta font-medium text-mute mb-0.5">הצעות חוק</span>
+            <span className="text-3xl font-medium">{billCount}</span>
           </div>
           <div className="flex flex-col border-r border-black/8 pr-6">
-            <span className="text-[11px] font-black uppercase text-gray-400 mb-0.5">חוקים שעברו</span>
-            <span className="text-3xl font-black text-teal-600">{passedCount}</span>
+            <span className="text-meta font-medium text-mute mb-0.5">חוקים שעברו</span>
+            <span className="text-3xl font-medium text-accent">{passedCount}</span>
           </div>
           <div className="flex flex-col border-r border-black/8 pr-6">
-            <span className="text-[11px] font-black uppercase text-gray-400 mb-0.5">יחס מעבר</span>
-            <span className="text-3xl font-black">{billCount > 0 ? `${passRatio}%` : '—'}</span>
+            <span className="text-meta font-medium text-mute mb-0.5">יחס מעבר</span>
+            <span className="text-3xl font-medium">{billCount > 0 ? `${passRatio}%` : '—'}</span>
           </div>
         </div>
 
         {/* Current ministers */}
         {currentMinisters.length > 0 && (
           <div className="mb-8">
-            <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-3">
+            <div className="text-meta font-medium text-mute mb-3">
               שרים נוכחיים ({currentMinisters.length})
             </div>
             <div className="flex flex-col gap-1.5">
@@ -56,13 +56,13 @@ export default function MinistryClient({ data }: { data: MinistryDetail }) {
                   className="flex items-center gap-3 rounded-xl bg-[#F0FDF4] hover:bg-green-100 px-4 py-3 transition-colors"
                 >
                   <div className="flex flex-col flex-1 min-w-0">
-                    <span className="font-black text-sm">{m.name}</span>
-                    <span className="text-[11px] text-gray-500">{m.role}</span>
+                    <span className="font-medium text-sm">{m.name}</span>
+                    <span className="text-meta text-mute">{m.role}</span>
                     {m.factionName && (
-                      <span className="text-[11px] text-gray-500">{m.factionName}</span>
+                      <span className="text-meta text-mute">{m.factionName}</span>
                     )}
                   </div>
-                  <svg className="w-3.5 h-3.5 text-gray-300 shrink-0 rotate-180" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <svg className="w-3.5 h-3.5 text-mute shrink-0 rotate-180" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <path d="m6 3 5 5-5 5"/>
                   </svg>
                 </Link>
@@ -74,7 +74,7 @@ export default function MinistryClient({ data }: { data: MinistryDetail }) {
         {/* Former ministers */}
         {formerMinisters.length > 0 && (
           <div>
-            <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-3">
+            <div className="text-meta font-medium text-mute mb-3">
               לשעבר ({formerMinisters.length})
             </div>
             <div className="flex flex-col gap-1.5">
@@ -85,10 +85,10 @@ export default function MinistryClient({ data }: { data: MinistryDetail }) {
                   className="flex items-center gap-3 rounded-xl bg-gray-50 hover:bg-gray-100 px-4 py-3 transition-colors"
                 >
                   <div className="flex flex-col flex-1 min-w-0">
-                    <span className="font-black text-sm text-gray-500">{m.name}</span>
-                    <span className="text-[11px] text-gray-500">{m.role}</span>
+                    <span className="font-medium text-sm text-mute">{m.name}</span>
+                    <span className="text-meta text-mute">{m.role}</span>
                   </div>
-                  <svg className="w-3.5 h-3.5 text-gray-300 shrink-0 rotate-180" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <svg className="w-3.5 h-3.5 text-mute shrink-0 rotate-180" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <path d="m6 3 5 5-5 5"/>
                   </svg>
                 </Link>

@@ -47,12 +47,12 @@ export default function MKAgendaView({ mkId, limit }: { mkId: string; limit?: nu
   }, [mkId]);
 
   if (error) {
-    return <div className="py-16 text-center text-red-600 font-black">{error}</div>;
+    return <div className="py-16 text-center text-red-600 font-medium">{error}</div>;
   }
 
   if (!data) {
     return (
-      <div className="py-32 text-center text-xl font-black animate-pulse opacity-20">
+      <div className="py-32 text-center text-xl font-medium animate-pulse opacity-20">
         טוען אג&apos;נדה...
       </div>
     );
@@ -77,8 +77,8 @@ export default function MKAgendaView({ mkId, limit }: { mkId: string; limit?: nu
 
                 {/* Topic name */}
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-black leading-snug">{topic.label}</h3>
-                  <p className="text-[11px] text-gray-500 font-medium mt-0.5">
+                  <h3 className="text-sm font-medium leading-snug">{topic.label}</h3>
+                  <p className="text-meta text-mute font-medium mt-0.5">
                     {totalVotes === 0 ? 'לא נמצאו הצבעות' : `${totalVotes} הצבעות`}
                   </p>
                 </div>
@@ -86,7 +86,7 @@ export default function MKAgendaView({ mkId, limit }: { mkId: string; limit?: nu
                 {/* Stats */}
                 {totalVotes > 0 && (
                   <div className="flex items-center gap-3 shrink-0">
-                    <div className="flex gap-2 text-[11px] font-black">
+                    <div className="flex gap-2 text-meta font-medium">
                       <span className="text-[#16A34A]">{forCount} בעד</span>
                       <span className="text-[#2563EB]">{againstCount} נגד</span>
                       {abstainCount > 0 && (
@@ -104,14 +104,14 @@ export default function MKAgendaView({ mkId, limit }: { mkId: string; limit?: nu
                       )}
                     </div>
 
-                    <span className="text-xs font-black w-8 text-left tabular-nums">
+                    <span className="text-xs font-medium w-8 text-left tabular-nums">
                       {pct(forCount, voting)}
                     </span>
                   </div>
                 )}
 
                 {totalVotes > 0 && (
-                  <span className="text-gray-400 text-[11px] font-bold shrink-0">
+                  <span className="text-mute text-meta font-bold shrink-0">
                     {isExpanded ? '▲' : '▼'}
                   </span>
                 )}
@@ -124,11 +124,11 @@ export default function MKAgendaView({ mkId, limit }: { mkId: string; limit?: nu
                 {topic.votes.map(v => (
                   <div key={v.voteId} className="flex items-center gap-3 px-4 py-2.5">
                     {v.result ? (
-                      <span className={`shrink-0 text-[11px] font-black px-2 py-0.5 rounded-full ${RESULT_COLORS[v.result] ?? 'bg-zinc-100 text-zinc-500'}`}>
+                      <span className={`shrink-0 text-meta font-medium px-2 py-0.5 rounded-full ${RESULT_COLORS[v.result] ?? 'bg-zinc-100 text-zinc-500'}`}>
                         {v.result}
                       </span>
                     ) : (
-                      <span className="shrink-0 text-[11px] font-black px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-400">
+                      <span className="shrink-0 text-meta font-medium px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-400">
                         לא הצביע
                       </span>
                     )}
@@ -136,12 +136,12 @@ export default function MKAgendaView({ mkId, limit }: { mkId: string; limit?: nu
                       <Link
                         href={`/vote/${v.voteId}`}
                         prefetch={false}
-                        className="text-sm font-medium text-gray-900 hover:underline leading-snug block"
+                        className="text-sm font-medium text-ink hover:underline leading-snug block"
                       >
                         {v.title || '—'}
                       </Link>
                     </div>
-                    <span className="shrink-0 text-[11px] text-gray-500 font-medium tabular-nums">
+                    <span className="shrink-0 text-meta text-mute font-medium tabular-nums">
                       {formatDate(v.date)}
                     </span>
                   </div>

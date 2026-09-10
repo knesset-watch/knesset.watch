@@ -1334,6 +1334,8 @@ export interface BillRow {
   subtype: string;
   is_passed: number;
   status_desc: string | null;
+  /** מלא בכל 7,296 השורות, בניגוד ל-status_desc שריק בכולן */
+  status_id: number | null;
   committee_name: string | null;
   summary: string | null;
   doc_url: string | null;
@@ -1342,6 +1344,32 @@ export interface BillRow {
   publication_date: string | null;
   init_date: string | null;
   initiators: Array<{ person_id: number; first_name: string; last_name: string; slug: string | null }>;
+
+  /*
+    שלושת השדות הבאים היו קיימים במסד ולא נקראו מעולם.
+    bill.summary ו-bill.doc_url ריקים ב-100% מ-7,296 השורות, ולכן שני
+    הבלוקים שהותנו בהם בעמוד החוק לא רונדרו אף פעם.
+  */
+
+  /** התקציר האמיתי — 7,067 שורות ב-bill_policy_analysis, ממוצע 171 תווים */
+  analysisSummary: string | null;
+  analysisConfidence: number | null;
+
+  /** הטקסט המלא. שימו לב: text_rtl_repaired הוא דגל 0/1, לא טקסט. */
+  fullText: string | null;
+  fullTextChars: number;
+  rtlRepaired: boolean;
+
+  /** האג׳נדה של החוק — תחום, סוגיה ועמדות, מ-bill_policy_issue */
+  issues: Array<{
+    domain: string | null;
+    issue: string | null;
+    policyChange: string | null;
+    proStance: string | null;
+    conStance: string | null;
+    explanation: string | null;
+    isPrimary: boolean;
+  }>;
 }
 
 export interface GetBillsOptions {
@@ -1385,8 +1413,11 @@ export function getBills(opts: GetBillsOptions): { bills: BillRow[]; total: numb
   const bills = db.prepare(`
     SELECT b.id, b.title, b.subtype, b.is_passed, b.status_desc,
            b.committee_name, b.summary, b.doc_url, b.micro_agenda, b.macro_agenda,
-           b.publication_date, b.init_date
-    FROM bill b ${where}
+           b.publication_date, b.init_date,
+           a.overall_summary AS analysis_summary
+    FROM bill b
+    LEFT JOIN bill_policy_analysis a ON a.bill_id = b.id
+    ${where}
     ORDER BY b.id DESC LIMIT ? OFFSET ?
   `).all(...params, Math.min(limit, 200), offset) as BillRow[];
 
@@ -1399,6 +1430,14 @@ export function getBills(opts: GetBillsOptions): { bills: BillRow[]; total: numb
 
   for (const bill of bills) {
     (bill as BillRow).initiators = getInitiators.all(bill.id) as BillRow['initiators'];
+
+    /*
+      bill.summary ריק בכל 7,296 השורות. התקציר האמיתי הוא
+      bill_policy_analysis.overall_summary, שמכסה 6,568 מתוך 6,794
+      החוקים שלא עברו — ובלעדיו הרשימה לא רמזה שיש בכלל מה לפתוח.
+    */
+    const raw = bill as unknown as { analysis_summary?: string | null };
+    (bill as BillRow).analysisSummary = raw.analysis_summary?.trim() || null;
   }
 
   return { bills, total };
@@ -1409,9 +1448,10 @@ export function getBillById(id: number): BillRow | null {
   if (!db) return null;
 
   const bill = db.prepare(`
-    SELECT b.id, b.title, b.subtype, b.is_passed, b.status_desc,
+    SELECT b.id, b.title, b.subtype, b.is_passed, b.status_desc, b.status_id,
            b.committee_name, b.summary, b.doc_url, b.micro_agenda, b.macro_agenda,
-           b.publication_date, b.init_date
+           b.publication_date, b.init_date,
+           b.text_content, b.text_rtl_repaired
     FROM bill b WHERE b.id = ?
   `).get(id) as BillRow | undefined;
 
@@ -1423,6 +1463,39 @@ export function getBillById(id: number): BillRow | null {
     JOIN mk_person p ON p.person_id = i.mk_id
     WHERE i.bill_id = ?
   `).all(id) as BillRow['initiators'];
+
+  const analysis = db.prepare(`
+    SELECT overall_summary, confidence
+    FROM bill_policy_analysis WHERE bill_id = ?
+  `).get(id) as { overall_summary: string | null; confidence: number | null } | undefined;
+
+  bill.analysisSummary = analysis?.overall_summary?.trim() || null;
+  bill.analysisConfidence = analysis?.confidence ?? null;
+
+  /*
+    text_rtl_repaired הוא דגל 0/1 ולא טקסט — מי שקורא אותו כטקסט מקבל "1".
+    הטקסט עצמו יושב ב-text_content: 7,165 חוקים, ממוצע 7,379 תווים.
+  */
+  const raw = bill as unknown as { text_content?: string | null; text_rtl_repaired?: string | null };
+  const text = raw.text_content?.trim() || null;
+  bill.fullText = text;
+  bill.fullTextChars = text ? text.length : 0;
+  bill.rtlRepaired = String(raw.text_rtl_repaired ?? '') === '1';
+
+  bill.issues = (db.prepare(`
+    SELECT domain_candidate, issue_candidate, policy_change,
+           pro_stance, con_stance, explanation, is_primary
+    FROM bill_policy_issue WHERE bill_id = ?
+    ORDER BY is_primary DESC, confidence DESC
+  `).all(id) as Array<Record<string, unknown>>).map(r => ({
+    domain:       r.domain_candidate != null ? String(r.domain_candidate) : null,
+    issue:        r.issue_candidate  != null ? String(r.issue_candidate)  : null,
+    policyChange: r.policy_change    != null ? String(r.policy_change)    : null,
+    proStance:    r.pro_stance       != null ? String(r.pro_stance)       : null,
+    conStance:    r.con_stance       != null ? String(r.con_stance)       : null,
+    explanation:  r.explanation      != null ? String(r.explanation)      : null,
+    isPrimary:    Number(r.is_primary) === 1,
+  }));
 
   return bill;
 }
@@ -1910,6 +1983,14 @@ export interface VoteListRow {
   margin: number;
   microAgenda: string | null;
   macroAgenda: string | null;
+
+  /*
+    הצעת החוק שההצבעה נערכה עליה.
+    plenary_vote.bill_id מולא ל-4,257 מתוך 6,358 ההצבעות (67%); לשאר
+    אין קישור, ולכן שני השדות null והשורה מוצגת בלי קישור.
+  */
+  billId: number | null;
+  billSummary: string | null;
 }
 
 export interface GetVoteListOptions {
@@ -1945,16 +2026,26 @@ export function getVoteList(opts: GetVoteListOptions = {}): { votes: VoteListRow
   if (to) { conditions.push('date <= ?'); params.push(to + 'T23:59:59'); }
 
   const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+  /** אותם תנאים, מוסמכים ל-v. — שאילתת השורות עברה ל-JOIN ולכן הכינוי נדרש */
+  const whereV = conditions.length > 0
+    ? `WHERE ${conditions.map(c => c.replace(/\b(is_passed|total_for|total_against|title|date)\b/g, 'v.$1')).join(' AND ')}`
+    : '';
 
   const total = (db.prepare(`SELECT COUNT(*) as cnt FROM plenary_vote ${where}`).get(...params) as { cnt: number }).cnt;
   const rows = db.prepare(`
-    SELECT id, title, date, total_for, total_against, total_abstain, is_passed, micro_agenda, macro_agenda
-    FROM plenary_vote ${where}
-    ORDER BY date DESC
+    SELECT v.id, v.title, v.date, v.total_for, v.total_against, v.total_abstain,
+           v.is_passed, v.micro_agenda, v.macro_agenda,
+           b.id AS bill_id, a.overall_summary AS bill_summary
+    FROM plenary_vote v
+    LEFT JOIN bill b ON b.id = v.bill_id
+    LEFT JOIN bill_policy_analysis a ON a.bill_id = b.id
+    ${whereV}
+    ORDER BY v.date DESC
     LIMIT ? OFFSET ?
   `).all(...params, limit, offset) as Array<{
     id: number; title: string; date: string; total_for: number; total_against: number;
     total_abstain: number; is_passed: number; micro_agenda: string | null; macro_agenda: string | null;
+    bill_id: number | null; bill_summary: string | null;
   }>;
 
   return {
@@ -1969,6 +2060,8 @@ export function getVoteList(opts: GetVoteListOptions = {}): { votes: VoteListRow
       margin: Math.abs(r.total_for - r.total_against),
       microAgenda: r.micro_agenda,
       macroAgenda: r.macro_agenda,
+      billId: r.bill_id ?? null,
+      billSummary: r.bill_summary?.trim() || null,
     })),
     total,
   };
@@ -3138,4 +3231,95 @@ export function getParliamentaryEngagement(): EngagementRow[] {
 /** מדד המעורבות של חבר כנסת אחד, או null אם אינו בקבוצה */
 export function getMkEngagement(mkId: number): EngagementRow | null {
   return getParliamentaryEngagement().find(row => row.mkId === mkId) ?? null;
+}
+
+// ── Bills behind a policy cluster ─────────────────────────────────────────────
+
+/**
+ * החוקים שמאחורי אשכול מדיניות.
+ *
+ * הגשר הוא bill_political_classification: 5,195 שורות שמקשרות 4,660 חוקים
+ * ל-201 צירי מדיניות. כל 166 הצירים שמופיעים ב-axis-clusters.json קיימים בה,
+ * ודרכה נגישים 4,595 חוקים.
+ *
+ * זה מחליף את ההתאמה לפי מילות מפתח על bill.title, שהייתה הדרך היחידה
+ * שהאג׳נדות הישנות (lib/agendas.ts) ידעו — הן נכתבו ביד ולא הכירו חוקים כלל.
+ */
+export interface ClusterBill {
+  id: number;
+  title: string;
+  subtype: string | null;
+  isPassed: boolean;
+  initDate: string | null;
+  /** לאיזה כיוון ההצעה דוחפת בציר הזה */
+  stance: 'pro' | 'con' | null;
+  issueId: string;
+}
+
+export function getBillsForIssues(issueIds: string[], limit = 1500): ClusterBill[] {
+  const db = getDb();
+  if (!db || issueIds.length === 0) return [];
+
+  const holes = issueIds.map(() => '?').join(',');
+  const rows = db.prepare(`
+    SELECT b.id, b.title, b.subtype, b.is_passed, b.init_date,
+           c.issue_id, c.stance_id
+    FROM bill_political_classification c
+    JOIN bill b ON b.id = c.bill_id
+    WHERE c.issue_id IN (${holes})
+    ORDER BY b.is_passed DESC, b.init_date DESC
+    LIMIT ?
+  `).all(...issueIds, limit) as Array<Record<string, unknown>>;
+
+  return rows.map(r => {
+    const stanceId = r.stance_id != null ? String(r.stance_id) : '';
+    return {
+      id: Number(r.id),
+      title: String(r.title ?? ''),
+      subtype: r.subtype != null ? String(r.subtype) : null,
+      isPassed: Number(r.is_passed) === 1,
+      initDate: r.init_date != null ? String(r.init_date) : null,
+      stance: stanceId.endsWith('_pro') ? 'pro' : stanceId.endsWith('_con') ? 'con' : null,
+      issueId: String(r.issue_id ?? ''),
+    };
+  });
+}
+
+/** כמה חוקים מסווגים יש לכל ציר — לספירה אמיתית ולא לזו שנשמרה ב-JSON */
+export function countBillsByIssue(issueIds: string[]): Map<string, number> {
+  const db = getDb();
+  const out = new Map<string, number>();
+  if (!db || issueIds.length === 0) return out;
+
+  const holes = issueIds.map(() => '?').join(',');
+  const rows = db.prepare(`
+    SELECT issue_id, COUNT(DISTINCT bill_id) n
+    FROM bill_political_classification
+    WHERE issue_id IN (${holes})
+    GROUP BY issue_id
+  `).all(...issueIds) as Array<{ issue_id: string; n: number }>;
+
+  for (const r of rows) out.set(r.issue_id, Number(r.n));
+  return out;
+}
+
+/**
+ * תקצירי הצעות חוק לפי מזהה.
+ * bill_policy_analysis קיימת רק במסד המקומי, ולכן רשימת ההצבעות
+ * שנקראת מ-Turso משלימה כאן את התקצירים לעמוד שהיא מציגה.
+ */
+export function getBillSummaries(billIds: number[]): Map<number, string> {
+  const db = getDb();
+  const out = new Map<number, string>();
+  if (!db || billIds.length === 0) return out;
+
+  const holes = billIds.map(() => '?').join(',');
+  const rows = db.prepare(`
+    SELECT bill_id, overall_summary
+    FROM bill_policy_analysis
+    WHERE bill_id IN (${holes}) AND TRIM(COALESCE(overall_summary, '')) <> ''
+  `).all(...billIds) as Array<{ bill_id: number; overall_summary: string }>;
+
+  for (const r of rows) out.set(Number(r.bill_id), String(r.overall_summary).trim());
+  return out;
 }

@@ -27,11 +27,11 @@ function RoleBadge({ role }: { role: string }) {
     chair: 'bg-black text-white',
     deputy_chair: 'bg-gray-700 text-white',
     minister: 'bg-purple-100 text-purple-800 border border-purple-200',
-    visitor: 'bg-blue-50 text-blue-700 border border-blue-200',
-    member: 'bg-gray-100 text-gray-600',
+    visitor: 'bg-accent-wash text-accent border border-line',
+    member: 'bg-gray-100 text-ink-2',
   };
   return (
-    <span className={`text-[11px] font-black px-1.5 py-0.5 rounded-full ${colors[role] ?? 'bg-gray-100 text-gray-600'}`}>
+    <span className={`text-meta font-medium px-1.5 py-0.5 rounded-full ${colors[role] ?? 'bg-gray-100 text-ink-2'}`}>
       {label}
     </span>
   );
@@ -118,39 +118,39 @@ export default function SessionClient({
     <div className="min-h-screen bg-white" dir="rtl">
       <div className="max-w-4xl mx-auto px-6 py-8">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-1 text-sm text-gray-400 mb-4 flex-wrap">
-          <Link href="/" className="font-black hover:text-black transition-colors">ראשי</Link>
+        <nav className="flex items-center gap-1 text-sm text-mute mb-4 flex-wrap">
+          <Link href="/" className="font-medium hover:text-black transition-colors">ראשי</Link>
           <span className="mx-1">›</span>
-          <Link href="/committees" className="font-black hover:text-black transition-colors">ועדות</Link>
+          <Link href="/committees" className="font-medium hover:text-black transition-colors">ועדות</Link>
           {session.committeeName && (
             <>
               <span className="mx-1">›</span>
               <Link
                 href={`/committee/${encodeURIComponent(session.committeeName)}`}
-                className="font-black hover:text-black transition-colors"
+                className="font-medium hover:text-black transition-colors"
               >
                 {session.committeeName}
               </Link>
             </>
           )}
           <span className="mx-1">›</span>
-          <span className="text-black font-black">{displayDate}{session.protocolNumber ? ` · ישיבה ${session.protocolNumber}` : ''}</span>
+          <span className="text-black font-medium">{displayDate}{session.protocolNumber ? ` · ישיבה ${session.protocolNumber}` : ''}</span>
         </nav>
 
         {/* Title + share */}
         <div className="flex items-start gap-3 mb-3">
           {headingTitle && (
-            <h1 className="text-2xl font-black leading-tight flex-1">{headingTitle}</h1>
+            <h1 className="text-2xl font-medium leading-tight flex-1">{headingTitle}</h1>
           )}
           <button
             onClick={handleCopyLink}
             title="העתק קישור"
-            className="shrink-0 flex items-center gap-1.5 text-xs font-black px-3 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors text-gray-600 mt-0.5"
+            className="shrink-0 flex items-center gap-1.5 text-xs font-medium px-3 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors text-ink-2 mt-0.5"
           >
             {copied ? (
               <>
-                <svg className="w-3.5 h-3.5 text-teal-600" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m3 8 4 4 6-8"/></svg>
-                <span className="text-teal-600">הועתק</span>
+                <svg className="w-3.5 h-3.5 text-accent" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m3 8 4 4 6-8"/></svg>
+                <span className="text-accent">הועתק</span>
               </>
             ) : (
               <>
@@ -166,22 +166,22 @@ export default function SessionClient({
         {/* Stat pills */}
         <div className="flex flex-wrap gap-2 mb-8">
           {(session.members.length + session.guests.length) > 0 && (
-            <span className="text-[11px] font-black px-3 py-1 rounded-full bg-gray-100 text-gray-600">
+            <span className="text-meta font-medium px-3 py-1 rounded-full bg-gray-100 text-ink-2">
               {session.members.length + session.guests.length} נוכחים
             </span>
           )}
           {session.votes.length > 0 && (
-            <span className="text-[11px] font-black px-3 py-1 rounded-full bg-gray-100 text-gray-600">
+            <span className="text-meta font-medium px-3 py-1 rounded-full bg-gray-100 text-ink-2">
               {session.votes.length} הצבעות
             </span>
           )}
           {session.agenda.length > 0 && (
-            <span className="text-[11px] font-black px-3 py-1 rounded-full bg-gray-100 text-gray-600">
+            <span className="text-meta font-medium px-3 py-1 rounded-full bg-gray-100 text-ink-2">
               {session.agenda.length} נושאים
             </span>
           )}
           {timeRange && (
-            <span className="text-[11px] font-black px-3 py-1 rounded-full bg-gray-100 text-gray-600">
+            <span className="text-meta font-medium px-3 py-1 rounded-full bg-gray-100 text-ink-2">
               {timeRange}
             </span>
           )}
@@ -189,12 +189,12 @@ export default function SessionClient({
             chairMember.slug || chairMember.mkId ? (
               <Link
                 href={`/mk/${chairMember.slug ?? chairMember.mkId}`}
-                className="text-[11px] font-black px-3 py-1 rounded-full bg-black text-white hover:bg-gray-800 transition-colors"
+                className="text-meta font-medium px-3 py-1 rounded-full bg-black text-white hover:bg-gray-800 transition-colors"
               >
                 יו&quot;ר: {chairMember.name}
               </Link>
             ) : (
-              <span className="text-[11px] font-black px-3 py-1 rounded-full bg-black text-white">
+              <span className="text-meta font-medium px-3 py-1 rounded-full bg-black text-white">
                 יו&quot;ר: {chairMember.name}
               </span>
             )
@@ -204,19 +204,19 @@ export default function SessionClient({
         {/* Participants */}
         {session.members.length > 0 && (
           <div className="rounded-2xl border border-black/8 p-5 mb-5">
-            <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-3">חברי ועדה</div>
+            <div className="text-meta font-medium text-mute mb-3">חברי ועדה</div>
             <div className="flex flex-wrap gap-1.5">
               {session.members.map(m => (
                 <div key={m.mkId} className="flex items-center gap-1">
                   {m.slug || m.mkId ? (
                     <Link
                       href={`/mk/${m.slug ?? m.mkId}`}
-                      className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-gray-100 border border-gray-200 text-gray-800 hover:bg-gray-200 transition-colors"
+                      className="text-meta font-bold px-2.5 py-1 rounded-full bg-gray-100 border border-gray-200 text-ink hover:bg-gray-200 transition-colors"
                     >
                       {m.name}
                     </Link>
                   ) : (
-                    <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-gray-100 text-gray-700">
+                    <span className="text-meta font-bold px-2.5 py-1 rounded-full bg-gray-100 text-ink-2">
                       {m.name}
                     </span>
                   )}
@@ -227,24 +227,24 @@ export default function SessionClient({
 
             {session.guests.length > 0 && (
               <div className="mt-4 pt-4 border-t border-black/5">
-                <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-2">מוזמנים</div>
+                <div className="text-meta font-medium text-mute mb-2">מוזמנים</div>
                 <div className="flex flex-col gap-1">
                   {session.guests.map((g, i) => (
-                    <div key={i} className="text-xs text-gray-600">
+                    <div key={i} className="text-xs text-ink-2">
                       <Link
                         href={`/search?q=${encodeURIComponent(g.name)}`}
-                        className="font-bold hover:text-teal-700 transition-colors"
+                        className="font-bold hover:text-accent transition-colors"
                       >
                         {g.name}
                       </Link>
                       {(g.role || g.organization) && (
-                        <span className="text-gray-400">
+                        <span className="text-mute">
                           {g.role && ` – ${g.role}`}
                           {g.organization && ` – ${g.organization}`}
                         </span>
                       )}
                       {g.method === 'online' && (
-                        <span className="mr-1 text-[11px] font-black bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full">מרחוק</span>
+                        <span className="mr-1 text-meta font-medium bg-accent-wash text-accent px-1.5 py-0.5 rounded-full">מרחוק</span>
                       )}
                     </div>
                   ))}
@@ -254,7 +254,7 @@ export default function SessionClient({
 
             {session.staff.length > 0 && (
               <div className="mt-4 pt-4 border-t border-black/5">
-                <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-2">צוות</div>
+                <div className="text-meta font-medium text-mute mb-2">צוות</div>
                 <div className="flex flex-col gap-1">
                   {session.staff.map((s, i) => {
                     const roleLabel: Record<string, string> = {
@@ -264,14 +264,14 @@ export default function SessionClient({
                       translator: 'תרגום',
                     };
                     return (
-                      <div key={i} className="text-xs text-gray-600">
+                      <div key={i} className="text-xs text-ink-2">
                         <Link
                           href={`/search?q=${encodeURIComponent(s.name)}`}
-                          className="font-bold hover:text-teal-700 transition-colors"
+                          className="font-bold hover:text-accent transition-colors"
                         >
                           {s.name}
                         </Link>
-                        <span className="text-gray-400"> – {roleLabel[s.role] ?? s.role}</span>
+                        <span className="text-mute"> – {roleLabel[s.role] ?? s.role}</span>
                       </div>
                     );
                   })}
@@ -284,10 +284,10 @@ export default function SessionClient({
         {/* Agenda */}
         {session.agenda.length > 0 && (
           <div className="rounded-2xl border border-black/8 p-5 mb-5">
-            <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-3">סדר היום</div>
+            <div className="text-meta font-medium text-mute mb-3">סדר היום</div>
             <ol className="flex flex-col gap-2 list-decimal list-inside">
               {session.agenda.map((item, i) => (
-                <li key={i} className="text-sm text-gray-800 leading-snug">
+                <li key={i} className="text-sm text-ink leading-snug">
                   {item.title}
                 </li>
               ))}
@@ -298,7 +298,7 @@ export default function SessionClient({
         {/* Votes */}
         {session.votes.length > 0 && (
           <div className="rounded-2xl border border-black/8 p-5 mb-5">
-            <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-3">הצבעות</div>
+            <div className="text-meta font-medium text-mute mb-3">הצבעות</div>
             <div className="flex flex-col gap-2">
               {session.votes.map((v, i) => {
                 const fallbackTitle = !v.subject && session.agenda.length === 1
@@ -306,23 +306,23 @@ export default function SessionClient({
                   : null;
                 return (
                   <div key={i} className="flex items-start gap-3">
-                    <span className={`shrink-0 text-[11px] font-black px-2 py-0.5 rounded-full mt-0.5 ${
-                      v.passed === true ? 'bg-teal-500 text-white'
+                    <span className={`shrink-0 text-meta font-medium px-2 py-0.5 rounded-full mt-0.5 ${
+                      v.passed === true ? 'bg-accent text-white'
                       : v.passed === false ? 'bg-red-100 text-red-700'
-                      : 'bg-gray-200 text-gray-500'
+                      : 'bg-gray-200 text-mute'
                     }`}>
                       {v.passed === true ? 'אושר' : v.passed === false ? 'נדחה' : 'הצבעה'}
                     </span>
                     <div className="flex-1 min-w-0">
                       {v.subject ? (
-                        <p className="text-sm font-bold text-gray-900 leading-snug">{v.subject}</p>
+                        <p className="text-sm font-bold text-ink leading-snug">{v.subject}</p>
                       ) : fallbackTitle ? (
-                        <p className="text-sm font-bold text-gray-500 leading-snug">{fallbackTitle}</p>
+                        <p className="text-sm font-bold text-mute leading-snug">{fallbackTitle}</p>
                       ) : (
-                        <p className="text-sm text-gray-400 leading-snug">הצבעה {v.voteNumber}</p>
+                        <p className="text-sm text-mute leading-snug">הצבעה {v.voteNumber}</p>
                       )}
                       {(v.forCount > 0 || v.againstCount > 0) && (
-                        <p className="text-[11px] text-gray-500 mt-0.5">
+                        <p className="text-meta text-mute mt-0.5">
                           {v.forCount} בעד · {v.againstCount} נגד{v.abstainCount > 0 ? ` · ${v.abstainCount} נמנע` : ''}
                         </p>
                       )}
@@ -337,19 +337,19 @@ export default function SessionClient({
         {/* Bills */}
         {session.bills.length > 0 && (
           <div className="rounded-2xl border border-black/8 p-5 mb-5">
-            <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-3">חקיקה</div>
+            <div className="text-meta font-medium text-mute mb-3">חקיקה</div>
             <div className="flex flex-col gap-1">
               {session.bills.map(b => (
                 b.title ? (
                   <Link
                     key={b.billId}
                     href={`/bill/${b.billId}`}
-                    className="text-sm text-gray-700 hover:text-teal-700 transition-colors font-bold"
+                    className="text-sm text-ink-2 hover:text-accent transition-colors font-bold"
                   >
                     {b.title}
                   </Link>
                 ) : (
-                  <span key={b.billId} className="text-sm text-gray-500 font-bold">
+                  <span key={b.billId} className="text-sm text-mute font-bold">
                     {`הצ"ח ${b.billId}`}
                   </span>
                 )
@@ -364,7 +364,7 @@ export default function SessionClient({
             {hasTranscript ? (
               <>
                 <div className="flex items-center justify-between mb-4">
-                  <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide">
+                  <div className="text-meta font-medium text-mute">
                     דיון
                     {speakerFilter && (
                       <span className="mr-2 text-black normal-case">
@@ -376,7 +376,7 @@ export default function SessionClient({
                     <select
                       value={speakerFilter ?? ''}
                       onChange={e => setSpeakerFilter(e.target.value || null)}
-                      className="text-xs font-bold px-3 py-1.5 rounded-full border border-black/10 bg-gray-50 focus:outline-none focus:border-black/30 min-w-[140px]"
+                      className="text-xs font-bold px-3 py-1.5 rounded-full border border-black/10 bg-gray-50 focus:border-black/30 min-w-[140px]"
                       dir="rtl"
                     >
                       <option value="">כל הדוברים</option>
@@ -387,7 +387,7 @@ export default function SessionClient({
                     {speakerFilter && (
                       <button
                         onClick={() => setSpeakerFilter(null)}
-                        className="text-[11px] font-black text-gray-400 hover:text-black transition-colors"
+                        className="text-meta font-medium text-mute hover:text-black transition-colors"
                       >
                         ✕
                       </button>
@@ -405,18 +405,18 @@ export default function SessionClient({
                         <div className="shrink-0 w-16 sm:w-28 flex flex-col items-end gap-1 pt-0.5">
                           {showSpeaker && (
                             isAnon ? (
-                              <span className="text-[11px] font-black text-gray-300 select-none">—</span>
+                              <span className="text-meta font-medium text-mute select-none">—</span>
                             ) : (
                               <>
                                 {dt.mkId ? (
                                   <Link
                                     href={`/mk/${dt.slug ?? dt.mkId}`}
-                                    className="text-[11px] font-black text-teal-700 hover:underline text-left leading-tight truncate w-full"
+                                    className="text-meta font-medium text-accent hover:underline text-left leading-tight truncate w-full"
                                   >
                                     {dt.speakerName}
                                   </Link>
                                 ) : (
-                                  <span className="text-[11px] font-black text-gray-600 text-left leading-tight truncate w-full">
+                                  <span className="text-meta font-medium text-ink-2 text-left leading-tight truncate w-full">
                                     {dt.speakerName}
                                   </span>
                                 )}
@@ -428,7 +428,7 @@ export default function SessionClient({
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className={`text-sm leading-relaxed whitespace-pre-wrap ${isAnon ? 'text-gray-500 italic' : 'text-gray-800'}`}>{dt.text}</p>
+                          <p className={`text-sm leading-relaxed whitespace-pre-wrap ${isAnon ? 'text-mute italic' : 'text-ink'}`}>{dt.text}</p>
                         </div>
                       </div>
                     );
@@ -437,7 +437,7 @@ export default function SessionClient({
               </>
             ) : (
               <>
-                <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-3">
+                <div className="text-meta font-medium text-mute mb-3">
                   דוברים ({rawSpeakers.length})
                 </div>
                 <div className="flex flex-wrap gap-1.5">
@@ -446,21 +446,21 @@ export default function SessionClient({
                       <Link
                         key={s.name}
                         href={`/mk/${s.slug ?? s.mkId}`}
-                        className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-gray-100 border border-gray-200 text-gray-800 hover:bg-gray-200 transition-colors"
+                        className="text-meta font-bold px-2.5 py-1 rounded-full bg-gray-100 border border-gray-200 text-ink hover:bg-gray-200 transition-colors"
                       >
                         {s.name}
                       </Link>
                     ) : (
                       <span
                         key={s.name}
-                        className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-gray-100 border border-gray-200 text-gray-700"
+                        className="text-meta font-bold px-2.5 py-1 rounded-full bg-gray-100 border border-gray-200 text-ink-2"
                       >
                         {s.name}
                       </span>
                     )
                   ))}
                 </div>
-                <p className="text-[11px] text-gray-500 mt-3">תמליל הישיבה אינו זמין</p>
+                <p className="text-meta text-mute mt-3">תמליל הישיבה אינו זמין</p>
               </>
             )}
           </div>
@@ -469,19 +469,19 @@ export default function SessionClient({
         {/* Documents */}
         {session.documents.length > 0 && (
           <div className="rounded-2xl border border-black/8 p-5 mb-5">
-            <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-3">מסמכים</div>
+            <div className="text-meta font-medium text-mute mb-3">מסמכים</div>
             <div className="flex flex-col gap-2">
               {session.documents.filter(d => d.type === 'protocol').map(d => (
                 <a key={d.id} href={d.url} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-sm font-bold text-teal-700 hover:text-teal-900">
-                  <span className="text-[11px] font-black bg-teal-50 border border-teal-200 text-teal-700 px-2 py-0.5 rounded-full shrink-0">פרוטוקול</span>
+                  className="flex items-center gap-2 text-sm font-bold text-accent hover:text-accent-ink">
+                  <span className="text-meta font-medium bg-accent-wash border border-line text-accent px-2 py-0.5 rounded-full shrink-0">פרוטוקול</span>
                   {d.name}
                 </a>
               ))}
               {session.documents.filter(d => d.type !== 'protocol').map(d => (
                 <a key={d.id} href={d.url} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-xs text-gray-600 hover:text-black">
-                  <span className="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full shrink-0">{d.appDesc ?? 'מסמך'}</span>
+                  className="flex items-center gap-2 text-xs text-ink-2 hover:text-black">
+                  <span className="text-meta bg-gray-100 text-mute px-2 py-0.5 rounded-full shrink-0">{d.appDesc ?? 'מסמך'}</span>
                   {d.name}
                 </a>
               ))}

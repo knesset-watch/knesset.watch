@@ -25,16 +25,16 @@ interface AskResult {
 function SessionCard({ s }: { s: SessionSource }) {
   const date = new Date(s.date).toLocaleDateString('he-IL', { year: 'numeric', month: 'short', day: 'numeric' });
   return (
-    <Link href={`/session/${s.sessionId}`} className="flex items-start justify-between gap-3 border border-gray-200 rounded-lg px-4 py-3 hover:border-blue-400 hover:bg-blue-50/40 transition-colors group">
+    <Link href={`/session/${s.sessionId}`} className="flex items-start justify-between gap-3 border border-gray-200 rounded-lg px-4 py-3 hover:border-accent hover:bg-accent-wash/40 transition-colors group">
       <div className="min-w-0">
-        <p className="text-sm font-bold text-gray-800 truncate">{s.committeeName || 'ועדה'}</p>
+        <p className="text-sm font-bold text-ink truncate">{s.committeeName || 'ועדה'}</p>
         {s.snippet
-          ? <p className="text-xs text-gray-600 mt-1 line-clamp-2 leading-relaxed">{s.snippet}</p>
-          : s.title && <p className="text-xs text-gray-500 mt-0.5 truncate">{s.title}</p>
+          ? <p className="text-xs text-ink-2 mt-1 line-clamp-2 leading-relaxed">{s.snippet}</p>
+          : s.title && <p className="text-xs text-mute mt-0.5 truncate">{s.title}</p>
         }
-        <p className="text-xs text-gray-400 mt-1">{date}</p>
+        <p className="text-xs text-mute mt-1">{date}</p>
       </div>
-      <span className="text-gray-300 group-hover:text-blue-400 transition-colors shrink-0 text-lg mt-0.5">←</span>
+      <span className="text-mute group-hover:text-accent transition-colors shrink-0 text-lg mt-0.5">←</span>
     </Link>
   );
 }
@@ -42,11 +42,11 @@ function SessionCard({ s }: { s: SessionSource }) {
 function VoteCard({ v }: { v: VoteSource }) {
   const date = v.date.slice(0, 10);
   return (
-    <Link href={`/vote/${v.voteId}`} className="block border border-gray-200 rounded-lg px-4 py-3 hover:border-blue-400 hover:bg-blue-50/40 transition-colors">
+    <Link href={`/vote/${v.voteId}`} className="block border border-gray-200 rounded-lg px-4 py-3 hover:border-accent hover:bg-accent-wash/40 transition-colors">
       <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-medium text-gray-800 line-clamp-2 min-w-0">{v.title}</p>
+        <p className="text-sm font-medium text-ink line-clamp-2 min-w-0">{v.title}</p>
         <div className="flex flex-col items-end gap-1 shrink-0">
-          <span className="text-xs text-gray-500">{date}</span>
+          <span className="text-xs text-mute">{date}</span>
           <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${v.isPassed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
             {v.isPassed ? 'עבר' : 'לא עבר'}
           </span>
@@ -58,11 +58,11 @@ function VoteCard({ v }: { v: VoteSource }) {
 
 function BillCard({ b }: { b: BillSource }) {
   return (
-    <Link href={`/bill/${b.billId}`} className="block border border-gray-200 rounded-lg px-4 py-3 hover:border-blue-400 hover:bg-blue-50/40 transition-colors">
+    <Link href={`/bill/${b.billId}`} className="block border border-gray-200 rounded-lg px-4 py-3 hover:border-accent hover:bg-accent-wash/40 transition-colors">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          {b.committeeName && <p className="text-xs text-gray-500 mb-0.5">{b.committeeName}</p>}
-          <p className="text-sm font-medium text-gray-800 line-clamp-2">{b.title}</p>
+          {b.committeeName && <p className="text-xs text-mute mb-0.5">{b.committeeName}</p>}
+          <p className="text-sm font-medium text-ink line-clamp-2">{b.title}</p>
         </div>
         {b.isPassed && (
           <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-green-100 text-green-700 shrink-0">עבר</span>
@@ -78,10 +78,10 @@ function QueryCard({ q }: { q: QuerySource }) {
     <div className="border border-gray-200 rounded-lg px-4 py-3">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-xs text-gray-500 mb-0.5">שאילתה — {q.mkName}</p>
-          <p className="text-sm font-medium text-gray-800 line-clamp-2">{q.title}</p>
+          <p className="text-xs text-mute mb-0.5">שאילתה — {q.mkName}</p>
+          <p className="text-sm font-medium text-ink line-clamp-2">{q.title}</p>
         </div>
-        <span className="text-xs text-gray-500 whitespace-nowrap">{date}</span>
+        <span className="text-xs text-mute whitespace-nowrap">{date}</span>
       </div>
     </div>
   );
@@ -124,7 +124,7 @@ function AnswerText({ text, sources }: { text: string; sources: Source[] }) {
           href={url}
           type={type}
           id={id}
-          className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 text-[11px] font-black align-super mx-0.5 transition-colors"
+          className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-accent-wash text-accent hover:bg-accent-wash text-meta font-medium align-super mx-0.5 transition-colors"
         >
           ↗
         </EntityTooltip>
@@ -134,7 +134,7 @@ function AnswerText({ text, sources }: { text: string; sources: Source[] }) {
   }
   if (last < text.length) parts.push(<span key={last}>{text.slice(last)}</span>);
 
-  return <p className="text-gray-900 text-sm leading-relaxed whitespace-pre-wrap" dir="rtl">{parts}</p>;
+  return <p className="text-ink text-sm leading-relaxed whitespace-pre-wrap" dir="rtl">{parts}</p>;
 }
 
 const SUGGESTED_QUESTIONS = [
@@ -264,15 +264,15 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
   return (
     <div className="min-h-screen bg-white" dir="rtl">
       <div className="max-w-3xl mx-auto px-6 py-8">
-        <nav className="flex items-center gap-1 text-sm text-gray-400 mb-6">
-          <Link href="/" className="hover:text-gray-700">ראשי</Link>
+        <nav className="flex items-center gap-1 text-sm text-mute mb-6">
+          <Link href="/" className="hover:text-ink-2">ראשי</Link>
           <span>/</span>
-          <span className="text-gray-600">שאל את הכנסת</span>
+          <span className="text-ink-2">שאל את הכנסת</span>
         </nav>
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">שאל את הכנסת</h1>
-        <p className="text-sm text-gray-600 mb-3">חפש אנליטיקה ותשובות על פעילות הכנסת — הצבעות, חוקים, דיונים וועדות</p>
-        <p className="text-xs text-gray-500 mb-6">שאל בעברית על כל נושא הקשור לפעילות הכנסת ה-25. מערכת AI תחפש בפרוטוקולים, הצבעות, חוקים ושאילתות.</p>
+        <h1 className="text-2xl font-bold text-ink mb-2">שאל את הכנסת</h1>
+        <p className="text-sm text-ink-2 mb-3">חפש אנליטיקה ותשובות על פעילות הכנסת — הצבעות, חוקים, דיונים וועדות</p>
+        <p className="text-xs text-mute mb-6">שאל בעברית על כל נושא הקשור לפעילות הכנסת ה-25. מערכת AI תחפש בפרוטוקולים, הצבעות, חוקים ושאילתות.</p>
 
         <form onSubmit={handleSubmit} className="flex gap-2 mb-8">
           <input
@@ -281,13 +281,13 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="לדוגמה: מה הצביע בן גביר על חוקי הביטחון?"
-            className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             autoFocus
           />
           <button
             type="submit"
             disabled={loading || query.trim().length < 2}
-            className="px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-5 py-2.5 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title={query.trim().length < 2 ? "הקלד לפחות 2 תווים כדי להתחיל חיפוש" : ""}
           >
             {loading ? 'מחפש…' : 'שאל'}
@@ -295,23 +295,23 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
         </form>
 
         {query.trim().length < 2 && !loading && (
-          <div className="text-xs text-gray-500 mb-6 p-2 bg-blue-50 rounded border border-blue-100">
+          <div className="text-xs text-mute mb-6 p-2 bg-accent-wash rounded border border-line">
             💡 <span className="font-medium">טיפ:</span> הקלדו את השאלה שלכם כדי להתחיל חיפוש
           </div>
         )}
 
         {!loading && !result && !error && submittedQ.length < 2 && (
-          <div className="mt-4 p-4 bg-gradient-to-br from-blue-50 to-transparent rounded-lg border border-blue-100">
-            <p className="text-xs font-black uppercase text-gray-500 mb-3 tracking-wide">📌 דוגמאות שתוכלו לנסות</p>
-            <p className="text-xs text-gray-600 mb-4">לחצו על אחת מהשאלות כדי לראות תשובה:</p>
+          <div className="mt-4 p-4 bg-gradient-to-br from-blue-50 to-transparent rounded-lg border border-line">
+            <p className="text-xs font-medium text-mute mb-3">📌 דוגמאות שתוכלו לנסות</p>
+            <p className="text-xs text-ink-2 mb-4">לחצו על אחת מהשאלות כדי לראות תשובה:</p>
             <div className="flex flex-col gap-2">
               {SUGGESTED_QUESTIONS.map(({ label, q }) => (
                 <button
                   key={q}
                   onClick={() => submitQuery(q)}
-                  className="flex items-start gap-2 text-sm px-3 py-2 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-white transition-colors text-gray-700 hover:text-blue-700 text-right"
+                  className="flex items-start gap-2 text-sm px-3 py-2 rounded-lg border border-gray-200 hover:border-accent hover:bg-white transition-colors text-ink-2 hover:text-accent text-right"
                 >
-                  <span className="text-[10px] font-black text-blue-600 uppercase tracking-wide shrink-0 mt-0.5">{label}</span>
+                  <span className="text-meta font-medium text-accent shrink-0 mt-0.5">{label}</span>
                   <span className="flex-1">{q}</span>
                 </button>
               ))}
@@ -320,8 +320,8 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
         )}
 
         {loading && (
-          <div className="flex items-center gap-3 text-gray-500 text-sm py-8 justify-center">
-            <svg className="animate-spin h-4 w-4 text-blue-500" viewBox="0 0 24 24" fill="none">
+          <div className="flex items-center gap-3 text-mute text-sm py-8 justify-center">
+            <svg className="animate-spin h-4 w-4 text-accent" viewBox="0 0 24 24" fill="none">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
             </svg>
@@ -337,7 +337,7 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
           <div className="space-y-8">
             <div className="flex flex-wrap gap-2">
               {result!.detectedMk && (
-                <p className="text-xs text-blue-600 bg-blue-50 rounded-md px-3 py-2 inline-flex items-center gap-1">
+                <p className="text-xs text-accent bg-accent-wash rounded-md px-3 py-2 inline-flex items-center gap-1">
                   חיפוש ממוקד עבור{' '}
                   <EntityTooltip href={`/mk/${result!.detectedMk.mkId}`} type="mk" id={result!.detectedMk.mkId} className="font-semibold underline">
                     {result!.detectedMk.fullName}
@@ -358,17 +358,17 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
 
             {/* Answer — streams in while sources are already visible */}
             <div className="bg-gray-50 border border-gray-200 rounded-xl px-5 py-4">
-              <p className="text-sm font-semibold text-gray-500 mb-2">תשובה</p>
+              <p className="text-sm font-semibold text-mute mb-2">תשובה</p>
               {isStreaming ? (
-                <p className="text-gray-900 text-sm leading-relaxed whitespace-pre-wrap" dir="rtl">
+                <p className="text-ink text-sm leading-relaxed whitespace-pre-wrap" dir="rtl">
                   {streamingAnswer}
-                  <span className="inline-block w-0.5 h-[1em] bg-blue-500 ml-0.5 animate-pulse align-text-bottom" />
+                  <span className="inline-block w-0.5 h-[1em] bg-accent ml-0.5 animate-pulse align-text-bottom" />
                 </p>
               ) : result!.answer ? (
                 <AnswerText text={result!.answer} sources={result!.sources} />
               ) : (
-                <div className="flex items-center gap-2 text-gray-400 text-sm py-2">
-                  <svg className="animate-spin h-4 w-4 text-blue-400" viewBox="0 0 24 24" fill="none">
+                <div className="flex items-center gap-2 text-mute text-sm py-2">
+                  <svg className="animate-spin h-4 w-4 text-accent" viewBox="0 0 24 24" fill="none">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                   </svg>
@@ -379,7 +379,7 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
 
             {hasAnySources && (
               <div>
-                <p className="text-sm font-semibold text-gray-500 mb-3">מקורות</p>
+                <p className="text-sm font-semibold text-mute mb-3">מקורות</p>
                 <div className="space-y-5">
                   {SOURCE_GROUPS.map(({ type, label }) => {
                     const items =
@@ -390,7 +390,7 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
                     if (items.length === 0) return null;
                     return (
                       <div key={type}>
-                        <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">{label}</p>
+                        <p className="text-xs font-medium text-mute mb-2">{label}</p>
                         <div className="space-y-2">
                           {type === 'session' && sessions.map(s => <SessionCard key={s.sessionId} s={s} />)}
                           {type === 'vote'    && votes.map(v    => <VoteCard    key={v.voteId}    v={v} />)}
@@ -406,13 +406,13 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
 
             {suggestions.length > 0 && !isStreaming && (
               <div>
-                <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">שאלות המשך</p>
+                <p className="text-xs font-medium text-mute mb-2">שאלות המשך</p>
                 <div className="flex flex-col gap-2">
                   {suggestions.map(sq => (
                     <button
                       key={sq}
                       onClick={() => submitQuery(sq)}
-                      className="text-sm text-right px-4 py-2.5 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-colors text-gray-700 hover:text-blue-700 w-full"
+                      className="text-sm text-right px-4 py-2.5 rounded-lg border border-gray-200 hover:border-accent hover:bg-accent-wash transition-colors text-ink-2 hover:text-accent w-full"
                     >
                       {sq}
                     </button>

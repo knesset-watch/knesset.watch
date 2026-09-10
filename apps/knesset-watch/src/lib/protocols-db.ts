@@ -703,3 +703,148 @@ export async function searchVotesByVector(
     return [];
   }
 }
+
+// ── Plenary votes ────────────────────────────────────────────────────────────
+
+/**
+ * רשימת הצבעות המליאה מ-Turso.
+ *
+ * knesset.db המקומי עוצר ב-25.2.2026 ואילו Turso מגיע ל-28.7.2026 —
+ * 1,202 הצבעות שלא הופיעו בממשק כלל. הסכמה זהה בשני המסדים, ולכן
+ * הרשימה נקראת מכאן.
+ *
+ * התקצירים נשארים מקומיים: bill_policy_analysis לא קיימת ב-Turso,
+ * ולכן הקורא משלים אותם לפי bill_id אחרי השליפה.
+ */
+export interface TursoVoteRow {
+  voteId: number;
+  title: string;
+  date: string;
+  totalFor: number;
+  totalAgainst: number;
+  totalAbstain: number;
+  isPassed: boolean;
+  margin: number;
+  microAgenda: string | null;
+  macroAgenda: string | null;
+  billId: number | null;
+}
+
+export interface TursoVoteListOptions {
+  passedOnly?: boolean;
+  failedOnly?: boolean;
+  maxMargin?: number;
+  search?: string;
+  from?: string;
+  to?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export async function getVoteListFromTurso(
+  opts: TursoVoteListOptions = {},
+): Promise<{ votes: TursoVoteRow[]; total: number } | null> {
+  const client = getTurso();
+  if (!client) return null;
+
+  const { passedOnly, failedOnly, maxMargin, search, from, to, limit = 50, offset = 0 } = opts;
+  const conds: string[] = [];
+  const args: Array<string | number> = [];
+
+  if (passedOnly) conds.push('is_passed = 1');
+  if (failedOnly) conds.push('is_passed = 0');
+  if (maxMargin !== undefined) { conds.push('ABS(total_for - total_against) <= ?'); args.push(maxMargin); }
+  if (search) { conds.push('title LIKE ?'); args.push(`%${search}%`); }
+  if (from) { conds.push('date >= ?'); args.push(from); }
+  if (to) { conds.push('date <= ?'); args.push(to + 'T23:59:59'); }
+
+  const where = conds.length > 0 ? `WHERE ${conds.join(' AND ')}` : '';
+
+  try {
+    const [countRes, rowsRes] = await Promise.all([
+      client.execute({ sql: `SELECT COUNT(*) AS cnt FROM plenary_vote ${where}`, args }),
+      client.execute({
+        sql: `SELECT id, title, date, total_for, total_against, total_abstain,
+                     is_passed, micro_agenda, macro_agenda, bill_id
+              FROM plenary_vote ${where}
+              ORDER BY date DESC
+              LIMIT ? OFFSET ?`,
+        args: [...args, limit, offset],
+      }),
+    ]);
+
+    const votes: TursoVoteRow[] = rowsRes.rows.map(r => {
+      const forN = Number(r['total_for'] ?? 0);
+      const againstN = Number(r['total_against'] ?? 0);
+      return {
+        voteId: Number(r['id']),
+        title: String(r['title'] ?? ''),
+        date: String(r['date'] ?? ''),
+        totalFor: forN,
+        totalAgainst: againstN,
+        totalAbstain: Number(r['total_abstain'] ?? 0),
+        isPassed: Number(r['is_passed']) === 1,
+        margin: Math.abs(forN - againstN),
+        microAgenda: r['micro_agenda'] != null ? String(r['micro_agenda']) : null,
+        macroAgenda: r['macro_agenda'] != null ? String(r['macro_agenda']) : null,
+        billId: r['bill_id'] != null ? Number(r['bill_id']) : null,
+      };
+    });
+
+    return { votes, total: Number(countRes.rows[0]['cnt'] ?? 0) };
+  } catch {
+    // Turso לא זמין — הקורא נופל חזרה למסד המקומי
+    return null;
+  }
+}
+
+// ── Recently passed bills ────────────────────────────────────────────────────
+
+/**
+ * החוקים האחרונים שהתקבלו, מהמסד המעודכן.
+ * publication_date ב-Turso מגיע ל-26.7.2026 מול 26.3.2026 ב-knesset.db.
+ */
+export async function getRecentPassedBillsFromTurso(
+  opts: { from?: string; to?: string; limit?: number } = {},
+): Promise<{
+  total: number;
+  bills: Array<{ id: number; title: string; date: string }>;
+  newest: string | null;
+} | null> {
+  const client = getTurso();
+  if (!client) return null;
+
+  const { from, to, limit = 8 } = opts;
+  const conds = ['is_passed = 1', 'publication_date IS NOT NULL'];
+  const args: string[] = [];
+  if (from) { conds.push('publication_date >= ?'); args.push(from); }
+  if (to)   { conds.push('publication_date <= ?'); args.push(to); }
+  const where = `WHERE ${conds.join(' AND ')}`;
+
+  try {
+    const [countRes, rowsRes] = await Promise.all([
+      client.execute({ sql: `SELECT COUNT(*) AS cnt FROM bill ${where}`, args }),
+      client.execute({
+        sql: `SELECT id, title, publication_date
+              FROM bill ${where}
+              ORDER BY publication_date DESC, id DESC
+              LIMIT ?`,
+        args: [...args, limit],
+      }),
+    ]);
+
+    const bills = rowsRes.rows.map(r => ({
+      id: Number(r['id']),
+      title: String(r['title'] ?? ''),
+      date: String(r['publication_date'] ?? ''),
+    }));
+
+    return {
+      total: Number(countRes.rows[0]['cnt'] ?? 0),
+      bills,
+      newest: bills[0]?.date ?? null,
+    };
+  } catch {
+    return null;
+  }
+}

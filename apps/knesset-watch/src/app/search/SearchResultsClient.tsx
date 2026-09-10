@@ -57,18 +57,18 @@ export default function SearchResultsClient({ initialQ }: { initialQ: string }) 
   return (
     <div className="min-h-screen bg-white" dir="rtl">
       <div className="max-w-4xl mx-auto px-6 py-8">
-        <nav className="flex items-center gap-1 text-sm text-gray-400 mb-6">
-          <Link href="/" className="font-black hover:text-black transition-colors">ראשי</Link>
+        <nav className="flex items-center gap-1 text-sm text-mute mb-6">
+          <Link href="/" className="font-medium hover:text-black transition-colors">ראשי</Link>
           <span className="mx-1">›</span>
-          <span className="text-black font-black">חיפוש</span>
+          <span className="text-black font-medium">חיפוש</span>
         </nav>
 
-        <h1 className="text-4xl font-black mb-6">חיפוש</h1>
+        <h1 className="text-4xl font-medium mb-6">חיפוש</h1>
 
         {/* Search form */}
         <form onSubmit={handleSearch} className="flex items-center gap-2 mb-8">
           <div className="flex-1 flex items-center border border-black/20 rounded-xl px-4 py-3 bg-gray-50 focus-within:border-black/50 focus-within:bg-white transition-colors">
-            <svg className="w-4 h-4 text-gray-400 shrink-0 ml-2" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg className="w-4 h-4 text-mute shrink-0 ml-2" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="6.5" cy="6.5" r="4.5"/><path d="m10 10 4 4"/>
             </svg>
             <input
@@ -76,7 +76,7 @@ export default function SearchResultsClient({ initialQ }: { initialQ: string }) 
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="חפשו ח&quot;כ, ועדה, חוק..."
-              className="flex-1 bg-transparent text-sm font-black outline-none placeholder:text-gray-400 placeholder:font-normal"
+              className="flex-1 bg-transparent text-sm font-medium placeholder:text-mute placeholder:font-normal"
               dir="rtl"
               autoFocus
             />
@@ -84,7 +84,7 @@ export default function SearchResultsClient({ initialQ }: { initialQ: string }) 
           <button
             type="submit"
             disabled={query.trim().length < 2}
-            className="px-5 py-3 rounded-xl bg-black text-white text-sm font-black disabled:opacity-30 hover:bg-gray-800 transition-colors shrink-0"
+            className="px-5 py-3 rounded-xl bg-black text-white text-sm font-medium disabled:opacity-30 hover:bg-gray-800 transition-colors shrink-0"
           >
             חיפוש
           </button>
@@ -92,7 +92,7 @@ export default function SearchResultsClient({ initialQ }: { initialQ: string }) 
 
         {/* Loading */}
         {loading && (
-          <div className="flex items-center justify-center py-16 text-gray-400 text-sm">
+          <div className="flex items-center justify-center py-16 text-mute text-sm">
             טוען...
           </div>
         )}
@@ -101,7 +101,7 @@ export default function SearchResultsClient({ initialQ }: { initialQ: string }) 
         {!loading && submittedQ.length >= 2 && !hasResults && (
           <div className="text-center py-16">
             <div className="text-4xl mb-3">🔍</div>
-            <div className="text-gray-500 text-sm">לא נמצאו תוצאות עבור &quot;{submittedQ}&quot;</div>
+            <div className="text-mute text-sm">לא נמצאו תוצאות עבור &quot;{submittedQ}&quot;</div>
           </div>
         )}
 
@@ -111,7 +111,7 @@ export default function SearchResultsClient({ initialQ }: { initialQ: string }) 
           if (group.length === 0) return null;
           return (
             <div key={type} className="mb-8">
-              <div className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3">{TYPE_LABEL[type]}</div>
+              <div className="text-meta font-medium text-mute mb-3">{TYPE_LABEL[type]}</div>
               <div className="flex flex-col gap-1.5">
                 {group.map(hit => (
                   <Link
@@ -120,12 +120,12 @@ export default function SearchResultsClient({ initialQ }: { initialQ: string }) 
                     className="flex items-center gap-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors px-4 py-3"
                   >
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-black text-gray-900 truncate">{hit.title}</div>
+                      <div className="text-sm font-medium text-ink truncate">{hit.title}</div>
                       {hit.subtitle && (
-                        <div className="text-[11px] text-gray-500 mt-0.5 truncate">{hit.subtitle}</div>
+                        <div className="text-meta text-mute mt-0.5 truncate">{hit.subtitle}</div>
                       )}
                     </div>
-                    <svg className="w-3.5 h-3.5 text-gray-300 shrink-0 rotate-180" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <svg className="w-3.5 h-3.5 text-mute shrink-0 rotate-180" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <path d="m6 3 5 5-5 5"/>
                     </svg>
                   </Link>

@@ -16,7 +16,7 @@ const TYPE_LABELS: Record<TimelineEvent['type'], string> = {
 };
 
 const TYPE_COLORS: Record<TimelineEvent['type'], string> = {
-  bill: 'bg-blue-100 text-blue-800',
+  bill: 'bg-accent-wash text-accent',
   vote: 'bg-purple-100 text-purple-800',
   query: 'bg-green-100 text-green-800',
 };
@@ -46,24 +46,24 @@ export function MkTimeline({ query, topicKeywords }: { query: string; topicKeywo
       .finally(() => setLoading(false));
   }, [query, topicKeywords]);
 
-  if (loading) return <div className="text-sm text-gray-400 mt-4">טוען ציר זמן...</div>;
+  if (loading) return <div className="text-sm text-mute mt-4">טוען ציר זמן...</div>;
   if (!mkName || events.length === 0) return null;
 
   return (
     <div className="mt-6 border-t pt-4">
-      <h3 className="text-sm font-semibold text-gray-600 mb-3">פעילות {mkName} בנושא</h3>
+      <h3 className="text-sm font-semibold text-ink-2 mb-3">פעילות {mkName} בנושא</h3>
       <div className="space-y-2">
         {events.map((event) => {
           const href = TYPE_LINKS[event.type](event.sourceId);
           const row = (
             <div key={`${event.type}-${event.sourceId}`} className="flex items-start gap-3 text-sm">
-              <span className="text-gray-400 w-20 shrink-0 tabular-nums">{event.date}</span>
+              <span className="text-mute w-20 shrink-0 tabular-nums">{event.date}</span>
               <span className={`text-xs px-1.5 py-0.5 rounded font-medium shrink-0 ${TYPE_COLORS[event.type]}`}>
                 {TYPE_LABELS[event.type]}
               </span>
-              <span className="text-gray-800">
+              <span className="text-ink">
                 {event.title}
-                {event.detail && <span className="text-gray-400 mr-1">— {event.detail}</span>}
+                {event.detail && <span className="text-mute mr-1">— {event.detail}</span>}
               </span>
             </div>
           );

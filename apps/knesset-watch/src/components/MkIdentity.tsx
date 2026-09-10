@@ -63,7 +63,7 @@ export function MkAvatar({
 
   const fill =
     isCoalition === true ? 'bg-green-600'
-    : isCoalition === false ? 'bg-blue-600'
+    : isCoalition === false ? 'bg-accent'
     : 'bg-gray-400';
 
   if (photo && !failed) {
@@ -81,7 +81,7 @@ export function MkAvatar({
 
   return (
     <div
-      className={`${AVATAR[size]} rounded-full shrink-0 ring-2 ${ring} ${fill} flex items-center justify-center font-black text-white`}
+      className={`${AVATAR[size]} rounded-full shrink-0 ring-2 ${ring} ${fill} flex items-center justify-center font-medium text-white`}
       aria-hidden="true"
     >
       {initials(name)}
@@ -109,17 +109,17 @@ export function MkBackground({
   return (
     <div className={`flex flex-col gap-0.5 ${className}`}>
       {occupation && (
-        <p className="text-xs text-gray-600 font-medium truncate" title={occupation}>
+        <p className="text-xs text-ink-2 font-medium truncate" title={occupation}>
           {occupation}
         </p>
       )}
       {education && (
-        <p className="text-xs text-gray-400 font-medium truncate" title={education}>
+        <p className="text-xs text-mute font-medium truncate" title={education}>
           {education}
         </p>
       )}
       {tenure && (
-        <p className="text-[11px] text-gray-400 font-black tabular-nums">{tenure}</p>
+        <p className="text-meta text-mute font-medium tabular-nums">{tenure}</p>
       )}
     </div>
   );

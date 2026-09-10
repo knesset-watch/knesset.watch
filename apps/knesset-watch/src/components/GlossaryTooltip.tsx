@@ -40,7 +40,7 @@ export default function GlossaryTooltip({ term, children, className = '' }: Glos
         className={`inline-flex items-center gap-1 cursor-help ${className}`}
       >
         {children}
-        <span className="text-[11px] font-black text-blue-600 hover:text-blue-800 transition-colors">?</span>
+        <span className="text-meta font-medium text-accent hover:text-accent transition-colors">?</span>
       </div>
 
       {showTooltip && (
@@ -51,7 +51,7 @@ export default function GlossaryTooltip({ term, children, className = '' }: Glos
           } left-1/2 transform -translate-x-1/2`}
         >
           <div className="font-bold mb-1">{entry.label}</div>
-          <div className="text-xs text-gray-300">{entry.definition}</div>
+          <div className="text-xs text-mute">{entry.definition}</div>
           <div className="absolute left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-gray-900"
             style={{
               [tooltipPos === 'top' ? 'top' : 'bottom']: '-4px',

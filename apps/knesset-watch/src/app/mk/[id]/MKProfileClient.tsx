@@ -196,15 +196,15 @@ function VoteBreakdownBar({ stats }: { stats: VoteStats }) {
       </div>
       <div className="flex flex-wrap gap-x-5 gap-y-1 mt-2.5">
         {segments.map(s => (
-          <span key={s.label} className="text-xs font-black tabular-nums" style={{ color: s.color }}>
+          <span key={s.label} className="text-xs font-medium tabular-nums" style={{ color: s.color }}>
             {s.count.toLocaleString()} <span className="font-bold opacity-80">{s.label}</span>
           </span>
         ))}
-        <span className="text-xs text-gray-500 font-medium">סה"כ {total.toLocaleString()} הצבעות</span>
+        <span className="text-xs text-mute font-medium">סה"כ {total.toLocaleString()} הצבעות</span>
       </div>
-      <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-100 text-xs text-gray-700 leading-relaxed">
-        <p className="font-black text-blue-800 mb-2">ℹ️ כיצד מחושבים הנתונים:</p>
-        <p className="text-[11px]">
+      <div className="mt-4 p-3 bg-accent-wash rounded-lg border border-line text-xs text-ink-2 leading-relaxed">
+        <p className="font-medium text-accent mb-2">ℹ️ כיצד מחושבים הנתונים:</p>
+        <p className="text-meta">
           <span className="font-bold">בעד/נגד</span> — הצבעות שנספרות לקביעת זוכה/מפסיד<br/>
           <span className="font-bold">נמנע/נוכח</span> — לא נספרות בחישוב התוצאה<br/>
           זה מאפשר לראות בדיוק אם ח"כ תומך או מתנגד לעמדת הסיעה שלו
@@ -219,13 +219,13 @@ function AlignmentCard({ pct, total }: { pct: number; total: number }) {
   const color = isHigh ? '#16A34A' : '#2563EB';
   return (
     <div>
-      <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-2">מיקום מול הרוב</div>
-      <div className="text-4xl font-black tabular-nums leading-none" style={{ color }}>{pct}%</div>
-      <div className="text-xs text-gray-500 mt-1">הצביע עם הצד המנצח</div>
+      <div className="text-meta font-medium text-mute mb-2">מיקום מול הרוב</div>
+      <div className="text-4xl font-medium tabular-nums leading-none" style={{ color }}>{pct}%</div>
+      <div className="text-xs text-mute mt-1">הצביע עם הצד המנצח</div>
       <div className="mt-3 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
         <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: color }} />
       </div>
-      <div className="text-[11px] text-gray-500 mt-1.5 tabular-nums">
+      <div className="text-meta text-mute mt-1.5 tabular-nums">
         מתוך {total.toLocaleString()} הצבעות בעד/נגד
       </div>
     </div>
@@ -237,13 +237,13 @@ function BillsCard({ bills }: { bills: BillSummary[] }) {
   const ratio = bills.length > 0 ? Math.round((passed / bills.length) * 100) : 0;
   return (
     <div>
-      <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-2">הצעות חוק</div>
-      <div className="text-4xl font-black tabular-nums leading-none">{bills.length.toLocaleString()}</div>
-      <div className="text-xs text-gray-500 mt-1">הוגשו בכנסת 25</div>
+      <div className="text-meta font-medium text-mute mb-2">הצעות חוק</div>
+      <div className="text-4xl font-medium tabular-nums leading-none">{bills.length.toLocaleString()}</div>
+      <div className="text-xs text-mute mt-1">הוגשו בכנסת 25</div>
       {bills.length > 0 && (
         <div className="mt-2 flex items-baseline gap-1.5">
-          <span className="text-xl font-black text-teal-600 tabular-nums">{passed}</span>
-          <span className="text-xs text-gray-500">עברו ({ratio}%)</span>
+          <span className="text-xl font-medium text-accent tabular-nums">{passed}</span>
+          <span className="text-xs text-mute">עברו ({ratio}%)</span>
         </div>
       )}
     </div>
@@ -256,7 +256,7 @@ function CurrentPositions({ positions }: { positions: PositionSummary[] }) {
 
   return (
     <div>
-      <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-3">תפקידים נוכחיים</div>
+      <div className="text-meta font-medium text-mute mb-3">תפקידים נוכחיים</div>
       <div className="flex flex-col gap-2">
         {current.map(p => {
           const label = p.dutyDesc && p.committee
@@ -265,7 +265,7 @@ function CurrentPositions({ positions }: { positions: PositionSummary[] }) {
           return (
             <div key={p.id} className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-black shrink-0" />
-              <span className="text-sm font-bold text-gray-800 leading-snug">{label}</span>
+              <span className="text-sm font-bold text-ink leading-snug">{label}</span>
             </div>
           );
         })}
@@ -280,41 +280,41 @@ function AgendaFingerprint({ stats }: { stats: AgendaStat[] }) {
 
   return (
     <div>
-      <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-4">טביעת אצבע פרלמנטרית</div>
+      <div className="text-meta font-medium text-mute mb-4">טביעת אצבע פרלמנטרית</div>
       <div className="flex flex-col gap-4">
         {stats.slice(0, 8).map(s => (
           <div key={s.macroAgenda}>
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-sm font-black text-gray-800">{s.macroAgenda}</span>
-              <div className="flex gap-2 text-[11px] font-bold uppercase">
+              <span className="text-sm font-medium text-ink">{s.macroAgenda}</span>
+              <div className="flex gap-2 text-meta font-bold">
                 {s.pushedCount > 0 && (
-                  <span className="text-teal-600">דוחף ({s.pushedCount})</span>
+                  <span className="text-accent">דוחף ({s.pushedCount})</span>
                 )}
                 {s.supportedCount > 0 && (
-                  <span className="text-blue-600">תומך ({s.supportedCount})</span>
+                  <span className="text-accent">תומך ({s.supportedCount})</span>
                 )}
               </div>
             </div>
             <div className="h-2 bg-gray-100 rounded-full overflow-hidden flex">
               <div
-                className="h-full bg-teal-500"
+                className="h-full bg-accent"
                 style={{ width: `${(s.pushedCount / max) * 100}%` }}
               />
               <div
-                className="h-full bg-blue-400"
+                className="h-full bg-accent"
                 style={{ width: `${(s.supportedCount / max) * 100}%` }}
               />
             </div>
           </div>
         ))}
       </div>
-      <div className="mt-4 flex gap-4 text-[11px] font-black text-gray-400 uppercase">
+      <div className="mt-4 flex gap-4 text-meta font-medium text-mute">
         <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-teal-500" />
+          <div className="w-2 h-2 rounded-full bg-accent" />
           <span>דחיפה (הצעות חוק)</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-blue-400" />
+          <div className="w-2 h-2 rounded-full bg-accent" />
           <span>תמיכה (הצבעות בעד)</span>
         </div>
       </div>
@@ -343,37 +343,37 @@ function ForensicInsightsCard({
 
   return (
     <div className="bg-orange-50/50 border border-orange-100 p-6 rounded-2xl">
-      <div className="text-[11px] font-black text-orange-400 uppercase tracking-wide mb-4 flex items-center gap-2">
+      <div className="text-meta font-medium text-orange-400 mb-4 flex items-center gap-2">
         <span className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></span>
         ניתוח פורנזי
       </div>
-      <div className="grid grid-cols-2 gap-6 text-right">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-right">
         <div>
-          <span className="block text-3xl font-black text-orange-600">{rebellions}</span>
-          <span className="text-[11px] font-black text-orange-400 uppercase leading-tight block mt-1">הצבעות נגד הסיעה</span>
+          <span className="block text-3xl font-medium text-orange-600">{rebellions}</span>
+          <span className="text-meta font-medium text-orange-400 leading-tight block mt-1">הצבעות נגד הסיעה</span>
           {rebellionRate !== null && (
-            <p className="text-[11px] text-orange-400 mt-1 font-black">
+            <p className="text-meta text-orange-400 mt-1 font-medium">
               {rebellionRate}% מתוך {totalPartisanVotes.toLocaleString()} הצבעות בעד/נגד
             </p>
           )}
           {rebelledVotes.length > 0 && (
             <button
               onClick={() => setShowRebelled(v => !v)}
-              className="text-[11px] font-black text-orange-500 hover:text-orange-700 mt-2 underline underline-offset-2"
+              className="text-meta font-medium text-orange-500 hover:text-orange-700 mt-2 underline underline-offset-2"
             >
               {showRebelled ? '▲ הסתר' : `▼ הצג הצבעות (${rebelledVotes.length})`}
             </button>
           )}
         </div>
         <div className="border-r border-orange-100 pr-6">
-          <span className="block text-3xl font-black text-gray-900">{attendance}</span>
-          <span className="text-[11px] font-black text-gray-400 uppercase leading-tight block mt-1">נוכחות בוועדות</span>
+          <span className="block text-3xl font-medium text-ink">{attendance}</span>
+          <span className="text-meta font-medium text-mute leading-tight block mt-1">נוכחות בוועדות</span>
           {attendanceRate !== null ? (
-            <p className="text-[11px] text-gray-500 mt-1 font-black">
+            <p className="text-meta text-mute mt-1 font-medium">
               {attendanceRate}% מתוך {totalRelevantSessions} ישיבות
             </p>
           ) : (
-            <p className="text-[11px] text-gray-500 mt-1 font-medium">ישיבות שתועדה בהן נוכחות</p>
+            <p className="text-meta text-mute mt-1 font-medium">ישיבות שתועדה בהן נוכחות</p>
           )}
         </div>
       </div>
@@ -382,12 +382,12 @@ function ForensicInsightsCard({
           {rebelledVotes.map(v => (
             <Link key={v.voteId} href={`/vote/${v.voteId}`}
               className="flex items-start gap-2 px-3 py-2 rounded-xl bg-white hover:bg-orange-50 transition-colors">
-              <span className={`shrink-0 mt-0.5 text-[11px] font-black px-2 py-0.5 rounded-full ${RESULT_COLORS[CODE_TO_LABEL[v.resultCode]] ?? 'bg-zinc-100 text-zinc-500'}`}>
+              <span className={`shrink-0 mt-0.5 text-meta font-medium px-2 py-0.5 rounded-full ${RESULT_COLORS[CODE_TO_LABEL[v.resultCode]] ?? 'bg-zinc-100 text-zinc-500'}`}>
                 {CODE_TO_LABEL[v.resultCode]}
               </span>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-gray-800 leading-snug line-clamp-2">{v.title}</p>
-                <span className="text-[11px] text-gray-500">{v.date?.slice(0, 10)}</span>
+                <p className="text-xs font-bold text-ink leading-snug line-clamp-2">{v.title}</p>
+                <span className="text-meta text-mute">{v.date?.slice(0, 10)}</span>
               </div>
             </Link>
           ))}
@@ -411,10 +411,10 @@ function BillTopicsCard({ topics, accentColor, onNavigate }: {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide">תחומי חקיקה</div>
+        <div className="text-meta font-medium text-mute">תחומי חקיקה</div>
         <button
           onClick={onNavigate}
-          className="text-xs font-black text-gray-500 hover:text-black transition-colors"
+          className="text-xs font-medium text-mute hover:text-black transition-colors"
         >
           כל החוקים ←
         </button>
@@ -423,11 +423,11 @@ function BillTopicsCard({ topics, accentColor, onNavigate }: {
         {shown.map(t => (
           <div key={t.committeeName}>
             <div className="flex items-center justify-between mb-0.5">
-              <span className="text-sm font-bold text-gray-800">{t.committeeName}</span>
-              <span className="text-xs text-gray-500 tabular-nums">
+              <span className="text-sm font-bold text-ink">{t.committeeName}</span>
+              <span className="text-xs text-mute tabular-nums">
                 {t.total}
                 {t.passed > 0 && (
-                  <span className="text-teal-600 font-black"> · {t.passed} עברו</span>
+                  <span className="text-accent font-medium"> · {t.passed} עברו</span>
                 )}
               </span>
             </div>
@@ -652,7 +652,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
         <div className="mb-8">
           <button
             onClick={() => window.history.length > 1 ? router.back() : router.push('/')}
-            className="text-sm font-black px-3 py-2 rounded border border-black/10 hover:bg-gray-50 transition-colors mb-5"
+            className="text-sm font-medium px-3 py-2 rounded border border-black/10 hover:bg-gray-50 transition-colors mb-5"
           >
             → חזרה
           </button>
@@ -661,19 +661,19 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
             <div className="h-9 w-48 bg-gray-100 rounded animate-pulse" />
           ) : (
             <>
-              <h1 className="text-3xl font-black leading-tight">{mkName || `ח"כ ${mkId}`}</h1>
+              <h1 className="text-3xl font-medium leading-tight">{mkName || `ח"כ ${mkId}`}</h1>
               <div className="flex items-center gap-2 flex-wrap mt-2">
                 {profile?.factionName && (
                   <Link
                     href={`/faction/${encodeURIComponent(profile.factionName)}`}
-                    className="text-sm font-bold text-gray-500 hover:text-teal-700 transition-colors"
+                    className="text-sm font-bold text-mute hover:text-accent transition-colors"
                   >
                     {profile.factionName}
                   </Link>
                 )}
                 {isCoalition !== null && isCoalition !== undefined && (
                   <span
-                    className="text-[11px] font-black px-2.5 py-0.5 rounded-full"
+                    className="text-meta font-medium px-2.5 py-0.5 rounded-full"
                     style={{ backgroundColor: accentColor, color: '#fff' }}
                   >
                     {isCoalition ? 'קואליציה' : 'אופוזיציה'}
@@ -683,7 +683,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
 
               {/* Quick stats */}
               {profile && (
-                <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-xs text-gray-500 font-medium">
+                <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-xs text-mute font-medium">
                   {profile.voteStats && (
                     <span className="tabular-nums">{profile.voteStats.total.toLocaleString()} הצבעות</span>
                   )}
@@ -705,8 +705,8 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`shrink-0 text-xs font-black px-4 py-2 rounded-lg transition-colors ${
-                tab === t ? 'bg-black text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              className={`shrink-0 text-xs font-medium px-4 py-2 rounded-lg transition-colors ${
+                tab === t ? 'bg-black text-white' : 'bg-gray-100 text-ink-2 hover:bg-gray-200'
               }`}
             >
               {label}
@@ -733,14 +733,14 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
               </div>
             ) : profile?.voteStats ? (
               <div className="rounded-2xl border border-black/8 p-6">
-                <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-4">תמהיל הצבעות</div>
+                <div className="text-meta font-medium text-mute mb-4">תמהיל הצבעות</div>
                 <VoteBreakdownBar stats={profile.voteStats} />
               </div>
             ) : null}
 
             {/* Bills + alignment cards */}
             {!profileLoading && profile && (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="rounded-2xl border border-black/8 p-5">
                   <BillsCard bills={profile.bills} />
                 </div>
@@ -759,14 +759,14 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
             {!profileLoading && profile && (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 <div className="rounded-2xl border border-black/8 p-5">
-                  <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-2">שאילתות</div>
-                  <div className="text-4xl font-black tabular-nums leading-none">{profile.queries.length.toLocaleString()}</div>
-                  <div className="text-xs text-gray-500 mt-1">לממשלה</div>
+                  <div className="text-meta font-medium text-mute mb-2">שאילתות</div>
+                  <div className="text-4xl font-medium tabular-nums leading-none">{profile.queries.length.toLocaleString()}</div>
+                  <div className="text-xs text-mute mt-1">לממשלה</div>
                 </div>
                 <div className="rounded-2xl border border-black/8 p-5">
-                  <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-2">תפקידים</div>
-                  <div className="text-4xl font-black tabular-nums leading-none">{profile.positions.length}</div>
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className="text-meta font-medium text-mute mb-2">תפקידים</div>
+                  <div className="text-4xl font-medium tabular-nums leading-none">{profile.positions.length}</div>
+                  <div className="text-xs text-mute mt-1">
                     {profile.positions.filter(p => p.isCurrent).length} נוכחיים
                   </div>
                 </div>
@@ -776,17 +776,17 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                   return (
                     <div className={`rounded-2xl border-2 p-5 transition-all ${isHighAbsence ? 'border-red-300 bg-red-50' : 'border-black/8'}`}>
                       <div className="flex items-center justify-between mb-2">
-                        <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide">היעדרויות</div>
+                        <div className="text-meta font-medium text-mute">היעדרויות</div>
                         {isHighAbsence && (
-                          <span title="הח״כ חסר מחצי ההצבעות ויותר - נתוני אמינות נמוכים" className="inline-flex items-center gap-1 text-[10px] font-black uppercase px-2 py-1 rounded bg-red-200 text-red-800">
+                          <span title="הח״כ חסר מחצי ההצבעות ויותר - נתוני אמינות נמוכים" className="inline-flex items-center gap-1 text-meta font-medium px-2 py-1 rounded bg-red-200 text-red-800">
                             ⚠ אזהרה
                           </span>
                         )}
                       </div>
-                      <div className={`text-4xl font-black tabular-nums leading-none ${isHighAbsence ? 'text-red-600' : 'text-rose-500'}`}>
+                      <div className={`text-4xl font-medium tabular-nums leading-none ${isHighAbsence ? 'text-red-600' : 'text-rose-500'}`}>
                         {profile.voteStats.absenceCount.toLocaleString()}
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">
+                      <div className="text-xs text-mute mt-1">
                         {absenceRate}% מכל ההצבעות
                       </div>
                     </div>
@@ -819,18 +819,18 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
             {/* Committee session activity */}
             {!profileLoading && profile && profile.committeeActivity?.length > 0 && (
               <div className="rounded-2xl border border-black/8 p-6">
-                <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-4">פעילות בוועדות</div>
+                <div className="text-meta font-medium text-mute mb-4">פעילות בוועדות</div>
                 <div className="flex flex-col gap-4">
                   {profile.committeeActivity.map(item => (
                     <div key={item.committeeName}>
                       <div className="flex items-center justify-between mb-1.5">
                         <Link
                           href={`/committee/${encodeURIComponent(item.committeeName)}`}
-                          className="text-sm font-black text-teal-700 hover:text-teal-900 transition-colors"
+                          className="text-sm font-medium text-accent hover:text-accent-ink transition-colors"
                         >
                           {item.committeeName}
                         </Link>
-                        <span className="text-xs text-gray-500 tabular-nums font-bold">{item.sessionCount} ישיבות</span>
+                        <span className="text-xs text-mute tabular-nums font-bold">{item.sessionCount} ישיבות</span>
                       </div>
                       {item.recentSessions.length > 0 && (
                         <div className="flex flex-col gap-1 mr-1">
@@ -838,10 +838,10 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                             <Link
                               key={s.id}
                               href={`/session/${s.id}`}
-                              className="flex items-center gap-2 text-[11px] text-gray-500 hover:text-gray-900 transition-colors"
+                              className="flex items-center gap-2 text-meta text-mute hover:text-ink transition-colors"
                             >
-                              <span className="text-gray-300 shrink-0">·</span>
-                              <span className="text-gray-400 shrink-0 tabular-nums">{s.date?.slice(0, 10)}</span>
+                              <span className="text-mute shrink-0">·</span>
+                              <span className="text-mute shrink-0 tabular-nums">{s.date?.slice(0, 10)}</span>
                               <span className="truncate">{s.title ?? 'ישיבה'}</span>
                             </Link>
                           ))}
@@ -882,15 +882,15 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
             {!profileLoading && profile && profile.bills.length > 0 && (
               <div className="rounded-2xl border border-black/8 p-6">
                 <div className="flex items-center justify-between mb-1">
-                  <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide">הצעות חוק שיזם</div>
+                  <div className="text-meta font-medium text-mute">הצעות חוק שיזם</div>
                   <button
                     onClick={() => { setTab('bills'); setShowPassedOnly(false); }}
-                    className="text-xs font-black text-gray-500 hover:text-black transition-colors"
+                    className="text-xs font-medium text-mute hover:text-black transition-colors"
                   >
                     הצג הכל ←
                   </button>
                 </div>
-                <p className="text-[11px] text-gray-400 font-medium mb-4">
+                <p className="text-meta text-mute font-medium mb-4">
                   {profile.bills.length} הצעות · {profile.bills.filter(b => b.isPassed).length} עברו בקריאה שלישית
                 </p>
                 <div className="flex flex-col gap-2">
@@ -908,9 +908,9 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                           <span
                             className={`shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full ${
                               stage.tone === 'passed'
-                                ? 'bg-teal-500'
+                                ? 'bg-accent'
                                 : stage.tone === 'advanced'
-                                  ? 'bg-blue-400'
+                                  ? 'bg-accent'
                                   : stage.tone === 'stopped'
                                     ? 'bg-red-300'
                                     : 'bg-gray-300'
@@ -921,13 +921,13 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                               {/* הכותרת הייתה span. יש billId ויש /bill/[id] — היה חסר רק הקישור. */}
                               <Link
                                 href={`/bill/${b.billId}`}
-                                className="text-sm font-bold text-gray-800 leading-snug hover:text-teal-700 hover:underline"
+                                className="text-sm font-bold text-ink leading-snug hover:text-accent hover:underline"
                               >
                                 {b.title}
                               </Link>
                               <div className="flex items-center gap-1 shrink-0">
                                 {b.summary && (
-                                  <button onClick={toggleExpand} className="text-[11px] font-black text-gray-400 hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">
+                                  <button onClick={toggleExpand} className="text-meta font-medium text-mute hover:text-black border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded transition-colors">
                                     {isExpanded ? '▲' : '▼'}
                                   </button>
                                 )}
@@ -935,27 +935,27 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                             </div>
                             <div className="flex items-center gap-2 flex-wrap mt-0.5">
                               <span
-                                className={`text-[10px] font-black px-1.5 py-0.5 rounded ${
+                                className={`text-meta font-medium px-1.5 py-0.5 rounded ${
                                   stage.tone === 'passed'
-                                    ? 'bg-teal-100 text-teal-800'
+                                    ? 'bg-accent-wash text-accent'
                                     : stage.tone === 'advanced'
-                                      ? 'bg-blue-50 text-blue-700'
+                                      ? 'bg-accent-wash text-accent'
                                       : stage.tone === 'stopped'
                                         ? 'bg-red-50 text-red-700'
-                                        : 'bg-gray-100 text-gray-500'
+                                        : 'bg-gray-100 text-mute'
                                 }`}
                               >
                                 {stage.label}
                               </span>
                               {b.initDate && (
-                                <span className="text-[11px] text-gray-500">{b.initDate}</span>
+                                <span className="text-meta text-mute">{b.initDate}</span>
                               )}
                             </div>
                           </div>
                         </div>
                         {b.summary && isExpanded && (
                           <div className="px-3 pb-2 border-t border-black/5 pt-2">
-                            <p className="text-xs text-gray-600 leading-relaxed">{b.summary}</p>
+                            <p className="text-xs text-ink-2 leading-relaxed">{b.summary}</p>
                           </div>
                         )}
                       </div>
@@ -969,17 +969,17 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
             {!profileLoading && profile && profile.withMajorityVotes.length > 0 && (
               <div className="rounded-2xl border border-black/8 p-6">
                 <div className="flex items-center justify-between mb-1">
-                  <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide">
+                  <div className="text-meta font-medium text-mute">
                     {profile.isCoalition === false ? 'הצבעות עם הרוב (חריגות)' : 'הצבעות עם הרוב'}
                   </div>
                   <button
                     onClick={() => { setTab('votes'); setVoteFilter('עם-הרוב'); }}
-                    className="text-xs font-black text-gray-500 hover:text-black transition-colors"
+                    className="text-xs font-medium text-mute hover:text-black transition-colors"
                   >
                     הצג הכל ←
                   </button>
                 </div>
-                <p className="text-xs text-gray-500 mb-4">
+                <p className="text-xs text-mute mb-4">
                   {profile.isCoalition === false
                     ? `${profile.withMajorityVotes.length} פעמים הצביע${profile.firstName.endsWith('ה') ? 'ה' : ''} עם הצד המנצח — בעד כשעבר, נגד כשנכשל`
                     : `${profile.withMajorityVotes.length} הצבעות עם הרוב`}
@@ -987,21 +987,21 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                 <div className="flex flex-col gap-1.5">
                   {profile.withMajorityVotes.slice(0, 5).map(v => (
                     <div key={v.voteId} className="flex items-start gap-3 px-3 py-2.5 rounded-xl bg-gray-50">
-                      <span className={`shrink-0 mt-0.5 text-[11px] font-black px-2 py-0.5 rounded-full ${RESULT_COLORS[CODE_TO_LABEL[v.resultCode]] ?? 'bg-zinc-100 text-zinc-500'}`}>
+                      <span className={`shrink-0 mt-0.5 text-meta font-medium px-2 py-0.5 rounded-full ${RESULT_COLORS[CODE_TO_LABEL[v.resultCode]] ?? 'bg-zinc-100 text-zinc-500'}`}>
                         {CODE_TO_LABEL[v.resultCode]}
                       </span>
                       <div className="flex-1 min-w-0">
-                        <span className="text-sm font-bold text-gray-800 leading-snug">{v.title}</span>
+                        <span className="text-sm font-bold text-ink leading-snug">{v.title}</span>
                         <div className="flex gap-2 mt-1 flex-wrap">
                           {v.macroAgenda && (
-                            <span className="text-[11px] font-black text-white bg-black/60 px-1.5 py-0.5 rounded-full">{v.macroAgenda}</span>
+                            <span className="text-meta font-medium text-white bg-black/60 px-1.5 py-0.5 rounded-full">{v.macroAgenda}</span>
                           )}
                           {v.microAgenda && (
-                            <span className="text-[11px] font-bold text-gray-500 bg-gray-200/50 px-1.5 py-0.5 rounded-full">#{v.microAgenda}</span>
+                            <span className="text-meta font-bold text-mute bg-gray-200/50 px-1.5 py-0.5 rounded-full">#{v.microAgenda}</span>
                           )}
                         </div>
                       </div>
-                      <span className="shrink-0 text-[11px] text-gray-500 tabular-nums">
+                      <span className="shrink-0 text-meta text-mute tabular-nums">
                         {new Date(v.date).toLocaleDateString('he-IL', { month: 'short', year: '2-digit' })}
                       </span>
                     </div>
@@ -1014,10 +1014,10 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
             {!profileLoading && (
               <div className="rounded-2xl border border-black/8 overflow-hidden">
                 <div className="flex items-center justify-between px-6 pt-5 pb-3">
-                  <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide">אג&apos;נדה ועמדות</div>
+                  <div className="text-meta font-medium text-mute">אג&apos;נדה ועמדות</div>
                   <button
                     onClick={() => setTab('agenda')}
-                    className="text-xs font-black text-gray-500 hover:text-black transition-colors"
+                    className="text-xs font-medium text-mute hover:text-black transition-colors"
                   >
                     הצג הכל ←
                   </button>
@@ -1036,7 +1036,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
         {tab === 'votes' && (
           <>
             {votesLoading && (
-              <div className="py-32 text-center text-xl font-black animate-pulse opacity-20">טוען הצבעות...</div>
+              <div className="py-32 text-center text-xl font-medium animate-pulse opacity-20">טוען הצבעות...</div>
             )}
             {votesError && (
               <div className="p-6 rounded-xl bg-red-50 text-red-700 text-sm font-bold">{votesError}</div>
@@ -1062,7 +1062,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                       <button
                         key={f}
                         onClick={() => setVoteFilter(f)}
-                        className={`text-xs font-black px-3 py-2 rounded-full transition-colors ${colorCls}`}
+                        className={`text-xs font-medium px-3 py-2 rounded-full transition-colors ${colorCls}`}
                       >
                         {f === 'all' ? 'הכל' : f === 'עם-הרוב' ? 'עם הרוב' : f === 'rebellions' ? 'מורדות' : f}{' '}
                         {count > 0 && <span className="opacity-70">({count.toLocaleString()})</span>}
@@ -1077,13 +1077,13 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                   value={voteSearch}
                   onChange={e => setVoteSearch(e.target.value)}
                   placeholder="חיפוש לפי נושא..."
-                  className="w-full mb-4 px-4 py-2 text-sm border border-black/10 rounded-lg bg-gray-50 focus:outline-none focus:ring-1 focus:ring-black/20"
+                  className="w-full mb-4 px-4 py-2 text-sm border border-black/10 rounded-lg bg-gray-50 focus:ring-1 focus:ring-black/20"
                 />
 
                 {/* Vote list */}
                 <div className="flex flex-col gap-1.5">
                   {pageVotes.length === 0 ? (
-                    <div className="py-16 text-center text-gray-400 font-black">אין תוצאות</div>
+                    <div className="py-16 text-center text-mute font-medium">אין תוצאות</div>
                   ) : pageVotes.map(v => {
                     const label = v.resultLabel ?? (v.resultCode != null ? CODE_TO_LABEL[v.resultCode] : 'נוכח');
                     return (
@@ -1092,7 +1092,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                         className="flex items-start gap-3 py-3 px-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
                       >
                         {/* MK's vote result */}
-                        <span className={`shrink-0 mt-0.5 text-[11px] font-black px-2 py-1 rounded-full ${RESULT_COLORS[label] ?? 'bg-zinc-100 text-zinc-500'}`}>
+                        <span className={`shrink-0 mt-0.5 text-meta font-medium px-2 py-1 rounded-full ${RESULT_COLORS[label] ?? 'bg-zinc-100 text-zinc-500'}`}>
                           {label}
                         </span>
 
@@ -1101,16 +1101,16 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                           <Link
                             href={`/vote/${v.voteId}`}
                             prefetch={false}
-                            className="text-sm font-bold leading-snug text-gray-900 hover:underline"
+                            className="text-sm font-bold leading-snug text-ink hover:underline"
                           >
                             {v.title || '—'}
                           </Link>
                           <div className="flex gap-2 mt-1.5 flex-wrap">
                             {v.macroAgenda && (
-                              <span className="text-[11px] font-black text-white bg-black/60 px-1.5 py-0.5 rounded-full">{v.macroAgenda}</span>
+                              <span className="text-meta font-medium text-white bg-black/60 px-1.5 py-0.5 rounded-full">{v.macroAgenda}</span>
                             )}
                             {v.microAgenda && (
-                              <span className="text-[11px] font-bold text-gray-500 bg-gray-200/50 px-1.5 py-0.5 rounded-full">#{v.microAgenda}</span>
+                              <span className="text-meta font-bold text-mute bg-gray-200/50 px-1.5 py-0.5 rounded-full">#{v.microAgenda}</span>
                             )}
                           </div>
                         </div>
@@ -1118,11 +1118,11 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                         {/* Vote outcome + date */}
                         <div className="shrink-0 flex flex-col items-end gap-0.5">
                           {v.isPassed !== null && (
-                            <span className={`text-[11px] font-black ${v.isPassed ? 'text-teal-600' : 'text-rose-500'}`}>
+                            <span className={`text-meta font-medium ${v.isPassed ? 'text-accent' : 'text-rose-500'}`}>
                               {v.isPassed ? 'עבר' : 'נכשל'}
                             </span>
                           )}
-                          <span className="text-[11px] text-gray-500 font-medium tabular-nums">
+                          <span className="text-meta text-mute font-medium tabular-nums">
                             {formatDate(v.date)}
                           </span>
                         </div>
@@ -1137,17 +1137,17 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                     <button
                       onClick={() => setVotePage(p => Math.max(1, p - 1))}
                       disabled={currentVotePage === 1}
-                      className="text-sm font-black px-3 py-1.5 rounded border border-black/10 disabled:opacity-30 hover:bg-gray-50"
+                      className="text-sm font-medium px-3 py-1.5 rounded border border-black/10 disabled:opacity-30 hover:bg-gray-50"
                     >
                       הקודם
                     </button>
-                    <span className="text-sm font-black text-gray-500">
+                    <span className="text-sm font-medium text-mute">
                       {currentVotePage} / {totalPages}
                     </span>
                     <button
                       onClick={() => setVotePage(p => Math.min(totalPages, p + 1))}
                       disabled={currentVotePage === totalPages}
-                      className="text-sm font-black px-3 py-1.5 rounded border border-black/10 disabled:opacity-30 hover:bg-gray-50"
+                      className="text-sm font-medium px-3 py-1.5 rounded border border-black/10 disabled:opacity-30 hover:bg-gray-50"
                     >
                       הבא
                     </button>
@@ -1164,7 +1164,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
         {tab === 'bills' && (
           <>
             {profileLoading ? (
-              <div className="py-32 text-center text-xl font-black animate-pulse opacity-20">טוען...</div>
+              <div className="py-32 text-center text-xl font-medium animate-pulse opacity-20">טוען...</div>
             ) : (
               <>
                 {/* Controls */}
@@ -1174,11 +1174,11 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                     value={billSearch}
                     onChange={e => setBillSearch(e.target.value)}
                     placeholder="חיפוש לפי נושא..."
-                    className="flex-1 px-4 py-2 text-sm border border-black/10 rounded-lg bg-gray-50 focus:outline-none focus:ring-1 focus:ring-black/20"
+                    className="flex-1 px-4 py-2 text-sm border border-black/10 rounded-lg bg-gray-50 focus:ring-1 focus:ring-black/20"
                   />
                   <button
                     onClick={() => setShowPassedOnly(v => !v)}
-                    className={`text-xs font-black px-3 py-2 rounded-lg transition-colors shrink-0 ${showPassedOnly ? 'bg-[#16A34A] text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                    className={`text-xs font-medium px-3 py-2 rounded-lg transition-colors shrink-0 ${showPassedOnly ? 'bg-[#16A34A] text-white' : 'bg-gray-100 text-ink-2 hover:bg-gray-200'}`}
                   >
                     עברו בלבד
                   </button>
@@ -1189,7 +1189,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                   <div className="flex flex-wrap gap-1.5 mb-3">
                     <button
                       onClick={() => setCommitteeFilter(null)}
-                      className={`text-xs font-black px-3 py-2 rounded-full transition-colors ${!committeeFilter ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                      className={`text-xs font-medium px-3 py-2 rounded-full transition-colors ${!committeeFilter ? 'bg-black text-white' : 'bg-gray-100 text-ink-2 hover:bg-gray-200'}`}
                     >
                       הכל
                     </button>
@@ -1197,7 +1197,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                       <button
                         key={t.committeeName}
                         onClick={() => setCommitteeFilter(committeeFilter === t.committeeName ? null : t.committeeName)}
-                        className={`text-xs font-black px-3 py-2 rounded-full transition-colors ${committeeFilter === t.committeeName ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                        className={`text-xs font-medium px-3 py-2 rounded-full transition-colors ${committeeFilter === t.committeeName ? 'bg-black text-white' : 'bg-gray-100 text-ink-2 hover:bg-gray-200'}`}
                       >
                         {t.committeeName} <span className="opacity-60">({t.total})</span>
                       </button>
@@ -1205,13 +1205,13 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                   </div>
                 )}
 
-                <div className="text-xs text-gray-500 font-medium mb-3">
+                <div className="text-xs text-mute font-medium mb-3">
                   {filteredBills.length.toLocaleString()} מתוך {(profile?.bills.length ?? 0).toLocaleString()} הצ"ח
                 </div>
 
                 <div className="flex flex-col gap-1.5">
                   {filteredBills.length === 0 ? (
-                    <div className="py-16 text-center text-gray-400 font-black">אין תוצאות</div>
+                    <div className="py-16 text-center text-mute font-medium">אין תוצאות</div>
                   ) : filteredBills.map(b => {
                     const isExpanded = expandedBills.has(b.billId);
                     const toggleExpand = () => setExpandedBills(prev => {
@@ -1222,19 +1222,19 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                     return (
                     <div key={b.billId} className="rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
                       <div className="flex items-start gap-3 px-4 py-3">
-                        <span className={`shrink-0 mt-0.5 text-[11px] font-black px-2 py-0.5 rounded-full ${b.isPassed ? 'bg-[#16A34A] text-white' : 'bg-gray-200 text-gray-500'}`}>
+                        <span className={`shrink-0 mt-0.5 text-meta font-medium px-2 py-0.5 rounded-full ${b.isPassed ? 'bg-[#16A34A] text-white' : 'bg-gray-200 text-mute'}`}>
                           {b.isPassed ? 'עבר' : 'הוגש'}
                         </span>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
-                            <p className="text-sm font-bold leading-snug text-gray-900">{b.title}</p>
+                            <p className="text-sm font-bold leading-snug text-ink">{b.title}</p>
                             <div className="flex items-center gap-1.5 shrink-0">
                               {b.docUrl && (
                                 <a
                                   href={b.docUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-[11px] font-black text-gray-400 hover:text-black transition-colors border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded"
+                                  className="text-meta font-medium text-mute hover:text-black transition-colors border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded"
                                 >
                                   PDF
                                 </a>
@@ -1242,7 +1242,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                               {b.summary && (
                                 <button
                                   onClick={toggleExpand}
-                                  className="text-[11px] font-black text-gray-400 hover:text-black transition-colors border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded"
+                                  className="text-meta font-medium text-mute hover:text-black transition-colors border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded"
                                 >
                                   {isExpanded ? '▲' : '▼'}
                                 </button>
@@ -1251,29 +1251,29 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                           </div>
                           <div className="flex items-center gap-2 mt-1 flex-wrap">
                             {b.initDate && (
-                              <span className="text-[11px] text-gray-500">{b.initDate}</span>
+                              <span className="text-meta text-mute">{b.initDate}</span>
                             )}
                             {b.macroAgenda && (
-                              <span className="text-[11px] font-black text-white bg-black px-1.5 py-0.5 rounded-full">{b.macroAgenda}</span>
+                              <span className="text-meta font-medium text-white bg-black px-1.5 py-0.5 rounded-full">{b.macroAgenda}</span>
                             )}
                             {b.microAgenda && (
-                              <span className="text-[11px] font-bold text-gray-700 bg-gray-200 px-1.5 py-0.5 rounded-full">#{b.microAgenda}</span>
+                              <span className="text-meta font-bold text-ink-2 bg-gray-200 px-1.5 py-0.5 rounded-full">#{b.microAgenda}</span>
                             )}
                             {b.committeeName && (
                               <Link href={`/committee/${encodeURIComponent(b.committeeName)}`}
-                                className="text-[11px] font-black text-gray-400 border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded-full transition-colors">
+                                className="text-meta font-medium text-mute border border-gray-200 hover:border-gray-400 px-1.5 py-0.5 rounded-full transition-colors">
                                 {b.committeeName}
                               </Link>
                             )}
                             {b.subtype && (
-                              <span className="text-xs text-gray-500">{b.subtype}</span>
+                              <span className="text-xs text-mute">{b.subtype}</span>
                             )}
                           </div>
                         </div>
                       </div>
                       {b.summary && isExpanded && (
                         <div className="px-4 pb-3 border-t border-black/5 pt-2">
-                          <p className="text-xs text-gray-600 leading-relaxed">{b.summary}</p>
+                          <p className="text-xs text-ink-2 leading-relaxed">{b.summary}</p>
                         </div>
                       )}
                     </div>
@@ -1291,13 +1291,13 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
         {tab === 'queries' && (
           <>
             {profileLoading ? (
-              <div className="py-32 text-center text-xl font-black animate-pulse opacity-20">טוען...</div>
+              <div className="py-32 text-center text-xl font-medium animate-pulse opacity-20">טוען...</div>
             ) : (
               <>
                 {/* Topic word cloud */}
                 {queryTopics.length > 0 && (
                   <div className="rounded-2xl border border-black/8 p-5 mb-5">
-                    <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-3">נושאים חוזרים</div>
+                    <div className="text-meta font-medium text-mute mb-3">נושאים חוזרים</div>
                     <div className="flex flex-wrap gap-2">
                       {queryTopics.map(({ word, count }) => (
                         <button
@@ -1306,7 +1306,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                           className="text-sm font-bold px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
                         >
                           {word}
-                          <span className="text-xs text-gray-500 font-medium mr-1">×{count}</span>
+                          <span className="text-xs text-mute font-medium mr-1">×{count}</span>
                         </button>
                       ))}
                     </div>
@@ -1318,22 +1318,22 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                   value={querySearch}
                   onChange={e => setQuerySearch(e.target.value)}
                   placeholder="חיפוש שאילתא..."
-                  className="w-full mb-4 px-4 py-2 text-sm border border-black/10 rounded-lg bg-gray-50 focus:outline-none focus:ring-1 focus:ring-black/20"
+                  className="w-full mb-4 px-4 py-2 text-sm border border-black/10 rounded-lg bg-gray-50 focus:ring-1 focus:ring-black/20"
                 />
 
-                <div className="text-xs text-gray-500 font-medium mb-3">
+                <div className="text-xs text-mute font-medium mb-3">
                   {filteredQueries.length.toLocaleString()} שאילתות
                 </div>
 
                 <div className="flex flex-col gap-1.5">
                   {filteredQueries.length === 0 ? (
-                    <div className="py-16 text-center text-gray-400 font-black">אין תוצאות</div>
+                    <div className="py-16 text-center text-mute font-medium">אין תוצאות</div>
                   ) : filteredQueries.map(q => (
                     <div key={q.queryId} className="flex items-start gap-3 px-4 py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold leading-snug text-gray-900">{q.title}</p>
+                        <p className="text-sm font-bold leading-snug text-ink">{q.title}</p>
                       </div>
-                      <span className="shrink-0 text-[11px] text-gray-500 font-medium tabular-nums">
+                      <span className="shrink-0 text-meta text-mute font-medium tabular-nums">
                         {formatDate(q.submitDate)}
                       </span>
                     </div>
@@ -1350,17 +1350,17 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
         {tab === 'positions' && (
           <>
             {profileLoading ? (
-              <div className="py-32 text-center text-xl font-black animate-pulse opacity-20">טוען...</div>
+              <div className="py-32 text-center text-xl font-medium animate-pulse opacity-20">טוען...</div>
             ) : (
               <>
                 {profile?.positions.length === 0 && (
-                  <div className="py-16 text-center text-gray-400 font-black">אין נתונים</div>
+                  <div className="py-16 text-center text-mute font-medium">אין נתונים</div>
                 )}
 
                 {/* Group: current */}
                 {(profile?.positions.filter(p => p.isCurrent) ?? []).length > 0 && (
                   <div className="mb-6">
-                    <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-3">תפקידים נוכחיים</div>
+                    <div className="text-meta font-medium text-mute mb-3">תפקידים נוכחיים</div>
                     <div className="flex flex-col gap-1.5">
                       {profile!.positions.filter(p => p.isCurrent).map(p => {
                         const role = p.dutyDesc || null;
@@ -1368,11 +1368,11 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                         return (
                           <div key={p.id} className="px-4 py-3 rounded-xl border border-black/8 bg-white">
                             <div className="flex items-start gap-3">
-                              <span className="text-[11px] font-black px-2 py-0.5 rounded-full bg-black text-white shrink-0 mt-0.5">נוכחי</span>
+                              <span className="text-meta font-medium px-2 py-0.5 rounded-full bg-black text-white shrink-0 mt-0.5">נוכחי</span>
                               <div>
-                                {role && <p className="text-sm font-black leading-snug">{role}</p>}
-                                {org && <p className={`text-sm ${role ? 'text-gray-600 font-medium' : 'font-black'} leading-snug`}>{org}</p>}
-                                <p className="text-xs text-gray-500 mt-0.5">
+                                {role && <p className="text-sm font-medium leading-snug">{role}</p>}
+                                {org && <p className={`text-sm ${role ? 'text-ink-2 font-medium' : 'font-medium'} leading-snug`}>{org}</p>}
+                                <p className="text-xs text-mute mt-0.5">
                                   מ-{formatDate(p.startDate)}
                                 </p>
                               </div>
@@ -1387,7 +1387,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                 {/* Group: historical */}
                 {(profile?.positions.filter(p => !p.isCurrent) ?? []).length > 0 && (
                   <div>
-                    <div className="text-[11px] font-black text-gray-400 uppercase tracking-wide mb-3">היסטוריה</div>
+                    <div className="text-meta font-medium text-mute mb-3">היסטוריה</div>
                     <div className="flex flex-col gap-1.5">
                       {profile!.positions.filter(p => !p.isCurrent).map(p => {
                         const role = p.dutyDesc || null;
@@ -1397,9 +1397,9 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                             <div className="flex items-start justify-between gap-3">
                               <div>
                                 {role && <p className="text-sm font-bold leading-snug">{role}</p>}
-                                {org && <p className={`text-sm ${role ? 'text-gray-600' : 'font-bold'} leading-snug`}>{org}</p>}
+                                {org && <p className={`text-sm ${role ? 'text-ink-2' : 'font-bold'} leading-snug`}>{org}</p>}
                               </div>
-                              <span className="text-[11px] text-gray-500 font-medium tabular-nums shrink-0">
+                              <span className="text-meta text-mute font-medium tabular-nums shrink-0">
                                 {formatYear(p.startDate)}
                                 {p.finishDate ? `–${formatYear(p.finishDate)}` : ''}
                               </span>
@@ -1421,11 +1421,11 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
         {tab === 'timeline' && (
           <>
             {profileLoading ? (
-              <div className="py-32 text-center text-xl font-black animate-pulse opacity-20">טוען...</div>
+              <div className="py-32 text-center text-xl font-medium animate-pulse opacity-20">טוען...</div>
             ) : (
               <>
                 {profile?.timeline.length === 0 ? (
-                  <div className="py-16 text-center text-gray-400 font-black">אין נתונים</div>
+                  <div className="py-16 text-center text-mute font-medium">אין נתונים</div>
                 ) : (
                   <div className="space-y-3">
                     {profile?.timeline.map((event, idx) => {
@@ -1436,26 +1436,26 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                       if (event.type === 'minister') {
                         const { officeSlug, officeName, roleType, isCurrent } = event.details;
                         return (
-                          <div key={idx} className="px-4 py-3 rounded-xl border border-black/8 bg-white hover:bg-blue-50 transition-colors">
+                          <div key={idx} className="px-4 py-3 rounded-xl border border-black/8 bg-white hover:bg-accent-wash transition-colors">
                             <div className="flex items-start gap-3 justify-between">
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-1">
-                                  <span className="text-xs font-black px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent-wash text-accent">
                                     {roleType === 'pm' ? 'ראש ממשלה' : roleType === 'deputy-pm' ? 'סגן ראש ממשלה' : roleType === 'deputy' ? 'סגן שר' : roleType === 'acting' ? 'שר בשירות חוקי' : 'שר'}
                                   </span>
-                                  {isCurrent && <span className="text-xs font-black px-2 py-0.5 rounded-full bg-green-100 text-green-700">נוכחי</span>}
+                                  {isCurrent && <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">נוכחי</span>}
                                 </div>
                                 {officeSlug ? (
-                                  <Link href={`${BASE_PATH}/office/${officeSlug}`} className="text-sm font-bold text-blue-700 hover:underline">
+                                  <Link href={`${BASE_PATH}/office/${officeSlug}`} className="text-sm font-bold text-accent hover:underline">
                                     {officeName || officeSlug}
                                   </Link>
                                 ) : (
                                   <p className="text-sm font-bold">{officeName}</p>
                                 )}
-                                <p className="text-xs text-gray-500 mt-1">{dateRange}</p>
+                                <p className="text-xs text-mute mt-1">{dateRange}</p>
                               </div>
                               {event.details.governmentNum && (
-                                <span className="text-xs text-gray-500 font-medium">ממשלה {event.details.governmentNum}</span>
+                                <span className="text-xs text-mute font-medium">ממשלה {event.details.governmentNum}</span>
                               )}
                             </div>
                           </div>
@@ -1466,10 +1466,10 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                         return (
                           <div key={idx} className="px-4 py-3 rounded-xl bg-gray-50">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs font-black px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">חבר כנסת</span>
+                              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-200 text-ink-2">חבר כנסת</span>
                             </div>
                             <p className="text-sm font-bold">חברות בכנסת</p>
-                            <p className="text-xs text-gray-500 mt-1">{dateRange}</p>
+                            <p className="text-xs text-mute mt-1">{dateRange}</p>
                           </div>
                         );
                       }
@@ -1479,10 +1479,10 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                         return (
                           <div key={idx} className="px-4 py-3 rounded-xl bg-purple-50">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs font-black px-2 py-0.5 rounded-full bg-purple-200 text-purple-700">שינוי סיעה</span>
+                              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-purple-200 text-purple-700">שינוי סיעה</span>
                             </div>
                             <p className="text-sm font-bold">{factionName}</p>
-                            <p className="text-xs text-gray-500 mt-1">{dateRange}</p>
+                            <p className="text-xs text-mute mt-1">{dateRange}</p>
                           </div>
                         );
                       }

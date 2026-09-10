@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 interface LoginProps {
   title?: string;
@@ -10,8 +9,8 @@ interface LoginProps {
   cookieName?: string;
 }
 
-export function LoginForm({ 
-  title = 'Minimal DB', 
+export function LoginForm({
+  title = 'Minimal DB',
   endpoint = '/api/auth',
   onSuccessRedirect = '/',
   cookieName = 'auth_token'
@@ -19,7 +18,6 @@ export function LoginForm({
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,37 +44,47 @@ export function LoginForm({
         // HARD REDIRECT: Bypasses Next.js router state issues
         window.location.href = onSuccessRedirect;
       } else {
-        setError(data.error || 'Incorrect password');
+        setError(
+          res.status === 429
+            ? 'יותר מדי ניסיונות. נסי שוב בעוד דקה.'
+            : 'הסיסמה שגויה. בדקי ונסי שוב.'
+        );
       }
-    } catch (err) {
-      setError('Connection error. Please try again.');
+    } catch {
+      setError('אין חיבור לשרת. בדקי את החיבור ונסי שוב.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white p-4 font-serif">
-      <div className="w-full max-w-xs space-y-12 text-center">
-        <header className="space-y-2">
-          <h1 className="text-4xl font-black tracking-tighter lowercase">{title}</h1>
-        </header>
+    <div className="flex min-h-screen items-center justify-center bg-paper p-4" dir="rtl">
+      <div className="w-full max-w-xs">
+        <h1 className="text-page mb-2 text-center">{title}</h1>
+        <p className="text-meta text-mute mb-8 text-center">
+          האתר סגור בסיסמה בזמן הפיתוח
+        </p>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-1 text-left">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="site-password" className="text-label font-medium">
+              סיסמה
+            </label>
             <input
+              id="site-password"
               type="password"
-              placeholder="Enter Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border-b border-black/10 py-3 text-center text-sm lowercase outline-none focus:border-black transition-colors bg-transparent text-black"
+              className="w-full rounded-control border border-line bg-surface px-3 py-2.5 text-ui text-ink transition-colors focus:border-accent"
               required
               autoFocus
+              aria-describedby={error ? 'password-error' : undefined}
+              aria-invalid={error ? true : undefined}
             />
           </div>
 
           {error && (
-            <p className="text-[11px] lowercase tracking-tight text-red-500 font-sans italic">
+            <p id="password-error" role="alert" className="text-meta text-fail">
               {error}
             </p>
           )}
@@ -84,16 +92,12 @@ export function LoginForm({
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-4 text-[11px] font-black uppercase tracking-[0.2em] transition-all
-              ${loading 
-                ? 'opacity-50 cursor-not-allowed' 
-                : 'bg-black text-white hover:bg-black/80'
-              }`}
+            aria-busy={loading}
+            className="w-full rounded-control bg-accent px-4 py-3 text-ui font-medium text-white transition-colors hover:bg-accent-ink disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {loading ? 'Verifying...' : 'Authorize'}
+            {loading ? 'בודק…' : 'כניסה'}
           </button>
         </form>
-
       </div>
     </div>
   );

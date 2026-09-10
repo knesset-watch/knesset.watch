@@ -78,13 +78,13 @@ export default function CommitteesClient({
     <div className="min-h-screen bg-white" dir="rtl">
       <div className="max-w-5xl mx-auto px-6 py-8">
         <div className="mb-8">
-          <Link href="/" className="text-sm font-black text-gray-400 hover:text-black transition-colors">
+          <Link href="/" className="text-sm font-medium text-mute hover:text-black transition-colors">
             → ראשי
           </Link>
         </div>
 
-        <h1 className="text-3xl font-black leading-tight mb-1">ועדות הכנסת</h1>
-        <p className="text-sm text-gray-400 font-medium mb-6">
+        <h1 className="text-3xl font-medium leading-tight mb-1">ועדות הכנסת</h1>
+        <p className="text-sm text-mute font-medium mb-6">
           {committees.length} ועדות · {totalSessions.toLocaleString('he-IL')} ישיבות מתועדות
           {loading && <span className="mr-2 opacity-50">…</span>}
         </p>
@@ -96,14 +96,14 @@ export default function CommitteesClient({
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="חיפוש ועדה..."
-            className="w-full text-sm px-3 py-2 rounded-xl border border-black/10 bg-gray-50 focus:outline-none focus:border-black/30"
+            className="w-full text-sm px-3 py-2 rounded-xl border border-black/10 bg-gray-50 focus:border-black/30"
             dir="rtl"
           />
 
           <div className="flex items-center gap-2 flex-wrap">
             {/* Sort */}
             <div className="flex items-center gap-1">
-              <span className="text-[11px] font-black text-gray-400 uppercase tracking-wide ml-1">מיון:</span>
+              <span className="text-meta font-medium text-mute ml-1">מיון:</span>
               {([
                 { value: 'sessions', label: 'ישיבות' },
                 { value: 'recent',   label: 'פעילות אחרונה' },
@@ -112,8 +112,8 @@ export default function CommitteesClient({
                 <button
                   key={o.value}
                   onClick={() => setSort(o.value)}
-                  className={`text-xs font-black px-3 py-2 rounded-full transition-colors ${
-                    sort === o.value ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  className={`text-xs font-medium px-3 py-2 rounded-full transition-colors ${
+                    sort === o.value ? 'bg-black text-white' : 'bg-gray-100 text-ink-2 hover:bg-gray-200'
                   }`}
                 >
                   {o.label}
@@ -126,7 +126,7 @@ export default function CommitteesClient({
               <button
                 onClick={() => setView('cards')}
                 title="תצוגת כרטיסים"
-                className={`p-2 rounded-lg transition-colors ${view === 'cards' ? 'bg-black text-white' : 'text-gray-400 hover:text-black'}`}
+                className={`p-2 rounded-lg transition-colors ${view === 'cards' ? 'bg-black text-white' : 'text-mute hover:text-black'}`}
               >
                 <svg viewBox="0 0 16 16" className="w-4 h-4" fill="currentColor">
                   <rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/>
@@ -136,7 +136,7 @@ export default function CommitteesClient({
               <button
                 onClick={() => setView('list')}
                 title="תצוגת רשימה"
-                className={`p-2 rounded-lg transition-colors ${view === 'list' ? 'bg-black text-white' : 'text-gray-400 hover:text-black'}`}
+                className={`p-2 rounded-lg transition-colors ${view === 'list' ? 'bg-black text-white' : 'text-mute hover:text-black'}`}
               >
                 <svg viewBox="0 0 16 16" className="w-4 h-4" fill="currentColor">
                   <rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="14" height="2" rx="1"/>
@@ -148,7 +148,7 @@ export default function CommitteesClient({
         </div>
 
         {search.trim() && (
-          <p className="text-xs text-gray-500 font-medium mb-4">{sorted.length} תוצאות</p>
+          <p className="text-xs text-mute font-medium mb-4">{sorted.length} תוצאות</p>
         )}
 
         {/* Cards view */}
@@ -163,20 +163,20 @@ export default function CommitteesClient({
                   href={`/committee/${encodeURIComponent(c.name)}`}
                   className="group rounded-2xl border border-black/8 p-5 hover:border-black/20 hover:shadow-sm transition-all"
                 >
-                  <div className="font-black text-sm leading-snug mb-3 group-hover:text-black text-gray-900">
+                  <div className="font-medium text-sm leading-snug mb-3 group-hover:text-black text-ink">
                     {c.name}
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col">
-                      <span className="text-[11px] font-black uppercase text-gray-400 mb-0.5">ישיבות</span>
-                      <span className="text-xl font-black">{c.sessionCount.toLocaleString('he-IL')}</span>
+                      <span className="text-meta font-medium text-mute mb-0.5">ישיבות</span>
+                      <span className="text-xl font-medium">{c.sessionCount.toLocaleString('he-IL')}</span>
                     </div>
                     {lastDate && (
                       <div className="flex flex-col items-end">
-                        <span className={`text-[11px] font-black uppercase mb-0.5 ${hasProtocol ? 'text-teal-600' : 'text-gray-400'}`}>
+                        <span className={`text-meta font-medium mb-0.5 ${hasProtocol ? 'text-accent' : 'text-mute'}`}>
                           {hasProtocol ? 'דיון אחרון' : 'אחרונה'}
                         </span>
-                        <span className={`text-xs font-bold ${hasProtocol ? 'text-teal-700' : 'text-gray-500'}`}>
+                        <span className={`text-xs font-bold ${hasProtocol ? 'text-accent' : 'text-mute'}`}>
                           {formatDate(lastDate)}
                         </span>
                       </div>
@@ -191,7 +191,7 @@ export default function CommitteesClient({
         {/* List view */}
         {view === 'list' && (
           <div className={`flex flex-col gap-px transition-opacity ${loading ? 'opacity-40' : ''}`}>
-            <div className="grid grid-cols-[1fr_5rem] sm:grid-cols-[1fr_6rem_10rem] gap-4 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-gray-400">
+            <div className="hidden sm:grid sm:grid-cols-[1fr_5rem] sm:grid-cols-[1fr_6rem_10rem] gap-2 sm:gap-4 px-4 py-2 text-meta font-medium text-mute">
               <span>ועדה</span>
               <span className="text-center">ישיבות</span>
               <span className="hidden sm:block text-left">פעילות אחרונה</span>
@@ -203,11 +203,11 @@ export default function CommitteesClient({
                 <Link
                   key={c.committeeId}
                   href={`/committee/${encodeURIComponent(c.name)}`}
-                  className="grid grid-cols-[1fr_5rem] sm:grid-cols-[1fr_6rem_10rem] gap-4 items-center px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors group"
+                  className="flex flex-col sm:grid sm:grid-cols-[1fr_5rem] sm:grid-cols-[1fr_6rem_10rem] gap-2 sm:gap-4 sm:items-center px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors group"
                 >
-                  <span className="text-sm font-bold text-gray-900 group-hover:text-black truncate">{c.name}</span>
-                  <span className="text-sm font-black text-center tabular-nums">{c.sessionCount.toLocaleString('he-IL')}</span>
-                  <span className={`hidden sm:block text-xs font-bold ${hasProtocol ? 'text-teal-700' : 'text-gray-400'}`}>
+                  <span className="text-sm font-bold text-ink group-hover:text-black truncate">{c.name}</span>
+                  <span className="text-sm font-medium text-center tabular-nums">{c.sessionCount.toLocaleString('he-IL')}</span>
+                  <span className={`hidden sm:block text-xs font-bold ${hasProtocol ? 'text-accent' : 'text-mute'}`}>
                     {lastDate ? formatDate(lastDate) : '—'}
                   </span>
                 </Link>

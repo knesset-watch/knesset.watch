@@ -56,3 +56,7 @@ knesset.db-shm
 # nested project / temp files
 apps/
 *.tar.gz
+
+# SQLite temp files for every local snapshot, not just knesset.db
+*.db-wal
+*.db-shm

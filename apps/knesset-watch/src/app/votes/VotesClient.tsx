@@ -17,6 +17,9 @@ interface VoteRow {
   margin: number;
   microAgenda: string | null;
   macroAgenda: string | null;
+  /** הצעת החוק שההצבעה נערכה עליה — קיימת ב-67% מההצבעות */
+  billId: number | null;
+  billSummary: string | null;
 }
 
 function formatDate(iso: string) {
@@ -126,14 +129,14 @@ export default function VotesClient() {
   return (
     <div className="min-h-screen bg-white" dir="rtl">
       <div className="max-w-4xl mx-auto px-6 py-8">
-        <nav className="flex items-center gap-1 text-sm text-gray-400 mb-6">
-          <Link href="/" className="font-black hover:text-black transition-colors">ראשי</Link>
+        <nav className="flex items-center gap-1 text-sm text-mute mb-6">
+          <Link href="/" className="font-medium hover:text-black transition-colors">ראשי</Link>
           <span className="mx-1">›</span>
-          <span className="text-black font-black">הצבעות</span>
+          <span className="text-black font-medium">הצבעות</span>
         </nav>
 
-        <h1 className="text-4xl font-black mb-1">הצבעות</h1>
-        <p className="text-sm text-gray-500 mb-6">הצבעות מליאה בכנסת ה-25</p>
+        <h1 className="text-4xl font-medium mb-1">הצבעות</h1>
+        <p className="text-sm text-mute mb-6">הצבעות מליאה בכנסת ה-25</p>
 
         {/* Filters */}
         <div className="flex flex-wrap gap-3 mb-6 items-end">
@@ -145,13 +148,13 @@ export default function VotesClient() {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="חיפוש הצבעה..."
-                className="flex-1 bg-transparent text-sm font-black outline-none placeholder:text-gray-400 placeholder:font-normal"
+                className="flex-1 bg-transparent text-sm font-medium placeholder:text-mute placeholder:font-normal"
                 dir="rtl"
               />
             </div>
             <button
               type="submit"
-              className="px-4 py-2.5 rounded-xl bg-black text-white text-sm font-black hover:bg-gray-800 transition-colors shrink-0"
+              className="px-4 py-2.5 rounded-xl bg-black text-white text-sm font-medium hover:bg-gray-800 transition-colors shrink-0"
             >
               חיפוש
             </button>
@@ -161,13 +164,13 @@ export default function VotesClient() {
           <div className="flex gap-1">
             <button
               onClick={handlePassedToggle}
-              className={`text-xs font-black px-3 py-2.5 rounded-xl transition-colors ${passedOnly ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+              className={`text-xs font-medium px-3 py-2.5 rounded-xl transition-colors ${passedOnly ? 'bg-accent text-white' : 'bg-gray-100 text-ink-2 hover:bg-gray-200'}`}
             >
               עברו
             </button>
             <button
               onClick={handleFailedToggle}
-              className={`text-xs font-black px-3 py-2.5 rounded-xl transition-colors ${failedOnly ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+              className={`text-xs font-medium px-3 py-2.5 rounded-xl transition-colors ${failedOnly ? 'bg-red-500 text-white' : 'bg-gray-100 text-ink-2 hover:bg-gray-200'}`}
             >
               לא עברו
             </button>
@@ -175,11 +178,11 @@ export default function VotesClient() {
 
           {/* Max margin filter */}
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-black uppercase text-gray-400 shrink-0">הפרש מקסימלי:</span>
+            <span className="text-meta font-medium text-mute shrink-0">הפרש מקסימלי:</span>
             <select
               value={maxMargin}
               onChange={e => handleMarginChange(e.target.value)}
-              className="text-xs font-black px-2 py-2 rounded-xl bg-gray-100 border-0 outline-none cursor-pointer hover:bg-gray-200 transition-colors"
+              className="text-xs font-medium px-2 py-2 rounded-xl bg-gray-100 border-0 cursor-pointer hover:bg-gray-200 transition-colors"
             >
               <option value="">כל הפרש</option>
               <option value="1">1</option>
@@ -193,13 +196,13 @@ export default function VotesClient() {
           {/* View toggle — hidden on mobile (cards always shown on small screens) */}
           <div className="hidden sm:flex items-center gap-1 border border-black/10 rounded-xl p-0.5 mr-auto">
             <button onClick={() => setView('list')} title="רשימה"
-              className={`p-2 rounded-lg transition-colors ${view === 'list' ? 'bg-black text-white' : 'text-gray-400 hover:text-black'}`}>
+              className={`p-2 rounded-lg transition-colors ${view === 'list' ? 'bg-black text-white' : 'text-mute hover:text-black'}`}>
               <svg viewBox="0 0 16 16" className="w-4 h-4" fill="currentColor">
                 <rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="14" height="2" rx="1"/><rect x="1" y="12" width="14" height="2" rx="1"/>
               </svg>
             </button>
             <button onClick={() => setView('cards')} title="כרטיסים"
-              className={`p-2 rounded-lg transition-colors ${view === 'cards' ? 'bg-black text-white' : 'text-gray-400 hover:text-black'}`}>
+              className={`p-2 rounded-lg transition-colors ${view === 'cards' ? 'bg-black text-white' : 'text-mute hover:text-black'}`}>
               <svg viewBox="0 0 16 16" className="w-4 h-4" fill="currentColor">
                 <rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/>
                 <rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/>
@@ -251,18 +254,18 @@ export default function VotesClient() {
         })()}
         {/* Total count */}
         {!loading && (
-          <div className="text-[11px] text-gray-500 font-black uppercase mb-3">
+          <div className="text-meta text-mute font-medium mb-3">
             {total.toLocaleString()} הצבעות
           </div>
         )}
 
         {loading && (
-          <div className="py-16 text-center text-gray-400 font-black animate-pulse">טוען...</div>
+          <div className="py-16 text-center text-mute font-medium animate-pulse">טוען...</div>
         )}
 
         {!loading && votes.length === 0 && (
           <div className="py-16 text-center">
-            <p className="text-gray-500 font-black mb-4">לא נמצאו הצבעות עם הפילטרים הנוכחיים</p>
+            <p className="text-mute font-medium mb-4">לא נמצאו הצבעות עם הפילטרים הנוכחיים</p>
             {(submittedSearch || passedOnly || failedOnly || maxMargin) && (
               <button
                 onClick={() => {
@@ -272,7 +275,7 @@ export default function VotesClient() {
                   setFailedOnly(false);
                   handleMarginChange('');
                 }}
-                className="text-sm font-black text-blue-600 hover:text-blue-800 underline"
+                className="text-sm font-medium text-accent hover:text-accent underline"
               >
                 הנקה את כל הפילטרים
               </button>
@@ -283,7 +286,7 @@ export default function VotesClient() {
         {/* List view — desktop only (hidden on mobile) */}
         {!loading && view === 'list' && (
           <div className="hidden sm:block">
-            <div className="grid grid-cols-[1fr_5rem_4rem_4rem_4rem_4.5rem] gap-4 py-3 px-4 text-[11px] font-black uppercase tracking-widest text-gray-700 mb-2 bg-gray-100 rounded-lg border-b-2 border-gray-300">
+            <div className="grid grid-cols-[1fr_5rem_4rem_4rem_4rem_4.5rem] gap-4 py-3 px-4 text-meta font-medium text-ink-2 mb-2 bg-gray-100 rounded-lg border-b-2 border-gray-300">
               <span>נושא</span>
               <span>תאריך</span>
               <span className="text-center">בעד</span>
@@ -293,32 +296,54 @@ export default function VotesClient() {
             </div>
             <div className="flex flex-col gap-1.5">
               {votes.map(v => (
-                <Link
+                /*
+                  קודם כל השורה — כותרת, תאריכים ומספרים — הייתה קישור אחד
+                  ענק להצבעה. עכשיו יש שני יעדים אמיתיים (ההצבעה והצעת החוק),
+                  ולכן שני קישורים נפרדים, וקורא מסך שומע כותרת ולא טור מספרים.
+                */
+                <div
                   key={v.voteId}
-                  href={`/vote/${v.voteId}`}
-                  className="grid grid-cols-[1fr_5rem_4rem_4rem_4rem_4.5rem] gap-4 py-3 px-4 rounded-xl items-center transition-colors bg-gray-50 hover:bg-gray-100"
+                  className="grid grid-cols-[1fr_5rem_4rem_4rem_4rem_4.5rem] gap-4 py-3 px-4 rounded-card items-center transition-colors bg-surface border border-line hover:border-accent"
                 >
                   <div className="min-w-0">
-                    <div title={v.title} className="text-sm font-black text-gray-900 line-clamp-2 leading-snug cursor-help">{v.title}</div>
-                    {(v.macroAgenda || v.microAgenda) && (
-                      <div className="flex gap-1.5 mt-1 flex-wrap">
-                        {v.macroAgenda && (
-                          <span className="text-[11px] font-black text-gray-500 bg-gray-200/60 px-1.5 py-0.5 rounded-full">{v.macroAgenda}</span>
-                        )}
-                        {v.microAgenda && (
-                          <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">#{v.microAgenda}</span>
-                        )}
-                      </div>
+                    <Link
+                      href={`/vote/${v.voteId}`}
+                      title={v.title}
+                      className="block text-ui font-medium text-ink line-clamp-2 leading-snug hover:text-accent transition-colors"
+                    >
+                      {v.title}
+                    </Link>
+
+                    {v.billSummary && (
+                      <p className="text-meta text-mute mt-1 line-clamp-2 font-content">{v.billSummary}</p>
                     )}
+
+                    <div className="flex gap-1.5 mt-1.5 flex-wrap items-center">
+                      {v.billId && (
+                        <Link
+                          href={`/bill/${v.billId}`}
+                          className="text-meta font-medium text-accent hover:underline"
+                        >
+                          להצעת החוק ←
+                        </Link>
+                      )}
+                      {v.macroAgenda && (
+                        <span className="text-meta text-mute bg-surface-2 px-1.5 py-0.5 rounded-control">{v.macroAgenda}</span>
+                      )}
+                      {v.microAgenda && (
+                        <span className="text-meta font-medium text-accent-ink bg-accent-wash px-2 py-0.5 rounded-control">#{v.microAgenda}</span>
+                      )}
+                    </div>
                   </div>
-                  <span className="text-[11px] text-gray-500 shrink-0">{formatDate(v.date)}</span>
-                  <span className="text-base font-black text-teal-700 text-center">{v.totalFor}</span>
-                  <span className="text-base font-black text-blue-700 text-center">{v.totalAgainst}</span>
-                  <span className="text-base font-black text-center">{v.margin}</span>
-                  <span className={`text-[11px] font-black px-2 py-1 rounded-full text-center justify-self-center ${v.isPassed ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
+
+                  <span className="text-meta text-mute shrink-0">{formatDate(v.date)}</span>
+                  <span className="text-ui font-medium text-pass text-center" data-numeric>{v.totalFor}</span>
+                  <span className="text-ui font-medium text-fail text-center" data-numeric>{v.totalAgainst}</span>
+                  <span className="text-ui font-medium text-center" data-numeric>{v.margin}</span>
+                  <span className={`text-meta font-medium px-2 py-1 rounded-control text-center justify-self-center ${v.isPassed ? 'bg-pass-wash text-pass' : 'bg-fail-wash text-fail'}`}>
                     {v.isPassed ? 'עבר' : 'לא עבר'}
                   </span>
-                </Link>
+                </div>
               ))}
             </div>
           </div>
@@ -329,25 +354,44 @@ export default function VotesClient() {
           <div className={view === 'cards' ? 'block' : 'block sm:hidden'}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {votes.map(v => (
-                <Link
+                <div
                   key={v.voteId}
-                  href={`/vote/${v.voteId}`}
-                  className={`rounded-2xl border p-4 flex flex-col gap-2 transition-colors ${v.isPassed ? 'border-green-100 bg-[#F0FDF4] hover:bg-green-100' : 'border-black/8 hover:border-black/20 hover:bg-gray-50'}`}
+                  className={`rounded-card border p-4 flex flex-col gap-2 transition-colors ${v.isPassed ? 'border-pass/30 bg-pass-wash' : 'border-line bg-surface hover:border-accent'}`}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className={`text-[11px] font-black px-2 py-0.5 rounded-full ${v.isPassed ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
+                    <span className={`text-meta font-medium px-2 py-0.5 rounded-control ${v.isPassed ? 'bg-pass text-white' : 'bg-fail text-white'}`}>
                       {v.isPassed ? 'עבר' : 'לא עבר'}
                     </span>
-                    <span className="text-[11px] text-gray-500">{formatDate(v.date)}</span>
+                    <span className="text-meta text-mute">{formatDate(v.date)}</span>
                   </div>
-                  <p title={v.title} className="text-sm font-bold leading-snug text-gray-900 line-clamp-3 cursor-help">{v.title}</p>
-                  {v.macroAgenda && <span className="text-[11px] font-black text-gray-500 bg-gray-200/60 px-1.5 py-0.5 rounded-full self-start">{v.macroAgenda}</span>}
-                  <div className="flex items-center gap-4 mt-auto pt-1 text-[11px]">
-                    <span className="font-black text-teal-700">בעד {v.totalFor}</span>
-                    <span className="font-black text-blue-700">נגד {v.totalAgainst}</span>
-                    <span className="text-gray-400">הפרש {v.margin}</span>
+
+                  <Link
+                    href={`/vote/${v.voteId}`}
+                    title={v.title}
+                    className="text-ui font-medium leading-snug text-ink line-clamp-3 hover:text-accent transition-colors"
+                  >
+                    {v.title}
+                  </Link>
+
+                  {v.billSummary && (
+                    <p className="text-meta text-mute line-clamp-3 font-content">{v.billSummary}</p>
+                  )}
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    {v.billId && (
+                      <Link href={`/bill/${v.billId}`} className="text-meta font-medium text-accent hover:underline">
+                        להצעת החוק ←
+                      </Link>
+                    )}
+                    {v.macroAgenda && <span className="text-meta text-mute bg-surface-2 px-1.5 py-0.5 rounded-control">{v.macroAgenda}</span>}
                   </div>
-                </Link>
+
+                  <div className="flex items-center gap-4 mt-auto pt-1 text-meta">
+                    <span className="font-medium text-pass" data-numeric>בעד {v.totalFor}</span>
+                    <span className="font-medium text-fail" data-numeric>נגד {v.totalAgainst}</span>
+                    <span className="text-mute" data-numeric>הפרש {v.margin}</span>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -355,26 +399,26 @@ export default function VotesClient() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex justify-center gap-3 mt-10 items-center bg-blue-50 py-4 px-4 rounded-xl border border-blue-200">
+          <div className="flex justify-center gap-3 mt-10 items-center bg-accent-wash py-4 px-4 rounded-xl border border-line">
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="text-sm font-black px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-30 disabled:bg-gray-300 transition-colors"
+              className="text-sm font-medium px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent disabled:opacity-30 disabled:bg-gray-300 transition-colors"
             >
               ← הקודם
             </button>
             <div className="flex flex-col items-center gap-1">
-              <span className="text-sm font-black text-gray-900">
+              <span className="text-sm font-medium text-ink">
                 עמוד {page} מתוך {totalPages}
               </span>
-              <span className="text-[10px] text-gray-500">
+              <span className="text-meta text-mute">
                 {total.toLocaleString()} הצבעות בסך הכל
               </span>
             </div>
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="text-sm font-black px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-30 disabled:bg-gray-300 transition-colors"
+              className="text-sm font-medium px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent disabled:opacity-30 disabled:bg-gray-300 transition-colors"
             >
               הבא →
             </button>

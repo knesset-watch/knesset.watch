@@ -1,154 +1,232 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import Link from 'next/link';
+import { billStageLabel } from '@/lib/bill-stage';
 
-const SAMPLE_MKS = [
-  { id: 30055, name: "בצלאל סמוטריץ'" },
-  { id: 23594, name: "יאיר לפיד" },
-  { id: 965, name: "בנימין נתניהו" },
-  { id: 23565, name: "מירב מיכאלי" },
-  { id: 30811, name: "איתמר בן גביר" }
-];
+/**
+ * מעקב חקיקה — כמה הצעות חוק ח"כ יזם, וכמה מהן עברו.
+ *
+ * קודם עמדה כאן רשימה קשיחה של חמישה ח"כים מתוך 150, ושניים מהם —
+ * נתניהו וסמוטריץ' — יזמו אפס הצעות חוק. סמוטריץ' היה ברירת המחדל,
+ * ולכן העמוד נפתח ריק. בנוסף הוצגה עמודת "עדכון אחרון" שהריצה
+ * new Date("") על שדה שה-API החזיר תמיד ריק, וכל שורה הראתה
+ * "Invalid Date".
+ */
+
+interface Person {
+  Id: number;
+  FirstName: string;
+  LastName: string;
+  FactionName: string | null;
+}
 
 interface Bill {
   id: number;
   name: string;
-  status: string;
-  date: string;
+  isPassed: boolean;
+  statusId: number | null;
+  summary: string | null;
+  committee: string | null;
 }
 
 interface TrackRecordData {
-  stats: {
-    proposed: number;
-    passed: number;
-    conversionRate: string;
-  };
+  personId: number;
+  stats: { proposed: number; passed: number; conversionRate: string };
   bills: Bill[];
-  error?: string;
 }
 
 export default function TrackRecordPage() {
-  const [selectedMk, setSelectedMk] = useState(SAMPLE_MKS[0].id);
+  const [people, setPeople] = useState<Person[]>([]);
+  const [selectedMk, setSelectedMk] = useState<number | null>(null);
   const [data, setData] = useState<TrackRecordData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchTrackRecord = async (mkId: number = selectedMk) => {
+  // כל 150 הח"כים, ולא חמישה קבועים
+  useEffect(() => {
+    fetch('/api/persons')
+      .then(r => r.json())
+      .then((j: { value?: Person[] }) => {
+        const list = (j.value ?? []).slice().sort((a, b) =>
+          `${a.LastName} ${a.FirstName}`.localeCompare(`${b.LastName} ${b.FirstName}`, 'he'),
+        );
+        setPeople(list);
+        if (list.length > 0) setSelectedMk(list[0].Id);
+      })
+      .catch(() => setError('לא הצלחנו לטעון את רשימת חברי הכנסת.'));
+  }, []);
+
+  const fetchTrackRecord = useCallback(async (mkId: number) => {
     setLoading(true);
     setError(null);
     setData(null);
     try {
       const res = await fetch(`/api/track-record?personId=${mkId}`);
-      if (!res.ok) throw new Error(`API error: ${res.status}`);
+      if (!res.ok) throw new Error(`שגיאת שרת ${res.status}`);
       const json = await res.json();
-      if (json.error) {
-        setError(json.error);
-      } else {
-        setData(json);
-      }
-    } catch (err: any) {
-      console.error('Track Record fetch error:', err);
-      setError(err.message || 'שגיאה בטעינת הנתונים');
+      if (json.error) setError(json.error);
+      else setData(json);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'שגיאה בטעינת הנתונים');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchTrackRecord(selectedMk);
-  }, [selectedMk]);
+    if (selectedMk !== null) fetchTrackRecord(selectedMk);
+  }, [selectedMk, fetchTrackRecord]);
+
+  const selectedName = useMemo(() => {
+    const p = people.find(x => x.Id === selectedMk);
+    return p ? `${p.FirstName} ${p.LastName}` : '';
+  }, [people, selectedMk]);
 
   return (
-    <div className="min-h-screen bg-white text-black p-8 font-[family-name:var(--font-frank-ruhl)]" dir="rtl">
-      <header className="mb-12 border-b-4 border-black pb-4">
-        <h1 className="text-4xl font-black">מעקב חקיקה (Track Record)</h1>
+    <div className="mx-auto max-w-4xl px-6 py-12" dir="rtl">
+      <header className="mb-8">
+        <h1 className="text-page mb-2">מעקב חקיקה</h1>
+        <p className="text-body font-content text-mute max-w-2xl">
+          כמה הצעות חוק יזם כל חבר כנסת בכנסת ה-25, וכמה מהן הגיעו לספר החוקים.
+        </p>
       </header>
 
-      <div className="mb-8 flex items-center gap-4 bg-gray-50 p-4 rounded-lg">
-        <span className="font-bold">בחר חבר כנסת:</span>
-        <select 
-          value={selectedMk} 
-          onChange={(e) => setSelectedMk(Number(e.target.value))}
-          className="border-2 border-black p-2 bg-white font-bold"
-        >
-          {SAMPLE_MKS.map(mk => (
-            <option key={mk.id} value={mk.id}>{mk.name}</option>
-          ))}
-        </select>
+      <div className="mb-8 flex flex-wrap items-end gap-3">
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="mk-select" className="text-label font-medium">
+            חבר או חברת כנסת
+          </label>
+          <select
+            id="mk-select"
+            value={selectedMk ?? ''}
+            onChange={e => setSelectedMk(Number(e.target.value))}
+            disabled={people.length === 0}
+            className="min-w-64 rounded-control border border-line bg-surface px-3 py-2.5 text-ui text-ink"
+          >
+            {people.length === 0 && <option value="">טוען…</option>}
+            {people.map(p => (
+              <option key={p.Id} value={p.Id}>
+                {p.LastName} {p.FirstName}
+                {p.FactionName ? ` — ${p.FactionName}` : ''}
+              </option>
+            ))}
+          </select>
+        </div>
+        {people.length > 0 && (
+          <span className="text-meta text-mute pb-3" data-numeric>
+            {people.length} חברי כנסת
+          </span>
+        )}
       </div>
 
       {loading && (
-        <div className="text-2xl font-bold animate-pulse py-10">טוען נתונים מהכנסת...</div>
+        <>
+          <span className="sr-only" role="status">טוען נתונים</span>
+          <div className="animate-pulse space-y-6" aria-hidden="true">
+            <div className="grid gap-3 sm:grid-cols-3">
+              {[0, 1, 2].map(i => <div key={i} className="h-24 rounded-card bg-surface-2" />)}
+            </div>
+            <div className="h-64 rounded-card bg-surface-2" />
+          </div>
+        </>
       )}
 
       {error && (
-        <div className="bg-red-50 border-2 border-red-600 p-6 text-red-600 font-bold mb-10 rounded">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              <div className="mb-1">⚠️ שגיאה בטעינת הנתונים</div>
-              <div className="text-sm text-red-500 mb-3">{error}</div>
-            </div>
+        <div role="alert" className="mb-8 rounded-card border border-fail/30 bg-fail-wash px-4 py-3">
+          <p className="text-ui text-ink mb-1">{error}</p>
+          {selectedMk !== null && (
             <button
               onClick={() => fetchTrackRecord(selectedMk)}
-              className="shrink-0 px-3 py-1 bg-red-600 text-white rounded text-sm font-bold hover:bg-red-700 transition-colors"
+              className="text-ui font-medium text-accent underline"
             >
-              נסו שנית
+              נסי שוב
             </button>
-          </div>
+          )}
         </div>
       )}
 
-      {!loading && data && (
-        <div className="space-y-12">
-          {/* Dashboard */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="border-4 border-black p-6">
-              <div className="text-sm font-bold uppercase text-gray-500 mb-2">הצעות חוק שהוגשו</div>
-              <div className="text-6xl font-black">{data.stats.proposed}</div>
+      {!loading && !error && data && (
+        <>
+          <div className="mb-8 grid gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-3">
+            <div className="bg-surface px-5 py-4">
+              <div className="text-meta text-mute mb-1">הצעות חוק שיזם</div>
+              <div className="text-page font-medium" data-numeric>{data.stats.proposed}</div>
             </div>
-            <div className="border-4 border-black p-6 bg-black text-white shadow-xl">
-              <div className="text-sm font-bold uppercase text-gray-400 mb-2">חוקים שעברו סופית</div>
-              <div className="text-6xl font-black">{data.stats.passed}</div>
+            <div className="bg-surface px-5 py-4">
+              <div className="text-meta text-mute mb-1">מהן הפכו לחוק</div>
+              <div className="text-page font-medium text-pass" data-numeric>{data.stats.passed}</div>
             </div>
-            <div className="border-4 border-black p-6">
-              <div className="text-sm font-bold uppercase text-gray-500 mb-2">אחוז הצלחה (Conversion)</div>
-              <div className="text-6xl font-black">{data.stats.conversionRate}%</div>
+            <div className="bg-surface px-5 py-4">
+              <div className="text-meta text-mute mb-1">שיעור המעבר</div>
+              <div className="text-page font-medium" data-numeric>{data.stats.conversionRate}%</div>
             </div>
           </div>
 
-          {/* Table */}
-          <div>
-            <h2 className="text-2xl font-black mb-4 border-b-2 border-black inline-block">פירוט הצעות חוק</h2>
-            <div className="overflow-x-auto border-2 border-black/5">
-              <table className="w-full text-right border-collapse">
-                <thead>
-                  <tr className="border-b-2 border-black bg-gray-50">
-                    <th className="py-3 px-4 font-black">שם החוק</th>
-                    <th className="py-3 px-4 font-black">סטטוס</th>
-                    <th className="py-3 px-4 font-black text-left">עדכון אחרון</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.bills.map((bill: Bill) => (
-                    <tr key={bill.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                      <td className="py-4 px-4 font-medium leading-tight max-w-md">{bill.name}</td>
-                      <td className="py-4 px-4">
-                        <span className={`px-2 py-1 text-xs font-bold rounded ${
-                          bill.status.includes('סופי') || bill.status.includes('אישור') ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-                        }`}>
-                          {bill.status}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4 text-left font-mono text-sm text-gray-400">
-                        {new Date(bill.date).toLocaleDateString('he-IL')}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {data.bills.length === 0 ? (
+            /*
+              מצב ריק שמסביר, במקום טבלה ריקה. 22 ח"כים לא יזמו ולו הצעה
+              אחת, וכולם שרים — כלומר זו תשובה, לא תקלה.
+            */
+            <div className="rounded-card border border-line bg-surface p-6">
+              <h2 className="text-section mb-2">אין הצעות חוק ביוזמת {selectedName}</h2>
+              <p className="text-body font-content text-ink-2 mb-3">
+                שרים מקדמים חקיקה דרך המשרד שלהם, כהצעת חוק ממשלתית, ואינם רשומים
+                בה כיוזמים. לכן 22 חברי כנסת אינם מופיעים כאן — וכולם שרים.
+              </p>
+              <Link
+                href="/did-you-know#ministers"
+                className="text-ui font-medium text-accent hover:underline"
+              >
+                הידעת? למה שרים כמעט לא מופיעים ←
+              </Link>
             </div>
-          </div>
-        </div>
+          ) : (
+            <section>
+              <h2 className="text-section mb-4">פירוט הצעות החוק</h2>
+              <div className="flex flex-col gap-1.5">
+                {data.bills.map(bill => {
+                  const stage = billStageLabel(bill.statusId);
+                  return (
+                    <Link
+                      key={bill.id}
+                      href={`/bill/${bill.id}`}
+                      className="rounded-card border border-line bg-surface px-4 py-3 transition-colors hover:border-accent"
+                    >
+                      <div className="flex items-start gap-3">
+                        <span
+                          className={`shrink-0 rounded-control px-2 py-0.5 text-meta font-medium ${
+                            stage.tone === 'passed'
+                              ? 'bg-pass-wash text-pass'
+                              : stage.tone === 'stopped'
+                                ? 'bg-fail-wash text-fail'
+                                : stage.tone === 'advanced'
+                                  ? 'bg-accent-wash text-accent-ink'
+                                  : 'bg-surface-2 text-mute'
+                          }`}
+                        >
+                          {stage.label}
+                        </span>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="text-ui font-content text-ink leading-snug">{bill.name}</div>
+                          {bill.summary && (
+                            <p className="text-meta text-mute mt-1 line-clamp-2 font-content">
+                              {bill.summary}
+                            </p>
+                          )}
+                          {bill.committee && (
+                            <p className="text-meta text-mute mt-1">{bill.committee}</p>
+                          )}
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+        </>
       )}
     </div>
   );

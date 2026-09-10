@@ -91,7 +91,7 @@ const cache = new Map<string, PreviewData>();
 
 function Avatar({ label, colorClass }: { label: string; colorClass: string }) {
   return (
-    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-black text-sm shrink-0 ${colorClass}`}>
+    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-medium text-sm shrink-0 ${colorClass}`}>
       {label}
     </div>
   );
@@ -100,15 +100,15 @@ function Avatar({ label, colorClass }: { label: string; colorClass: string }) {
 function Stat({ label, value, color }: { label: string; value: string | number; color?: string }) {
   return (
     <div className="flex flex-col min-w-0">
-      <span className="text-[10px] font-black uppercase text-gray-400 mb-0.5 tracking-wide truncate">{label}</span>
-      <span className={`text-lg font-black leading-none ${color ?? ''}`}>{value}</span>
+      <span className="text-meta font-medium text-mute mb-0.5 truncate">{label}</span>
+      <span className={`text-lg font-medium leading-none ${color ?? ''}`}>{value}</span>
     </div>
   );
 }
 
 function Badge({ label, color }: { label: string; color: string }) {
   return (
-    <span className={`shrink-0 text-[10px] font-black uppercase px-1.5 py-0.5 rounded-full ${color}`}>
+    <span className={`shrink-0 text-meta font-medium px-1.5 py-0.5 rounded-full ${color}`}>
       {label}
     </span>
   );
@@ -127,27 +127,27 @@ function initials(name: string) {
 // ── Card renderers ─────────────────────────────────────────────────────────────
 
 function MkCard({ data }: { data: MkPreview }) {
-  const avatarColor = data.isCoalition === true ? 'bg-green-600' : data.isCoalition === false ? 'bg-blue-600' : 'bg-gray-400';
+  const avatarColor = data.isCoalition === true ? 'bg-green-600' : data.isCoalition === false ? 'bg-accent' : 'bg-gray-400';
   return (
     <>
       <div className="flex gap-3 items-start mb-3">
         <Avatar label={initials(data.name)} colorClass={avatarColor} />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-black leading-tight">{data.name}</p>
-          {data.factionName && <p className="text-[11px] text-gray-500 mt-0.5">{data.factionName}</p>}
+          <p className="text-sm font-medium leading-tight">{data.name}</p>
+          {data.factionName && <p className="text-meta text-mute mt-0.5">{data.factionName}</p>}
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
           {data.isCoalition !== null && (
-            <Badge label={data.isCoalition ? 'קואליציה' : 'אופוזיציה'} color={data.isCoalition ? 'bg-green-600 text-white' : 'bg-blue-600 text-white'} />
+            <Badge label={data.isCoalition ? 'קואליציה' : 'אופוזיציה'} color={data.isCoalition ? 'bg-green-600 text-white' : 'bg-accent text-white'} />
           )}
           {data.ministerRole && <Badge label="שר/ה" color="bg-amber-400 text-white" />}
         </div>
       </div>
       <div className="grid grid-cols-4 gap-2 border-t border-black/5 pt-3">
         <Stat label='הצ"ח' value={data.proposed} />
-        <Stat label="עברו" value={data.passed} color="text-teal-600" />
+        <Stat label="עברו" value={data.passed} color="text-accent" />
         <Stat label="מליאה" value={data.attendanceRate != null ? `${data.attendanceRate}%` : '—'} />
-        <Stat label="ועדות" value={data.committeeSessions.toLocaleString('he-IL')} color="text-blue-700" />
+        <Stat label="ועדות" value={data.committeeSessions.toLocaleString('he-IL')} color="text-accent" />
       </div>
     </>
   );
@@ -157,14 +157,14 @@ function CommitteeCard({ data }: { data: CommitteePreview }) {
   return (
     <>
       <div className="flex gap-3 items-start mb-3">
-        <Avatar label="ו" colorClass="bg-teal-600" />
+        <Avatar label="ו" colorClass="bg-accent" />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-black leading-snug line-clamp-2">{data.name}</p>
+          <p className="text-sm font-medium leading-snug line-clamp-2">{data.name}</p>
         </div>
       </div>
       <div className="grid grid-cols-3 gap-2 border-t border-black/5 pt-3">
         <Stat label="ישיבות" value={data.sessionCount.toLocaleString('he-IL')} />
-        <Stat label="חברים" value={data.memberCount} color="text-blue-700" />
+        <Stat label="חברים" value={data.memberCount} color="text-accent" />
         <Stat label="דיון אחרון" value={data.lastDate ? fmtDate(data.lastDate) : '—'} />
       </div>
     </>
@@ -173,20 +173,20 @@ function CommitteeCard({ data }: { data: CommitteePreview }) {
 
 function VoteCard({ data }: { data: VotePreview }) {
   const margin = Math.abs(data.totalFor - data.totalAgainst);
-  const avatarColor = data.isPassed ? 'bg-teal-600' : 'bg-red-500';
+  const avatarColor = data.isPassed ? 'bg-accent' : 'bg-red-500';
   const avatarLabel = data.isPassed ? '✓' : '✗';
   return (
     <>
       <div className="flex gap-3 items-start mb-3">
         <Avatar label={avatarLabel} colorClass={avatarColor} />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-black leading-snug line-clamp-2">{data.title}</p>
-          <p className="text-[11px] text-gray-500 mt-0.5">{fmtDate(data.date)}{data.macroAgenda ? ` · ${data.macroAgenda}` : ''}</p>
+          <p className="text-sm font-medium leading-snug line-clamp-2">{data.title}</p>
+          <p className="text-meta text-mute mt-0.5">{fmtDate(data.date)}{data.macroAgenda ? ` · ${data.macroAgenda}` : ''}</p>
         </div>
       </div>
       <div className="grid grid-cols-4 gap-2 border-t border-black/5 pt-3">
-        <Stat label="הפרש" value={margin} color={data.isPassed ? 'text-teal-600' : 'text-red-500'} />
-        <Stat label="בעד" value={data.totalFor} color="text-teal-600" />
+        <Stat label="הפרש" value={margin} color={data.isPassed ? 'text-accent' : 'text-red-500'} />
+        <Stat label="בעד" value={data.totalFor} color="text-accent" />
         <Stat label="נגד" value={data.totalAgainst} color="text-red-500" />
         <Stat label="נמנעו" value={data.totalAbstain} />
       </div>
@@ -195,18 +195,18 @@ function VoteCard({ data }: { data: VotePreview }) {
 }
 
 function BillCard({ data }: { data: BillPreview }) {
-  const avatarColor = data.isPassed ? 'bg-teal-600' : 'bg-blue-500';
+  const avatarColor = data.isPassed ? 'bg-accent' : 'bg-accent';
   return (
     <>
       <div className="flex gap-3 items-start mb-3">
         <Avatar label="ח" colorClass={avatarColor} />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-black leading-snug line-clamp-2">{data.title}</p>
-          {data.committeeName && <p className="text-[11px] text-gray-500 mt-0.5">{data.committeeName}</p>}
+          <p className="text-sm font-medium leading-snug line-clamp-2">{data.title}</p>
+          {data.committeeName && <p className="text-meta text-mute mt-0.5">{data.committeeName}</p>}
         </div>
         <Badge
           label={data.isPassed ? 'עבר' : 'בהליך'}
-          color={data.isPassed ? 'bg-teal-600 text-white' : 'bg-gray-200 text-gray-600'}
+          color={data.isPassed ? 'bg-accent text-white' : 'bg-gray-200 text-ink-2'}
         />
       </div>
       <div className="grid grid-cols-3 gap-2 border-t border-black/5 pt-3">
@@ -222,15 +222,15 @@ function SessionCard({ data }: { data: SessionPreview }) {
   return (
     <>
       <div className="flex gap-3 items-start mb-3">
-        <Avatar label="ו" colorClass="bg-teal-600" />
+        <Avatar label="ו" colorClass="bg-accent" />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-black leading-tight">{data.committeeName}</p>
-          {data.title && <p className="text-[11px] text-gray-500 mt-0.5 line-clamp-1">{data.title}</p>}
-          <p className="text-[11px] text-gray-400 mt-0.5">{fmtDate(data.date)}</p>
+          <p className="text-sm font-medium leading-tight">{data.committeeName}</p>
+          {data.title && <p className="text-meta text-mute mt-0.5 line-clamp-1">{data.title}</p>}
+          <p className="text-meta text-mute mt-0.5">{fmtDate(data.date)}</p>
         </div>
       </div>
       <div className="grid grid-cols-4 gap-2 border-t border-black/5 pt-3">
-        <Stat label="הצבעות" value={data.voteCount} color="text-blue-700" />
+        <Stat label="הצבעות" value={data.voteCount} color="text-accent" />
         <Stat label="נושאים" value={data.agendaCount} />
         <Stat label="משתתפים" value={data.attendeeCount} />
         <Stat label="חוקים" value={data.billCount} />
@@ -240,23 +240,23 @@ function SessionCard({ data }: { data: SessionPreview }) {
 }
 
 function FactionCard({ data }: { data: FactionPreview }) {
-  const avatarColor = data.isCoalition === true ? 'bg-green-600' : data.isCoalition === false ? 'bg-blue-600' : 'bg-gray-400';
+  const avatarColor = data.isCoalition === true ? 'bg-green-600' : data.isCoalition === false ? 'bg-accent' : 'bg-gray-400';
   const factionInitials = initials(data.name);
   return (
     <>
       <div className="flex gap-3 items-start mb-3">
         <Avatar label={factionInitials} colorClass={avatarColor} />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-black leading-tight line-clamp-2">{data.name}</p>
+          <p className="text-sm font-medium leading-tight line-clamp-2">{data.name}</p>
         </div>
         {data.isCoalition !== null && (
-          <Badge label={data.isCoalition ? 'קואליציה' : 'אופוזיציה'} color={data.isCoalition ? 'bg-green-600 text-white' : 'bg-blue-600 text-white'} />
+          <Badge label={data.isCoalition ? 'קואליציה' : 'אופוזיציה'} color={data.isCoalition ? 'bg-green-600 text-white' : 'bg-accent text-white'} />
         )}
       </div>
       <div className="grid grid-cols-4 gap-2 border-t border-black/5 pt-3">
         <Stat label="חברים" value={data.memberCount} />
         <Stat label='הצ"ח' value={data.proposed} />
-        <Stat label="עברו" value={data.passed} color="text-teal-600" />
+        <Stat label="עברו" value={data.passed} color="text-accent" />
         <Stat label="מרד" value={data.rebelRate != null ? `${data.rebelRate}%` : '—'} color="text-orange-500" />
       </div>
     </>
@@ -269,13 +269,13 @@ function MinistryCard({ data }: { data: MinistryPreview }) {
       <div className="flex gap-3 items-start mb-3">
         <Avatar label="מ" colorClass="bg-slate-600" />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-black leading-tight line-clamp-2">{data.name}</p>
-          {data.currentMinister && <p className="text-[11px] text-gray-500 mt-0.5">{data.currentMinister}</p>}
+          <p className="text-sm font-medium leading-tight line-clamp-2">{data.name}</p>
+          {data.currentMinister && <p className="text-meta text-mute mt-0.5">{data.currentMinister}</p>}
         </div>
       </div>
       <div className="grid grid-cols-2 gap-2 border-t border-black/5 pt-3">
         <Stat label="שרים" value={data.totalMinisters} />
-        <Stat label="חוקים" value={data.billCount} color="text-blue-700" />
+        <Stat label="חוקים" value={data.billCount} color="text-accent" />
       </div>
     </>
   );

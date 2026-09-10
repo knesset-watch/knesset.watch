@@ -62,6 +62,7 @@ export default function HomepageClient() {
   const [query, setQuery] = useState('');
   const [stats, setStats] = useState<Stats | null>(null);
   const [recentBills, setRecentBills] = useState<RecentBill[]>([]);
+  const [loadError, setLoadError] = useState(false);
   const [homeDomains, setHomeDomains] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -86,8 +87,20 @@ export default function HomepageClient() {
     const params = new URLSearchParams();
     if (dateRange) { params.set('from', dateRange.from); params.set('to', dateRange.to); }
     const qs = params.toString() ? `?${params}` : '';
-    fetch(`${BASE_PATH}/api/homepage-stats${qs}`).then(r => r.json()).then(setStats).catch(() => {});
-    fetch(`${BASE_PATH}/api/pulse${qs}`).then(r => r.json()).then(d => setRecentBills(d.bills?.slice(0, 6) ?? [])).catch(() => {});
+    /*
+      קודם היה כאן .catch(() => {}) על שתי הקריאות: כשל בשרת נבלע בשקט
+      והמשתמשת ראתה דף חסר בלי שום הסבר.
+    */
+    Promise.all([
+      fetch(`${BASE_PATH}/api/homepage-stats${qs}`)
+        .then(r => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
+        .then(setStats),
+      fetch(`${BASE_PATH}/api/pulse${qs}`)
+        .then(r => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
+        .then(d => setRecentBills(d.bills?.slice(0, 6) ?? [])),
+    ])
+      .then(() => setLoadError(false))
+      .catch(() => setLoadError(true));
   }, [period]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
@@ -102,15 +115,15 @@ export default function HomepageClient() {
     <div className="min-h-screen bg-white" dir="rtl">
       {/* Hero */}
       <div className="max-w-3xl mx-auto px-6 pt-20 pb-14 text-center">
-        <h1 className="text-4xl sm:text-5xl font-black tracking-tighter mb-3">כנסת ווטש</h1>
-        <p className="text-base text-gray-500 mb-10 leading-relaxed">
+        <h1 className="text-4xl sm:text-5xl font-medium tracking-tighter mb-3">אפרכסת לכנסת</h1>
+        <p className="text-base text-mute mb-10 leading-relaxed">
           שקיפות נתוני הכנסת ה-25 בזמן אמת — הצבעות, פרוטוקולים, חוקים, ח&quot;כים וועדות במקום אחד.
         </p>
 
         {/* Search */}
         <form onSubmit={handleSearch} className="flex items-center gap-2 max-w-xl mx-auto">
           <div className="flex-1 flex items-center border border-black/20 rounded-xl px-4 py-3 bg-gray-50 focus-within:border-black/50 focus-within:bg-white transition-colors">
-            <svg className="w-4 h-4 text-gray-400 shrink-0 ml-2" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg className="w-4 h-4 text-mute shrink-0 ml-2" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="6.5" cy="6.5" r="4.5"/><path d="m10 10 4 4"/>
             </svg>
             <input
@@ -119,20 +132,33 @@ export default function HomepageClient() {
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="שאלו שאלה על פעילות הכנסת..."
-              className="flex-1 bg-transparent text-sm font-black outline-none placeholder:text-gray-400 placeholder:font-normal"
+              className="flex-1 bg-transparent text-sm font-medium placeholder:text-mute placeholder:font-normal"
               dir="rtl"
-              autoFocus
             />
           </div>
           <button
             type="submit"
             disabled={query.trim().length < 2}
-            className="px-5 py-3 rounded-xl bg-black text-white text-sm font-black disabled:opacity-30 hover:bg-gray-800 transition-colors shrink-0"
+            className="px-5 py-3 rounded-xl bg-black text-white text-sm font-medium disabled:opacity-30 hover:bg-gray-800 transition-colors shrink-0"
           >
             שאל
           </button>
         </form>
       </div>
+
+      {loadError && (
+        <div className="max-w-3xl mx-auto px-6 mb-10">
+          <div role="alert" className="rounded-card border border-fail/30 bg-fail-wash px-4 py-3">
+            <p className="text-ui text-ink">לא הצלחנו לטעון את נתוני הכנסת כרגע.</p>
+            <button
+              onClick={fetchData}
+              className="text-ui font-medium text-accent underline mt-1"
+            >
+              נסי לטעון שוב
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Stats row */}
       {stats && (
@@ -140,27 +166,27 @@ export default function HomepageClient() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <Link href="/mks"
               className="rounded-2xl border border-black/8 p-5 hover:border-black/20 hover:bg-gray-50 transition-colors text-center">
-              <div className="text-3xl font-black">{stats.mks}</div>
-              <div className="text-[11px] text-gray-500 font-black uppercase tracking-wide mt-1">ח&quot;כים</div>
+              <div className="text-3xl font-medium">{stats.mks}</div>
+              <div className="text-meta text-mute font-medium mt-1">ח&quot;כים</div>
             </Link>
             <Link href="/committees"
               className="rounded-2xl border border-black/8 p-5 hover:border-black/20 hover:bg-gray-50 transition-colors text-center">
-              <div className="text-3xl font-black">{stats.committees}</div>
-              <div className="text-[11px] text-gray-500 font-black uppercase tracking-wide mt-1">ועדות</div>
-              <div className="text-[11px] text-gray-300 mt-0.5">{stats.sessions.toLocaleString()} ישיבות</div>
+              <div className="text-3xl font-medium">{stats.committees}</div>
+              <div className="text-meta text-mute font-medium mt-1">ועדות</div>
+              <div className="text-meta text-mute mt-0.5">{stats.sessions.toLocaleString()} ישיבות</div>
             </Link>
             <Link href="/bills?passedOnly=true"
               className="rounded-2xl border border-black/8 p-5 hover:border-black/20 hover:bg-gray-50 transition-colors text-center">
-              <div className="text-3xl font-black text-teal-700">{stats.billsPassed.toLocaleString()}</div>
-              <div className="text-[11px] text-gray-500 font-black uppercase tracking-wide mt-1">חוקים עברו</div>
+              <div className="text-3xl font-medium text-accent">{stats.billsPassed.toLocaleString()}</div>
+              <div className="text-meta text-mute font-medium mt-1">חוקים עברו</div>
               {stats.billsTotal > 0 && (
-                <div className="text-[11px] text-gray-300 mt-0.5">מתוך {stats.billsTotal.toLocaleString()} הצ&quot;ח</div>
+                <div className="text-meta text-mute mt-0.5">מתוך {stats.billsTotal.toLocaleString()} הצ&quot;ח</div>
               )}
             </Link>
             <Link href="/votes"
               className="rounded-2xl border border-black/8 p-5 hover:border-black/20 hover:bg-gray-50 transition-colors text-center">
-              <div className="text-3xl font-black">{stats.votes?.toLocaleString() ?? '—'}</div>
-              <div className="text-[11px] text-gray-500 font-black uppercase tracking-wide mt-1">הצבעות מליאה</div>
+              <div className="text-3xl font-medium">{stats.votes?.toLocaleString() ?? '—'}</div>
+              <div className="text-meta text-mute font-medium mt-1">הצבעות מליאה</div>
             </Link>
           </div>
         </div>
@@ -168,12 +194,12 @@ export default function HomepageClient() {
 
       {/* שאלון ההתאמה — השלב הראשון יושב כאן, והמשכו ב-/agenda-match */}
       <div className="max-w-3xl mx-auto px-6 mb-14">
-        <div className="rounded-2xl border-2 border-teal-600/25 bg-teal-50/40 p-6">
-          <div className="text-[11px] font-black text-teal-700 uppercase tracking-widest mb-1">
+        <div className="rounded-2xl border-2 border-accent/25 bg-accent-wash/40 p-6">
+          <div className="text-meta font-medium text-accent mb-1">
             מי עובד בשבילך
           </div>
-          <h2 className="text-xl font-black mb-1">בחרי עד שלושה תחומים שחשובים לך</h2>
-          <p className="text-sm text-gray-600 mb-4 font-medium leading-relaxed">
+          <h2 className="text-xl font-medium mb-1">בחרי עד שלושה תחומים שחשובים לך</h2>
+          <p className="text-sm text-ink-2 mb-4 font-medium leading-relaxed">
             נשאל אותך מה העמדה שלך בכל נושא, ונדרג את חברי הכנסת לפי מידת הפעילות שלהם —
             הצעות חוק שיזמו והצבעות שתמכו בהן.
           </p>
@@ -187,12 +213,12 @@ export default function HomepageClient() {
                   key={d.id}
                   onClick={() => toggleHomeDomain(d.id)}
                   disabled={full}
-                  className={`text-xs font-black px-3 py-2 rounded-lg border-2 transition-colors ${
+                  className={`text-xs font-medium px-3 py-2 rounded-lg border-2 transition-colors ${
                     selected
-                      ? 'border-teal-600 bg-teal-600 text-white'
+                      ? 'border-accent bg-accent text-white'
                       : full
-                        ? 'border-black/8 text-gray-400 opacity-50 cursor-not-allowed bg-white'
-                        : 'border-black/10 bg-white hover:border-teal-400'
+                        ? 'border-black/8 text-mute opacity-50 cursor-not-allowed bg-white'
+                        : 'border-black/10 bg-white hover:border-accent'
                   }`}
                 >
                   {d.label}
@@ -205,11 +231,11 @@ export default function HomepageClient() {
             <button
               onClick={startQuestionnaire}
               disabled={homeDomains.length === 0}
-              className="px-5 py-2.5 rounded-lg bg-black text-white font-black text-sm disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+              className="px-5 py-2.5 rounded-lg bg-black text-white font-medium text-sm disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
             >
               המשך לשאלון
             </button>
-            <span className="text-xs text-gray-500 font-medium">
+            <span className="text-xs text-mute font-medium">
               {homeDomains.length > 0
                 ? `נבחרו ${homeDomains.length} מתוך ${HOME_DOMAIN_PICKS}`
                 : `בחרי עד ${HOME_DOMAIN_PICKS} תחומים כדי להתחיל`}
@@ -218,16 +244,29 @@ export default function HomepageClient() {
         </div>
       </div>
 
+      <div className="max-w-3xl mx-auto px-6 mb-14">
+        <Link
+          href="/did-you-know"
+          className="flex items-baseline justify-between gap-4 rounded-card border border-line bg-surface px-5 py-4 transition-colors hover:border-accent"
+        >
+          <span>
+            <span className="text-section block">הידעת?</span>
+            <span className="text-ui text-mute">מה הנתונים באתר אומרים — ומה הם לא</span>
+          </span>
+          <span className="text-ui text-accent shrink-0">←</span>
+        </Link>
+      </div>
+
       {/* Section cards */}
       <div className="max-w-3xl mx-auto px-6 mb-14">
-        <div className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4">מקטעים</div>
+        <div className="text-meta font-medium text-mute mb-4">מקטעים</div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {SECTIONS.map(s => (
             <Link key={s.href} href={s.href}
               className="rounded-2xl border border-black/8 p-5 hover:border-black/20 hover:bg-gray-50 transition-colors group">
               <div className="text-2xl mb-2">{s.icon}</div>
-              <div className="text-base font-black group-hover:text-teal-700 transition-colors">{s.label}</div>
-              <div className="text-xs text-gray-500 mt-0.5">{s.sublabel}</div>
+              <div className="text-base font-medium group-hover:text-accent transition-colors">{s.label}</div>
+              <div className="text-xs text-mute mt-0.5">{s.sublabel}</div>
             </Link>
           ))}
         </div>
@@ -237,19 +276,19 @@ export default function HomepageClient() {
       {recentBills.length > 0 && (
         <div className="max-w-3xl mx-auto px-6 pb-20">
           <div className="flex items-center justify-between mb-4">
-            <div className="text-[11px] font-black text-gray-400 uppercase tracking-widest">חוקים שעברו לאחרונה</div>
-            <Link href="/bills?passedOnly=true" className="text-[11px] font-black text-teal-700 hover:underline">כל החוקים ←</Link>
+            <div className="text-meta font-medium text-mute">חוקים שעברו לאחרונה</div>
+            <Link href="/bills?passedOnly=true" className="text-meta font-medium text-accent hover:underline">כל החוקים ←</Link>
           </div>
           <div className="flex flex-col gap-1.5">
             {recentBills.map(b => (
               <Link key={b.id} href={`/bill/${b.id}`}
                 className="flex items-start gap-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors px-4 py-3">
-                <span className="shrink-0 text-[11px] font-black bg-teal-500 text-white px-2 py-0.5 rounded-full mt-0.5">עבר</span>
+                <span className="shrink-0 text-meta font-medium bg-accent text-white px-2 py-0.5 rounded-full mt-0.5">עבר</span>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-bold text-gray-900 leading-snug line-clamp-2">{b.title}</div>
+                  <div className="text-sm font-bold text-ink leading-snug line-clamp-2">{b.title}</div>
                   <div className="flex items-center gap-2 mt-0.5">
-                    {b.date && <span className="text-[11px] text-gray-500">{relativeDate(b.date)}</span>}
-                    {b.macroAgenda && <span className="text-[11px] font-black text-white bg-black px-1.5 py-0.5 rounded-full">{b.macroAgenda}</span>}
+                    {b.date && <span className="text-meta text-mute">{relativeDate(b.date)}</span>}
+                    {b.macroAgenda && <span className="text-meta font-medium text-white bg-black px-1.5 py-0.5 rounded-full">{b.macroAgenda}</span>}
                   </div>
                 </div>
               </Link>

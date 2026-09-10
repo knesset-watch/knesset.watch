@@ -201,8 +201,8 @@ export default function KeywordMatchClient() {
     <div className="min-h-screen bg-white" dir="rtl">
       <div className="max-w-3xl mx-auto px-6 py-10">
         <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
-          <h1 className="text-2xl font-black">מי עובד בשבילך</h1>
-          <Link href="/agenda-match" className="text-xs font-black underline text-gray-500 hover:text-black">
+          <h1 className="text-2xl font-medium">מי עובד בשבילך</h1>
+          <Link href="/agenda-match" className="text-xs font-medium underline text-mute hover:text-black">
             לגרסה הישנה ←
           </Link>
         </div>
@@ -220,26 +220,26 @@ export default function KeywordMatchClient() {
               <div key={s.id} className="flex items-center flex-1 last:flex-none">
                 <div className="flex items-center gap-2 shrink-0">
                   <span
-                    className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black transition-colors ${
+                    className={`w-6 h-6 rounded-full flex items-center justify-center text-meta font-medium transition-colors ${
                       active
-                        ? 'bg-teal-600 text-white'
+                        ? 'bg-accent text-white'
                         : done
-                          ? 'bg-teal-100 text-teal-700'
-                          : 'bg-gray-100 text-gray-300'
+                          ? 'bg-accent-wash text-accent'
+                          : 'bg-gray-100 text-mute'
                     }`}
                   >
                     {done ? '✓' : i + 1}
                   </span>
                   <span
-                    className={`text-[11px] font-black hidden sm:inline ${
-                      active ? 'text-gray-900' : done ? 'text-teal-700' : 'text-gray-300'
+                    className={`text-meta font-medium hidden sm:inline ${
+                      active ? 'text-ink' : done ? 'text-accent' : 'text-mute'
                     }`}
                   >
                     {s.label}
                   </span>
                 </div>
                 {i < STEPS.length - 1 && (
-                  <div className={`h-0.5 flex-1 mx-2 rounded-full ${done ? 'bg-teal-200' : 'bg-gray-100'}`} />
+                  <div className={`h-0.5 flex-1 mx-2 rounded-full ${done ? 'bg-accent-wash' : 'bg-gray-100'}`} />
                 )}
               </div>
             );
@@ -249,8 +249,8 @@ export default function KeywordMatchClient() {
         {/* ---------------------------- שלב 1 ---------------------------- */}
         {step === 'topics' && (
           <div>
-            <h2 className="text-lg font-black mb-1">מה מעניין אותך?</h2>
-            <p className="text-sm text-gray-600 font-medium mb-6 leading-relaxed">
+            <h2 className="text-lg font-medium mb-1">מה מעניין אותך?</h2>
+            <p className="text-sm text-ink-2 font-medium mb-6 leading-relaxed">
               בחרי עד {MAX_TOPICS} תחומים. בשלב הבא תראי את הנושאים שבתוכם ותבחרי מה מדבר אלייך.
             </p>
 
@@ -262,17 +262,18 @@ export default function KeywordMatchClient() {
                   <button
                     key={t.id}
                     onClick={() => toggleTopic(t.id)}
+                    aria-pressed={on}
                     disabled={full}
                     className={`text-right p-4 rounded-xl border-2 transition-colors ${
                       on
-                        ? 'border-teal-600 bg-teal-600 text-white'
+                        ? 'border-accent bg-accent text-white'
                         : full
-                          ? 'border-black/8 text-gray-300 cursor-not-allowed bg-white'
-                          : 'border-black/10 bg-white hover:border-teal-400'
+                          ? 'border-black/8 text-mute cursor-not-allowed bg-white'
+                          : 'border-black/10 bg-white hover:border-accent'
                     }`}
                   >
-                    <div className="text-sm font-black leading-snug">{t.label}</div>
-                    <div className={`text-[11px] font-medium mt-1 ${on ? 'text-teal-100' : 'text-gray-400'}`}>
+                    <div className="text-sm font-medium leading-snug">{t.label}</div>
+                    <div className={`text-meta font-medium mt-1 ${on ? 'text-accent-wash' : 'text-mute'}`}>
                       {t.clusters.length} נושאים · {t.billCount.toLocaleString()} הצעות חוק
                     </div>
                   </button>
@@ -284,7 +285,7 @@ export default function KeywordMatchClient() {
               <button
                 onClick={() => setStep('clusters')}
                 disabled={topics.length === 0}
-                className="w-full px-5 py-3 rounded-lg bg-black text-white font-black text-sm disabled:opacity-25 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+                className="w-full px-5 py-3 rounded-lg bg-black text-white font-medium text-sm disabled:opacity-25 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
               >
                 {topics.length === 0 ? 'בחרי לפחות תחום אחד' : `המשך · ${topics.length} תחומים`}
               </button>
@@ -295,14 +296,14 @@ export default function KeywordMatchClient() {
         {/* ---------------------------- שלב 2 ---------------------------- */}
         {step === 'clusters' && (
           <div>
-            <h2 className="text-lg font-black mb-1">אילו נושאים חשובים לך?</h2>
-            <p className="text-sm text-gray-600 font-medium mb-6 leading-relaxed">
+            <h2 className="text-lg font-medium mb-1">אילו נושאים חשובים לך?</h2>
+            <p className="text-sm text-ink-2 font-medium mb-6 leading-relaxed">
               בחרי עד {MAX_CLUSTERS}. לכל נושא יש 2 עד 5 שאלות, ותעני רק על מה שבחרת.
             </p>
 
             {visibleClusters.map(({ topic, list }) => (
               <div key={topic.id} className="mb-6">
-                <div className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                <div className="text-meta font-medium text-mute mb-2">
                   {topic.label}
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -313,18 +314,19 @@ export default function KeywordMatchClient() {
                       <button
                         key={c.clusterId}
                         onClick={() => toggleCluster(c.clusterId)}
+                        aria-pressed={on}
                         disabled={full}
                         title={c.questions.map(q => q.keyword).join(' · ')}
-                        className={`text-xs font-black px-3 py-2.5 rounded-lg border-2 transition-colors ${
+                        className={`text-xs font-medium px-3 py-2.5 rounded-lg border-2 transition-colors ${
                           on
-                            ? 'border-teal-600 bg-teal-600 text-white'
+                            ? 'border-accent bg-accent text-white'
                             : full
-                              ? 'border-black/8 text-gray-300 cursor-not-allowed bg-white'
-                              : 'border-black/10 bg-white hover:border-teal-400'
+                              ? 'border-black/8 text-mute cursor-not-allowed bg-white'
+                              : 'border-black/10 bg-white hover:border-accent'
                         }`}
                       >
                         {c.label}
-                        <span className={`mr-1.5 text-[10px] font-medium ${on ? 'text-teal-100' : 'text-gray-400'}`}>
+                        <span className={`mr-1.5 text-meta font-medium ${on ? 'text-accent-wash' : 'text-mute'}`}>
                           {c.questions.length} שאלות
                         </span>
                       </button>
@@ -335,13 +337,13 @@ export default function KeywordMatchClient() {
             ))}
 
             <StickyBar>
-              <button onClick={back} className="px-4 py-3 rounded-lg border-2 border-black/10 bg-white font-black text-sm hover:border-black/25 transition-colors">
+              <button onClick={back} className="px-4 py-3 rounded-lg border-2 border-black/10 bg-white font-medium text-sm hover:border-black/25 transition-colors">
                 חזרה
               </button>
               <button
                 onClick={() => setStep('stances')}
                 disabled={clusters.length === 0}
-                className="flex-1 px-5 py-3 rounded-lg bg-black text-white font-black text-sm disabled:opacity-25 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+                className="flex-1 px-5 py-3 rounded-lg bg-black text-white font-medium text-sm disabled:opacity-25 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
               >
                 {clusters.length === 0 ? 'בחרי לפחות נושא אחד' : `המשך · ${questionCount} שאלות`}
               </button>
@@ -352,14 +354,14 @@ export default function KeywordMatchClient() {
         {/* ---------------------------- שלב 3 ---------------------------- */}
         {step === 'stances' && (
           <div>
-            <h2 className="text-lg font-black mb-1">מה העמדה שלך?</h2>
-            <p className="text-sm text-gray-600 font-medium mb-6 leading-relaxed">
+            <h2 className="text-lg font-medium mb-1">מה העמדה שלך?</h2>
+            <p className="text-sm text-ink-2 font-medium mb-6 leading-relaxed">
               אפשר לדלג על שאלה שאין לך עמדה לגביה — היא פשוט לא תיספר.
             </p>
 
             {chosenClusters.map(cluster => (
               <div key={cluster.clusterId} className="mb-7">
-                <div className="text-[11px] font-black text-teal-700 uppercase tracking-widest mb-2.5">
+                <div className="text-meta font-medium text-accent mb-2.5">
                   {cluster.label}
                 </div>
 
@@ -370,18 +372,18 @@ export default function KeywordMatchClient() {
                       <div
                         key={q.issueId}
                         className={`rounded-xl border-2 p-4 transition-colors ${
-                          answeredHere ? 'border-teal-600/40 bg-teal-50/30' : 'border-black/8'
+                          answeredHere ? 'border-accent/40 bg-accent-wash/30' : 'border-black/8'
                         }`}
                       >
                         <div className="flex items-start justify-between gap-3 mb-1">
-                          <h3 className="text-sm font-black leading-relaxed flex-1">{q.question}</h3>
+                          <h3 className="text-sm font-medium leading-relaxed flex-1">{q.question}</h3>
                           {answeredHere && (
-                            <span className="shrink-0 w-5 h-5 rounded-full bg-teal-600 text-white text-[11px] font-black flex items-center justify-center">
+                            <span className="shrink-0 w-5 h-5 rounded-full bg-accent text-white text-meta font-medium flex items-center justify-center">
                               ✓
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-gray-400 font-medium mb-3">
+                        <p className="text-meta text-mute font-medium mb-3">
                           {q.keyword} · {q.billCount} הצעות חוק
                         </p>
 
@@ -390,22 +392,24 @@ export default function KeywordMatchClient() {
                           באורכן, ובלי עוגן ויזואלי קשה לראות שאלו שתי
                           אפשרויות ולא שתי פסקאות.
                         */}
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-2" role="radiogroup" aria-label={q.question}>
                           {q.stances.map((s, si) => {
                             const on = stances[q.issueId] === s.id;
                             return (
                               <button
                                 key={s.id}
                                 onClick={() => pickStance(q.issueId, s.id)}
-                                className={`flex items-start gap-2.5 text-right text-xs font-black px-3 py-2.5 rounded-lg border-2 transition-all leading-relaxed ${
+                                role="radio"
+                                aria-checked={on}
+                                className={`flex items-start gap-2.5 text-right text-xs font-medium px-3 py-2.5 rounded-lg border-2 transition-all leading-relaxed ${
                                   on
-                                    ? 'border-teal-600 bg-teal-600 text-white shadow-sm'
-                                    : 'border-black/10 bg-white hover:border-teal-400 hover:bg-teal-50/40'
+                                    ? 'border-accent bg-accent text-white shadow-sm'
+                                    : 'border-black/10 bg-white hover:border-accent hover:bg-accent-wash/40'
                                 }`}
                               >
                                 <span
-                                  className={`shrink-0 mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center text-[9px] ${
-                                    on ? 'border-white bg-white text-teal-600' : 'border-gray-300 text-gray-400'
+                                  className={`shrink-0 mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center text-meta ${
+                                    on ? 'border-white bg-white text-accent' : 'border-gray-300 text-mute'
                                   }`}
                                 >
                                   {on ? '✓' : si === 0 ? 'א' : 'ב'}
@@ -423,13 +427,13 @@ export default function KeywordMatchClient() {
             ))}
 
             <StickyBar>
-              <button onClick={back} className="px-4 py-3 rounded-lg border-2 border-black/10 bg-white font-black text-sm hover:border-black/25 transition-colors">
+              <button onClick={back} className="px-4 py-3 rounded-lg border-2 border-black/10 bg-white font-medium text-sm hover:border-black/25 transition-colors">
                 חזרה
               </button>
               <button
                 onClick={run}
                 disabled={answered === 0}
-                className="flex-1 px-5 py-3 rounded-lg bg-black text-white font-black text-sm disabled:opacity-25 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+                className="flex-1 px-5 py-3 rounded-lg bg-black text-white font-medium text-sm disabled:opacity-25 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
               >
                 {answered === 0 ? 'עני על לפחות שאלה אחת' : `לתוצאות · ${answered} תשובות`}
               </button>
@@ -441,13 +445,13 @@ export default function KeywordMatchClient() {
         {step === 'results' && (
           <div>
             {loading && (
-              <div className="py-32 text-center text-xl font-black animate-pulse opacity-20">מחשב...</div>
+              <div className="py-32 text-center text-xl font-medium animate-pulse opacity-20">מחשב...</div>
             )}
 
             {error && (
               <div className="rounded-xl border border-red-200 bg-red-50 p-5">
-                <p className="font-black text-red-700 text-sm">{error}</p>
-                <button onClick={restart} className="mt-3 text-xs font-black underline text-red-700">
+                <p className="font-medium text-red-700 text-sm">{error}</p>
+                <button onClick={restart} className="mt-3 text-xs font-medium underline text-red-700">
                   להתחיל מחדש
                 </button>
               </div>
@@ -455,8 +459,8 @@ export default function KeywordMatchClient() {
 
             {!loading && !error && rows.length === 0 && (
               <div className="rounded-xl border border-black/8 bg-gray-50 p-6">
-                <p className="font-black text-sm">לא נמצאו חברי כנסת פעילים בנושאים שנבחרו.</p>
-                <button onClick={restart} className="mt-3 text-xs font-black underline">
+                <p className="font-medium text-sm">לא נמצאו חברי כנסת פעילים בנושאים שנבחרו.</p>
+                <button onClick={restart} className="mt-3 text-xs font-medium underline">
                   לבחור נושאים אחרים
                 </button>
               </div>
@@ -465,26 +469,31 @@ export default function KeywordMatchClient() {
             {!loading && !error && rows.length > 0 && (
               <>
                 <div className="flex items-baseline justify-between gap-3 mb-3 flex-wrap">
-                  <h2 className="text-lg font-black">הפעילים ביותר בנושאים שלך</h2>
-                  <span className="text-xs text-gray-500 font-medium">{totalRanked} בדירוג</span>
+                  <h2 className="text-lg font-medium">הפעילים ביותר בנושאים שלך</h2>
+                  <span className="text-xs text-mute font-medium">{totalRanked} בדירוג</span>
                 </div>
 
-                <div className="rounded-xl border-2 border-indigo-600/20 bg-indigo-50/50 p-4 mb-5 text-xs font-medium leading-relaxed text-gray-700">
-                  <div className="text-[11px] font-black text-indigo-700 uppercase tracking-widest mb-2">
+                <div className="rounded-xl border-2 border-indigo-600/20 bg-indigo-50/50 p-4 mb-5 text-xs font-medium leading-relaxed text-ink-2">
+                  <div className="text-meta font-medium text-indigo-700 mb-2">
                     איך לקרוא את המספרים
                   </div>
                   <p className="mb-2">
-                    <strong className="text-gray-900">ציון</strong> — כמה חבר הכנסת פעל לכיוון שבחרת.
+                    <strong className="text-ink">ציון</strong> — כמה חבר הכנסת פעל לכיוון שבחרת.
                     משקלל 60% יוזמת חקיקה ו-40% תמיכה בהצבעות, כאחוזון מול שאר הפעילים באותו נושא.
                   </p>
                   <p className="mb-2">
-                    <strong className="text-gray-900">ביטחון</strong> — כמה פעולות מתועדות עמדו מאחורי
+                    <strong className="text-ink">ביטחון</strong> — כמה פעולות מתועדות עמדו מאחורי
                     הציון. אמירה על כמות המידע, לא על טיב ההתאמה.
                   </p>
                   <p className="pt-2 border-t border-indigo-600/15">
                     רוב הצעות החוק הפרטיות אינן מגיעות להצבעה, ולכן יוזמה היא האות המרכזי.
-                    <strong className="text-gray-900"> לחברי אופוזיציה יש בממוצע יותר יוזמות</strong>,
+                    <strong className="text-ink"> לחברי אופוזיציה יש בממוצע יותר יוזמות</strong>,
                     ולכן רמת הביטחון שלהם נוטה להיות גבוהה יותר — זה אינו אומר שהם מתאימים לך יותר.
+                  </p>
+                  <p className="pt-2 mt-2 border-t border-indigo-600/15">
+                    <Link href="/did-you-know" className="font-medium text-accent hover:underline">
+                      הידעת? למה שרים כמעט לא מופיעים כאן, ומה הדירוג לא מודד ←
+                    </Link>
                   </p>
                 </div>
 
@@ -493,13 +502,13 @@ export default function KeywordMatchClient() {
                     <li
                       key={row.mkId}
                       className={`rounded-xl border p-4 transition-colors ${
-                        idx === 0 ? 'border-teal-600/40 bg-teal-50/25' : 'border-black/8'
+                        idx === 0 ? 'border-accent/40 bg-accent-wash/25' : 'border-black/8'
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <span
-                          className={`text-sm font-black w-6 shrink-0 tabular-nums text-center ${
-                            idx < 3 ? 'text-teal-700' : 'text-gray-300'
+                          className={`text-sm font-medium w-6 shrink-0 tabular-nums text-center ${
+                            idx < 3 ? 'text-accent' : 'text-mute'
                           }`}
                         >
                           {idx + 1}
@@ -507,9 +516,9 @@ export default function KeywordMatchClient() {
                         <MkAvatar name={row.name} photo={row.photo} isCoalition={row.isCoalition} />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="text-base font-black">{row.name}</h3>
+                            <h3 className="text-base font-medium">{row.name}</h3>
                             {row.isMinister && (
-                              <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-gray-200 text-gray-700">
+                              <span className="text-meta font-medium px-1.5 py-0.5 rounded bg-gray-200 text-ink-2">
                                 שר/ה
                               </span>
                             )}
@@ -518,12 +527,12 @@ export default function KeywordMatchClient() {
                               בכנסת ה-25 ומניחה שאפשר לפנות אליו היום.
                             */}
                             {row.isFormer && (
-                              <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
+                              <span className="text-meta font-medium px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
                                 {row.tenureEnd ? `כיהן עד ${formatMonth(row.tenureEnd)}` : 'סיים כהונה'}
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-gray-500 font-medium mt-0.5">
+                          <p className="text-xs text-mute font-medium mt-0.5">
                             {row.faction ?? 'ללא סיעה'} · {row.isCoalition ? 'קואליציה' : 'אופוזיציה'}
                           </p>
                           <MkBackground
@@ -534,15 +543,15 @@ export default function KeywordMatchClient() {
                           />
                         </div>
                         <div className="shrink-0 text-left">
-                          <div className="text-xl font-black tabular-nums">{row.overallScore}</div>
-                          <div className="text-[10px] text-gray-400 font-black">מתוך 100</div>
+                          <div className="text-xl font-medium tabular-nums">{row.overallScore}</div>
+                          <div className="text-meta text-mute font-medium">מתוך 100</div>
                           <div
-                            className={`text-[10px] font-black mt-1 tabular-nums ${
+                            className={`text-meta font-medium mt-1 tabular-nums ${
                               row.confidencePercent >= 70
                                 ? 'text-emerald-700'
                                 : row.confidencePercent >= 40
                                   ? 'text-amber-700'
-                                  : 'text-gray-400'
+                                  : 'text-mute'
                             }`}
                             title={`${row.evidenceCount} פעולות מתועדות`}
                           >
@@ -553,7 +562,7 @@ export default function KeywordMatchClient() {
 
                       <div className="mt-3 h-1.5 rounded-full bg-gray-100 overflow-hidden">
                         <div
-                          className={`h-full rounded-full transition-all ${idx === 0 ? 'bg-teal-600' : 'bg-black'}`}
+                          className={`h-full rounded-full transition-all ${idx === 0 ? 'bg-accent' : 'bg-black'}`}
                           style={{ width: `${Math.min(100, row.overallScore)}%` }}
                         />
                       </div>
@@ -563,16 +572,16 @@ export default function KeywordMatchClient() {
                         ואינה יודעת ממה הוא מורכב — שלוש הצעות חוק ועשרים
                         הצבעות נראים זהים לשלוש הצבעות ועשרים הצעות.
                       */}
-                      <div className="mt-2.5 flex items-center gap-3 flex-wrap text-[11px] font-medium text-gray-500">
+                      <div className="mt-2.5 flex items-center gap-3 flex-wrap text-meta font-medium text-mute">
                         <span>
-                          <strong className="text-gray-900 font-black tabular-nums">
+                          <strong className="text-ink font-medium tabular-nums">
                             {row.perAgenda.reduce((s, a) => s + a.billsInitiated, 0)}
                           </strong>{' '}
                           הצעות חוק שיזם
                         </span>
                         <span className="text-gray-200">·</span>
                         <span>
-                          <strong className="text-gray-900 font-black tabular-nums">
+                          <strong className="text-ink font-medium tabular-nums">
                             {row.perAgenda.reduce((s, a) => s + a.supportingVotes, 0)}
                           </strong>{' '}
                           הצבעות תומכות
@@ -580,8 +589,8 @@ export default function KeywordMatchClient() {
                         {row.perAgenda.reduce((s, a) => s + a.billsAdvanced, 0) > 0 && (
                           <>
                             <span className="text-gray-200">·</span>
-                            <span className="text-teal-700">
-                              <strong className="font-black tabular-nums">
+                            <span className="text-accent">
+                              <strong className="font-medium tabular-nums">
                                 {row.perAgenda.reduce((s, a) => s + a.billsAdvanced, 0)}
                               </strong>{' '}
                               עברו קריאה טרומית
@@ -594,10 +603,10 @@ export default function KeywordMatchClient() {
                 </ol>
 
                 <div className="mt-6 flex gap-3">
-                  <button onClick={back} className="text-xs font-black underline text-gray-600">
+                  <button onClick={back} className="text-xs font-medium underline text-ink-2">
                     לשנות תשובות
                   </button>
-                  <button onClick={restart} className="text-xs font-black underline text-gray-600">
+                  <button onClick={restart} className="text-xs font-medium underline text-ink-2">
                     להתחיל מחדש
                   </button>
                 </div>
@@ -607,7 +616,7 @@ export default function KeywordMatchClient() {
         )}
 
         {step === 'topics' && (
-          <p className="text-[11px] text-gray-300 font-medium mt-10 text-center">
+          <p className="text-meta text-mute font-medium mt-10 text-center">
             {CLUSTER_STATS.clusters} נושאים · {CLUSTER_STATS.questions} שאלות · נגזרו מ-7,067 הצעות חוק
           </p>
         )}
