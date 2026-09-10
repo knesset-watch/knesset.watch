@@ -8,6 +8,7 @@ import {
   MkResult,
 } from '@/lib/vote-cache';
 import { getVoteResults, getVoteMeta, dbAvailable } from '@/lib/knesset-db';
+import { getVoteDetailFromTurso } from '@/lib/protocols-db';
 
 export async function GET(
   request: Request,
@@ -29,8 +30,26 @@ export async function GET(
   try {
     // ── Fast path: local SQLite DB ──────────────────────────────────────────
     if (dbAvailable()) {
-      const meta = getVoteMeta(voteId);
-      const rawResults = getVoteResults(voteId);
+      let meta = getVoteMeta(voteId);
+      let rawResults = getVoteResults(voteId);
+
+      /*
+        רשימת ההצבעות נקראת מ-Turso ומציגה 1,202 הצבעות שאינן
+        ב-knesset.db המקומי. בלי הנפילה הזאת, 1,179 מהן נפתחו כעמוד
+        ריק — כותרת ריקה ואפס מצביעים — כי הבדיקה המקומית החזירה null
+        והמסלול המשיך בלעדיה.
+      */
+      if (!meta) {
+        const fresh = await getVoteDetailFromTurso(voteId);
+        if (fresh) {
+          meta = fresh.meta;
+          rawResults = fresh.results;
+        }
+      }
+
+      if (!meta) {
+        return NextResponse.json({ error: 'Vote not found' }, { status: 404 });
+      }
 
       // Merge party + coalition info from KV cache if available
       const mkLookup = await getCachedMkLookup();
@@ -49,14 +68,14 @@ export async function GET(
 
       return NextResponse.json({
         voteId,
-        title: meta?.title ?? '',
-        date: meta?.date ?? '',
-        totalFor: meta?.totalFor ?? 0,
-        totalAgainst: meta?.totalAgainst ?? 0,
-        totalAbstain: meta?.totalAbstain ?? 0,
-        isPassed: meta?.isPassed ?? false,
-        microAgenda: meta?.microAgenda,
-        macroAgenda: meta?.macroAgenda,
+        title: meta.title,
+        date: meta.date,
+        totalFor: meta.totalFor,
+        totalAgainst: meta.totalAgainst,
+        totalAbstain: meta.totalAbstain,
+        isPassed: meta.isPassed,
+        microAgenda: meta.microAgenda,
+        macroAgenda: meta.macroAgenda,
         mkResults,
         fromDb: true,
       });

@@ -914,3 +914,101 @@ export async function getHeadlineCountsFromTurso(
     return null;
   }
 }
+
+// ── Vote detail ──────────────────────────────────────────────────────────────
+
+export interface TursoVoteMeta {
+  title: string;
+  date: string;
+  totalFor: number;
+  totalAgainst: number;
+  totalAbstain: number;
+  isPassed: boolean;
+  microAgenda: string | null;
+  macroAgenda: string | null;
+}
+
+export interface TursoVoteResult {
+  mkId: number;
+  resultCode: number;
+  slug: string | null;
+  firstName: string;
+  lastName: string;
+  factionName: string | null;
+  isCoalition: number | null;
+}
+
+/**
+ * הצבעה בודדת מהמסד המעודכן.
+ *
+ * רשימת ההצבעות עברה ל-Turso ומציגה 1,202 הצבעות שאינן ב-knesset.db
+ * המקומי. בלי הנפילה הזאת, לחיצה על 1,179 מהן החזירה 404 — הרשימה
+ * הציעה שורות שאי אפשר לפתוח.
+ *
+ * השאילתות מראות את המקומיות ב-knesset-db, כולל גזירת הקואליציה לפי
+ * התאריך מ-faction_coalition_history.
+ */
+export async function getVoteDetailFromTurso(
+  voteId: number,
+): Promise<{ meta: TursoVoteMeta; results: TursoVoteResult[] } | null> {
+  const client = getTurso();
+  if (!client) return null;
+
+  try {
+    const [metaRes, resultsRes] = await Promise.all([
+      client.execute({
+        sql: `SELECT title, date, total_for, total_against, total_abstain,
+                     is_passed, micro_agenda, macro_agenda
+              FROM plenary_vote WHERE id = ?`,
+        args: [voteId],
+      }),
+      client.execute({
+        sql: `SELECT r.mk_id AS mkId, r.result_code AS resultCode, p.slug,
+                     p.first_name AS firstName, p.last_name AS lastName,
+                     p.faction_name AS factionName,
+                     COALESCE(
+                       (SELECT fch.is_coalition
+                        FROM faction_coalition_history fch
+                        WHERE fch.faction_id = p.faction_id
+                          AND fch.from_date <= date(pv.date)
+                          AND (fch.to_date IS NULL OR fch.to_date > date(pv.date))
+                        ORDER BY fch.from_date DESC
+                        LIMIT 1),
+                       p.is_coalition
+                     ) AS isCoalition
+              FROM mk_vote_result r
+              LEFT JOIN mk_person p ON p.person_id = r.mk_id
+              JOIN plenary_vote pv ON pv.id = r.vote_id
+              WHERE r.vote_id = ?`,
+        args: [voteId],
+      }),
+    ]);
+
+    if (metaRes.rows.length === 0) return null;
+    const m = metaRes.rows[0];
+
+    return {
+      meta: {
+        title: String(m['title'] ?? ''),
+        date: String(m['date'] ?? ''),
+        totalFor: Number(m['total_for'] ?? 0),
+        totalAgainst: Number(m['total_against'] ?? 0),
+        totalAbstain: Number(m['total_abstain'] ?? 0),
+        isPassed: Number(m['is_passed']) === 1,
+        microAgenda: m['micro_agenda'] != null ? String(m['micro_agenda']) : null,
+        macroAgenda: m['macro_agenda'] != null ? String(m['macro_agenda']) : null,
+      },
+      results: resultsRes.rows.map(r => ({
+        mkId: Number(r['mkId']),
+        resultCode: Number(r['resultCode']),
+        slug: r['slug'] != null ? String(r['slug']) : null,
+        firstName: String(r['firstName'] ?? ''),
+        lastName: String(r['lastName'] ?? ''),
+        factionName: r['factionName'] != null ? String(r['factionName']) : null,
+        isCoalition: r['isCoalition'] != null ? Number(r['isCoalition']) : null,
+      })),
+    };
+  } catch {
+    return null;
+  }
+}
