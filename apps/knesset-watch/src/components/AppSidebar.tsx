@@ -17,9 +17,17 @@ export default function AppSidebar({ aiEnabled = true }: { aiEnabled?: boolean }
       <div className="px-4 pt-4 pb-3 border-b border-line">
         <Link
           href="/"
-          className="block font-content text-section font-bold hover:text-accent transition-colors"
+          className="flex flex-col items-center gap-2 p-2 hover:opacity-80 transition-opacity"
+          aria-label="אפרכסת לכנסת — דף הבית"
         >
-          אפרכסת לכנסת
+          <img
+            src="/logo.svg"
+            alt=""
+            className="h-16 w-auto"
+          />
+          <span className="font-content text-section font-bold">
+            אפרכסת לכנסת
+          </span>
         </Link>
       </div>
 
