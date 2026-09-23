@@ -1,18 +1,25 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import MKAgendaView from './MKAgendaView';
-import PresenceHeatmap from '@/components/PresenceHeatmap';
-import { VOTE_RESULT_COLORS, CODE_TO_LABEL } from '@/lib/vote-utils';
-import { usePeriod, periodToDateRange } from '@/lib/period-context';
-import { billStageLabel } from '@/lib/bill-stage';
-import { COLOR, AFFILIATION } from '@/lib/ui/colors';
+import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import MKAgendaView from "./MKAgendaView";
+import PresenceHeatmap from "@/components/PresenceHeatmap";
+import { VOTE_RESULT_COLORS, CODE_TO_LABEL } from "@/lib/vote-utils";
+import { usePeriod, periodToDateRange } from "@/lib/period-context";
+import { billStageLabel } from "@/lib/bill-stage";
+import { COLOR, AFFILIATION } from "@/lib/ui/colors";
 
-const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
-type TabView = 'overview' | 'votes' | 'bills' | 'queries' | 'positions' | 'timeline' | 'agenda';
+type TabView =
+  | "overview"
+  | "votes"
+  | "bills"
+  | "queries"
+  | "positions"
+  | "timeline"
+  | "agenda";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -96,7 +103,13 @@ interface ProfileData {
   totalPartisanVotes?: number;
   attendanceCount?: number;
   totalRelevantSessions?: number;
-  rebelledVotes?: Array<{ voteId: number; title: string; date: string; resultCode: number; factionMajority: number }>;
+  rebelledVotes?: Array<{
+    voteId: number;
+    title: string;
+    date: string;
+    resultCode: number;
+    factionMajority: number;
+  }>;
 }
 
 interface AgendaStat {
@@ -112,17 +125,17 @@ interface CommitteeActivityItem {
 }
 
 interface PersonTimelineEvent {
-  type: 'mk' | 'minister' | 'faction-change' | 'coalition-status';
+  type: "mk" | "minister" | "faction-change" | "coalition-status";
   from: string;
   to: string | null;
   details: {
     mkEventType?: string;
     knessetNum?: number;
     factionName?: string;
-    coalitionStatus?: 'coalition' | 'opposition' | null;
+    coalitionStatus?: "coalition" | "opposition" | null;
     officeSlug?: string;
     officeName?: string;
-    roleType?: 'pm' | 'deputy-pm' | 'minister' | 'deputy' | 'acting';
+    roleType?: "pm" | "deputy-pm" | "minister" | "deputy" | "acting";
     governmentNum?: number;
     isCurrent?: boolean;
   };
@@ -146,13 +159,13 @@ interface MkVote {
 const RESULT_COLORS = VOTE_RESULT_COLORS;
 
 const TABS: Array<[TabView, string]> = [
-  ['overview', 'סקירה'],
-  ['votes', 'הצבעות'],
-  ['bills', 'חוקים'],
-  ['queries', 'שאילתות'],
-  ['positions', 'תפקידים'],
-  ['timeline', 'ציר זמן'],
-  ['agenda', 'אג\'נדה'],
+  ["overview", "סקירה"],
+  ["votes", "הצבעות"],
+  ["bills", "חוקים"],
+  ["queries", "שאילתות"],
+  ["positions", "תפקידים"],
+  ["timeline", "ציר זמן"],
+  ["agenda", "אג'נדה"],
 ];
 
 const PAGE_SIZE = 100;
@@ -160,14 +173,16 @@ const PAGE_SIZE = 100;
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatDate(iso: string): string {
-  if (!iso) return '';
-  return new Date(iso).toLocaleDateString('he-IL', {
-    day: 'numeric', month: 'short', year: '2-digit',
+  if (!iso) return "";
+  return new Date(iso).toLocaleDateString("he-IL", {
+    day: "numeric",
+    month: "short",
+    year: "2-digit",
   });
 }
 
 function formatYear(iso: string): string {
-  if (!iso) return '';
+  if (!iso) return "";
   return new Date(iso).getFullYear().toString();
 }
 
@@ -178,36 +193,49 @@ function VoteBreakdownBar({ stats }: { stats: VoteStats }) {
   if (total === 0) return null;
 
   const segments = [
-    { count: forCount,     color: COLOR.pass, label: 'בעד' },
-    { count: againstCount, color: COLOR.fail, label: 'נגד' },
-    { count: abstainCount, color: COLOR.warn, label: 'נמנע' },
-    { count: presentCount, color: COLOR.mute, label: 'נוכח' },
-  ].filter(s => s.count > 0);
+    { count: forCount, color: COLOR.pass, label: "בעד" },
+    { count: againstCount, color: COLOR.fail, label: "נגד" },
+    { count: abstainCount, color: COLOR.warn, label: "נמנע" },
+    { count: presentCount, color: COLOR.mute, label: "נוכח" },
+  ].filter((s) => s.count > 0);
 
   return (
     <div>
       <div className="flex h-5 rounded-control overflow-hidden gap-0.5">
-        {segments.map(s => (
+        {segments.map((s) => (
           <div
             key={s.label}
             title={`${s.label}: ${s.count.toLocaleString()}`}
-            style={{ width: `${(s.count / total) * 100}%`, backgroundColor: s.color }}
+            style={{
+              width: `${(s.count / total) * 100}%`,
+              backgroundColor: s.color,
+            }}
           />
         ))}
       </div>
       <div className="flex flex-wrap gap-x-5 gap-y-1 mt-2.5">
-        {segments.map(s => (
-          <span key={s.label} className="text-meta font-medium tabular-nums" style={{ color: s.color }}>
-            {s.count.toLocaleString()} <span className="font-bold opacity-80">{s.label}</span>
+        {segments.map((s) => (
+          <span
+            key={s.label}
+            className="text-meta font-medium tabular-nums"
+            style={{ color: s.color }}
+          >
+            {s.count.toLocaleString()}{" "}
+            <span className="font-bold opacity-80">{s.label}</span>
           </span>
         ))}
-        <span className="text-meta text-mute font-medium">סה"כ {total.toLocaleString()} הצבעות</span>
+        <span className="text-meta text-mute font-medium">
+          סה"כ {total.toLocaleString()} הצבעות
+        </span>
       </div>
       <div className="mt-4 p-3 bg-accent-wash rounded-control border border-line text-meta text-ink-2 leading-relaxed">
         <p className="font-medium text-accent mb-2">ℹ️ כיצד מחושבים הנתונים:</p>
         <p className="text-meta">
-          <span className="font-bold">בעד/נגד</span> — הצבעות שנספרות לקביעת זוכה/מפסיד<br/>
-          <span className="font-bold">נמנע/נוכח</span> — לא נספרות בחישוב התוצאה<br/>
+          <span className="font-bold">בעד/נגד</span> — הצבעות שנספרות לקביעת
+          זוכה/מפסיד
+          <br />
+          <span className="font-bold">נמנע/נוכח</span> — לא נספרות בחישוב התוצאה
+          <br />
           זה מאפשר לראות בדיוק אם ח"כ תומך או מתנגד לעמדת הסיעה שלו
         </p>
       </div>
@@ -224,10 +252,15 @@ function AlignmentCard({ pct, total }: { pct: number; total: number }) {
   return (
     <div>
       <div className="text-meta font-medium text-mute mb-2">מיקום מול הרוב</div>
-      <div className="text-4xl font-medium tabular-nums leading-none text-ink">{pct}%</div>
+      <div className="text-4xl font-medium tabular-nums leading-none text-ink">
+        {pct}%
+      </div>
       <div className="text-meta text-mute mt-1">הצביע עם הצד המנצח</div>
       <div className="mt-3 h-1.5 w-full bg-line rounded-full overflow-hidden">
-        <div className="h-full rounded-full transition-all bg-accent-lit" style={{ width: `${pct}%` }} />
+        <div
+          className="h-full rounded-full transition-all bg-accent-lit"
+          style={{ width: `${pct}%` }}
+        />
       </div>
       <div className="text-meta text-mute mt-1.5 tabular-nums">
         מתוך {total.toLocaleString()} הצבעות בעד/נגד
@@ -237,16 +270,21 @@ function AlignmentCard({ pct, total }: { pct: number; total: number }) {
 }
 
 function BillsCard({ bills }: { bills: BillSummary[] }) {
-  const passed = bills.filter(b => b.isPassed).length;
-  const ratio = bills.length > 0 ? Math.round((passed / bills.length) * 100) : 0;
+  const passed = bills.filter((b) => b.isPassed).length;
+  const ratio =
+    bills.length > 0 ? Math.round((passed / bills.length) * 100) : 0;
   return (
     <div>
       <div className="text-meta font-medium text-mute mb-2">הצעות חוק</div>
-      <div className="text-4xl font-medium tabular-nums leading-none">{bills.length.toLocaleString()}</div>
+      <div className="text-4xl font-medium tabular-nums leading-none">
+        {bills.length.toLocaleString()}
+      </div>
       <div className="text-meta text-mute mt-1">הוגשו בכנסת 25</div>
       {bills.length > 0 && (
         <div className="mt-2 flex items-baseline gap-1.5">
-          <span className="text-section font-medium text-accent tabular-nums">{passed}</span>
+          <span className="text-section font-medium text-accent tabular-nums">
+            {passed}
+          </span>
           <span className="text-meta text-mute">עברו ({ratio}%)</span>
         </div>
       )}
@@ -255,21 +293,26 @@ function BillsCard({ bills }: { bills: BillSummary[] }) {
 }
 
 function CurrentPositions({ positions }: { positions: PositionSummary[] }) {
-  const current = positions.filter(p => p.isCurrent);
+  const current = positions.filter((p) => p.isCurrent);
   if (current.length === 0) return null;
 
   return (
     <div>
-      <div className="text-meta font-medium text-mute mb-3">תפקידים נוכחיים</div>
+      <div className="text-meta font-medium text-mute mb-3">
+        תפקידים נוכחיים
+      </div>
       <div className="flex flex-col gap-2">
-        {current.map(p => {
-          const label = p.dutyDesc && p.committee
-            ? `${p.dutyDesc}, ${p.committee}`
-            : p.committee || p.ministry || p.dutyDesc || 'ח"כ';
+        {current.map((p) => {
+          const label =
+            p.dutyDesc && p.committee
+              ? `${p.dutyDesc}, ${p.committee}`
+              : p.committee || p.ministry || p.dutyDesc || 'ח"כ';
           return (
             <div key={p.id} className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-navy-deep shrink-0" />
-              <span className="text-ui font-bold text-ink leading-snug">{label}</span>
+              <span className="text-ui font-bold text-ink leading-snug">
+                {label}
+              </span>
             </div>
           );
         })}
@@ -280,16 +323,20 @@ function CurrentPositions({ positions }: { positions: PositionSummary[] }) {
 
 function AgendaFingerprint({ stats }: { stats: AgendaStat[] }) {
   if (stats.length === 0) return null;
-  const max = Math.max(...stats.map(s => s.pushedCount + s.supportedCount));
+  const max = Math.max(...stats.map((s) => s.pushedCount + s.supportedCount));
 
   return (
     <div>
-      <div className="text-meta font-medium text-mute mb-4">טביעת אצבע פרלמנטרית</div>
+      <div className="text-meta font-medium text-mute mb-4">
+        טביעת אצבע פרלמנטרית
+      </div>
       <div className="flex flex-col gap-4">
-        {stats.slice(0, 8).map(s => (
+        {stats.slice(0, 8).map((s) => (
           <div key={s.macroAgenda}>
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-ui font-medium text-ink">{s.macroAgenda}</span>
+              <span className="text-ui font-medium text-ink">
+                {s.macroAgenda}
+              </span>
               <div className="flex gap-2 text-meta font-bold">
                 {s.pushedCount > 0 && (
                   <span className="text-accent">דוחף ({s.pushedCount})</span>
@@ -329,69 +376,106 @@ function AgendaFingerprint({ stats }: { stats: AgendaStat[] }) {
 // ── Forensic Investigation insights (Rebellion, Attendance) ──────────────────
 
 function ForensicInsightsCard({
-  rebellions, totalPartisanVotes, attendance, totalRelevantSessions, rebelledVotes,
+  rebellions,
+  totalPartisanVotes,
+  attendance,
+  totalRelevantSessions,
+  rebelledVotes,
 }: {
   rebellions: number;
   totalPartisanVotes: number;
   attendance: number;
   totalRelevantSessions: number;
-  rebelledVotes: Array<{ voteId: number; title: string; date: string; resultCode: number; factionMajority: number }>;
+  rebelledVotes: Array<{
+    voteId: number;
+    title: string;
+    date: string;
+    resultCode: number;
+    factionMajority: number;
+  }>;
 }) {
   const [showRebelled, setShowRebelled] = useState(false);
-  const rebellionRate = totalPartisanVotes > 0
-    ? ((rebellions / totalPartisanVotes) * 100).toFixed(1)
-    : null;
-  const attendanceRate = totalRelevantSessions > 0
-    ? Math.round((attendance / totalRelevantSessions) * 100)
-    : null;
+  const rebellionRate =
+    totalPartisanVotes > 0
+      ? ((rebellions / totalPartisanVotes) * 100).toFixed(1)
+      : null;
+  const attendanceRate =
+    totalRelevantSessions > 0
+      ? Math.round((attendance / totalRelevantSessions) * 100)
+      : null;
 
   return (
     <div className="bg-warn-wash border border-warn/30 p-6 rounded-card">
       <div className="text-meta font-medium text-ink-2 mb-4 flex items-center gap-2">
-        <span className="w-2 h-2 bg-warn rounded-full" aria-hidden="true"></span>
+        <span
+          className="w-2 h-2 bg-warn rounded-full"
+          aria-hidden="true"
+        ></span>
         ניתוח פורנזי
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-right">
         <div>
-          <span className="block text-3xl font-medium text-warn">{rebellions}</span>
-          <span className="text-meta font-medium text-ink-2 leading-tight block mt-1">הצבעות נגד הסיעה</span>
+          <span className="block text-3xl font-medium text-warn">
+            {rebellions}
+          </span>
+          <span className="text-meta font-medium text-ink-2 leading-tight block mt-1">
+            הצבעות נגד הסיעה
+          </span>
           {rebellionRate !== null && (
             <p className="text-meta text-mute mt-1 font-medium">
-              {rebellionRate}% מתוך {totalPartisanVotes.toLocaleString()} הצבעות בעד/נגד
+              {rebellionRate}% מתוך {totalPartisanVotes.toLocaleString()} הצבעות
+              בעד/נגד
             </p>
           )}
           {rebelledVotes.length > 0 && (
             <button
-              onClick={() => setShowRebelled(v => !v)}
+              onClick={() => setShowRebelled((v) => !v)}
               className="text-meta font-medium text-warn hover:text-accent-ink mt-2 underline underline-offset-2"
             >
-              {showRebelled ? '▲ הסתר' : `▼ הצג הצבעות (${rebelledVotes.length})`}
+              {showRebelled
+                ? "▲ הסתר"
+                : `▼ הצג הצבעות (${rebelledVotes.length})`}
             </button>
           )}
         </div>
         <div className="border-r border-warn/30 pr-6">
-          <span className="block text-3xl font-medium text-ink">{attendance}</span>
-          <span className="text-meta font-medium text-mute leading-tight block mt-1">נוכחות בוועדות</span>
+          <span className="block text-3xl font-medium text-ink">
+            {attendance}
+          </span>
+          <span className="text-meta font-medium text-mute leading-tight block mt-1">
+            נוכחות בוועדות
+          </span>
           {attendanceRate !== null ? (
             <p className="text-meta text-mute mt-1 font-medium">
               {attendanceRate}% מתוך {totalRelevantSessions} ישיבות
             </p>
           ) : (
-            <p className="text-meta text-mute mt-1 font-medium">ישיבות שתועדה בהן נוכחות</p>
+            <p className="text-meta text-mute mt-1 font-medium">
+              ישיבות שתועדה בהן נוכחות
+            </p>
           )}
         </div>
       </div>
       {showRebelled && rebelledVotes.length > 0 && (
         <div className="mt-4 border-t border-warn/30 pt-4 flex flex-col gap-1.5">
-          {rebelledVotes.map(v => (
-            <Link key={v.voteId} href={`/vote/${v.voteId}`}
-              className="flex items-start gap-2 px-3 py-2 rounded-card bg-surface hover:bg-warn-wash transition-colors">
-              <span className={`shrink-0 mt-0.5 text-meta font-medium px-2 py-0.5 rounded-full ${RESULT_COLORS[CODE_TO_LABEL[v.resultCode]] ?? 'bg-surface-2 text-mute'}`}>
+          {rebelledVotes.map((v) => (
+            <Link
+              key={v.voteId}
+              href={`/vote/${v.voteId}`}
+              className="flex items-start gap-2 px-3 py-2 rounded-card bg-surface hover:bg-warn-wash transition-colors"
+            >
+              <span
+                className={`shrink-0 mt-0.5 text-meta font-medium px-2 py-0.5 rounded-full ${RESULT_COLORS[CODE_TO_LABEL[v.resultCode]] ?? "bg-surface-2 text-mute"}`}
+              >
                 {CODE_TO_LABEL[v.resultCode]}
               </span>
               <div className="flex-1 min-w-0">
-                <p className="text-meta font-bold text-ink leading-snug line-clamp-2">{v.title}</p>
-                <span className="text-meta text-mute">{v.date?.slice(0, 10)}</span>
+                <p className="text-meta font-bold text-ink leading-snug line-clamp-2">
+                  {v.title}
+                </p>
+                <span className="text-meta text-mute">
+                  {v.date?.slice(0, 10)}
+                </span>
               </div>
             </Link>
           ))}
@@ -403,7 +487,11 @@ function ForensicInsightsCard({
 
 // ── Legislative focus (bill topics by committee) ──────────────────────────────
 
-function BillTopicsCard({ topics, accentColor, onNavigate }: {
+function BillTopicsCard({
+  topics,
+  accentColor,
+  onNavigate,
+}: {
   topics: BillTopic[];
   accentColor: string;
   onNavigate: () => void;
@@ -424,21 +512,30 @@ function BillTopicsCard({ topics, accentColor, onNavigate }: {
         </button>
       </div>
       <div className="flex flex-col gap-2.5">
-        {shown.map(t => (
+        {shown.map((t) => (
           <div key={t.committeeName}>
             <div className="flex items-center justify-between mb-0.5">
-              <span className="text-ui font-bold text-ink">{t.committeeName}</span>
+              <span className="text-ui font-bold text-ink">
+                {t.committeeName}
+              </span>
               <span className="text-meta text-mute tabular-nums">
                 {t.total}
                 {t.passed > 0 && (
-                  <span className="text-accent font-medium"> · {t.passed} עברו</span>
+                  <span className="text-accent font-medium">
+                    {" "}
+                    · {t.passed} עברו
+                  </span>
                 )}
               </span>
             </div>
             <div className="h-1.5 bg-line rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full"
-                style={{ width: `${(t.total / maxTotal) * 100}%`, backgroundColor: accentColor, opacity: 0.7 }}
+                style={{
+                  width: `${(t.total / maxTotal) * 100}%`,
+                  backgroundColor: accentColor,
+                  opacity: 0.7,
+                }}
               />
             </div>
           </div>
@@ -451,18 +548,90 @@ function BillTopicsCard({ topics, accentColor, onNavigate }: {
 // ── Hebrew query topic clustering ─────────────────────────────────────────────
 
 const HEBREW_STOP_WORDS = new Set([
-  'של','את','על','אל','עם','כי','לא','הם','הן','הוא','היא','זה','זו','אנו',
-  'אני','אתה','אתם','אנחנו','יש','אין','כל','עוד','גם','רק','אם','אך','אבל',
-  'בין','כן','או','היה','היתה','יהיה','להיות','הם','אחד','שני','שלושה','כן',
-  'לה','לו','לנו','לכם','לכן','לי','להם','להן','שלה','שלו','שלנו','שלהם',
-  'ב','ל','מ','ו','ה','כ','מי','מה','כך','כאן','שם','עוד','כבר','מאוד',
-  'לפי','לגבי','בנוגע','בעניין','בדבר','בקשר','ביחס','לענין','בנושא',
+  "של",
+  "את",
+  "על",
+  "אל",
+  "עם",
+  "כי",
+  "לא",
+  "הם",
+  "הן",
+  "הוא",
+  "היא",
+  "זה",
+  "זו",
+  "אנו",
+  "אני",
+  "אתה",
+  "אתם",
+  "אנחנו",
+  "יש",
+  "אין",
+  "כל",
+  "עוד",
+  "גם",
+  "רק",
+  "אם",
+  "אך",
+  "אבל",
+  "בין",
+  "כן",
+  "או",
+  "היה",
+  "היתה",
+  "יהיה",
+  "להיות",
+  "הם",
+  "אחד",
+  "שני",
+  "שלושה",
+  "כן",
+  "לה",
+  "לו",
+  "לנו",
+  "לכם",
+  "לכן",
+  "לי",
+  "להם",
+  "להן",
+  "שלה",
+  "שלו",
+  "שלנו",
+  "שלהם",
+  "ב",
+  "ל",
+  "מ",
+  "ו",
+  "ה",
+  "כ",
+  "מי",
+  "מה",
+  "כך",
+  "כאן",
+  "שם",
+  "עוד",
+  "כבר",
+  "מאוד",
+  "לפי",
+  "לגבי",
+  "בנוגע",
+  "בעניין",
+  "בדבר",
+  "בקשר",
+  "ביחס",
+  "לענין",
+  "בנושא",
 ]);
 
-function extractQueryTopics(queries: QuerySummary[]): Array<{ word: string; count: number }> {
+function extractQueryTopics(
+  queries: QuerySummary[],
+): Array<{ word: string; count: number }> {
   const freq = new Map<string, number>();
   for (const q of queries) {
-    const words = q.title.split(/[\s,\-–—״׳"'()[\]]+/).filter(w => w.length >= 3);
+    const words = q.title
+      .split(/[\s,\-–—״׳"'()[\]]+/)
+      .filter((w) => w.length >= 3);
     const seen = new Set<string>();
     for (const w of words) {
       if (seen.has(w) || HEBREW_STOP_WORDS.has(w)) continue;
@@ -479,14 +648,21 @@ function extractQueryTopics(queries: QuerySummary[]): Array<{ word: string; coun
 
 // ── Vote result filter button ─────────────────────────────────────────────────
 
-type ResultFilter = 'all' | 'בעד' | 'נגד' | 'נמנע' | 'נוכח' | 'עם-הרוב' | 'rebellions';
+type ResultFilter =
+  | "all"
+  | "בעד"
+  | "נגד"
+  | "נמנע"
+  | "נוכח"
+  | "עם-הרוב"
+  | "rebellions";
 
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function MKProfileClient({ mkId }: { mkId: string }) {
   const router = useRouter();
   const { period } = usePeriod();
-  const [tab, setTab] = useState<TabView>('overview');
+  const [tab, setTab] = useState<TabView>("overview");
 
   // Profile data (bills, queries, positions, stats)
   const [profile, setProfile] = useState<ProfileData | null>(null);
@@ -500,18 +676,18 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
   const [votesError, setVotesError] = useState<string | null>(null);
 
   // Vote tab UI state
-  const [voteFilter, setVoteFilter] = useState<ResultFilter>('all');
-  const [voteSearch, setVoteSearch] = useState('');
+  const [voteFilter, setVoteFilter] = useState<ResultFilter>("all");
+  const [voteSearch, setVoteSearch] = useState("");
   const [votePage, setVotePage] = useState(1);
 
   // Bills tab UI state
-  const [billSearch, setBillSearch] = useState('');
+  const [billSearch, setBillSearch] = useState("");
   const [showPassedOnly, setShowPassedOnly] = useState(false);
   const [committeeFilter, setCommitteeFilter] = useState<string | null>(null);
   const [expandedBills, setExpandedBills] = useState<Set<number>>(new Set());
 
   // Queries tab UI state
-  const [querySearch, setQuerySearch] = useState('');
+  const [querySearch, setQuerySearch] = useState("");
 
   // ── Fetch profile data (re-fetch when period changes) ──────────────────────
 
@@ -522,7 +698,10 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
       try {
         const params = new URLSearchParams({ mkId });
         const dateRange = periodToDateRange(period);
-        if (dateRange) { params.set('from', dateRange.from); params.set('to', dateRange.to); }
+        if (dateRange) {
+          params.set("from", dateRange.from);
+          params.set("to", dateRange.to);
+        }
         const res = await fetch(`${BASE_PATH}/api/mk-profile?${params}`);
         const json = await res.json();
         if (json.error) throw new Error(json.error);
@@ -539,7 +718,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
   // ── Lazy-load votes when votes tab opens ────────────────────────────────────
 
   useEffect(() => {
-    if (tab !== 'votes' || votesLoaded || votesLoading) return;
+    if (tab !== "votes" || votesLoaded || votesLoading) return;
 
     async function loadVotes() {
       setVotesLoading(true);
@@ -563,51 +742,57 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
 
   const filteredVotes = useMemo(() => {
     let list = votes;
-    if (voteFilter === 'עם-הרוב') {
-      list = (profile?.withMajorityVotes ?? []).map(v => ({
+    if (voteFilter === "עם-הרוב") {
+      list = (profile?.withMajorityVotes ?? []).map((v) => ({
         voteId: v.voteId,
         title: v.title,
         date: v.date,
         resultCode: v.resultCode,
-        resultLabel: CODE_TO_LABEL[v.resultCode] ?? 'נוכח',
+        resultLabel: CODE_TO_LABEL[v.resultCode] ?? "נוכח",
         isPassed: v.isPassed,
         totalFor: v.totalFor,
         totalAgainst: v.totalAgainst,
         microAgenda: v.microAgenda,
         macroAgenda: v.macroAgenda,
       }));
-    } else if (voteFilter === 'rebellions') {
-      list = (profile?.rebelledVotes ?? []).map(v => ({
+    } else if (voteFilter === "rebellions") {
+      list = (profile?.rebelledVotes ?? []).map((v) => ({
         voteId: v.voteId,
         title: v.title,
         date: v.date,
         resultCode: v.resultCode,
-        resultLabel: CODE_TO_LABEL[v.resultCode] ?? 'נוכח',
+        resultLabel: CODE_TO_LABEL[v.resultCode] ?? "נוכח",
         isPassed: null, // we don't strictly need this for the list item
         totalFor: null,
         totalAgainst: null,
         microAgenda: null,
         macroAgenda: null,
       }));
-    } else if (voteFilter !== 'all') {
-      list = list.filter(v => {
-        const label = v.resultLabel ?? (v.resultCode != null ? CODE_TO_LABEL[v.resultCode] : '');
+    } else if (voteFilter !== "all") {
+      list = list.filter((v) => {
+        const label =
+          v.resultLabel ??
+          (v.resultCode != null ? CODE_TO_LABEL[v.resultCode] : "");
         return label === voteFilter;
       });
     }
     if (voteSearch.trim()) {
       const q = voteSearch.trim().toLowerCase();
-      list = list.filter(v => v.title.toLowerCase().includes(q));
+      list = list.filter((v) => v.title.toLowerCase().includes(q));
     }
     return list;
   }, [votes, voteFilter, voteSearch, profile?.withMajorityVotes]);
 
-  useEffect(() => { setVotePage(1); }, [voteFilter, voteSearch]);
+  useEffect(() => {
+    setVotePage(1);
+  }, [voteFilter, voteSearch]);
 
   const voteCounts = useMemo(() => {
-    const c: Record<string, number> = { 'בעד': 0, 'נגד': 0, 'נמנע': 0, 'נוכח': 0 };
+    const c: Record<string, number> = { בעד: 0, נגד: 0, נמנע: 0, נוכח: 0 };
     for (const v of votes) {
-      const label = v.resultLabel ?? (v.resultCode != null ? CODE_TO_LABEL[v.resultCode] : '');
+      const label =
+        v.resultLabel ??
+        (v.resultCode != null ? CODE_TO_LABEL[v.resultCode] : "");
       if (label in c) c[label]++;
     }
     return c;
@@ -615,11 +800,12 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
 
   const filteredBills = useMemo(() => {
     let list = profile?.bills ?? [];
-    if (showPassedOnly) list = list.filter(b => b.isPassed);
-    if (committeeFilter) list = list.filter(b => b.committeeName === committeeFilter);
+    if (showPassedOnly) list = list.filter((b) => b.isPassed);
+    if (committeeFilter)
+      list = list.filter((b) => b.committeeName === committeeFilter);
     if (billSearch.trim()) {
       const q = billSearch.trim().toLowerCase();
-      list = list.filter(b => b.title.toLowerCase().includes(q));
+      list = list.filter((b) => b.title.toLowerCase().includes(q));
     }
     return list;
   }, [profile?.bills, showPassedOnly, committeeFilter, billSearch]);
@@ -627,7 +813,9 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
   const filteredQueries = useMemo(() => {
     if (!querySearch.trim()) return profile?.queries ?? [];
     const q = querySearch.trim().toLowerCase();
-    return (profile?.queries ?? []).filter(q2 => q2.title.toLowerCase().includes(q));
+    return (profile?.queries ?? []).filter((q2) =>
+      q2.title.toLowerCase().includes(q),
+    );
   }, [profile?.queries, querySearch]);
 
   const queryTopics = useMemo(
@@ -639,23 +827,34 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
 
   const mkName = profile
     ? `${profile.firstName} ${profile.lastName}`.trim()
-    : profileLoading ? '' : `ח"כ ${mkId}`;
+    : profileLoading
+      ? ""
+      : `ח"כ ${mkId}`;
 
   const isCoalition = profile?.isCoalition;
-  const accentColor = isCoalition === true ? AFFILIATION.coalition : isCoalition === false ? AFFILIATION.opposition : COLOR.ink;
+  const accentColor =
+    isCoalition === true
+      ? AFFILIATION.coalition
+      : isCoalition === false
+        ? AFFILIATION.opposition
+        : COLOR.ink;
 
   const totalPages = Math.max(1, Math.ceil(filteredVotes.length / PAGE_SIZE));
   const currentVotePage = Math.min(votePage, totalPages);
-  const pageVotes = filteredVotes.slice((currentVotePage - 1) * PAGE_SIZE, currentVotePage * PAGE_SIZE);
+  const pageVotes = filteredVotes.slice(
+    (currentVotePage - 1) * PAGE_SIZE,
+    currentVotePage * PAGE_SIZE,
+  );
 
   return (
     <div className="min-h-screen bg-paper" dir="rtl">
       <div className="max-w-3xl mx-auto px-4 py-8">
-
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <div className="mb-8">
           <button
-            onClick={() => window.history.length > 1 ? router.back() : router.push('/')}
+            onClick={() =>
+              window.history.length > 1 ? router.back() : router.push("/")
+            }
             className="text-ui font-medium px-3 py-2 rounded border border-line hover:bg-surface-2 transition-colors mb-5"
           >
             → חזרה
@@ -665,7 +864,9 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
             <div className="h-9 w-48 bg-line rounded animate-pulse" />
           ) : (
             <>
-              <h1 className="text-3xl font-medium leading-tight">{mkName || `ח"כ ${mkId}`}</h1>
+              <h1 className="text-3xl font-medium leading-tight">
+                {mkName || `ח"כ ${mkId}`}
+              </h1>
               <div className="flex items-center gap-2 flex-wrap mt-2">
                 {profile?.factionName && (
                   <Link
@@ -678,9 +879,12 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                 {isCoalition !== null && isCoalition !== undefined && (
                   <span
                     className="text-meta font-medium px-2.5 py-0.5 rounded-full"
-                    style={{ backgroundColor: accentColor, color: COLOR.surface }}
+                    style={{
+                      backgroundColor: accentColor,
+                      color: COLOR.surface,
+                    }}
                   >
-                    {isCoalition ? 'קואליציה' : 'אופוזיציה'}
+                    {isCoalition ? "קואליציה" : "אופוזיציה"}
                   </span>
                 )}
               </div>
@@ -689,14 +893,26 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
               {profile && (
                 <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-meta text-mute font-medium">
                   {profile.voteStats && (
-                    <span className="tabular-nums">{profile.voteStats.total.toLocaleString()} הצבעות</span>
+                    <span className="tabular-nums">
+                      {profile.voteStats.total.toLocaleString()} הצבעות
+                    </span>
                   )}
-                  {profile.voteStats?.absenceCount != null && profile.voteStats.absenceCount > 0 && (
-                    <span className="tabular-nums text-fail">{profile.voteStats.absenceCount.toLocaleString()} היעדרויות</span>
-                  )}
-                  <span className="tabular-nums">{profile.bills.length.toLocaleString()} הצ"ח</span>
-                  <span className="tabular-nums">{profile.queries.length.toLocaleString()} שאילתות</span>
-                  <span className="tabular-nums">{profile.positions.length} תפקידים</span>
+                  {profile.voteStats?.absenceCount != null &&
+                    profile.voteStats.absenceCount > 0 && (
+                      <span className="tabular-nums text-fail">
+                        {profile.voteStats.absenceCount.toLocaleString()}{" "}
+                        היעדרויות
+                      </span>
+                    )}
+                  <span className="tabular-nums">
+                    {profile.bills.length.toLocaleString()} הצ"ח
+                  </span>
+                  <span className="tabular-nums">
+                    {profile.queries.length.toLocaleString()} שאילתות
+                  </span>
+                  <span className="tabular-nums">
+                    {profile.positions.length} תפקידים
+                  </span>
                 </div>
               )}
             </>
@@ -710,7 +926,9 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
               key={t}
               onClick={() => setTab(t)}
               className={`shrink-0 text-meta font-medium px-4 py-2 rounded-control transition-colors ${
-                tab === t ? 'bg-navy-deep text-white' : 'bg-surface text-ink-2 hover:bg-line'
+                tab === t
+                  ? "bg-navy-deep text-white"
+                  : "bg-surface text-ink-2 hover:bg-line"
               }`}
             >
               {label}
@@ -720,15 +938,16 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
 
         {/* ── Error state ─────────────────────────────────────────────────── */}
         {profileError && (
-          <div className="p-6 rounded-card bg-fail-wash text-fail text-ui font-bold mb-6">{profileError}</div>
+          <div className="p-6 rounded-card bg-fail-wash text-fail text-ui font-bold mb-6">
+            {profileError}
+          </div>
         )}
 
         {/* ══════════════════════════════════════════════════════════════════ */}
         {/* Overview Tab                                                       */}
         {/* ══════════════════════════════════════════════════════════════════ */}
-        {tab === 'overview' && (
+        {tab === "overview" && (
           <div className="flex flex-col gap-5">
-
             {/* Vote breakdown */}
             {profileLoading ? (
               <div className="rounded-card border border-line p-6">
@@ -737,7 +956,9 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
               </div>
             ) : profile?.voteStats ? (
               <div className="rounded-card border border-line p-6">
-                <div className="text-meta font-medium text-mute mb-4">תמהיל הצבעות</div>
+                <div className="text-meta font-medium text-mute mb-4">
+                  תמהיל הצבעות
+                </div>
                 <VoteBreakdownBar stats={profile.voteStats} />
               </div>
             ) : null}
@@ -752,7 +973,10 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                   <div className="rounded-card border border-line p-5">
                     <AlignmentCard
                       pct={profile.majorityAlignment}
-                      total={profile.voteStats.forCount + profile.voteStats.againstCount}
+                      total={
+                        profile.voteStats.forCount +
+                        profile.voteStats.againstCount
+                      }
                     />
                   </div>
                 )}
@@ -763,48 +987,75 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
             {!profileLoading && profile && (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 <div className="rounded-card border border-line p-5">
-                  <div className="text-meta font-medium text-mute mb-2">שאילתות</div>
-                  <div className="text-4xl font-medium tabular-nums leading-none">{profile.queries.length.toLocaleString()}</div>
+                  <div className="text-meta font-medium text-mute mb-2">
+                    שאילתות
+                  </div>
+                  <div className="text-4xl font-medium tabular-nums leading-none">
+                    {profile.queries.length.toLocaleString()}
+                  </div>
                   <div className="text-meta text-mute mt-1">לממשלה</div>
                 </div>
                 <div className="rounded-card border border-line p-5">
-                  <div className="text-meta font-medium text-mute mb-2">תפקידים</div>
-                  <div className="text-4xl font-medium tabular-nums leading-none">{profile.positions.length}</div>
+                  <div className="text-meta font-medium text-mute mb-2">
+                    תפקידים
+                  </div>
+                  <div className="text-4xl font-medium tabular-nums leading-none">
+                    {profile.positions.length}
+                  </div>
                   <div className="text-meta text-mute mt-1">
-                    {profile.positions.filter(p => p.isCurrent).length} נוכחיים
+                    {profile.positions.filter((p) => p.isCurrent).length}{" "}
+                    נוכחיים
                   </div>
                 </div>
-                {profile.voteStats && profile.voteStats.absenceCount > 0 && (() => {
-                  const absenceRate = Math.round((profile.voteStats.absenceCount / (profile.voteStats.total + profile.voteStats.absenceCount)) * 100);
-                  const isHighAbsence = absenceRate > 50;
-                  return (
-                    <div className={`rounded-card border-2 p-5 transition-all ${isHighAbsence ? 'border-fail/30 bg-fail-wash' : 'border-line'}`}>
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="text-meta font-medium text-mute">היעדרויות</div>
-                        {isHighAbsence && (
-                          <span title="הח״כ חסר מחצי ההצבעות ויותר - נתוני אמינות נמוכים" className="inline-flex items-center gap-1 text-meta font-medium px-2 py-1 rounded bg-fail-wash text-fail">
-                            ⚠ אזהרה
-                          </span>
-                        )}
+                {profile.voteStats &&
+                  profile.voteStats.absenceCount > 0 &&
+                  (() => {
+                    const absenceRate = Math.round(
+                      (profile.voteStats.absenceCount /
+                        (profile.voteStats.total +
+                          profile.voteStats.absenceCount)) *
+                        100,
+                    );
+                    const isHighAbsence = absenceRate > 50;
+                    return (
+                      <div
+                        className={`rounded-card border-2 p-5 transition-all ${isHighAbsence ? "border-fail/30 bg-fail-wash" : "border-line"}`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="text-meta font-medium text-mute">
+                            היעדרויות
+                          </div>
+                          {isHighAbsence && (
+                            <span
+                              title="הח״כ חסר מחצי ההצבעות ויותר - נתוני אמינות נמוכים"
+                              className="inline-flex items-center gap-1 text-meta font-medium px-2 py-1 rounded bg-fail-wash text-fail"
+                            >
+                              ⚠ אזהרה
+                            </span>
+                          )}
+                        </div>
+                        <div
+                          className={`text-4xl font-medium tabular-nums leading-none ${isHighAbsence ? "text-fail" : "text-ink"}`}
+                        >
+                          {profile.voteStats.absenceCount.toLocaleString()}
+                        </div>
+                        <div className="text-meta text-mute mt-1">
+                          {absenceRate}% מכל ההצבעות
+                        </div>
                       </div>
-                      <div className={`text-4xl font-medium tabular-nums leading-none ${isHighAbsence ? 'text-fail' : 'text-ink'}`}>
-                        {profile.voteStats.absenceCount.toLocaleString()}
-                      </div>
-                      <div className="text-meta text-mute mt-1">
-                        {absenceRate}% מכל ההצבעות
-                      </div>
-                    </div>
-                  );
-                })()}
+                    );
+                  })()}
               </div>
             )}
 
             {/* Current positions */}
-            {!profileLoading && profile && profile.positions.filter(p => p.isCurrent).length > 0 && (
-              <div className="rounded-card border border-line p-6">
-                <CurrentPositions positions={profile.positions} />
-              </div>
-            )}
+            {!profileLoading &&
+              profile &&
+              profile.positions.filter((p) => p.isCurrent).length > 0 && (
+                <div className="rounded-card border border-line p-6">
+                  <CurrentPositions positions={profile.positions} />
+                </div>
+              )}
 
             {/* Forensic analysis */}
             {!profileLoading && profile && (
@@ -821,41 +1072,83 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
             )}
 
             {/* Committee session activity */}
-            {!profileLoading && profile && profile.committeeActivity?.length > 0 && (
-              <div className="rounded-card border border-line p-6">
-                <div className="text-meta font-medium text-mute mb-4">פעילות בוועדות</div>
-                <div className="flex flex-col gap-4">
-                  {profile.committeeActivity.map(item => (
-                    <div key={item.committeeName}>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <Link
-                          href={`/committee/${encodeURIComponent(item.committeeName)}`}
-                          className="text-ui font-medium text-accent hover:text-accent-ink transition-colors"
-                        >
-                          {item.committeeName}
-                        </Link>
-                        <span className="text-meta text-mute tabular-nums font-bold">{item.sessionCount} ישיבות</span>
+            {!profileLoading &&
+              profile &&
+              profile.committeeActivity?.length > 0 && (
+                <div className="rounded-card border border-line p-6">
+                  <div className="flex items-start justify-between gap-4 mb-5">
+                    <div>
+                      <div className="text-ui font-medium text-ink">
+                        פעילות בוועדות
                       </div>
-                      {item.recentSessions.length > 0 && (
-                        <div className="flex flex-col gap-1 mr-1">
-                          {item.recentSessions.map(s => (
-                            <Link
-                              key={s.id}
-                              href={`/session/${s.id}`}
-                              className="flex items-center gap-2 text-meta text-mute hover:text-ink transition-colors"
-                            >
-                              <span className="text-mute shrink-0">·</span>
-                              <span className="text-mute shrink-0 tabular-nums">{s.date?.slice(0, 10)}</span>
-                              <span className="truncate">{s.title ?? 'ישיבה'}</span>
-                            </Link>
-                          ))}
-                        </div>
-                      )}
+                      <div className="text-meta text-mute mt-1">
+                        השתתפות בישיבות ועדה
+                      </div>
                     </div>
-                  ))}
+
+                    <div className="flex gap-5 text-left shrink-0">
+                      <div>
+                        <div className="text-section font-medium tabular-nums">
+                          {(profile.attendanceCount ?? 0).toLocaleString()}
+                        </div>
+                        <div className="text-meta text-mute">
+                          ישיבות שבהן השתתף
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="text-section font-medium tabular-nums">
+                          {profile.committeeActivity.length}
+                        </div>
+                        <div className="text-meta text-mute">ועדות מוצגות</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-meta font-medium text-mute mb-3">
+                    הוועדות שבהן השתתף במספר הישיבות הגבוה ביותר
+                  </div>
+
+                  <div className="flex flex-col gap-4">
+                    {profile.committeeActivity.map((item) => (
+                      <div key={item.committeeName}>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <Link
+                            href={`/committee/${encodeURIComponent(item.committeeName)}`}
+                            className="text-ui font-medium text-accent hover:text-accent-ink transition-colors"
+                          >
+                            {item.committeeName}
+                          </Link>
+
+                          <span className="text-meta text-mute tabular-nums font-bold">
+                            {item.sessionCount} ישיבות
+                          </span>
+                        </div>
+
+                        {item.recentSessions.length > 0 && (
+                          <div className="flex flex-col gap-1 mr-1">
+                            {item.recentSessions.map((s) => (
+                              <Link
+                                key={s.id}
+                                href={`/session/${s.id}`}
+                                className="flex items-center gap-2 text-meta text-mute hover:text-ink transition-colors"
+                              >
+                                <span className="text-mute shrink-0">·</span>
+                                <span className="text-mute shrink-0 tabular-nums">
+                                  {s.date?.slice(0, 10)}
+                                </span>
+                                <span className="truncate">
+                                  {s.title ?? "ישיבה"}
+                                </span>
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Legislative focus */}
             {!profileLoading && profile && profile.agendaStats.length > 0 && (
@@ -870,7 +1163,10 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                 <BillTopicsCard
                   topics={profile.billTopics}
                   accentColor={accentColor}
-                  onNavigate={() => { setTab('bills'); setCommitteeFilter(null); }}
+                  onNavigate={() => {
+                    setTab("bills");
+                    setCommitteeFilter(null);
+                  }}
                 />
               </div>
             )}
@@ -886,38 +1182,50 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
             {!profileLoading && profile && profile.bills.length > 0 && (
               <div className="rounded-card border border-line p-6">
                 <div className="flex items-center justify-between mb-1">
-                  <div className="text-meta font-medium text-mute">הצעות חוק שיזם</div>
+                  <div className="text-meta font-medium text-mute">
+                    הצעות חוק שיזם
+                  </div>
                   <button
-                    onClick={() => { setTab('bills'); setShowPassedOnly(false); }}
+                    onClick={() => {
+                      setTab("bills");
+                      setShowPassedOnly(false);
+                    }}
                     className="text-meta font-medium text-mute hover:text-ink transition-colors"
                   >
                     הצג הכל ←
                   </button>
                 </div>
                 <p className="text-meta text-mute font-medium mb-4">
-                  {profile.bills.length} הצעות · {profile.bills.filter(b => b.isPassed).length} עברו בקריאה שלישית
+                  {profile.bills.length} הצעות ·{" "}
+                  {profile.bills.filter((b) => b.isPassed).length} עברו בקריאה
+                  שלישית
                 </p>
                 <div className="flex flex-col gap-2">
-                  {profile.bills.slice(0, 6).map(b => {
+                  {profile.bills.slice(0, 6).map((b) => {
                     const stage = billStageLabel(b.statusId ?? null);
                     const isExpanded = expandedBills.has(b.billId);
-                    const toggleExpand = () => setExpandedBills(prev => {
-                      const next = new Set(prev);
-                      if (next.has(b.billId)) next.delete(b.billId); else next.add(b.billId);
-                      return next;
-                    });
+                    const toggleExpand = () =>
+                      setExpandedBills((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(b.billId)) next.delete(b.billId);
+                        else next.add(b.billId);
+                        return next;
+                      });
                     return (
-                      <div key={b.billId} className="rounded-control bg-surface hover:bg-surface-2 transition-colors">
+                      <div
+                        key={b.billId}
+                        className="rounded-control bg-surface hover:bg-surface-2 transition-colors"
+                      >
                         <div className="flex items-start gap-2 px-3 py-2">
                           <span
                             className={`shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full ${
-                              stage.tone === 'passed'
-                                ? 'bg-accent'
-                                : stage.tone === 'advanced'
-                                  ? 'bg-accent'
-                                  : stage.tone === 'stopped'
-                                    ? 'bg-fail'
-                                    : 'bg-line'
+                              stage.tone === "passed"
+                                ? "bg-accent"
+                                : stage.tone === "advanced"
+                                  ? "bg-accent"
+                                  : stage.tone === "stopped"
+                                    ? "bg-fail"
+                                    : "bg-line"
                             }`}
                           />
                           <div className="flex-1 min-w-0">
@@ -931,8 +1239,11 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                               </Link>
                               <div className="flex items-center gap-1 shrink-0">
                                 {b.summary && (
-                                  <button onClick={toggleExpand} className="text-meta font-medium text-mute hover:text-ink border border-line hover:border-mute px-1.5 py-0.5 rounded transition-colors">
-                                    {isExpanded ? '▲' : '▼'}
+                                  <button
+                                    onClick={toggleExpand}
+                                    className="text-meta font-medium text-mute hover:text-ink border border-line hover:border-mute px-1.5 py-0.5 rounded transition-colors"
+                                  >
+                                    {isExpanded ? "▲" : "▼"}
                                   </button>
                                 )}
                               </div>
@@ -940,26 +1251,30 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                             <div className="flex items-center gap-2 flex-wrap mt-0.5">
                               <span
                                 className={`text-meta font-medium px-1.5 py-0.5 rounded ${
-                                  stage.tone === 'passed'
-                                    ? 'bg-accent-wash text-accent'
-                                    : stage.tone === 'advanced'
-                                      ? 'bg-accent-wash text-accent'
-                                      : stage.tone === 'stopped'
-                                        ? 'bg-fail-wash text-fail'
-                                        : 'bg-surface text-mute'
+                                  stage.tone === "passed"
+                                    ? "bg-accent-wash text-accent"
+                                    : stage.tone === "advanced"
+                                      ? "bg-accent-wash text-accent"
+                                      : stage.tone === "stopped"
+                                        ? "bg-fail-wash text-fail"
+                                        : "bg-surface text-mute"
                                 }`}
                               >
                                 {stage.label}
                               </span>
                               {b.initDate && (
-                                <span className="text-meta text-mute">{b.initDate}</span>
+                                <span className="text-meta text-mute">
+                                  {b.initDate}
+                                </span>
                               )}
                             </div>
                           </div>
                         </div>
                         {b.summary && isExpanded && (
                           <div className="px-3 pb-2 border-t border-line-soft pt-2">
-                            <p className="text-meta text-ink-2 leading-relaxed">{b.summary}</p>
+                            <p className="text-meta text-ink-2 leading-relaxed">
+                              {b.summary}
+                            </p>
                           </div>
                         )}
                       </div>
@@ -970,57 +1285,80 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
             )}
 
             {/* Crossed the aisle — votes where MK voted with the majority */}
-            {!profileLoading && profile && profile.withMajorityVotes.length > 0 && (
-              <div className="rounded-card border border-line p-6">
-                <div className="flex items-center justify-between mb-1">
-                  <div className="text-meta font-medium text-mute">
-                    {profile.isCoalition === false ? 'הצבעות עם הרוב (חריגות)' : 'הצבעות עם הרוב'}
-                  </div>
-                  <button
-                    onClick={() => { setTab('votes'); setVoteFilter('עם-הרוב'); }}
-                    className="text-meta font-medium text-mute hover:text-ink transition-colors"
-                  >
-                    הצג הכל ←
-                  </button>
-                </div>
-                <p className="text-meta text-mute mb-4">
-                  {profile.isCoalition === false
-                    ? `${profile.withMajorityVotes.length} פעמים הצביע${profile.firstName.endsWith('ה') ? 'ה' : ''} עם הצד המנצח — בעד כשעבר, נגד כשנכשל`
-                    : `${profile.withMajorityVotes.length} הצבעות עם הרוב`}
-                </p>
-                <div className="flex flex-col gap-1.5">
-                  {profile.withMajorityVotes.slice(0, 5).map(v => (
-                    <div key={v.voteId} className="flex items-start gap-3 px-3 py-2.5 rounded-card bg-surface">
-                      <span className={`shrink-0 mt-0.5 text-meta font-medium px-2 py-0.5 rounded-full ${RESULT_COLORS[CODE_TO_LABEL[v.resultCode]] ?? 'bg-surface-2 text-mute'}`}>
-                        {CODE_TO_LABEL[v.resultCode]}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <span className="text-ui font-bold text-ink leading-snug">{v.title}</span>
-                        <div className="flex gap-2 mt-1 flex-wrap">
-                          {v.macroAgenda && (
-                            <span className="text-meta font-medium text-white bg-navy-deep/60 px-1.5 py-0.5 rounded-full">{v.macroAgenda}</span>
-                          )}
-                          {v.microAgenda && (
-                            <span className="text-meta font-bold text-ink-2 bg-line px-1.5 py-0.5 rounded-full">#{v.microAgenda}</span>
-                          )}
-                        </div>
-                      </div>
-                      <span className="shrink-0 text-meta text-mute tabular-nums">
-                        {new Date(v.date).toLocaleDateString('he-IL', { month: 'short', year: '2-digit' })}
-                      </span>
+            {!profileLoading &&
+              profile &&
+              profile.withMajorityVotes.length > 0 && (
+                <div className="rounded-card border border-line p-6">
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="text-meta font-medium text-mute">
+                      {profile.isCoalition === false
+                        ? "הצבעות עם הרוב (חריגות)"
+                        : "הצבעות עם הרוב"}
                     </div>
-                  ))}
+                    <button
+                      onClick={() => {
+                        setTab("votes");
+                        setVoteFilter("עם-הרוב");
+                      }}
+                      className="text-meta font-medium text-mute hover:text-ink transition-colors"
+                    >
+                      הצג הכל ←
+                    </button>
+                  </div>
+                  <p className="text-meta text-mute mb-4">
+                    {profile.isCoalition === false
+                      ? `${profile.withMajorityVotes.length} פעמים הצביע${profile.firstName.endsWith("ה") ? "ה" : ""} עם הצד המנצח — בעד כשעבר, נגד כשנכשל`
+                      : `${profile.withMajorityVotes.length} הצבעות עם הרוב`}
+                  </p>
+                  <div className="flex flex-col gap-1.5">
+                    {profile.withMajorityVotes.slice(0, 5).map((v) => (
+                      <div
+                        key={v.voteId}
+                        className="flex items-start gap-3 px-3 py-2.5 rounded-card bg-surface"
+                      >
+                        <span
+                          className={`shrink-0 mt-0.5 text-meta font-medium px-2 py-0.5 rounded-full ${RESULT_COLORS[CODE_TO_LABEL[v.resultCode]] ?? "bg-surface-2 text-mute"}`}
+                        >
+                          {CODE_TO_LABEL[v.resultCode]}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-ui font-bold text-ink leading-snug">
+                            {v.title}
+                          </span>
+                          <div className="flex gap-2 mt-1 flex-wrap">
+                            {v.macroAgenda && (
+                              <span className="text-meta font-medium text-white bg-navy-deep/60 px-1.5 py-0.5 rounded-full">
+                                {v.macroAgenda}
+                              </span>
+                            )}
+                            {v.microAgenda && (
+                              <span className="text-meta font-bold text-ink-2 bg-line px-1.5 py-0.5 rounded-full">
+                                #{v.microAgenda}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <span className="shrink-0 text-meta text-mute tabular-nums">
+                          {new Date(v.date).toLocaleDateString("he-IL", {
+                            month: "short",
+                            year: "2-digit",
+                          })}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Agenda teaser */}
             {!profileLoading && (
               <div className="rounded-card border border-line overflow-hidden">
                 <div className="flex items-center justify-between px-6 pt-5 pb-3">
-                  <div className="text-meta font-medium text-mute">אג&apos;נדה ועמדות</div>
+                  <div className="text-meta font-medium text-mute">
+                    אג&apos;נדה ועמדות
+                  </div>
                   <button
-                    onClick={() => setTab('agenda')}
+                    onClick={() => setTab("agenda")}
                     className="text-meta font-medium text-mute hover:text-ink transition-colors"
                   >
                     הצג הכל ←
@@ -1037,39 +1375,76 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
         {/* ══════════════════════════════════════════════════════════════════ */}
         {/* Votes Tab                                                          */}
         {/* ══════════════════════════════════════════════════════════════════ */}
-        {tab === 'votes' && (
+        {tab === "votes" && (
           <>
             {votesLoading && (
-              <div className="py-32 text-center text-section font-medium animate-pulse opacity-20">טוען הצבעות...</div>
+              <div className="py-32 text-center text-section font-medium animate-pulse opacity-20">
+                טוען הצבעות...
+              </div>
             )}
             {votesError && (
-              <div className="p-6 rounded-card bg-fail-wash text-fail text-ui font-bold">{votesError}</div>
+              <div className="p-6 rounded-card bg-fail-wash text-fail text-ui font-bold">
+                {votesError}
+              </div>
             )}
             {!votesLoading && !votesError && votesLoaded && (
               <>
                 {/* Filter badges */}
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {(['all', 'בעד', 'נגד', 'נמנע', 'נוכח', 'עם-הרוב', 'rebellions'] as ResultFilter[]).map(f => {
-                    const count = f === 'all' ? votes.length
-                      : f === 'עם-הרוב' ? (profile?.withMajorityVotes.length ?? 0)
-                      : f === 'rebellions' ? (profile?.rebellionCount ?? 0)
-                      : voteCounts[f];
+                  {(
+                    [
+                      "all",
+                      "בעד",
+                      "נגד",
+                      "נמנע",
+                      "נוכח",
+                      "עם-הרוב",
+                      "rebellions",
+                    ] as ResultFilter[]
+                  ).map((f) => {
+                    const count =
+                      f === "all"
+                        ? votes.length
+                        : f === "עם-הרוב"
+                          ? (profile?.withMajorityVotes.length ?? 0)
+                          : f === "rebellions"
+                            ? (profile?.rebellionCount ?? 0)
+                            : voteCounts[f];
                     const active = voteFilter === f;
-                    const colorCls = f === 'all'
-                      ? active ? 'bg-navy-deep text-white' : 'bg-surface-2 text-ink-2'
-                      : f === 'עם-הרוב'
-                        ? active ? 'bg-warn text-white' : 'bg-warn-wash text-warn'
-                      : f === 'rebellions'
-                        ? active ? 'bg-warn text-white' : 'bg-warn-wash text-warn'
-                        : active ? RESULT_COLORS[f] : 'bg-surface-2 text-ink-2';
+                    const colorCls =
+                      f === "all"
+                        ? active
+                          ? "bg-navy-deep text-white"
+                          : "bg-surface-2 text-ink-2"
+                        : f === "עם-הרוב"
+                          ? active
+                            ? "bg-warn text-white"
+                            : "bg-warn-wash text-warn"
+                          : f === "rebellions"
+                            ? active
+                              ? "bg-warn text-white"
+                              : "bg-warn-wash text-warn"
+                            : active
+                              ? RESULT_COLORS[f]
+                              : "bg-surface-2 text-ink-2";
                     return (
                       <button
                         key={f}
                         onClick={() => setVoteFilter(f)}
                         className={`text-meta font-medium px-3 py-2 rounded-full transition-colors ${colorCls}`}
                       >
-                        {f === 'all' ? 'הכל' : f === 'עם-הרוב' ? 'עם הרוב' : f === 'rebellions' ? 'מורדות' : f}{' '}
-                        {count > 0 && <span className="opacity-70">({count.toLocaleString()})</span>}
+                        {f === "all"
+                          ? "הכל"
+                          : f === "עם-הרוב"
+                            ? "עם הרוב"
+                            : f === "rebellions"
+                              ? "מורדות"
+                              : f}{" "}
+                        {count > 0 && (
+                          <span className="opacity-70">
+                            ({count.toLocaleString()})
+                          </span>
+                        )}
                       </button>
                     );
                   })}
@@ -1079,7 +1454,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                 <input
                   type="text"
                   value={voteSearch}
-                  onChange={e => setVoteSearch(e.target.value)}
+                  onChange={(e) => setVoteSearch(e.target.value)}
                   placeholder="חיפוש לפי נושא..."
                   className="w-full mb-4 px-4 py-2 text-ui border border-line rounded-control bg-surface focus:ring-1 focus:ring-accent/40"
                 />
@@ -1087,59 +1462,75 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                 {/* Vote list */}
                 <div className="flex flex-col gap-1.5">
                   {pageVotes.length === 0 ? (
-                    <div className="py-16 text-center text-mute font-medium">אין תוצאות</div>
-                  ) : pageVotes.map(v => {
-                    const label = v.resultLabel ?? (v.resultCode != null ? CODE_TO_LABEL[v.resultCode] : 'נוכח');
-                    return (
-                      <div
-                        key={v.voteId}
-                        className="flex items-start gap-3 py-3 px-4 rounded-card bg-surface hover:bg-surface-2 transition-colors"
-                      >
-                        {/* MK's vote result */}
-                        <span className={`shrink-0 mt-0.5 text-meta font-medium px-2 py-1 rounded-full ${RESULT_COLORS[label] ?? 'bg-surface-2 text-mute'}`}>
-                          {label}
-                        </span>
-
-                        {/* Title */}
-                        <div className="flex-1 min-w-0">
-                          <Link
-                            href={`/vote/${v.voteId}`}
-                            prefetch={false}
-                            className="text-ui font-bold leading-snug text-ink hover:underline"
+                    <div className="py-16 text-center text-mute font-medium">
+                      אין תוצאות
+                    </div>
+                  ) : (
+                    pageVotes.map((v) => {
+                      const label =
+                        v.resultLabel ??
+                        (v.resultCode != null
+                          ? CODE_TO_LABEL[v.resultCode]
+                          : "נוכח");
+                      return (
+                        <div
+                          key={v.voteId}
+                          className="flex items-start gap-3 py-3 px-4 rounded-card bg-surface hover:bg-surface-2 transition-colors"
+                        >
+                          {/* MK's vote result */}
+                          <span
+                            className={`shrink-0 mt-0.5 text-meta font-medium px-2 py-1 rounded-full ${RESULT_COLORS[label] ?? "bg-surface-2 text-mute"}`}
                           >
-                            {v.title || '—'}
-                          </Link>
-                          <div className="flex gap-2 mt-1.5 flex-wrap">
-                            {v.macroAgenda && (
-                              <span className="text-meta font-medium text-white bg-navy-deep/60 px-1.5 py-0.5 rounded-full">{v.macroAgenda}</span>
+                            {label}
+                          </span>
+
+                          {/* Title */}
+                          <div className="flex-1 min-w-0">
+                            <Link
+                              href={`/vote/${v.voteId}`}
+                              prefetch={false}
+                              className="text-ui font-bold leading-snug text-ink hover:underline"
+                            >
+                              {v.title || "—"}
+                            </Link>
+                            <div className="flex gap-2 mt-1.5 flex-wrap">
+                              {v.macroAgenda && (
+                                <span className="text-meta font-medium text-white bg-navy-deep/60 px-1.5 py-0.5 rounded-full">
+                                  {v.macroAgenda}
+                                </span>
+                              )}
+                              {v.microAgenda && (
+                                <span className="text-meta font-bold text-ink-2 bg-line px-1.5 py-0.5 rounded-full">
+                                  #{v.microAgenda}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Vote outcome + date */}
+                          <div className="shrink-0 flex flex-col items-end gap-0.5">
+                            {v.isPassed !== null && (
+                              <span
+                                className={`text-meta font-medium ${v.isPassed ? "text-pass" : "text-mute"}`}
+                              >
+                                {v.isPassed ? "עבר" : "נכשל"}
+                              </span>
                             )}
-                            {v.microAgenda && (
-                              <span className="text-meta font-bold text-ink-2 bg-line px-1.5 py-0.5 rounded-full">#{v.microAgenda}</span>
-                            )}
+                            <span className="text-meta text-mute font-medium tabular-nums">
+                              {formatDate(v.date)}
+                            </span>
                           </div>
                         </div>
-
-                        {/* Vote outcome + date */}
-                        <div className="shrink-0 flex flex-col items-end gap-0.5">
-                          {v.isPassed !== null && (
-                            <span className={`text-meta font-medium ${v.isPassed ? 'text-pass' : 'text-mute'}`}>
-                              {v.isPassed ? 'עבר' : 'נכשל'}
-                            </span>
-                          )}
-                          <span className="text-meta text-mute font-medium tabular-nums">
-                            {formatDate(v.date)}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  )}
                 </div>
 
                 {/* Pagination */}
                 {totalPages > 1 && (
                   <div className="flex items-center justify-center gap-3 mt-8">
                     <button
-                      onClick={() => setVotePage(p => Math.max(1, p - 1))}
+                      onClick={() => setVotePage((p) => Math.max(1, p - 1))}
                       disabled={currentVotePage === 1}
                       className="text-ui font-medium px-3 py-1.5 rounded border border-line disabled:opacity-30 hover:bg-surface-2"
                     >
@@ -1149,7 +1540,9 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                       {currentVotePage} / {totalPages}
                     </span>
                     <button
-                      onClick={() => setVotePage(p => Math.min(totalPages, p + 1))}
+                      onClick={() =>
+                        setVotePage((p) => Math.min(totalPages, p + 1))
+                      }
                       disabled={currentVotePage === totalPages}
                       className="text-ui font-medium px-3 py-1.5 rounded border border-line disabled:opacity-30 hover:bg-surface-2"
                     >
@@ -1165,10 +1558,12 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
         {/* ══════════════════════════════════════════════════════════════════ */}
         {/* Bills Tab                                                          */}
         {/* ══════════════════════════════════════════════════════════════════ */}
-        {tab === 'bills' && (
+        {tab === "bills" && (
           <>
             {profileLoading ? (
-              <div className="py-32 text-center text-section font-medium animate-pulse opacity-20">טוען...</div>
+              <div className="py-32 text-center text-section font-medium animate-pulse opacity-20">
+                טוען...
+              </div>
             ) : (
               <>
                 {/* Controls */}
@@ -1176,13 +1571,13 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                   <input
                     type="text"
                     value={billSearch}
-                    onChange={e => setBillSearch(e.target.value)}
+                    onChange={(e) => setBillSearch(e.target.value)}
                     placeholder="חיפוש לפי נושא..."
                     className="flex-1 px-4 py-2 text-ui border border-line rounded-control bg-surface focus:ring-1 focus:ring-accent/40"
                   />
                   <button
-                    onClick={() => setShowPassedOnly(v => !v)}
-                    className={`text-meta font-medium px-3 py-2 rounded-control transition-colors shrink-0 ${showPassedOnly ? 'bg-pass text-white' : 'bg-surface text-ink-2 hover:bg-line'}`}
+                    onClick={() => setShowPassedOnly((v) => !v)}
+                    className={`text-meta font-medium px-3 py-2 rounded-control transition-colors shrink-0 ${showPassedOnly ? "bg-pass text-white" : "bg-surface text-ink-2 hover:bg-line"}`}
                   >
                     עברו בלבד
                   </button>
@@ -1193,96 +1588,129 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                   <div className="flex flex-wrap gap-1.5 mb-3">
                     <button
                       onClick={() => setCommitteeFilter(null)}
-                      className={`text-meta font-medium px-3 py-2 rounded-full transition-colors ${!committeeFilter ? 'bg-navy-deep text-white' : 'bg-line text-ink-2 hover:bg-line'}`}
+                      className={`text-meta font-medium px-3 py-2 rounded-full transition-colors ${!committeeFilter ? "bg-navy-deep text-white" : "bg-line text-ink-2 hover:bg-line"}`}
                     >
                       הכל
                     </button>
-                    {profile.billTopics.map(t => (
+                    {profile.billTopics.map((t) => (
                       <button
                         key={t.committeeName}
-                        onClick={() => setCommitteeFilter(committeeFilter === t.committeeName ? null : t.committeeName)}
-                        className={`text-meta font-medium px-3 py-2 rounded-full transition-colors ${committeeFilter === t.committeeName ? 'bg-navy-deep text-white' : 'bg-line text-ink-2 hover:bg-line'}`}
+                        onClick={() =>
+                          setCommitteeFilter(
+                            committeeFilter === t.committeeName
+                              ? null
+                              : t.committeeName,
+                          )
+                        }
+                        className={`text-meta font-medium px-3 py-2 rounded-full transition-colors ${committeeFilter === t.committeeName ? "bg-navy-deep text-white" : "bg-line text-ink-2 hover:bg-line"}`}
                       >
-                        {t.committeeName} <span className="opacity-60">({t.total})</span>
+                        {t.committeeName}{" "}
+                        <span className="opacity-60">({t.total})</span>
                       </button>
                     ))}
                   </div>
                 )}
 
                 <div className="text-meta text-mute font-medium mb-3">
-                  {filteredBills.length.toLocaleString()} מתוך {(profile?.bills.length ?? 0).toLocaleString()} הצ"ח
+                  {filteredBills.length.toLocaleString()} מתוך{" "}
+                  {(profile?.bills.length ?? 0).toLocaleString()} הצ"ח
                 </div>
 
                 <div className="flex flex-col gap-1.5">
                   {filteredBills.length === 0 ? (
-                    <div className="py-16 text-center text-mute font-medium">אין תוצאות</div>
-                  ) : filteredBills.map(b => {
-                    const isExpanded = expandedBills.has(b.billId);
-                    const toggleExpand = () => setExpandedBills(prev => {
-                      const next = new Set(prev);
-                      if (next.has(b.billId)) next.delete(b.billId); else next.add(b.billId);
-                      return next;
-                    });
-                    return (
-                    <div key={b.billId} className="rounded-card bg-surface hover:bg-surface-2 transition-colors">
-                      <div className="flex items-start gap-3 px-4 py-3">
-                        <span className={`shrink-0 mt-0.5 text-meta font-medium px-2 py-0.5 rounded-full ${b.isPassed ? 'bg-pass text-white' : 'bg-warn-wash text-warn'}`}>
-                          {b.isPassed ? 'עבר' : 'הוגש'}
-                        </span>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <p className="text-ui font-bold leading-snug text-ink">{b.title}</p>
-                            <div className="flex items-center gap-1.5 shrink-0">
-                              {b.docUrl && (
-                                <a
-                                  href={b.docUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-meta font-medium text-mute hover:text-ink transition-colors border border-line hover:border-mute px-1.5 py-0.5 rounded"
-                                >
-                                  PDF
-                                </a>
-                              )}
-                              {b.summary && (
-                                <button
-                                  onClick={toggleExpand}
-                                  className="text-meta font-medium text-mute hover:text-ink transition-colors border border-line hover:border-mute px-1.5 py-0.5 rounded"
-                                >
-                                  {isExpanded ? '▲' : '▼'}
-                                </button>
-                              )}
+                    <div className="py-16 text-center text-mute font-medium">
+                      אין תוצאות
+                    </div>
+                  ) : (
+                    filteredBills.map((b) => {
+                      const isExpanded = expandedBills.has(b.billId);
+                      const toggleExpand = () =>
+                        setExpandedBills((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(b.billId)) next.delete(b.billId);
+                          else next.add(b.billId);
+                          return next;
+                        });
+                      return (
+                        <div
+                          key={b.billId}
+                          className="rounded-card bg-surface hover:bg-surface-2 transition-colors"
+                        >
+                          <div className="flex items-start gap-3 px-4 py-3">
+                            <span
+                              className={`shrink-0 mt-0.5 text-meta font-medium px-2 py-0.5 rounded-full ${b.isPassed ? "bg-pass text-white" : "bg-warn-wash text-warn"}`}
+                            >
+                              {b.isPassed ? "עבר" : "הוגש"}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2">
+                                <p className="text-ui font-bold leading-snug text-ink">
+                                  {b.title}
+                                </p>
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  {b.docUrl && (
+                                    <a
+                                      href={b.docUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-meta font-medium text-mute hover:text-ink transition-colors border border-line hover:border-mute px-1.5 py-0.5 rounded"
+                                    >
+                                      PDF
+                                    </a>
+                                  )}
+                                  {b.summary && (
+                                    <button
+                                      onClick={toggleExpand}
+                                      className="text-meta font-medium text-mute hover:text-ink transition-colors border border-line hover:border-mute px-1.5 py-0.5 rounded"
+                                    >
+                                      {isExpanded ? "▲" : "▼"}
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                {b.initDate && (
+                                  <span className="text-meta text-mute">
+                                    {b.initDate}
+                                  </span>
+                                )}
+                                {b.macroAgenda && (
+                                  <span className="text-meta font-medium text-white bg-navy-deep px-1.5 py-0.5 rounded-full">
+                                    {b.macroAgenda}
+                                  </span>
+                                )}
+                                {b.microAgenda && (
+                                  <span className="text-meta font-bold text-ink-2 bg-line px-1.5 py-0.5 rounded-full">
+                                    #{b.microAgenda}
+                                  </span>
+                                )}
+                                {b.committeeName && (
+                                  <Link
+                                    href={`/committee/${encodeURIComponent(b.committeeName)}`}
+                                    className="text-meta font-medium text-mute border border-line hover:border-mute px-1.5 py-0.5 rounded-full transition-colors"
+                                  >
+                                    {b.committeeName}
+                                  </Link>
+                                )}
+                                {b.subtype && (
+                                  <span className="text-meta text-mute">
+                                    {b.subtype}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 mt-1 flex-wrap">
-                            {b.initDate && (
-                              <span className="text-meta text-mute">{b.initDate}</span>
-                            )}
-                            {b.macroAgenda && (
-                              <span className="text-meta font-medium text-white bg-navy-deep px-1.5 py-0.5 rounded-full">{b.macroAgenda}</span>
-                            )}
-                            {b.microAgenda && (
-                              <span className="text-meta font-bold text-ink-2 bg-line px-1.5 py-0.5 rounded-full">#{b.microAgenda}</span>
-                            )}
-                            {b.committeeName && (
-                              <Link href={`/committee/${encodeURIComponent(b.committeeName)}`}
-                                className="text-meta font-medium text-mute border border-line hover:border-mute px-1.5 py-0.5 rounded-full transition-colors">
-                                {b.committeeName}
-                              </Link>
-                            )}
-                            {b.subtype && (
-                              <span className="text-meta text-mute">{b.subtype}</span>
-                            )}
-                          </div>
+                          {b.summary && isExpanded && (
+                            <div className="px-4 pb-3 border-t border-line-soft pt-2">
+                              <p className="text-meta text-ink-2 leading-relaxed">
+                                {b.summary}
+                              </p>
+                            </div>
+                          )}
                         </div>
-                      </div>
-                      {b.summary && isExpanded && (
-                        <div className="px-4 pb-3 border-t border-line-soft pt-2">
-                          <p className="text-meta text-ink-2 leading-relaxed">{b.summary}</p>
-                        </div>
-                      )}
-                    </div>
-                    );
-                  })}
+                      );
+                    })
+                  )}
                 </div>
               </>
             )}
@@ -1292,16 +1720,20 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
         {/* ══════════════════════════════════════════════════════════════════ */}
         {/* Queries Tab                                                        */}
         {/* ══════════════════════════════════════════════════════════════════ */}
-        {tab === 'queries' && (
+        {tab === "queries" && (
           <>
             {profileLoading ? (
-              <div className="py-32 text-center text-section font-medium animate-pulse opacity-20">טוען...</div>
+              <div className="py-32 text-center text-section font-medium animate-pulse opacity-20">
+                טוען...
+              </div>
             ) : (
               <>
                 {/* Topic word cloud */}
                 {queryTopics.length > 0 && (
                   <div className="rounded-card border border-line p-5 mb-5">
-                    <div className="text-meta font-medium text-mute mb-3">נושאים חוזרים</div>
+                    <div className="text-meta font-medium text-mute mb-3">
+                      נושאים חוזרים
+                    </div>
                     <div className="flex flex-wrap gap-2">
                       {queryTopics.map(({ word, count }) => (
                         <button
@@ -1310,7 +1742,9 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                           className="text-ui font-bold px-3 py-1 rounded-full bg-line hover:bg-line transition-colors"
                         >
                           {word}
-                          <span className="text-meta text-mute font-medium mr-1">×{count}</span>
+                          <span className="text-meta text-mute font-medium mr-1">
+                            ×{count}
+                          </span>
                         </button>
                       ))}
                     </div>
@@ -1320,7 +1754,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
                 <input
                   type="text"
                   value={querySearch}
-                  onChange={e => setQuerySearch(e.target.value)}
+                  onChange={(e) => setQuerySearch(e.target.value)}
                   placeholder="חיפוש שאילתא..."
                   className="w-full mb-4 px-4 py-2 text-ui border border-line rounded-control bg-surface focus:ring-1 focus:ring-accent/40"
                 />
@@ -1331,17 +1765,26 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
 
                 <div className="flex flex-col gap-1.5">
                   {filteredQueries.length === 0 ? (
-                    <div className="py-16 text-center text-mute font-medium">אין תוצאות</div>
-                  ) : filteredQueries.map(q => (
-                    <div key={q.queryId} className="flex items-start gap-3 px-4 py-3 rounded-card bg-surface hover:bg-surface-2 transition-colors">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-ui font-bold leading-snug text-ink">{q.title}</p>
-                      </div>
-                      <span className="shrink-0 text-meta text-mute font-medium tabular-nums">
-                        {formatDate(q.submitDate)}
-                      </span>
+                    <div className="py-16 text-center text-mute font-medium">
+                      אין תוצאות
                     </div>
-                  ))}
+                  ) : (
+                    filteredQueries.map((q) => (
+                      <div
+                        key={q.queryId}
+                        className="flex items-start gap-3 px-4 py-3 rounded-card bg-surface hover:bg-surface-2 transition-colors"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className="text-ui font-bold leading-snug text-ink">
+                            {q.title}
+                          </p>
+                        </div>
+                        <span className="shrink-0 text-meta text-mute font-medium tabular-nums">
+                          {formatDate(q.submitDate)}
+                        </span>
+                      </div>
+                    ))
+                  )}
                 </div>
               </>
             )}
@@ -1351,66 +1794,110 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
         {/* ══════════════════════════════════════════════════════════════════ */}
         {/* Positions Tab                                                      */}
         {/* ══════════════════════════════════════════════════════════════════ */}
-        {tab === 'positions' && (
+        {tab === "positions" && (
           <>
             {profileLoading ? (
-              <div className="py-32 text-center text-section font-medium animate-pulse opacity-20">טוען...</div>
+              <div className="py-32 text-center text-section font-medium animate-pulse opacity-20">
+                טוען...
+              </div>
             ) : (
               <>
                 {profile?.positions.length === 0 && (
-                  <div className="py-16 text-center text-mute font-medium">אין נתונים</div>
+                  <div className="py-16 text-center text-mute font-medium">
+                    אין נתונים
+                  </div>
                 )}
 
                 {/* Group: current */}
-                {(profile?.positions.filter(p => p.isCurrent) ?? []).length > 0 && (
+                {(profile?.positions.filter((p) => p.isCurrent) ?? []).length >
+                  0 && (
                   <div className="mb-6">
-                    <div className="text-meta font-medium text-mute mb-3">תפקידים נוכחיים</div>
+                    <div className="text-meta font-medium text-mute mb-3">
+                      תפקידים נוכחיים
+                    </div>
                     <div className="flex flex-col gap-1.5">
-                      {profile!.positions.filter(p => p.isCurrent).map(p => {
-                        const role = p.dutyDesc || null;
-                        const org = p.committee || p.ministry || null;
-                        return (
-                          <div key={p.id} className="px-4 py-3 rounded-card border border-line bg-surface">
-                            <div className="flex items-start gap-3">
-                              <span className="text-meta font-medium px-2 py-0.5 rounded-full bg-navy-deep text-white shrink-0 mt-0.5">נוכחי</span>
-                              <div>
-                                {role && <p className="text-ui font-medium leading-snug">{role}</p>}
-                                {org && <p className={`text-ui ${role ? 'text-ink-2 font-medium' : 'font-medium'} leading-snug`}>{org}</p>}
-                                <p className="text-meta text-mute mt-0.5">
-                                  מ-{formatDate(p.startDate)}
-                                </p>
+                      {profile!.positions
+                        .filter((p) => p.isCurrent)
+                        .map((p) => {
+                          const role = p.dutyDesc || null;
+                          const org = p.committee || p.ministry || null;
+                          return (
+                            <div
+                              key={p.id}
+                              className="px-4 py-3 rounded-card border border-line bg-surface"
+                            >
+                              <div className="flex items-start gap-3">
+                                <span className="text-meta font-medium px-2 py-0.5 rounded-full bg-navy-deep text-white shrink-0 mt-0.5">
+                                  נוכחי
+                                </span>
+                                <div>
+                                  {role && (
+                                    <p className="text-ui font-medium leading-snug">
+                                      {role}
+                                    </p>
+                                  )}
+                                  {org && (
+                                    <p
+                                      className={`text-ui ${role ? "text-ink-2 font-medium" : "font-medium"} leading-snug`}
+                                    >
+                                      {org}
+                                    </p>
+                                  )}
+                                  <p className="text-meta text-mute mt-0.5">
+                                    מ-{formatDate(p.startDate)}
+                                  </p>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
                     </div>
                   </div>
                 )}
 
                 {/* Group: historical */}
-                {(profile?.positions.filter(p => !p.isCurrent) ?? []).length > 0 && (
+                {(profile?.positions.filter((p) => !p.isCurrent) ?? []).length >
+                  0 && (
                   <div>
-                    <div className="text-meta font-medium text-mute mb-3">היסטוריה</div>
+                    <div className="text-meta font-medium text-mute mb-3">
+                      היסטוריה
+                    </div>
                     <div className="flex flex-col gap-1.5">
-                      {profile!.positions.filter(p => !p.isCurrent).map(p => {
-                        const role = p.dutyDesc || null;
-                        const org = p.committee || p.ministry || null;
-                        return (
-                          <div key={p.id} className="px-4 py-3 rounded-card bg-surface">
-                            <div className="flex items-start justify-between gap-3">
-                              <div>
-                                {role && <p className="text-ui font-bold leading-snug">{role}</p>}
-                                {org && <p className={`text-ui ${role ? 'text-ink-2' : 'font-bold'} leading-snug`}>{org}</p>}
+                      {profile!.positions
+                        .filter((p) => !p.isCurrent)
+                        .map((p) => {
+                          const role = p.dutyDesc || null;
+                          const org = p.committee || p.ministry || null;
+                          return (
+                            <div
+                              key={p.id}
+                              className="px-4 py-3 rounded-card bg-surface"
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  {role && (
+                                    <p className="text-ui font-bold leading-snug">
+                                      {role}
+                                    </p>
+                                  )}
+                                  {org && (
+                                    <p
+                                      className={`text-ui ${role ? "text-ink-2" : "font-bold"} leading-snug`}
+                                    >
+                                      {org}
+                                    </p>
+                                  )}
+                                </div>
+                                <span className="text-meta text-mute font-medium tabular-nums shrink-0">
+                                  {formatYear(p.startDate)}
+                                  {p.finishDate
+                                    ? `–${formatYear(p.finishDate)}`
+                                    : ""}
+                                </span>
                               </div>
-                              <span className="text-meta text-mute font-medium tabular-nums shrink-0">
-                                {formatYear(p.startDate)}
-                                {p.finishDate ? `–${formatYear(p.finishDate)}` : ''}
-                              </span>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
                     </div>
                   </div>
                 )}
@@ -1422,71 +1909,116 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
         {/* ══════════════════════════════════════════════════════════════════ */}
         {/* Timeline Tab                                                       */}
         {/* ══════════════════════════════════════════════════════════════════ */}
-        {tab === 'timeline' && (
+        {tab === "timeline" && (
           <>
             {profileLoading ? (
-              <div className="py-32 text-center text-section font-medium animate-pulse opacity-20">טוען...</div>
+              <div className="py-32 text-center text-section font-medium animate-pulse opacity-20">
+                טוען...
+              </div>
             ) : (
               <>
                 {profile?.timeline.length === 0 ? (
-                  <div className="py-16 text-center text-mute font-medium">אין נתונים</div>
+                  <div className="py-16 text-center text-mute font-medium">
+                    אין נתונים
+                  </div>
                 ) : (
                   <div className="space-y-3">
                     {profile?.timeline.map((event, idx) => {
                       const dateFrom = formatDate(event.from);
                       const dateTo = event.to ? formatDate(event.to) : null;
-                      const dateRange = dateTo ? `${dateFrom}–${dateTo}` : `מ-${dateFrom}`;
+                      const dateRange = dateTo
+                        ? `${dateFrom}–${dateTo}`
+                        : `מ-${dateFrom}`;
 
-                      if (event.type === 'minister') {
-                        const { officeSlug, officeName, roleType, isCurrent } = event.details;
+                      if (event.type === "minister") {
+                        const { officeSlug, officeName, roleType, isCurrent } =
+                          event.details;
                         return (
-                          <div key={idx} className="px-4 py-3 rounded-card border border-line bg-surface hover:bg-accent-wash transition-colors">
+                          <div
+                            key={idx}
+                            className="px-4 py-3 rounded-card border border-line bg-surface hover:bg-accent-wash transition-colors"
+                          >
                             <div className="flex items-start gap-3 justify-between">
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-1">
                                   <span className="text-meta font-medium px-2 py-0.5 rounded-full bg-accent-wash text-accent">
-                                    {roleType === 'pm' ? 'ראש ממשלה' : roleType === 'deputy-pm' ? 'סגן ראש ממשלה' : roleType === 'deputy' ? 'סגן שר' : roleType === 'acting' ? 'שר בשירות חוקי' : 'שר'}
+                                    {roleType === "pm"
+                                      ? "ראש ממשלה"
+                                      : roleType === "deputy-pm"
+                                        ? "סגן ראש ממשלה"
+                                        : roleType === "deputy"
+                                          ? "סגן שר"
+                                          : roleType === "acting"
+                                            ? "שר בשירות חוקי"
+                                            : "שר"}
                                   </span>
-                                  {isCurrent && <span className="text-meta font-medium px-2 py-0.5 rounded-full bg-pass-wash text-pass">נוכחי</span>}
+                                  {isCurrent && (
+                                    <span className="text-meta font-medium px-2 py-0.5 rounded-full bg-pass-wash text-pass">
+                                      נוכחי
+                                    </span>
+                                  )}
                                 </div>
                                 {officeSlug ? (
-                                  <Link href={`${BASE_PATH}/office/${officeSlug}`} className="text-ui font-bold text-accent hover:underline">
+                                  <Link
+                                    href={`${BASE_PATH}/office/${officeSlug}`}
+                                    className="text-ui font-bold text-accent hover:underline"
+                                  >
                                     {officeName || officeSlug}
                                   </Link>
                                 ) : (
-                                  <p className="text-ui font-bold">{officeName}</p>
+                                  <p className="text-ui font-bold">
+                                    {officeName}
+                                  </p>
                                 )}
-                                <p className="text-meta text-mute mt-1">{dateRange}</p>
+                                <p className="text-meta text-mute mt-1">
+                                  {dateRange}
+                                </p>
                               </div>
                               {event.details.governmentNum && (
-                                <span className="text-meta text-mute font-medium">ממשלה {event.details.governmentNum}</span>
+                                <span className="text-meta text-mute font-medium">
+                                  ממשלה {event.details.governmentNum}
+                                </span>
                               )}
                             </div>
                           </div>
                         );
                       }
 
-                      if (event.type === 'mk') {
+                      if (event.type === "mk") {
                         return (
-                          <div key={idx} className="px-4 py-3 rounded-card bg-surface">
+                          <div
+                            key={idx}
+                            className="px-4 py-3 rounded-card bg-surface"
+                          >
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="text-meta font-medium px-2 py-0.5 rounded-full bg-line text-ink-2">חבר כנסת</span>
+                              <span className="text-meta font-medium px-2 py-0.5 rounded-full bg-line text-ink-2">
+                                חבר כנסת
+                              </span>
                             </div>
                             <p className="text-ui font-bold">חברות בכנסת</p>
-                            <p className="text-meta text-mute mt-1">{dateRange}</p>
+                            <p className="text-meta text-mute mt-1">
+                              {dateRange}
+                            </p>
                           </div>
                         );
                       }
 
-                      if (event.type === 'faction-change') {
+                      if (event.type === "faction-change") {
                         const { factionName } = event.details;
                         return (
-                          <div key={idx} className="px-4 py-3 rounded-card bg-accent-wash">
+                          <div
+                            key={idx}
+                            className="px-4 py-3 rounded-card bg-accent-wash"
+                          >
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="text-meta font-medium px-2 py-0.5 rounded-full bg-accent-wash text-accent-ink">שינוי סיעה</span>
+                              <span className="text-meta font-medium px-2 py-0.5 rounded-full bg-accent-wash text-accent-ink">
+                                שינוי סיעה
+                              </span>
                             </div>
                             <p className="text-ui font-bold">{factionName}</p>
-                            <p className="text-meta text-mute mt-1">{dateRange}</p>
+                            <p className="text-meta text-mute mt-1">
+                              {dateRange}
+                            </p>
                           </div>
                         );
                       }
@@ -1503,8 +2035,7 @@ export default function MKProfileClient({ mkId }: { mkId: string }) {
         {/* ══════════════════════════════════════════════════════════════════ */}
         {/* Agenda Tab                                                         */}
         {/* ══════════════════════════════════════════════════════════════════ */}
-        {tab === 'agenda' && <MKAgendaView mkId={mkId} />}
-
+        {tab === "agenda" && <MKAgendaView mkId={mkId} />}
       </div>
     </div>
   );
