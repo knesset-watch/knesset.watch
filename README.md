@@ -4,6 +4,10 @@ A Hebrew-language dashboard for Israeli Knesset data: MKs, bills, votes, committ
 
 Production: **https://knesset.watch** (password-gated — ask Dror for access).
 
+Working deployment: **https://afarkeset-laknesset.onrender.com** (open, no password) —
+tracks the `main` branch of the `dinafk-cell/knesset.watch` fork and is usually ahead
+of production.
+
 ## Repo layout
 
 This is a monorepo with three apps:
@@ -25,10 +29,11 @@ Each app has its own README with setup details. The main app to work on is `apps
 - **Next.js 16** (App Router), TypeScript, Tailwind CSS — RTL, Hebrew UI
 - **Local SQLite** (`apps/knesset-watch/knesset.db`, via `better-sqlite3`) — committed to git, holds bills/votes/MKs/committees/positions
 - **Turso** (libSQL hosted) — protocol search + vector embeddings for RAG
-- **Google Gemini** (`gemini-3.6-flash`) — query rewriting, answer streaming, Google Search grounding
+- **Google Gemini** (`gemini-3.8-flash`) — query rewriting, answer streaming, Google Search grounding
 - **Jina AI** — 256-dim text embeddings
 - **Upstash Redis** — Ask API response cache (TTL 2h)
-- **Vercel** — current hosting (Netlify migration planned, see `docs/plans/`)
+- **Vercel** — hosts production at knesset.watch (Netlify migration planned, see `docs/plans/`)
+- **Render** — hosts the open working deployment from the fork
 
 ## Getting started
 
@@ -56,7 +61,23 @@ Many more scripts in `apps/knesset-watch/package.json` (data syncing, embedding 
 
 ## Deployment
 
-Currently deployed on **Vercel** from the `main` branch (root directory: `apps/knesset-watch`, region: `fra1`). Auto-deploys on push.
+There are two live deployments.
+
+**Production** — knesset.watch, on **Vercel**, from the `main` branch of this repo
+(root directory: `apps/knesset-watch`, region: `fra1`). Auto-deploys on push.
+Password-gated via `SITE_PASSWORD`.
+
+**Working deployment** — afarkeset-laknesset.onrender.com, on **Render** (free
+instance), from the `main` branch of the `dinafk-cell/knesset.watch` fork. Open, with
+no `SITE_PASSWORD` set. It usually runs ahead of production, so a change merged to the
+fork appears here and not on knesset.watch until it also reaches this repo's `main`.
+
+Two things about the free instance are worth knowing: it spins down when idle, so the
+first request after a quiet period is slow and can briefly serve the previous build —
+which reads exactly like "my change did not deploy". And because the site is open, the
+`/ask` budget caps (`ASK_DAILY_BUDGET`, `ASK_MONTHLY_BUDGET`, `ASK_IP_DAILY`) are what
+stands between it and the Gemini bill. They are enforced through Turso: with
+`TURSO_URL` unset the check returns "allowed" and no cap applies.
 
 A migration to **Netlify** is planned. The supporting `knesset-proxy` (Fly.io) and `knesset-worker` (Cloudflare) deploy independently.
 

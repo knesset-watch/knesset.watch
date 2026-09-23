@@ -40,9 +40,11 @@ const ENTRIES = [
   { id: 'passed',     q: 'מדוע הדירוג אינו מבוסס על חוקים שעברו?' },
   { id: 'rebel',      q: 'מה זו משמעת קואליציונית, ומיהו ח"כ מורד?' },
   { id: 'missing',    q: 'ח"כ שלא הופיע בתוצאות — לא עושה את עבודתו?' },
+  { id: 'threshold',  q: 'למה נושא שחשוב לי לא מופיע בשאלון?' },
   { id: 'confidence', q: 'מדוע אחוז הביטחון גבוה יותר לח"כי אופוזיציה?' },
   { id: 'stopped',    q: 'מה קרה ל-893 ההצעות שכתוב עליהן "ההליך נעצר"?' },
   { id: 'network',    q: 'מה רשת הקשרים מספרת, ומה אומר קשר הדוק או רופף?' },
+  { id: 'count',      q: 'למה כתוב 123 חברי כנסת, אם בכנסת 120 מושבים?' },
   { id: 'garbled',    q: 'מדוע נוסח החוק נראה לפעמים משובש?' },
 ];
 
@@ -153,8 +155,34 @@ export default async function DidYouKnowPage() {
           </p>
         </section>
 
-        <section id="confidence">
+        <section id="threshold">
           <h2 className="text-section mb-3">{ENTRIES[4].q}</h2>
+          <p className="text-body font-content text-ink-2">
+            השאלון נבנה מצירי מחלוקת שנגזרו מהצעות החוק עצמן, ולא מרשימה
+            שנכתבה מראש. ציר נכנס אליו רק אם עמדו מאחוריו חמש הצעות חוק
+            לפחות. מתחת לזה אין מספיק חומר כדי לדרג ח&quot;כים זה מול זה —
+            הצעה בודדת הופכת כל מי שחתום עליה ל&quot;פעיל ביותר&quot; בנושא.
+          </p>
+          <Figures items={[
+            { value: '201', label: 'צירי מחלוקת שנגזרו מהחוקים' },
+            { value: '166', label: 'מהם עברו את הסף ונכנסו לשאלון' },
+            { value: '35',  label: 'נושאים שנותרו בחוץ' },
+          ]} />
+          <p className="text-body font-content text-ink-2">
+            ל־35 שנותרו בחוץ יש 86 הצעות חוק בסך הכול, בין אחת לארבע לכל
+            נושא. ביניהם מיסוי פרוגרסיבי על בעלי הון, אלימות במשפחה והגנה על
+            קטינים, זכות השביתה בגופי חירום, מימון סיעוד לקשישים וזכויות
+            נפגעי עבירה.
+          </p>
+          <p className="text-ui text-mute">
+            הם אינם חסרים מהמסד — רק מהשאלון. הכי נפגעו דיור ותחבורה, שאיבד
+            תשעה צירים, וביטחון וחוץ, שאיבד שמונה. זו החלטה מכוונת ולא תקלה,
+            אבל שווה לדעת שהיא קיימת.
+          </p>
+        </section>
+
+        <section id="confidence">
+          <h2 className="text-section mb-3">{ENTRIES[5].q}</h2>
           <p className="text-body font-content text-ink-2">
             אחוז הביטחון מודד כמה פעולות מתועדות עמדו מאחורי הציון — לא כמה
             הח&quot;כ מתאים לך. ח&quot;כי אופוזיציה יוזמים יותר מפי שניים הצעות
@@ -174,7 +202,7 @@ export default async function DidYouKnowPage() {
         </section>
 
         <section id="stopped">
-          <h2 className="text-section mb-3">{ENTRIES[5].q}</h2>
+          <h2 className="text-section mb-3">{ENTRIES[6].q}</h2>
           <p className="text-body font-content text-ink-2">
             הצעת חוק יכולה להיעצר בכל שלב — היא נמשכת, נדחית, או פשוט אינה מובאת
             להצבעה עד סוף הכהונה. הסטטוס במסד מציין שההליך פסק, אך אינו מציין
@@ -189,7 +217,7 @@ export default async function DidYouKnowPage() {
         </section>
 
         <section id="network">
-          <h2 className="text-section mb-3">{ENTRIES[6].q}</h2>
+          <h2 className="text-section mb-3">{ENTRIES[7].q}</h2>
           <p className="text-body font-content text-ink-2">
             הרשת נבנית מיוזמה משותפת: שני חברי כנסת שחתומים יחד על אותה הצעת
             חוק. זו עדות ליחסי עבודה, לא לחברות ולא להסכמה אידאולוגית — אפשר
@@ -233,8 +261,46 @@ export default async function DidYouKnowPage() {
           </p>
         </section>
 
+        <section id="count">
+          <h2 className="text-section mb-3">{ENTRIES[8].q}</h2>
+          <p className="text-body font-content text-ink-2">
+            בכנסת 120 מושבים, אבל במאגר שלנו מסומנים 123 אנשים כחברי הכנסת
+            ה-25. זו אינה טעות: המספר סופר את מי שהיה חבר בכנסת הזאת אי פעם
+            במהלך הקדנציה, ולא את מי שיושב בה באותו רגע.
+          </p>
+
+          <Figures items={[
+            { value: '120', label: 'כיהנו מתחילת הקדנציה' },
+            { value: '3',   label: 'נכנסו במהלך 2026' },
+            { value: '0',   label: 'הצבעות רשומות לשלושת הנכנסים' },
+          ]} />
+
+          <p className="text-body font-content text-ink-2">
+            ח״כ שפורש, מתפטר או נפטר מפנה את מקומו לבא אחריו ברשימת מפלגתו.
+            יש גם החוק הנורבגי, שמאפשר לשר להתפטר מהכנסת כדי שחבר נוסף מרשימתו
+            ייכנס במקומו — ולחזור אם יסיים את תפקידו בממשלה. לאורך קדנציה שלמה
+            מספר האנשים שעברו דרך 120 המושבים גדול מ-120.
+          </p>
+
+          <p className="text-ui text-mute">
+            שלושת הנכנסים במאגר הצטרפו ביוני, ביולי ובאוגוסט 2026, ולאף אחד מהם
+            אין עדיין הצבעה רשומה. זו הסיבה שהם לא יופיעו בתוצאות השאלון: הדירוג
+            נשען על הצעות חוק והצבעות, ומי שטרם הספיק להצביע אין לו מה להימדד בו.
+            זהו מקרה פרטי של אותו עיקרון שמוסבר למעלה —{' '}
+            <a href="#missing" className="text-accent underline">
+              היעדרות מהתוצאות אינה עדות לחוסר עשייה
+            </a>.
+          </p>
+
+          <p className="text-ui text-mute">
+            מה שהמאגר עדיין אינו יודע הוא מי פרש ומתי, ולכן אי אפשר לומר מתוכו
+            מי מכהן ברגע זה — רק מי היה חבר בכנסת הזאת. בכל מקום שבו מוצג המספר
+            הזה כתוב ״בכנסת ה-25״ ולא ״מכהנים כעת״, כי רק הראשון נכון.
+          </p>
+        </section>
+
         <section id="garbled">
-          <h2 className="text-section mb-3">{ENTRIES[7].q}</h2>
+          <h2 className="text-section mb-3">{ENTRIES[9].q}</h2>
           <p className="text-body font-content text-ink-2">
             נוסח ההצעה מחולץ אוטומטית מקובץ PDF של הכנסת. בקבצים האלה הטקסט שמור
             לפי סדר ההופעה על הדף ולא לפי סדר הקריאה, ובעברית התוצאה היא סוגריים

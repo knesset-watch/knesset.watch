@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { Redis } from "@upstash/redis";
 import { validateApiAuth } from "@/lib/ui/auth-utils";
 import { aiFeaturesEnabled } from "@/lib/feature-flags";
+import { geminiFetch, geminiUrl, DailyQuotaError } from "@/lib/gemini-fetch";
+import { checkAskBudget, budgetNotice, BUDGET } from "@/lib/ask-budget";
 import {
   embedQueryPublic,
   searchProtocols,
@@ -33,9 +35,20 @@ import {
 } from "@/lib/knesset-db";
 import { MK_NICKNAMES } from "@/lib/nicknames";
 import { rateLimit } from "@/lib/ui/rate-limit";
-import { getTursoClient } from "@/lib/turso-db";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * האם מותר להוציא קריאות עזר ל-Gemini מעבר לתשובה עצמה.
+ *
+ * המסלול החינמי נותן 20 בקשות ליום לכל הפרויקט. עם ארבע קריאות
+ * לשאלה זה חמש שאלות ליום; עם אחת זה עשרים. שכתוב השאילתה, ההקשר
+ * החדשותי והצעות ההמשך הם שיפורים — התשובה עומדת בלעדיהם — ולכן
+ * הם כבויים עד שמישהו משדרג את המסלול.
+ *
+ * להדליק: ASK_AUX_CALLS=true בקובץ הסביבה.
+ */
+const auxCallsEnabled = process.env.ASK_AUX_CALLS === "true";
 
 type SessionSource = {
   type: "session";
@@ -110,58 +123,6 @@ async function setCached(key: string, value: AskResponse): Promise<void> {
   }
 }
 
-const DAILY_ASK_LIMIT = 100;
-
-async function checkDailyQuota(
-  request: NextRequest,
-): Promise<{ isLimited: boolean; remaining: number }> {
-  const client = getTursoClient();
-
-  if (!client) {
-    return {
-      isLimited: false,
-      remaining: DAILY_ASK_LIMIT,
-    };
-  }
-
-  const ip =
-    request.headers.get("x-real-ip") ||
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    "127.0.0.1";
-
-  const today = new Date().toISOString().slice(0, 10);
-
-  try {
-    const result = await client.execute({
-      sql: `
-        INSERT INTO api_daily_usage (
-          usage_date,
-          client_ip,
-          request_count
-        )
-        VALUES (?, ?, 1)
-        ON CONFLICT(usage_date, client_ip)
-        DO UPDATE SET request_count = request_count + 1
-        RETURNING request_count
-      `,
-      args: [today, ip],
-    });
-
-    const count = Number(result.rows[0]?.request_count ?? 0);
-
-    return {
-      isLimited: count > DAILY_ASK_LIMIT,
-      remaining: Math.max(0, DAILY_ASK_LIMIT - count),
-    };
-  } catch (error) {
-    console.error("Daily quota error:", error);
-
-    return {
-      isLimited: false,
-      remaining: DAILY_ASK_LIMIT,
-    };
-  }
-}
 // ── Gemini helpers ────────────────────────────────────────────────────────────
 
 const SYSTEM_PROMPT_GENERAL = `אתה אנליסט נתוני הכנסת הישראלית. ענה בעברית בלבד, בצורה ממוקדת ואנליטית.
@@ -194,32 +155,44 @@ async function* streamGemini(
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error("GEMINI_API_KEY not set");
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:streamGenerateContent?key=${key}&alt=sse`,
+  /*
+    פתיחת הזרם בטוחה לניסיון חוזר: עוד לא נשלח לדפדפן אף תו, ולכן
+    ניסיון שני מתחיל תשובה נקייה ולא ממשיך אחת קטועה.
+    התקרה נדיבה יותר מהשאר — כאן נכתבת התשובה המלאה.
+  */
+  const res = await geminiFetch(
+    geminiUrl("streamGenerateContent", key, "&alt=sse"),
     {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemPrompt }] },
-        contents: [{ role: "user", parts: [{ text: userMessage }] }],
-        generationConfig: {
-          maxOutputTokens: 4096,
-          thinkingConfig: { thinkingBudget: 0 },
-        },
-      }),
+      system_instruction: { parts: [{ text: systemPrompt }] },
+      contents: [{ role: "user", parts: [{ text: userMessage }] }],
+      generationConfig: {
+        maxOutputTokens: 4096,
+        thinkingConfig: { thinkingBudget: 0 },
+      },
     },
+    { label: "ask/stream", retries: 3, timeoutMs: 45_000 },
   );
 
   if (!res.ok) {
     const err = await res.text();
     console.error("Gemini error:", res.status, err);
     if (res.status === 429) throw new Error("RATE_LIMIT");
+    // 503 ו-429 אחרי הניסיונות פירושם עומס אצל ספק המודל, לא תקלה אצלנו
+    if (res.status === 503 || res.status === 504) throw new Error("OVERLOADED");
     throw new Error(`Gemini ${res.status}`);
   }
 
   const reader = res.body!.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
+
+  /*
+    סיום שאינו STOP פירושו שהמודל נעצר באמצע — תקרת טוקנים, חסימת
+    בטיחות או חשד לשחזור מקור מוגן. בלי לעקוב אחריו, זרם שנקטע
+    נראה בדיוק כמו זרם שהסתיים כרגיל.
+  */
+  let finishReason: string | null = null;
+  let emitted = 0;
 
   while (true) {
     const { done, value } = await reader.read();
@@ -234,15 +207,32 @@ async function* streamGemini(
       try {
         const parsed = JSON.parse(data) as {
           candidates?: Array<{
+            finishReason?: string;
             content?: { parts?: Array<{ text?: string }> };
           }>;
         };
-        const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) yield text;
+        const candidate = parsed.candidates?.[0];
+        if (candidate?.finishReason) finishReason = candidate.finishReason;
+        /*
+          כל ה-parts, לא רק הראשון: דגמי 3.x מחזירים לעיתים חלק
+          ריק עם thoughtSignature לצד חלק שיש בו טקסט.
+        */
+        for (const part of candidate?.content?.parts ?? []) {
+          if (part.text) { emitted += part.text.length; yield part.text; }
+        }
       } catch {
         /* skip */
       }
     }
+  }
+
+  if (finishReason && finishReason !== "STOP") {
+    console.error(`ask: המודל נעצר — ${finishReason} אחרי ${emitted} תווים`);
+    throw new Error(`TRUNCATED:${finishReason}`);
+  }
+  if (emitted === 0) {
+    console.error("ask: המודל החזיר זרם ריק");
+    throw new Error("EMPTY");
   }
 }
 
@@ -252,37 +242,41 @@ async function rewriteQueryForSearch(
   query: string,
   mkName?: string,
 ): Promise<string> {
+  if (!auxCallsEnabled) return query;
   const key = process.env.GEMINI_API_KEY;
   if (!key) return query;
   try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${key}`,
+    const res = await geminiFetch(
+      geminiUrl("generateContent", key),
       {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: "user",
-              parts: [
-                {
-                  text:
-                    `שאילתת חיפוש בנתוני הכנסת: "${query}"${mkName ? ` (ח"כ: ${mkName})` : ""}\n\n` +
-                    `הפק גרסה משופרת לחיפוש סמנטי (שורה אחת, עברית בלבד):\n` +
-                    `• הרחב כינויים לשמות מלאים (ביבי → בנימין נתניהו, גנץ → בני גנץ)\n` +
-                    `• הוסף מונחים רשמיים/חוקיים אם רלוונטיים\n` +
-                    `• הוסף מילה נרדפת אחת לכל היותר לנושא המרכזי\n` +
-                    `• שמור על עצם הנושא — אל תוסיף נושאים חדשים`,
-                },
-              ],
-            },
-          ],
-          generationConfig: {
-            maxOutputTokens: 60,
-            thinkingConfig: { thinkingBudget: 0 },
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                text:
+                  `שאילתת חיפוש בנתוני הכנסת: "${query}"${mkName ? ` (ח"כ: ${mkName})` : ""}\n\n` +
+                  `הפק גרסה משופרת לחיפוש סמנטי (שורה אחת, עברית בלבד):\n` +
+                  `• הרחב כינויים לשמות מלאים (ביבי → בנימין נתניהו, גנץ → בני גנץ)\n` +
+                  `• הוסף מונחים רשמיים/חוקיים אם רלוונטיים\n` +
+                  `• הוסף מילה נרדפת אחת לכל היותר לנושא המרכזי\n` +
+                  `• שמור על עצם הנושא — אל תוסיף נושאים חדשים`,
+              },
+            ],
           },
-        }),
+        ],
+        generationConfig: {
+          maxOutputTokens: 60,
+          thinkingConfig: { thinkingBudget: 0 },
+        },
       },
+      /*
+        אפס ניסיונות חוזרים, במכוון. השכתוב הוא שיפור לאיכות החיפוש
+        ולא תנאי לו — אם הוא נכשל נוסעים עם השאלה המקורית. הוא גם
+        חוסם: שום חיפוש לא מתחיל לפני שהוא חוזר. ניסיון שני היה מוסיף
+        שניות לכל שאלה כדי להציל שיפור שממילא אינו הכרחי.
+      */
+      { label: "ask/rewrite", retries: 0, timeoutMs: 3_500 },
     );
     if (!res.ok) return query;
     const data = (await res.json()) as {
@@ -297,34 +291,32 @@ async function rewriteQueryForSearch(
 }
 
 async function generateSuggestions(query: string): Promise<string[]> {
+  if (!auxCallsEnabled) return [];
   const key = process.env.GEMINI_API_KEY;
   if (!key) return [];
   try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${key}`,
+    const res = await geminiFetch(
+      geminiUrl("generateContent", key),
       {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: "user",
-              parts: [
-                {
-                  text:
-                    `בהתבסס על השאלה הבאה על הכנסת: "${query}"\n` +
-                    `הצע 3 שאלות המשך קצרות ושימושיות בעברית שהמשתמש עשוי לשאול.\n` +
-                    `כל שאלה שורה אחת, ללא מספרים, ללא סימנים.`,
-                },
-              ],
-            },
-          ],
-          generationConfig: {
-            maxOutputTokens: 160,
-            thinkingConfig: { thinkingBudget: 0 },
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                text:
+                  `בהתבסס על השאלה הבאה על הכנסת: "${query}"\n` +
+                  `הצע 3 שאלות המשך קצרות ושימושיות בעברית שהמשתמש עשוי לשאול.\n` +
+                  `כל שאלה שורה אחת, ללא מספרים, ללא סימנים.`,
+              },
+            ],
           },
-        }),
+        ],
+        generationConfig: {
+          maxOutputTokens: 160,
+          thinkingConfig: { thinkingBudget: 0 },
+        },
       },
+      { label: "ask/suggest", retries: 1, timeoutMs: 8_000 },
     );
     if (!res.ok) return [];
     const data = (await res.json()) as {
@@ -345,36 +337,34 @@ async function fetchNewsContext(
   topic: string,
   mkName?: string,
 ): Promise<string> {
+  if (!auxCallsEnabled) return "";
   const key = process.env.GEMINI_API_KEY;
   if (!key || !topic) return "";
   const searchQuery = mkName ? `${mkName} ${topic}` : topic;
   try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${key}`,
+    const res = await geminiFetch(
+      geminiUrl("generateContent", key),
       {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: "user",
-              parts: [
-                {
-                  text:
-                    `חפש ידיעות עדכניות בעברית על: "${searchQuery}". ` +
-                    `סכם ב-3-4 משפטים בלבד: מה הנושא, מה עמד על הפרק בציבור, ומה ההקשר הרלוונטי. ` +
-                    `אל תוסיף מידע מדויק שאינך בטוח בו.`,
-                },
-              ],
-            },
-          ],
-          tools: [{ googleSearch: {} }],
-          generationConfig: {
-            maxOutputTokens: 300,
-            thinkingConfig: { thinkingBudget: 0 },
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                text:
+                  `חפש ידיעות עדכניות בעברית על: "${searchQuery}". ` +
+                  `סכם ב-3-4 משפטים בלבד: מה הנושא, מה עמד על הפרק בציבור, ומה ההקשר הרלוונטי. ` +
+                  `אל תוסיף מידע מדויק שאינך בטוח בו.`,
+              },
+            ],
           },
-        }),
+        ],
+        tools: [{ googleSearch: {} }],
+        generationConfig: {
+          maxOutputTokens: 300,
+          thinkingConfig: { thinkingBudget: 0 },
+        },
       },
+      { label: "ask/news", retries: 0, timeoutMs: 3_500 },
     );
     if (!res.ok) return "";
     const data = (await res.json()) as {
@@ -536,8 +526,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
+  /*
+    עשר שאלות בדקה אינן התנהגות אנושית — הקלדה, קריאת תשובה של
+    עשר שניות, וחשיבה על השאלה הבאה. חמש מספיקות בשפע ומקשות על
+    סקריפט שמנסה לרוקן את המכסה.
+  */
   const { isLimited } = rateLimit(req, {
-    limit: 10,
+    limit: BUDGET.perIpPerMinute,
     windowMs: 60_000,
   });
 
@@ -559,20 +554,33 @@ export async function GET(req: NextRequest) {
   const hasPrevContext = prevQ.length > 0 && prevA.length > 0;
 
   // 1. Check cache (only for single-turn — multi-turn context is ephemeral)
-  const cacheKey = `ask:v10:${q}`;
+  /*
+    v11 משתי סיבות: להשליך את התשובות הקטועות שנשמרו לפני התיקון,
+    ולא לערבב תשובות של הדגם הקודם עם החדש. המספר עולה בכל שינוי
+    שמייתר את מה שכבר שמור.
+  */
+  const cacheKey = `ask:v11:${q}`;
   if (!hasPrevContext) {
     const cached = await getCached(cacheKey);
     if (cached) return NextResponse.json(cached);
   }
 
-  const quota = await checkDailyQuota(req);
+  /*
+    שלוש תקרות: חודשית גלובלית, יומית גלובלית, ויומית לכל כתובת.
+    הגלובליות הן ההגנה האמיתית — כתובת IP ניתנת להחלפה, ולכן מגבלה
+    שנשענת רק עליה אינה מגנה על ההוצאה.
+  */
+  const budget = await checkAskBudget(req);
 
-  if (quota.isLimited) {
+  if (!budget.allowed) {
+    const notice = budgetNotice(budget.reason);
     return NextResponse.json(
+      // kind מאפשר לממשק להציג הודעה ולא אזהרה אדומה
+      { error: notice.message, kind: notice.kind },
       {
-        error: "Daily AI usage limit reached. Please try again tomorrow.",
+        status: budget.reason === "unavailable" ? 503 : 429,
+        headers: { "Retry-After": "3600" },
       },
-      { status: 429 },
     );
   }
 
@@ -646,12 +654,27 @@ export async function GET(req: NextRequest) {
       ? searchVotesByVector(embedding, 15, dateFrom, dateTo).catch(() => [])
       : Promise.resolve([]);
 
-    const newsContextPromise =
+    /*
+      ההקשר החדשותי הוא רקע חיצוני — הפרומפט עצמו אומר שהוא אינו חלק
+      ממאגר הכנסת, והתשובה תקפה גם בלעדיו. ובכל זאת כל הבקשה המתינה לו:
+      הוא יושב בתוך ה-Promise.all שחוסם גם את הצגת המקורות וגם את
+      תחילת התשובה, ועם ניסיונות חוזרים הוא יכול היה להחזיק חצי דקה.
+
+      דדליין קשיח: מה שלא הספיק עד DEADLINE פשוט לא נכנס. הקריאה
+      עצמה ממשיכה ברקע ותיזרק, וזה בסדר — היא חסרת תופעות לוואי.
+    */
+    const NEWS_DEADLINE_MS = 3_500;
+    const newsContextPromise: Promise<string> =
       topicKeywords.length > 0
-        ? fetchNewsContext(
-            topicPhrase || topicKeywords[0],
-            detectedMk?.fullName,
-          )
+        ? Promise.race([
+            fetchNewsContext(
+              topicPhrase || topicKeywords[0],
+              detectedMk?.fullName,
+            ).catch(() => ""),
+            new Promise<string>((resolve) =>
+              setTimeout(() => resolve(""), NEWS_DEADLINE_MS),
+            ),
+          ])
         : Promise.resolve("");
 
     const searchKeywords = stemmedKeywords.length > 0 ? stemmedKeywords : [q];
@@ -916,7 +939,17 @@ export async function GET(req: NextRequest) {
           if (suggestions.length > 0)
             send({ type: "suggestions", questions: suggestions });
 
-          if (!hasPrevContext) {
+          /*
+            רק תשובה שנראית שלמה נכנסת לקאש. תשובה קטועה שנשמרת
+            הופכת לקבועה: כל מי ששואל את אותה שאלה מקבל אותה בחזרה
+            בלי קריאה חדשה, ובלי שום סימן שמשהו נכשל. זה מה שקרה
+            לשאלה על דיור, שהחזירה "על פי המקורות ש" ונתקעה שם.
+          */
+          const looksComplete = answer.trim().length >= 80;
+          if (!looksComplete) {
+            console.warn(`ask: תשובה קצרה מדי לקאש (${answer.trim().length} תווים)`);
+          }
+          if (!hasPrevContext && looksComplete) {
             await setCached(cacheKey, {
               answer,
               sources,
@@ -925,11 +958,36 @@ export async function GET(req: NextRequest) {
             });
           }
         } catch (e) {
+          /*
+            ההודעה ״שגיאה בשירות ה-AI: Gemini 503״ אמרה למשתמשת את קוד
+            ה-HTTP ולא מה לעשות איתו. אחרי שהניסיונות החוזרים נגמרו,
+            503 ו-504 עדיין פירושם עומס אצל ספק המודל — כלומר ״נסי שוב״
+            הוא באמת העצה הנכונה, ולא ״משהו אצלנו שבור״.
+          */
+          /*
+            שלושה מצבים שונים, ולמשתמשת חשוב מאוד להבדיל ביניהם:
+            מכסה יומית שנגמרה לא תשתחרר בניסיון חוזר, ולומר לה
+            ״נסי שוב בעוד רגע״ זה לשלוח אותה ללחוץ עד מחר.
+          */
           const msg = e instanceof Error ? e.message : String(e);
-          const userMsg =
-            msg === "RATE_LIMIT"
-              ? "שירות ה-AI עמוס כרגע, נסה שוב בעוד כמה שניות"
-              : `שגיאה בשירות ה-AI: ${msg}`;
+          let userMsg: string;
+          if (e instanceof DailyQuotaError) {
+            userMsg =
+              "מכסת השאלות היומית של שירות ה-AI נוצלה. " +
+              "היא מתאפסת מחר — שאר האתר עובד כרגיל.";
+            console.error(`ask: מכסה יומית (${e.quotaValue ?? "?"} בקשות)`);
+          } else if (msg === "RATE_LIMIT" || msg === "OVERLOADED") {
+            userMsg = "שירות ה-AI עמוס כרגע. נסי שוב בעוד רגע — השאלה נשמרה בתיבה.";
+          } else if (msg.startsWith("TRUNCATED:") || msg === "EMPTY") {
+            // המודל נעצר באמצע. זו לא תקלת רשת ולא עומס — ניסוח אחר עשוי לעבוד.
+            userMsg =
+              "התשובה נקטעה באמצע. נסי לשאול שוב, או לצמצם את השאלה " +
+              "לנושא אחד.";
+            console.error("ask:", msg);
+          } else {
+            userMsg = "לא הצלחנו לייצר תשובה כרגע. אפשר לנסות לנסח את השאלה אחרת.";
+            console.error("ask failed:", msg);
+          }
           send({ type: "error", message: userMsg });
         } finally {
           controller.close();

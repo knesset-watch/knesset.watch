@@ -150,7 +150,7 @@ export default function ProtocolsClient({ committees, aiEnabled }: Props) {
   const highlightSnippet = (snippet: string) =>
     snippet.split(/(<mark>.*?<\/mark>)/g).map((part, i) =>
       part.startsWith('<mark>') ? (
-        <mark key={i} className="bg-yellow-200 rounded px-0.5">{part.replace(/<\/?mark>/g, '')}</mark>
+        <mark key={i} className="bg-accent-lit/40 text-ink rounded px-0.5">{part.replace(/<\/?mark>/g, '')}</mark>
       ) : <span key={i}>{part}</span>
     );
 
@@ -163,12 +163,12 @@ export default function ProtocolsClient({ committees, aiEnabled }: Props) {
   }, new Map());
 
   return (
-    <div className="min-h-screen bg-white" dir="rtl">
+    <div className="min-h-screen bg-paper" dir="rtl">
       <div className="max-w-4xl mx-auto px-6 py-8">
-        <nav className="flex items-center gap-1 text-sm text-mute mb-6">
-          <Link href="/" className="font-medium hover:text-black transition-colors">ראשי</Link>
+        <nav className="flex items-center gap-1 text-ui text-mute mb-6">
+          <Link href="/" className="font-medium hover:text-ink transition-colors">ראשי</Link>
           <span className="mx-1">›</span>
-          <span className="text-black font-medium">פרוטוקולים</span>
+          <span className="text-ink font-medium">פרוטוקולים</span>
         </nav>
 
         <h1 className="text-3xl font-medium mb-6">פרוטוקולים</h1>
@@ -184,13 +184,13 @@ export default function ProtocolsClient({ committees, aiEnabled }: Props) {
               onChange={e => setAskQuery(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') handleAsk(); }}
               placeholder="מה אמרו חברי הכנסת על...?"
-              className="flex-1 text-sm px-4 py-3 rounded-2xl border border-black/10 bg-gray-50 focus:border-black/30"
+              className="flex-1 text-ui px-4 py-3 rounded-card border border-line bg-surface focus:border-mute"
               dir="rtl"
             />
             <button
               onClick={handleAsk}
               disabled={askLoading || !askQuery.trim()}
-              className="text-sm font-medium px-5 py-3 rounded-2xl bg-black text-white disabled:opacity-30 hover:bg-gray-800 transition-colors shrink-0"
+              className="text-ui font-medium px-5 py-3 rounded-card bg-navy-deep text-white disabled:opacity-30 hover:bg-navy transition-colors shrink-0"
             >
               {askLoading ? '...' : 'שאל'}
             </button>
@@ -198,10 +198,10 @@ export default function ProtocolsClient({ committees, aiEnabled }: Props) {
 
           {askError && (
             <div className="mt-3 flex items-center gap-3">
-              <p className="text-xs text-red-600 font-bold flex-1">{askError}</p>
+              <p className="text-meta text-fail font-bold flex-1">{askError}</p>
               <button
                 onClick={handleAsk}
-                className="text-xs font-medium px-3 py-1.5 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 transition-colors shrink-0"
+                className="text-meta font-medium px-3 py-1.5 rounded-card border border-fail/30 text-fail hover:bg-fail-wash transition-colors shrink-0"
               >
                 נסה שוב
               </button>
@@ -209,18 +209,18 @@ export default function ProtocolsClient({ committees, aiEnabled }: Props) {
           )}
 
           {askAnswer !== null && (
-            <div ref={askAnswerRef} className="mt-4 rounded-2xl border border-black/8 overflow-hidden">
+            <div ref={askAnswerRef} className="mt-4 rounded-card border border-line overflow-hidden">
               <div className="px-5 py-4">
                 <p className="text-meta font-medium text-mute mb-3">תשובה</p>
-                <p className="text-sm leading-relaxed whitespace-pre-wrap text-ink" dir="rtl">
+                <p className="text-ui leading-relaxed whitespace-pre-wrap text-ink" dir="rtl">
                   {askAnswer}
                 </p>
               </div>
               {askSources.length > 0 && (
-                <div className="border-t border-black/5">
+                <div className="border-t border-line-soft">
                   <button
                     onClick={() => setAskSourcesOpen(o => !o)}
-                    className="w-full flex items-center justify-between px-5 py-3 text-xs font-medium text-mute hover:bg-gray-50 transition-colors"
+                    className="w-full flex items-center justify-between px-5 py-3 text-meta font-medium text-mute hover:bg-surface-2 transition-colors"
                   >
                     <span>מקורות ({askSources.length} ישיבות)</span>
                     <span>{askSourcesOpen ? '▲' : '▼'}</span>
@@ -228,7 +228,7 @@ export default function ProtocolsClient({ committees, aiEnabled }: Props) {
                   {askSourcesOpen && (
                     <div className="px-5 pb-4 flex flex-col gap-1.5">
                       {askSources.map(s => (
-                        <div key={s.sessionId} className="text-xs text-ink-2 flex items-center gap-2">
+                        <div key={s.sessionId} className="text-meta text-ink-2 flex items-center gap-2">
                           <div className="flex-1 min-w-0">
                             <span className="font-bold">{s.committeeName ?? 'ועדה'}</span>
                             <span className="text-mute mx-1">|</span>
@@ -265,7 +265,7 @@ export default function ProtocolsClient({ committees, aiEnabled }: Props) {
           value={query}
           onChange={e => handleSearch(e.target.value)}
           placeholder="חיפוש בפרוטוקולי ועדות..."
-          className="w-full text-sm px-4 py-3 rounded-2xl border border-black/10 bg-gray-50 focus:border-black/30 mb-4"
+          className="w-full text-ui px-4 py-3 rounded-card border border-line bg-surface focus:border-mute mb-4"
           dir="rtl"
         />
 
@@ -274,8 +274,8 @@ export default function ProtocolsClient({ committees, aiEnabled }: Props) {
           <div className="flex flex-wrap gap-1.5 mb-6">
             <button
               onClick={() => handleCommittee(null)}
-              className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
-                selectedCommittee === null ? 'bg-black text-white' : 'bg-gray-100 text-ink-2 hover:bg-gray-200'
+              className={`text-meta font-medium px-3 py-1.5 rounded-full transition-colors ${
+                selectedCommittee === null ? 'bg-navy-deep text-white' : 'bg-surface text-ink-2 hover:bg-line'
               }`}
             >
               כל הוועדות
@@ -284,8 +284,8 @@ export default function ProtocolsClient({ committees, aiEnabled }: Props) {
               <button
                 key={c.name}
                 onClick={() => handleCommittee(c.name)}
-                className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors flex items-center gap-1.5 ${
-                  selectedCommittee === c.name ? 'bg-black text-white' : 'bg-gray-100 text-ink-2 hover:bg-gray-200'
+                className={`text-meta font-medium px-3 py-1.5 rounded-full transition-colors flex items-center gap-1.5 ${
+                  selectedCommittee === c.name ? 'bg-navy-deep text-white' : 'bg-surface text-ink-2 hover:bg-line'
                 }`}
               >
                 {c.name}
@@ -301,12 +301,12 @@ export default function ProtocolsClient({ committees, aiEnabled }: Props) {
 
         {/* Results count */}
         {total > 0 && (
-          <p className="text-xs text-mute font-medium mb-4">
+          <p className="text-meta text-mute font-medium mb-4">
             {total.toLocaleString('he-IL')} תוצאות
           </p>
         )}
 
-        {loading && <p className="text-sm text-mute">טוען...</p>}
+        {loading && <p className="text-ui text-mute">טוען...</p>}
 
         {/* Results grouped by session */}
         <div className="flex flex-col gap-3">
@@ -317,16 +317,16 @@ export default function ProtocolsClient({ committees, aiEnabled }: Props) {
             const protocol = expandedSessions.get(sessionId);
 
             return (
-              <div key={sessionId} className="rounded-2xl border border-black/8 overflow-hidden">
+              <div key={sessionId} className="rounded-card border border-line overflow-hidden">
                 {/* Session header */}
                 <div
-                  className="flex items-start justify-between gap-3 px-5 py-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                  className="flex items-start justify-between gap-3 px-5 py-4 cursor-pointer hover:bg-surface-2 transition-colors"
                   onClick={() => expandSession(sessionId)}
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-medium text-mute">{formatDate(first.date)}</span>
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-ink-2">
+                      <span className="text-meta font-medium text-mute">{formatDate(first.date)}</span>
+                      <span className="text-meta font-medium px-2 py-0.5 rounded-full bg-line text-ink-2">
                         {first.committeeName}
                       </span>
                       <Link
@@ -337,26 +337,26 @@ export default function ProtocolsClient({ committees, aiEnabled }: Props) {
                         פתח ישיבה ←
                       </Link>
                     </div>
-                    {first.title && <p className="text-sm font-bold text-ink mb-1">{first.title}</p>}
+                    {first.title && <p className="text-ui font-bold text-ink mb-1">{first.title}</p>}
                     {/* Matching excerpts */}
                     <div className="flex flex-col gap-1.5">
                       {sessionResults.map(r => (
-                        <div key={r.chunkId} className="text-xs text-ink-2 leading-relaxed">
+                        <div key={r.chunkId} className="text-meta text-ink-2 leading-relaxed">
                           {r.speaker && <span className="font-bold text-ink-2">{r.speaker}: </span>}
                           {highlightSnippet(r.snippet)}
                         </div>
                       ))}
                     </div>
                   </div>
-                  <span className="text-mute text-sm shrink-0 mt-0.5">
+                  <span className="text-mute text-ui shrink-0 mt-0.5">
                     {isLoadingSession ? '...' : isExpanded ? '▲' : '▼'}
                   </span>
                 </div>
 
                 {/* Full protocol inline */}
                 {isExpanded && protocol && (
-                  <div className="border-t border-black/5 px-5 py-4 bg-gray-50 max-h-[60vh] overflow-y-auto">
-                    <div className="text-xs text-ink-2 leading-relaxed whitespace-pre-wrap" dir="rtl">
+                  <div className="border-t border-line-soft px-5 py-4 bg-surface max-h-[60vh] overflow-y-auto">
+                    <div className="text-meta text-ink-2 leading-relaxed whitespace-pre-wrap" dir="rtl">
                       {protocol.chunks.map((chunk, i) => (
                         <div key={i} className="mb-2">
                           {chunk.speaker && (
@@ -379,15 +379,15 @@ export default function ProtocolsClient({ committees, aiEnabled }: Props) {
             <button
               onClick={() => search(query, selectedCommittee, page - 1)}
               disabled={page === 1}
-              className="text-xs font-medium px-4 py-2 rounded-full bg-gray-100 disabled:opacity-30 hover:bg-gray-200 transition-colors"
+              className="text-meta font-medium px-4 py-2 rounded-full bg-line disabled:opacity-30 hover:bg-line transition-colors"
             >
               הקודם
             </button>
-            <span className="text-xs text-mute">עמוד {page} מתוך {Math.ceil(total / 20)}</span>
+            <span className="text-meta text-mute">עמוד {page} מתוך {Math.ceil(total / 20)}</span>
             <button
               onClick={() => search(query, selectedCommittee, page + 1)}
               disabled={page >= Math.ceil(total / 20)}
-              className="text-xs font-medium px-4 py-2 rounded-full bg-gray-100 disabled:opacity-30 hover:bg-gray-200 transition-colors"
+              className="text-meta font-medium px-4 py-2 rounded-full bg-line disabled:opacity-30 hover:bg-line transition-colors"
             >
               הבא
             </button>

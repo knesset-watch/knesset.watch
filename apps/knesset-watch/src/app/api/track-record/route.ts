@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { validateApiAuth } from '@/lib/ui/auth-utils';
 import { dbAvailable, hasPolicyAnalysis, dbPath } from "@/lib/knesset-db";
 import Database from 'better-sqlite3';
-import path from 'path';
 
 // הנתיב נפתר מרכזית; cwd של פונקציה סרברלס אינו תיקיית האפליקציה
 const DB_PATH = dbPath() ?? '';

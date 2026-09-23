@@ -11,7 +11,7 @@ export default async function AgendaMatchPage() {
 
   // useSearchParams קורא את ?domains= שמגיע ממסך הבית, ולכן חייב גבול Suspense
   return (
-    <Suspense fallback={<div className="min-h-screen bg-white" dir="rtl" />}>
+    <Suspense fallback={<div className="min-h-screen bg-paper" dir="rtl" />}>
       <AgendaMatchClient />
     </Suspense>
   );

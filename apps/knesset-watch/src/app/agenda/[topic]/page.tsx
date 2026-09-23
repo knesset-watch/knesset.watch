@@ -120,7 +120,7 @@ export default async function AgendaTopicPage({ params }: Props) {
                         className={`shrink-0 rounded-control px-2 py-0.5 text-meta font-medium ${
                           b.isPassed
                             ? 'bg-pass-wash text-pass'
-                            : 'bg-surface-2 text-mute'
+                            : 'bg-surface text-mute'
                         }`}
                       >
                         {b.isPassed ? 'עבר' : 'בהליך'}

@@ -125,9 +125,9 @@ export default function TrackRecordPage() {
           <span className="sr-only" role="status">טוען נתונים</span>
           <div className="animate-pulse space-y-6" aria-hidden="true">
             <div className="grid gap-3 sm:grid-cols-3">
-              {[0, 1, 2].map(i => <div key={i} className="h-24 rounded-card bg-surface-2" />)}
+              {[0, 1, 2].map(i => <div key={i} className="h-24 rounded-card bg-surface" />)}
             </div>
-            <div className="h-64 rounded-card bg-surface-2" />
+            <div className="h-64 rounded-card bg-surface" />
           </div>
         </>
       )}
@@ -202,7 +202,7 @@ export default function TrackRecordPage() {
                                 ? 'bg-fail-wash text-fail'
                                 : stage.tone === 'advanced'
                                   ? 'bg-accent-wash text-accent-ink'
-                                  : 'bg-surface-2 text-mute'
+                                  : 'bg-surface text-mute'
                           }`}
                         >
                           {stage.label}

@@ -25,16 +25,16 @@ interface AskResult {
 function SessionCard({ s }: { s: SessionSource }) {
   const date = new Date(s.date).toLocaleDateString('he-IL', { year: 'numeric', month: 'short', day: 'numeric' });
   return (
-    <Link href={`/session/${s.sessionId}`} className="flex items-start justify-between gap-3 border border-gray-200 rounded-lg px-4 py-3 hover:border-accent hover:bg-accent-wash/40 transition-colors group">
+    <Link href={`/session/${s.sessionId}`} className="flex items-start justify-between gap-3 border border-line rounded-control px-4 py-3 hover:border-accent hover:bg-accent-wash/40 transition-colors group">
       <div className="min-w-0">
-        <p className="text-sm font-bold text-ink truncate">{s.committeeName || 'ועדה'}</p>
+        <p className="text-ui font-bold text-ink truncate">{s.committeeName || 'ועדה'}</p>
         {s.snippet
-          ? <p className="text-xs text-ink-2 mt-1 line-clamp-2 leading-relaxed">{s.snippet}</p>
-          : s.title && <p className="text-xs text-mute mt-0.5 truncate">{s.title}</p>
+          ? <p className="text-meta text-ink-2 mt-1 line-clamp-2 leading-relaxed">{s.snippet}</p>
+          : s.title && <p className="text-meta text-mute mt-0.5 truncate">{s.title}</p>
         }
-        <p className="text-xs text-mute mt-1">{date}</p>
+        <p className="text-meta text-mute mt-1">{date}</p>
       </div>
-      <span className="text-mute group-hover:text-accent transition-colors shrink-0 text-lg mt-0.5">←</span>
+      <span className="text-mute group-hover:text-accent transition-colors shrink-0 text-section mt-0.5">←</span>
     </Link>
   );
 }
@@ -42,12 +42,12 @@ function SessionCard({ s }: { s: SessionSource }) {
 function VoteCard({ v }: { v: VoteSource }) {
   const date = v.date.slice(0, 10);
   return (
-    <Link href={`/vote/${v.voteId}`} className="block border border-gray-200 rounded-lg px-4 py-3 hover:border-accent hover:bg-accent-wash/40 transition-colors">
+    <Link href={`/vote/${v.voteId}`} className="block border border-line rounded-control px-4 py-3 hover:border-accent hover:bg-accent-wash/40 transition-colors">
       <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-medium text-ink line-clamp-2 min-w-0">{v.title}</p>
+        <p className="text-ui font-medium text-ink line-clamp-2 min-w-0">{v.title}</p>
         <div className="flex flex-col items-end gap-1 shrink-0">
-          <span className="text-xs text-mute">{date}</span>
-          <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${v.isPassed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+          <span className="text-meta text-mute">{date}</span>
+          <span className={`text-meta font-medium px-1.5 py-0.5 rounded ${v.isPassed ? 'bg-pass-wash text-pass' : 'bg-fail-wash text-fail'}`}>
             {v.isPassed ? 'עבר' : 'לא עבר'}
           </span>
         </div>
@@ -58,14 +58,14 @@ function VoteCard({ v }: { v: VoteSource }) {
 
 function BillCard({ b }: { b: BillSource }) {
   return (
-    <Link href={`/bill/${b.billId}`} className="block border border-gray-200 rounded-lg px-4 py-3 hover:border-accent hover:bg-accent-wash/40 transition-colors">
+    <Link href={`/bill/${b.billId}`} className="block border border-line rounded-control px-4 py-3 hover:border-accent hover:bg-accent-wash/40 transition-colors">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          {b.committeeName && <p className="text-xs text-mute mb-0.5">{b.committeeName}</p>}
-          <p className="text-sm font-medium text-ink line-clamp-2">{b.title}</p>
+          {b.committeeName && <p className="text-meta text-mute mb-0.5">{b.committeeName}</p>}
+          <p className="text-ui font-medium text-ink line-clamp-2">{b.title}</p>
         </div>
         {b.isPassed && (
-          <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-green-100 text-green-700 shrink-0">עבר</span>
+          <span className="text-meta font-medium px-1.5 py-0.5 rounded bg-pass-wash text-pass shrink-0">עבר</span>
         )}
       </div>
     </Link>
@@ -75,13 +75,13 @@ function BillCard({ b }: { b: BillSource }) {
 function QueryCard({ q }: { q: QuerySource }) {
   const date = q.submitDate.slice(0, 10);
   return (
-    <div className="border border-gray-200 rounded-lg px-4 py-3">
+    <div className="border border-line rounded-control px-4 py-3">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-xs text-mute mb-0.5">שאילתה — {q.mkName}</p>
-          <p className="text-sm font-medium text-ink line-clamp-2">{q.title}</p>
+          <p className="text-meta text-mute mb-0.5">שאילתה — {q.mkName}</p>
+          <p className="text-ui font-medium text-ink line-clamp-2">{q.title}</p>
         </div>
-        <span className="text-xs text-mute whitespace-nowrap">{date}</span>
+        <span className="text-meta text-mute whitespace-nowrap">{date}</span>
       </div>
     </div>
   );
@@ -134,7 +134,7 @@ function AnswerText({ text, sources }: { text: string; sources: Source[] }) {
   }
   if (last < text.length) parts.push(<span key={last}>{text.slice(last)}</span>);
 
-  return <p className="text-ink text-sm leading-relaxed whitespace-pre-wrap" dir="rtl">{parts}</p>;
+  return <p className="text-ink text-ui leading-relaxed whitespace-pre-wrap" dir="rtl">{parts}</p>;
 }
 
 const SUGGESTED_QUESTIONS = [
@@ -153,6 +153,12 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
   const [streamingAnswer, setStreamingAnswer] = useState('');
   const [isStreaming, setIsStreaming]       = useState(false);
   const [error, setError]                   = useState<string | null>(null);
+  /*
+    מכסה שנגמרה אינה תקלה: שום דבר לא נשבר ואין מה לתקן. היא מוצגת
+    כהודעה ולא כאזהרה אדומה, כי אדום אומר ״משהו התקלקל״ ושולח מבקר
+    להסיק שהאתר לא עובד — בזמן שכל שאר האתר פתוח לגמרי.
+  */
+  const [quotaNotice, setQuotaNotice]       = useState<string | null>(null);
   const [loading, setLoading]               = useState(false);
   const [suggestions, setSuggestions]       = useState<string[]>([]);
   // Multi-turn: last completed Q+answer for conversation context
@@ -164,6 +170,7 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
     if (submittedQ.length < 2) return;
     setLoading(true);
     setError(null);
+    setQuotaNotice(null);
     setResult(null);
     setStreamingAnswer('');
     setIsStreaming(false);
@@ -184,8 +191,12 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
         const ct = res.headers.get('content-type') ?? '';
 
         if (ct.includes('application/json')) {
-          const d = await res.json() as AskResult & { error?: string };
-          if (d.error) { setError(d.error); return; }
+          const d = await res.json() as AskResult & { error?: string; kind?: string };
+          if (d.error) {
+            if (d.kind === 'quota') setQuotaNotice(d.error);
+            else setError(d.error);
+            return;
+          }
           setResult(d);
           return;
         }
@@ -262,17 +273,17 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
   const showResult = result !== null;
 
   return (
-    <div className="min-h-screen bg-white" dir="rtl">
+    <div className="min-h-screen bg-paper" dir="rtl">
       <div className="max-w-3xl mx-auto px-6 py-8">
-        <nav className="flex items-center gap-1 text-sm text-mute mb-6">
+        <nav className="flex items-center gap-1 text-ui text-mute mb-6">
           <Link href="/" className="hover:text-ink-2">ראשי</Link>
           <span>/</span>
           <span className="text-ink-2">שאל את הכנסת</span>
         </nav>
 
-        <h1 className="text-2xl font-bold text-ink mb-2">שאל את הכנסת</h1>
-        <p className="text-sm text-ink-2 mb-3">חפש אנליטיקה ותשובות על פעילות הכנסת — הצבעות, חוקים, דיונים וועדות</p>
-        <p className="text-xs text-mute mb-6">שאל בעברית על כל נושא הקשור לפעילות הכנסת ה-25. מערכת AI תחפש בפרוטוקולים, הצבעות, חוקים ושאילתות.</p>
+        <h1 className="text-section font-bold text-ink mb-2">שאל את הכנסת</h1>
+        <p className="text-ui text-ink-2 mb-3">חפש אנליטיקה ותשובות על פעילות הכנסת — הצבעות, חוקים, דיונים וועדות</p>
+        <p className="text-meta text-mute mb-6">שאל בעברית על כל נושא הקשור לפעילות הכנסת ה-25. מערכת AI תחפש בפרוטוקולים, הצבעות, חוקים ושאילתות.</p>
 
         <form onSubmit={handleSubmit} className="flex gap-2 mb-8">
           <input
@@ -281,13 +292,13 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="לדוגמה: מה הצביע בן גביר על חוקי הביטחון?"
-            className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="flex-1 border border-line rounded-control px-4 py-2.5 text-ui focus:ring-2 focus:ring-accent focus:border-transparent"
             autoFocus
           />
           <button
             type="submit"
             disabled={loading || query.trim().length < 2}
-            className="px-5 py-2.5 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-5 py-2.5 bg-accent text-white text-ui font-medium rounded-control hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title={query.trim().length < 2 ? "הקלד לפחות 2 תווים כדי להתחיל חיפוש" : ""}
           >
             {loading ? 'מחפש…' : 'שאל'}
@@ -295,21 +306,21 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
         </form>
 
         {query.trim().length < 2 && !loading && (
-          <div className="text-xs text-mute mb-6 p-2 bg-accent-wash rounded border border-line">
+          <div className="text-meta text-mute mb-6 p-2 bg-accent-wash rounded border border-line">
             💡 <span className="font-medium">טיפ:</span> הקלדו את השאלה שלכם כדי להתחיל חיפוש
           </div>
         )}
 
         {!loading && !result && !error && submittedQ.length < 2 && (
-          <div className="mt-4 p-4 bg-gradient-to-br from-blue-50 to-transparent rounded-lg border border-line">
-            <p className="text-xs font-medium text-mute mb-3">📌 דוגמאות שתוכלו לנסות</p>
-            <p className="text-xs text-ink-2 mb-4">לחצו על אחת מהשאלות כדי לראות תשובה:</p>
+          <div className="mt-4 p-4 bg-gradient-to-br from-accent-wash to-transparent rounded-control border border-line">
+            <p className="text-meta font-medium text-mute mb-3">📌 דוגמאות שתוכלו לנסות</p>
+            <p className="text-meta text-ink-2 mb-4">לחצו על אחת מהשאלות כדי לראות תשובה:</p>
             <div className="flex flex-col gap-2">
               {SUGGESTED_QUESTIONS.map(({ label, q }) => (
                 <button
                   key={q}
                   onClick={() => submitQuery(q)}
-                  className="flex items-start gap-2 text-sm px-3 py-2 rounded-lg border border-gray-200 hover:border-accent hover:bg-white transition-colors text-ink-2 hover:text-accent text-right"
+                  className="flex items-start gap-2 text-ui px-3 py-2 rounded-control border border-line hover:border-accent hover:bg-surface transition-colors text-ink-2 hover:text-accent text-right"
                 >
                   <span className="text-meta font-medium text-accent shrink-0 mt-0.5">{label}</span>
                   <span className="flex-1">{q}</span>
@@ -320,7 +331,7 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
         )}
 
         {loading && (
-          <div className="flex items-center gap-3 text-mute text-sm py-8 justify-center">
+          <div className="flex items-center gap-3 text-mute text-ui py-8 justify-center">
             <svg className="animate-spin h-4 w-4 text-accent" viewBox="0 0 24 24" fill="none">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
@@ -329,15 +340,30 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
           </div>
         )}
 
+        {quotaNotice && (
+          <div className="rounded-card border border-accent-lit bg-accent-wash px-5 py-4">
+            <p className="text-ui font-medium text-ink mb-1">אין שאלות זמינות כרגע</p>
+            <p className="text-ui text-ink-2">{quotaNotice}</p>
+            <div className="flex flex-wrap gap-3 mt-3">
+              <Link href="/agenda-keywords" className="text-ui font-medium text-accent underline">
+                מי עובד בשבילך ←
+              </Link>
+              <Link href="/protocols" className="text-ui font-medium text-accent underline">
+                חיפוש בפרוטוקולים ←
+              </Link>
+            </div>
+          </div>
+        )}
+
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">{error}</div>
+          <div className="bg-fail-wash border border-fail/30 rounded-control px-4 py-3 text-ui text-fail">{error}</div>
         )}
 
         {showResult && (
           <div className="space-y-8">
             <div className="flex flex-wrap gap-2">
               {result!.detectedMk && (
-                <p className="text-xs text-accent bg-accent-wash rounded-md px-3 py-2 inline-flex items-center gap-1">
+                <p className="text-meta text-accent bg-accent-wash rounded-control px-3 py-2 inline-flex items-center gap-1">
                   חיפוש ממוקד עבור{' '}
                   <EntityTooltip href={`/mk/${result!.detectedMk.mkId}`} type="mk" id={result!.detectedMk.mkId} className="font-semibold underline">
                     {result!.detectedMk.fullName}
@@ -345,29 +371,29 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
                 </p>
               )}
               {result!.dateLabel && (
-                <p className="text-xs text-amber-700 bg-amber-50 rounded-md px-3 py-2 inline-block">
+                <p className="text-meta text-warn bg-warn-wash rounded-control px-3 py-2 inline-block">
                   טווח זמן: {result!.dateLabel}
                 </p>
               )}
               {result!.hasPrevContext && (
-                <p className="text-xs text-purple-700 bg-purple-50 rounded-md px-3 py-2 inline-flex items-center gap-1">
+                <p className="text-meta text-accent-ink bg-accent-wash rounded-control px-3 py-2 inline-flex items-center gap-1">
                   <span>↩</span> בהמשך לשאלה הקודמת
                 </p>
               )}
             </div>
 
             {/* Answer — streams in while sources are already visible */}
-            <div className="bg-gray-50 border border-gray-200 rounded-xl px-5 py-4">
-              <p className="text-sm font-semibold text-mute mb-2">תשובה</p>
+            <div className="bg-surface border border-line rounded-card px-5 py-4">
+              <p className="text-ui font-semibold text-mute mb-2">תשובה</p>
               {isStreaming ? (
-                <p className="text-ink text-sm leading-relaxed whitespace-pre-wrap" dir="rtl">
+                <p className="text-ink text-ui leading-relaxed whitespace-pre-wrap" dir="rtl">
                   {streamingAnswer}
                   <span className="inline-block w-0.5 h-[1em] bg-accent ml-0.5 animate-pulse align-text-bottom" />
                 </p>
               ) : result!.answer ? (
                 <AnswerText text={result!.answer} sources={result!.sources} />
               ) : (
-                <div className="flex items-center gap-2 text-mute text-sm py-2">
+                <div className="flex items-center gap-2 text-mute text-ui py-2">
                   <svg className="animate-spin h-4 w-4 text-accent" viewBox="0 0 24 24" fill="none">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
@@ -379,7 +405,7 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
 
             {hasAnySources && (
               <div>
-                <p className="text-sm font-semibold text-mute mb-3">מקורות</p>
+                <p className="text-ui font-semibold text-mute mb-3">מקורות</p>
                 <div className="space-y-5">
                   {SOURCE_GROUPS.map(({ type, label }) => {
                     const items =
@@ -390,7 +416,7 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
                     if (items.length === 0) return null;
                     return (
                       <div key={type}>
-                        <p className="text-xs font-medium text-mute mb-2">{label}</p>
+                        <p className="text-meta font-medium text-mute mb-2">{label}</p>
                         <div className="space-y-2">
                           {type === 'session' && sessions.map(s => <SessionCard key={s.sessionId} s={s} />)}
                           {type === 'vote'    && votes.map(v    => <VoteCard    key={v.voteId}    v={v} />)}
@@ -406,13 +432,13 @@ export default function AskClient({ initialQ }: { initialQ: string }) {
 
             {suggestions.length > 0 && !isStreaming && (
               <div>
-                <p className="text-xs font-medium text-mute mb-2">שאלות המשך</p>
+                <p className="text-meta font-medium text-mute mb-2">שאלות המשך</p>
                 <div className="flex flex-col gap-2">
                   {suggestions.map(sq => (
                     <button
                       key={sq}
                       onClick={() => submitQuery(sq)}
-                      className="text-sm text-right px-4 py-2.5 rounded-lg border border-gray-200 hover:border-accent hover:bg-accent-wash transition-colors text-ink-2 hover:text-accent w-full"
+                      className="text-ui text-right px-4 py-2.5 rounded-control border border-line hover:border-accent hover:bg-accent-wash transition-colors text-ink-2 hover:text-accent w-full"
                     >
                       {sq}
                     </button>

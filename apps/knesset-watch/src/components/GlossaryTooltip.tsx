@@ -46,13 +46,13 @@ export default function GlossaryTooltip({ term, children, className = '' }: Glos
       {showTooltip && (
         <div
           ref={tooltipRef}
-          className={`absolute z-50 bg-gray-900 text-white text-sm rounded-lg px-3 py-2 shadow-lg border border-gray-700 whitespace-normal max-w-xs ${
+          className={`absolute z-50 bg-navy-deep text-white text-ui rounded-control px-3 py-2 shadow-lg border border-navy whitespace-normal max-w-xs ${
             tooltipPos === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'
           } left-1/2 transform -translate-x-1/2`}
         >
           <div className="font-bold mb-1">{entry.label}</div>
-          <div className="text-xs text-mute">{entry.definition}</div>
-          <div className="absolute left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-gray-900"
+          <div className="text-meta text-mute">{entry.definition}</div>
+          <div className="absolute left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-navy-deep"
             style={{
               [tooltipPos === 'top' ? 'top' : 'bottom']: '-4px',
               borderTop: tooltipPos === 'bottom' ? 'none' : '4px solid rgb(17, 24, 39)',

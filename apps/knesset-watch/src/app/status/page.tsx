@@ -15,7 +15,7 @@ interface StatusData {
 function Bar({ a, b }: { a: number; b: number }) {
   const pct = b ? Math.min((a / b) * 100, 100) : 0;
   return (
-    <div className="h-1.5 bg-gray-200 rounded mt-1">
+    <div className="h-1.5 bg-line rounded mt-1">
       <div className="h-1.5 bg-accent rounded" style={{ width: `${pct}%` }} />
     </div>
   );
@@ -25,7 +25,7 @@ function Row({ label, a, b, noBar }: { label: string; a: number; b: number; noBa
   const pct = b ? ((a / b) * 100).toFixed(1) : '—';
   return (
     <div className="mb-3">
-      <div className="flex justify-between text-sm">
+      <div className="flex justify-between text-ui">
         <span className="text-ink-2">{label}</span>
         <span className="tabular-nums">{a.toLocaleString()} / {b.toLocaleString()} ({pct}%)</span>
       </div>
@@ -60,14 +60,14 @@ export default function StatusPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (error) return <div className="p-8 text-red-600">{error}</div>;
+  if (error) return <div className="p-8 text-fail">{error}</div>;
   if (!data) return <div className="p-8 text-mute">Loading...</div>;
 
   const { plenary, committee } = data;
 
   return (
-    <div className="p-8 max-w-xl mx-auto font-mono text-sm" dir="ltr">
-      <h1 className="text-xl font-bold mb-6">Job Status</h1>
+    <div className="p-8 max-w-xl mx-auto font-mono text-ui" dir="ltr">
+      <h1 className="text-section font-bold mb-6">Job Status</h1>
 
       <section className="mb-6">
         <h2 className="font-semibold mb-3 text-ink">Plenary Sessions</h2>
@@ -87,7 +87,7 @@ export default function StatusPage() {
         <Row label="Embedded" a={committee.turns.embedded} b={committee.turns.total} />
       </section>
 
-      <p className="text-mute mt-8 text-xs">
+      <p className="text-mute mt-8 text-meta">
         Last updated: {lastUpdated} · auto-refreshes every 30s
       </p>
     </div>

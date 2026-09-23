@@ -48,7 +48,6 @@ interface AgendaScore {
 
 interface Row {
   committeeAttendanceCount: number;
-
   topCommittees: Array<{
     committeeName: string;
     sessionCount: number;
@@ -294,28 +293,28 @@ export default function AgendaMatchClient() {
   const thinAgendas = coverage.filter((c) => c.belowThreshold);
 
   return (
-    <div className="min-h-screen bg-white" dir="rtl">
+    <div className="min-h-screen bg-paper" dir="rtl">
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <button
             onClick={handleBack}
-            className="text-sm font-medium px-3 py-1.5 rounded border border-black/10 hover:bg-gray-50 transition-colors"
+            className="text-ui font-medium px-3 py-1.5 rounded border border-line hover:bg-surface-2 transition-colors"
           >
             → חזרה
           </button>
           <div>
-            <h1 className="text-2xl font-medium leading-tight">
+            <h1 className="text-section font-medium leading-tight">
               מי עובד בשביל מה שחשוב לך
             </h1>
-            <p className="text-xs text-mute mt-0.5 font-medium">
-              דירוג חברי הכנסת לפי מידת הפעילות שלהם בנושאים שתבחרי — כנסת 25
+            <p className="text-meta text-mute mt-0.5 font-medium">
+              דירוג חברי הכנסת לפי מידת הפעילות שלהם בנושאים שנבחרו — כנסת 25
             </p>
           </div>
         </div>
 
         {/* Progress */}
-        <ol className="flex items-center gap-2 mb-8 text-xs font-medium">
+        <ol className="flex items-center gap-2 mb-8 text-meta font-medium">
           {(["domains", "issues", "results"] as Step[]).map((s, i) => {
             const labels = {
               domains: "תחומים",
@@ -330,10 +329,10 @@ export default function AgendaMatchClient() {
                 <span
                   className={`px-3 py-1 rounded-full border ${
                     active
-                      ? "bg-black text-white border-black"
+                      ? "bg-navy-deep text-white border-ink"
                       : done
-                        ? "bg-gray-100 text-ink-2 border-black/10"
-                        : "bg-white text-mute border-black/10"
+                        ? "bg-surface text-ink-2 border-line"
+                        : "bg-surface text-mute border-line"
                   }`}
                 >
                   {i + 1}. {labels[s]}
@@ -349,8 +348,10 @@ export default function AgendaMatchClient() {
             כדי שההיררכיה תחום ← אג'נדה תיקרא מיד. */}
         {step === "domains" && (
           <div>
-            <h2 className="text-lg font-medium mb-1">בחרי עד שלושה תחומים</h2>
-            <p className="text-sm text-mute mb-5 font-medium">
+            <h2 className="text-section font-medium mb-1">
+              אפשר לבחור עד שלושה תחומים
+            </h2>
+            <p className="text-ui text-mute mb-5 font-medium">
               נבחרו {domains.length} מתוך {DOMAIN_PICKS}
             </p>
 
@@ -367,28 +368,28 @@ export default function AgendaMatchClient() {
                     key={d.id}
                     onClick={() => toggleDomain(d.id)}
                     disabled={disabled}
-                    className={`text-right rounded-xl border-2 p-4 transition-colors ${
+                    className={`text-right rounded-card border-2 p-4 transition-colors ${
                       selected
                         ? "border-accent bg-accent-wash"
                         : disabled
-                          ? "border-black/8 opacity-40 cursor-not-allowed"
-                          : "border-black/8 bg-white hover:border-accent hover:bg-accent-wash/40"
+                          ? "border-line opacity-40 cursor-not-allowed"
+                          : "border-line bg-surface hover:border-accent hover:bg-accent-wash/40"
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <h3
-                        className={`text-base font-medium leading-snug ${selected ? "text-accent-ink" : ""}`}
+                        className={`text-body font-medium leading-snug ${selected ? "text-accent-ink" : ""}`}
                       >
                         {d.label}
                       </h3>
                       {selected && (
-                        <span className="text-sm font-medium text-accent">
+                        <span className="text-ui font-medium text-accent">
                           ✓
                         </span>
                       )}
                     </div>
                     <p
-                      className={`text-xs mt-1 font-medium ${selected ? "text-accent" : "text-mute"}`}
+                      className={`text-meta mt-1 font-medium ${selected ? "text-accent" : "text-mute"}`}
                     >
                       {count > 0 ? `${count} אג'נדות` : "אין אג'נדות מוגדרות"}
                     </p>
@@ -400,7 +401,7 @@ export default function AgendaMatchClient() {
             <button
               onClick={() => setStep("issues")}
               disabled={domains.length === 0}
-              className="mt-6 px-5 py-2.5 rounded-lg bg-black text-white font-medium text-sm disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+              className="mt-6 px-5 py-2.5 rounded-control bg-navy-deep text-white font-medium text-ui disabled:opacity-30 disabled:cursor-not-allowed hover:bg-navy transition-colors"
             >
               המשך לבחירת עמדות
             </button>
@@ -411,8 +412,10 @@ export default function AgendaMatchClient() {
             כותרת התחום בטורקיז, כרטיסי האג'נדה באינדיגו. */}
         {step === "issues" && (
           <div>
-            <h2 className="text-lg font-medium mb-1">מה העמדה שלך בכל נושא?</h2>
-            <p className="text-sm text-mute mb-5 font-medium">
+            <h2 className="text-section font-medium mb-1">
+              מה העמדה שלך בכל נושא?
+            </h2>
+            <p className="text-ui text-mute mb-5 font-medium">
               אפשר לדלג על נושא שלא מעניין אותך. נבחרו {chosenIssueIds.length}{" "}
               נושאים.
             </p>
@@ -425,10 +428,10 @@ export default function AgendaMatchClient() {
                     <span className="text-meta font-medium text-accent">
                       תחום
                     </span>
-                    <h3 className="text-base font-medium text-accent-ink">
+                    <h3 className="text-body font-medium text-accent-ink">
                       {domain.label}
                     </h3>
-                    <span className="text-xs text-mute font-medium">
+                    <span className="text-meta text-mute font-medium">
                       {issues.length} אג&apos;נדות
                     </span>
                   </div>
@@ -439,21 +442,21 @@ export default function AgendaMatchClient() {
                       return (
                         <div
                           key={issue.id}
-                          className={`rounded-xl border-r-4 border border-black/8 p-4 transition-colors ${
+                          className={`rounded-card border-r-4 border border-line p-4 transition-colors ${
                             chosen
-                              ? "border-r-indigo-600 bg-indigo-50/50"
-                              : "border-r-indigo-200"
+                              ? "border-r-accent bg-accent-wash"
+                              : "border-r-line"
                           }`}
                         >
                           <div className="flex items-baseline gap-2">
-                            <span className="text-meta font-medium text-indigo-500">
+                            <span className="text-meta font-medium text-accent">
                               אג&apos;נדה
                             </span>
-                            <h4 className="text-base font-medium">
+                            <h4 className="text-body font-medium">
                               {issue.label}
                             </h4>
                           </div>
-                          <p className="text-xs text-mute mt-1 mb-3 font-medium leading-relaxed">
+                          <p className="text-meta text-mute mt-1 mb-3 font-medium leading-relaxed">
                             {issue.description}
                           </p>
                           <div className="flex flex-col sm:flex-row gap-2">
@@ -465,10 +468,10 @@ export default function AgendaMatchClient() {
                                   onClick={() =>
                                     pickStance(issue.id, stance.id)
                                   }
-                                  className={`flex-1 text-right text-xs font-medium leading-relaxed rounded-lg border px-3 py-2.5 transition-colors ${
+                                  className={`flex-1 text-right text-meta font-medium leading-relaxed rounded-control border px-3 py-2.5 transition-colors ${
                                     on
-                                      ? "border-indigo-600 bg-indigo-600 text-white"
-                                      : "border-black/10 bg-white hover:border-indigo-300 hover:bg-indigo-50/50"
+                                      ? "border-accent bg-accent text-white"
+                                      : "border-line bg-surface hover:border-accent-lit hover:bg-accent-wash"
                                   }`}
                                 >
                                   {stance.label}
@@ -487,7 +490,7 @@ export default function AgendaMatchClient() {
             <button
               onClick={runSearch}
               disabled={chosenIssueIds.length === 0}
-              className="mt-7 px-5 py-2.5 rounded-lg bg-black text-white font-medium text-sm disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+              className="mt-7 px-5 py-2.5 rounded-control bg-navy-deep text-white font-medium text-ui disabled:opacity-30 disabled:cursor-not-allowed hover:bg-navy transition-colors"
             >
               הצג את חברי הכנסת
             </button>
@@ -498,17 +501,17 @@ export default function AgendaMatchClient() {
         {step === "results" && (
           <div>
             {loading && (
-              <div className="py-32 text-center text-xl font-medium animate-pulse opacity-20">
+              <div className="py-32 text-center text-section font-medium animate-pulse opacity-20">
                 מחשב מעורבות...
               </div>
             )}
 
             {error && (
-              <div className="rounded-xl border border-red-200 bg-red-50 p-5">
-                <p className="font-medium text-red-700 text-sm">{error}</p>
+              <div className="rounded-card border border-fail/30 bg-fail-wash p-5">
+                <p className="font-medium text-fail text-ui">{error}</p>
                 <button
                   onClick={restart}
-                  className="mt-3 text-xs font-medium underline text-red-700"
+                  className="mt-3 text-meta font-medium underline text-fail"
                 >
                   להתחיל מחדש
                 </button>
@@ -516,13 +519,13 @@ export default function AgendaMatchClient() {
             )}
 
             {!loading && !error && rows.length === 0 && (
-              <div className="rounded-xl border border-black/8 bg-gray-50 p-6">
-                <p className="font-medium text-sm">
+              <div className="rounded-card border border-line bg-surface p-6">
+                <p className="font-medium text-ui">
                   לא נמצאו חברי כנסת פעילים בנושאים שנבחרו.
                 </p>
                 <button
                   onClick={restart}
-                  className="mt-3 text-xs font-medium underline"
+                  className="mt-3 text-meta font-medium underline"
                 >
                   לבחור נושאים אחרים
                 </button>
@@ -532,10 +535,10 @@ export default function AgendaMatchClient() {
             {!loading && !error && rows.length > 0 && (
               <>
                 <div className="flex items-baseline justify-between gap-3 mb-1 flex-wrap">
-                  <h2 className="text-lg font-medium">
+                  <h2 className="text-section font-medium">
                     הפעילים ביותר בנושאים שלך
                   </h2>
-                  <span className="text-xs text-mute font-medium">
+                  <span className="text-meta text-mute font-medium">
                     {totalRanked} חברי כנסת בדירוג
                   </span>
                 </div>
@@ -544,12 +547,12 @@ export default function AgendaMatchClient() {
                   המספרים אומרים דברים שונים, ובלי הבחנה ביניהם ח"כ עם
                   ראיה אחת נראה זהה לח"כ עם ארבעים.
                 */}
-                <div className="rounded-xl border-2 border-indigo-600/20 bg-indigo-50/50 p-4 mb-5">
-                  <div className="text-meta font-medium text-indigo-700 mb-2">
+                <div className="rounded-card border-2 border-accent-lit bg-accent-wash p-4 mb-5">
+                  <div className="text-meta font-medium text-accent-ink mb-2">
                     איך לקרוא את המספרים
                   </div>
 
-                  <dl className="text-xs font-medium leading-relaxed text-ink-2 flex flex-col gap-2">
+                  <dl className="text-meta font-medium leading-relaxed text-ink-2 flex flex-col gap-2">
                     <div>
                       <dt className="inline font-medium text-ink">
                         ציון מתוך 100 —{" "}
@@ -587,7 +590,7 @@ export default function AgendaMatchClient() {
                       </dd>
                     </div>
 
-                    <div className="pt-1 border-t border-indigo-600/15">
+                    <div className="pt-1 border-t border-accent-lit">
                       <dt className="inline font-medium text-ink">
                         שימו לב —{" "}
                       </dt>
@@ -604,8 +607,8 @@ export default function AgendaMatchClient() {
                 </div>
 
                 {coverage.some((c) => !c.stanceAware) && (
-                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 mb-5">
-                    <p className="text-xs font-medium text-amber-900 leading-relaxed">
+                  <div className="rounded-control border border-warn/30 bg-warn-wash p-3 mb-5">
+                    <p className="text-meta font-medium text-warn leading-relaxed">
                       ⚠ אין עדיין סיווג עמדות לנושאים:{" "}
                       {coverage
                         .filter((c) => !c.stanceAware)
@@ -618,8 +621,8 @@ export default function AgendaMatchClient() {
                 )}
 
                 {thinAgendas.length > 0 && (
-                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 mb-5">
-                    <p className="text-xs font-medium text-amber-900 leading-relaxed">
+                  <div className="rounded-control border border-warn/30 bg-warn-wash p-3 mb-5">
+                    <p className="text-meta font-medium text-warn leading-relaxed">
                       ⚠ מעט חומר בנושאים:{" "}
                       {thinAgendas.map((a) => a.label).join(", ")}. הדירוג שם
                       מבוסס על מספר קטן של חוקים והצבעות, ולכן פחות אמין.
@@ -641,14 +644,14 @@ export default function AgendaMatchClient() {
                     return (
                       <li
                         key={row.mkId}
-                        className="rounded-xl border border-black/8 overflow-hidden"
+                        className="rounded-card border border-line overflow-hidden"
                       >
                         <button
                           onClick={() => toggleExpanded(row.mkId)}
-                          className="w-full text-right p-4 hover:bg-gray-50 transition-colors"
+                          className="w-full text-right p-4 hover:bg-surface-2 transition-colors"
                         >
                           <div className="flex items-center gap-3">
-                            <span className="text-sm font-medium text-mute w-6 shrink-0 tabular-nums">
+                            <span className="text-ui font-medium text-mute w-6 shrink-0 tabular-nums">
                               {idx + 1}
                             </span>
                             <MkAvatar
@@ -658,26 +661,26 @@ export default function AgendaMatchClient() {
                             />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <h3 className="text-base font-medium">
+                                <h3 className="text-body font-medium">
                                   {row.name}
                                 </h3>
                                 {row.isMinister && (
-                                  <span className="text-meta font-medium px-1.5 py-0.5 rounded bg-gray-200 text-ink-2">
+                                  <span className="text-meta font-medium px-1.5 py-0.5 rounded bg-line text-ink-2">
                                     שר/ה
                                   </span>
                                 )}
                                 {rebels > 0 && (
-                                  <span className="text-meta font-medium px-1.5 py-0.5 rounded bg-purple-100 text-purple-800">
+                                  <span className="text-meta font-medium px-1.5 py-0.5 rounded bg-accent-wash text-accent-ink">
                                     מרד סיעתי {rebels}
                                   </span>
                                 )}
                                 {contradictions > 0 && (
-                                  <span className="text-meta font-medium px-1.5 py-0.5 rounded bg-orange-100 text-orange-800">
+                                  <span className="text-meta font-medium px-1.5 py-0.5 rounded bg-warn-wash text-warn">
                                     סתירה {contradictions}
                                   </span>
                                 )}
                               </div>
-                              <p className="text-xs text-mute font-medium mt-0.5">
+                              <p className="text-meta text-mute font-medium mt-0.5">
                                 {row.faction ?? "ללא סיעה"} ·{" "}
                                 {row.isCoalition ? "קואליציה" : "אופוזיציה"}
                               </p>
@@ -689,7 +692,7 @@ export default function AgendaMatchClient() {
                               />
                             </div>
                             <div className="shrink-0 text-left">
-                              <div className="text-xl font-medium tabular-nums">
+                              <div className="text-section font-medium tabular-nums">
                                 {row.overallScore}
                               </div>
                               <div className="text-meta text-mute font-medium">
@@ -702,9 +705,9 @@ export default function AgendaMatchClient() {
                               <div
                                 className={`text-meta font-medium mt-1 tabular-nums ${
                                   row.confidencePercent >= 70
-                                    ? "text-emerald-700"
+                                    ? "text-pass"
                                     : row.confidencePercent >= 40
-                                      ? "text-amber-700"
+                                      ? "text-warn"
                                       : "text-mute"
                                 }`}
                                 title={`${row.evidenceCount} פעולות מתועדות`}
@@ -714,9 +717,9 @@ export default function AgendaMatchClient() {
                             </div>
                           </div>
 
-                          <div className="mt-3 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                          <div className="mt-3 h-1.5 rounded-full bg-line overflow-hidden">
                             <div
-                              className="h-full bg-black rounded-full"
+                              className="h-full bg-navy-deep rounded-full"
                               style={{
                                 width: `${Math.min(100, row.overallScore)}%`,
                               }}
@@ -724,9 +727,9 @@ export default function AgendaMatchClient() {
                           </div>
 
                           <div className="mt-1.5 flex items-center gap-2">
-                            <div className="flex-1 h-1 rounded-full bg-gray-100 overflow-hidden">
+                            <div className="flex-1 h-1 rounded-full bg-line overflow-hidden">
                               <div
-                                className="h-full bg-indigo-300 rounded-full"
+                                className="h-full bg-accent-lit rounded-full"
                                 style={{ width: `${row.confidencePercent}%` }}
                               />
                             </div>
@@ -737,9 +740,9 @@ export default function AgendaMatchClient() {
                         </button>
 
                         {open && (
-                          <div className="border-t border-black/8 bg-gray-50 p-4">
+                          <div className="border-t border-line bg-surface p-4">
                             {row.isMinister && (
-                              <p className="text-xs text-ink-2 font-medium mb-3 leading-relaxed">
+                              <p className="text-meta text-ink-2 font-medium mb-3 leading-relaxed">
                                 שרים אינם מגישים הצעות חוק פרטיות ונוכחים פחות
                                 בהצבעות, ולכן הציון שלהם נמוך מטבעו ואינו משקף
                                 את עבודתם.
@@ -750,23 +753,23 @@ export default function AgendaMatchClient() {
                               {row.perAgenda.map((a) => (
                                 <div
                                   key={a.issueId}
-                                  className="border-r-4 border-indigo-300 pr-3 bg-white rounded-lg py-3 pl-3"
+                                  className="border-r-4 border-accent-lit pr-3 bg-surface rounded-control py-3 pl-3"
                                 >
                                   <div className="flex items-baseline justify-between gap-2">
                                     <div className="flex items-baseline gap-2">
-                                      <span className="text-meta font-medium text-indigo-500">
+                                      <span className="text-meta font-medium text-accent">
                                         אג&apos;נדה
                                       </span>
-                                      <h4 className="text-sm font-medium">
+                                      <h4 className="text-ui font-medium">
                                         {a.label}
                                       </h4>
                                     </div>
-                                    <span className="text-sm font-medium tabular-nums">
+                                    <span className="text-ui font-medium tabular-nums">
                                       {a.score}
                                     </span>
                                   </div>
 
-                                  <p className="text-xs text-ink-2 font-medium mt-1 leading-relaxed">
+                                  <p className="text-meta text-ink-2 font-medium mt-1 leading-relaxed">
                                     יזם {a.billsInitiated} הצעות חוק
                                     {a.billsAdvanced > 0 &&
                                       ` (${a.billsAdvanced} התקדמו)`}
@@ -784,7 +787,7 @@ export default function AgendaMatchClient() {
                                   </p>
 
                                   {!a.votingAvailable && (
-                                    <p className="text-meta text-amber-800 font-medium mt-1.5 leading-relaxed">
+                                    <p className="text-meta text-warn font-medium mt-1.5 leading-relaxed">
                                       אין בנושא הזה הצבעות שכיוונן ידוע, ולכן
                                       הציון מבוסס על יוזמה חקיקתית בלבד — לא על
                                       הצבעות.
@@ -801,7 +804,7 @@ export default function AgendaMatchClient() {
                                           <Link
                                             href={`/bill/${b.billId}`}
                                             prefetch={false}
-                                            className="text-xs font-medium leading-relaxed text-indigo-700 hover:underline flex-1"
+                                            className="text-meta font-medium leading-relaxed text-accent-ink hover:underline flex-1"
                                           >
                                             {b.title}
                                           </Link>
@@ -810,7 +813,7 @@ export default function AgendaMatchClient() {
                                               עבר
                                             </span>
                                           ) : b.advanced ? (
-                                            <span className="text-meta font-medium px-1.5 py-0.5 rounded bg-gray-200 text-ink-2 shrink-0">
+                                            <span className="text-meta font-medium px-1.5 py-0.5 rounded bg-line text-ink-2 shrink-0">
                                               התקדם
                                             </span>
                                           ) : null}
@@ -828,15 +831,14 @@ export default function AgendaMatchClient() {
                                 </div>
                               ))}
                             </div>
-
                             {row.committeeAttendanceCount > 0 && (
-                              <div className="mt-4 rounded-lg border border-black/8 bg-white p-3">
+                              <div className="mt-4 rounded-control border border-line bg-surface p-3">
                                 <div className="flex items-baseline justify-between gap-3">
-                                  <div className="text-xs font-medium text-ink">
+                                  <div className="text-meta font-medium text-ink">
                                     פעילות בוועדות
                                   </div>
 
-                                  <div className="text-xs font-medium text-mute tabular-nums">
+                                  <div className="text-meta font-medium text-mute tabular-nums">
                                     {row.committeeAttendanceCount.toLocaleString()}{" "}
                                     ישיבות מתועדות
                                   </div>
@@ -847,7 +849,7 @@ export default function AgendaMatchClient() {
                                     {row.topCommittees.map((committee) => (
                                       <span
                                         key={committee.committeeName}
-                                        className="text-meta font-medium px-2 py-1 rounded-full bg-gray-100 text-ink-2"
+                                        className="text-meta font-medium px-2 py-1 rounded bg-line text-ink-2"
                                       >
                                         {committee.committeeName} ·{" "}
                                         {committee.sessionCount}
@@ -857,12 +859,11 @@ export default function AgendaMatchClient() {
                                 )}
                               </div>
                             )}
-
                             {row.slug && (
                               <Link
                                 href={`/mk/${row.slug}`}
                                 prefetch={false}
-                                className="inline-block mt-3 text-xs font-medium underline"
+                                className="inline-block mt-3 text-meta font-medium underline"
                               >
                                 לעמוד חבר הכנסת ←
                               </Link>
@@ -876,7 +877,7 @@ export default function AgendaMatchClient() {
 
                 <button
                   onClick={restart}
-                  className="mt-6 px-5 py-2.5 rounded-lg border border-black/10 font-medium text-sm hover:bg-gray-50 transition-colors"
+                  className="mt-6 px-5 py-2.5 rounded-control border border-line font-medium text-ui hover:bg-surface-2 transition-colors"
                 >
                   להתחיל מחדש
                 </button>

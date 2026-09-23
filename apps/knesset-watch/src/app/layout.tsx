@@ -1,27 +1,35 @@
 import type { Metadata } from "next";
-import { Source_Serif_4, Frank_Ruhl_Libre, Heebo } from "next/font/google";
+import { Rubik, Assistant } from "next/font/google";
 import "./globals.css";
 import SiteHeader from "@/components/SiteHeader";
 import AppSidebar from "@/components/AppSidebar";
 import { PeriodProvider } from "@/lib/period-context";
 import { aiFeaturesEnabled } from "@/lib/feature-flags";
 
-/** תוכן — כותרות, שמות ח"כים, כותרות חוקים */
-const frankRuhl = Frank_Ruhl_Libre({
-  variable: "--font-frank-ruhl",
+/*
+  שתי משפחות, שתיהן מעוצבות לעברית ולא מותאמות אליה בדיעבד.
+
+  קודם עמדו כאן Frank Ruhl Libre ו-Heebo. Frank Ruhl הוא סריף
+  קלאסי ויפה, אבל הוא נתן לאתר מראה של ספר ולא של כלי — ובגדלים
+  קטנים הסריפים מטשטשים ברנדור של ווינדוס.
+
+  Rubik    כותרות. גיאומטרי, ספירות פתוחות, קריא גם במשקל 700.
+  Assistant ממשק וגוף. הומניסטי, נבנה לעברית מלכתחילה, וקריא
+            במיוחד ב-12.5 עד 17 פיקסל — הטווח שבו רוב האתר יושב.
+
+  שניהם נטענים במשקלים מפורשים. בלי זה next/font מושך את כל
+  הטווח הרציף, וזה 200 קילובייט מיותרים לכל משפחה.
+*/
+const rubik = Rubik({
+  variable: "--font-rubik",
   subsets: ["hebrew", "latin"],
+  weight: ["500", "600", "700"],
 });
 
-/** ממשק — כפתורים, תוויות, פקדים, מספרים */
-const heebo = Heebo({
-  variable: "--font-heebo",
+const assistant = Assistant({
+  variable: "--font-assistant",
   subsets: ["hebrew", "latin"],
-});
-
-/** גיבוי ללטינית בתוך טקסט serif */
-const sourceSerif = Source_Serif_4({
-  variable: "--font-source-serif",
-  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -38,14 +46,14 @@ export default function RootLayout({
   return (
     /*
       משתני next/font חייבים לשבת על <html>, לא על <body>.
-      @theme מתקמפל ל-:root — שהוא <html> — ולכן var(--font-heebo)
+      @theme מתקמפל ל-:root — שהוא <html> — ולכן var(--font-assistant)
       בתוכו לא נפתר כשהמשתנה מוגדר על <body>, ההגדרה כולה נפסלת,
       וכל האתר נופל לגופן ברירת המחדל של המערכת.
     */
     <html
       lang="he"
       dir="rtl"
-      className={`${frankRuhl.variable} ${heebo.variable} ${sourceSerif.variable}`}
+      className={`${assistant.variable} ${rubik.variable}`}
     >
       <body className="antialiased">
         <a

@@ -65,7 +65,7 @@ function GlobalSearch() {
 
   return (
     <div ref={containerRef} className="relative w-32 sm:w-48 md:w-64">
-      <div className="flex items-center border border-black/15 rounded-lg px-2.5 py-1 bg-gray-50 focus-within:border-black/40 transition-colors">
+      <div className="flex items-center border border-line rounded-control px-2.5 py-1 bg-surface focus-within:border-accent transition-colors">
         <svg className="w-3.5 h-3.5 text-mute shrink-0 ml-1.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
           <circle cx="6.5" cy="6.5" r="4.5"/>
           <path d="m10 10 4 4"/>
@@ -85,7 +85,7 @@ function GlobalSearch() {
           }}
           placeholder="חיפוש..."
           aria-label='חיפוש בח"כים, ועדות וחוקים'
-          className="flex-1 bg-transparent text-xs font-medium placeholder:text-mute placeholder:font-normal min-w-0"
+          className="flex-1 bg-transparent text-meta font-medium placeholder:text-mute placeholder:font-normal min-w-0"
           dir="rtl"
         />
         {loading && (
@@ -97,32 +97,32 @@ function GlobalSearch() {
       </div>
 
       {open && results.length > 0 && (
-        <div className="absolute top-full mt-1 right-0 w-72 bg-white border border-black/10 rounded-xl shadow-xl overflow-hidden z-50" dir="rtl">
+        <div className="absolute top-full mt-1 right-0 w-72 bg-surface border border-line rounded-card shadow-lg overflow-hidden z-50" dir="rtl">
           {results.slice(0, 8).map(hit => (
             <button
               key={`${hit.type}-${hit.id}`}
               onClick={() => navigate(hit.url)}
-              className="w-full text-right flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 transition-colors"
+              className="w-full text-right flex items-center gap-3 px-3 py-2.5 hover:bg-surface-2 transition-colors"
             >
               <span className="text-meta font-medium text-mute w-7 shrink-0 text-center">
                 {TYPE_LABEL[hit.type] ?? hit.type}
               </span>
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium truncate">{hit.title}</div>
+                <div className="text-ui font-medium truncate">{hit.title}</div>
                 {hit.subtitle && <div className="text-meta text-mute truncate">{hit.subtitle}</div>}
               </div>
             </button>
           ))}
           <button
             onClick={() => { setOpen(false); setQuery(''); router.push(`/search?q=${encodeURIComponent(query.trim())}`); }}
-            className="w-full text-center px-3 py-2 border-t border-black/5 text-meta font-medium text-accent hover:bg-gray-50 transition-colors"
+            className="w-full text-center px-3 py-2 border-t border-line-soft text-meta font-medium text-accent hover:bg-surface-2 transition-colors"
           >
             ראה את כל התוצאות ←
           </button>
         </div>
       )}
       {open && results.length === 0 && !loading && query.length >= 2 && (
-        <div className="absolute top-full mt-1 right-0 w-64 bg-white border border-black/10 rounded-xl shadow-xl p-3 text-xs text-mute text-center z-50">
+        <div className="absolute top-full mt-1 right-0 w-64 bg-surface border border-line rounded-card shadow-lg p-3 text-meta text-mute text-center z-50">
           לא נמצאו תוצאות
         </div>
       )}
@@ -209,7 +209,7 @@ function PeriodSelector() {
     <div ref={containerRef} className="relative">
       <button
         onClick={() => { setOpen(o => !o); setRangeStart(null); }}
-        className="flex items-center gap-1 text-meta font-medium px-3 py-2 rounded-lg border border-black/10 hover:border-black/25 bg-white transition-colors"
+        className="flex items-center gap-1 text-meta font-medium px-3 py-2 rounded-control border border-line hover:border-accent bg-surface transition-colors"
       >
         <span>{label}</span>
         <svg className={`w-2.5 h-2.5 text-mute transition-transform ${open ? 'rotate-180' : ''}`} viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -218,7 +218,7 @@ function PeriodSelector() {
       </button>
 
       {open && (
-        <div className="absolute top-full mt-1 right-0 bg-white border border-black/10 rounded-xl shadow-xl z-50 p-3 w-64" dir="rtl">
+        <div className="absolute top-full mt-1 right-0 bg-surface border border-line rounded-card shadow-lg z-50 p-3 w-64" dir="rtl">
           {/* Shortcuts */}
           <div className="flex flex-wrap gap-1 mb-3">
             {PERIOD_SHORTCUTS.map(p => (
@@ -227,8 +227,8 @@ function PeriodSelector() {
                 onClick={() => { setPeriod(p.value); setOpen(false); setRangeStart(null); }}
                 className={`text-meta font-medium px-2 py-1.5 rounded-full transition-colors ${
                   period === p.value
-                    ? 'bg-black text-white'
-                    : 'bg-gray-100 text-ink-2 hover:bg-gray-200'
+                    ? 'bg-navy-deep text-white'
+                    : 'bg-surface text-ink-2 hover:bg-line'
                 }`}
               >
                 {p.label}
@@ -237,7 +237,7 @@ function PeriodSelector() {
           </div>
 
           {/* Divider */}
-          <div className="border-t border-black/5 mb-3"/>
+          <div className="border-t border-line-soft mb-3"/>
 
           {/* Range picking hint */}
           {rangeStart ? (
@@ -248,11 +248,11 @@ function PeriodSelector() {
 
           {/* Month header */}
           <div className="flex items-center justify-between mb-2">
-            <button onClick={nextMonth} aria-label="החודש הבא" className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100 text-mute">
+            <button onClick={nextMonth} aria-label="החודש הבא" className="w-6 h-6 flex items-center justify-center rounded hover:bg-surface-2 text-mute">
               <svg viewBox="0 0 6 10" className="w-2 h-3" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 1L1 5l4 4"/></svg>
             </button>
             <span className="text-meta font-medium">{HE_MONTHS[viewMonth]} {viewYear}</span>
-            <button onClick={prevMonth} aria-label="החודש הקודם" className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100 text-mute">
+            <button onClick={prevMonth} aria-label="החודש הקודם" className="w-6 h-6 flex items-center justify-center rounded hover:bg-surface-2 text-mute">
               <svg viewBox="0 0 6 10" className="w-2 h-3" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M1 1l4 4-4 4"/></svg>
             </button>
           </div>
@@ -280,9 +280,9 @@ function PeriodSelector() {
                   onMouseEnter={() => rangeStart && setHoverDate(dateStr)}
                   onMouseLeave={() => setHoverDate(null)}
                   className={`text-meta font-medium h-8 w-full flex items-center justify-center rounded transition-colors
-                    ${isStart ? 'bg-black text-white' : ''}
+                    ${isStart ? 'bg-navy-deep text-white' : ''}
                     ${!isStart && inRng ? 'bg-accent-wash text-accent' : ''}
-                    ${!isStart && !inRng ? 'hover:bg-gray-100 text-ink-2' : ''}
+                    ${!isStart && !inRng ? 'hover:bg-surface-2 text-ink-2' : ''}
                     ${isToday && !isStart && !inRng ? 'font-medium text-accent' : ''}
                   `}
                 >
@@ -313,7 +313,7 @@ export default function SiteHeader() {
 
   return (
     <header
-      className="sticky top-0 z-30 w-full bg-white/90 backdrop-blur border-b border-black/8"
+      className="sticky top-0 z-30 w-full bg-paper/90 backdrop-blur border-b border-line"
       dir="rtl"
     >
       <div className="px-4 h-11 flex items-center gap-4">
@@ -335,7 +335,7 @@ export default function SiteHeader() {
         {/* Hamburger button — mobile only */}
         <button
           onClick={() => setMenuOpen(o => !o)}
-          className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg hover:bg-gray-100 transition-colors shrink-0"
+          className="md:hidden flex items-center justify-center w-9 h-9 rounded-control hover:bg-surface-2 transition-colors shrink-0"
           aria-label={menuOpen ? 'סגור תפריט' : 'פתח תפריט'}
           aria-expanded={menuOpen}
           aria-controls="mobile-nav"

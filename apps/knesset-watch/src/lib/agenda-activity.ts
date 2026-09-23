@@ -42,7 +42,6 @@
 
 import Database from 'better-sqlite3';
 import { dbPath } from '@/lib/knesset-db';
-import path from 'path';
 import fs from 'fs';
 import { POLITICAL_ISSUES } from './canonical-agendas';
 import {

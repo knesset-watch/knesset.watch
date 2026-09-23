@@ -75,16 +75,16 @@ export default function CommitteesClient({
   }, [committees, sort, search]);
 
   return (
-    <div className="min-h-screen bg-white" dir="rtl">
+    <div className="min-h-screen bg-paper" dir="rtl">
       <div className="max-w-5xl mx-auto px-6 py-8">
         <div className="mb-8">
-          <Link href="/" className="text-sm font-medium text-mute hover:text-black transition-colors">
+          <Link href="/" className="text-ui font-medium text-mute hover:text-ink transition-colors">
             → ראשי
           </Link>
         </div>
 
         <h1 className="text-3xl font-medium leading-tight mb-1">ועדות הכנסת</h1>
-        <p className="text-sm text-mute font-medium mb-6">
+        <p className="text-ui text-mute font-medium mb-6">
           {committees.length} ועדות · {totalSessions.toLocaleString('he-IL')} ישיבות מתועדות
           {loading && <span className="mr-2 opacity-50">…</span>}
         </p>
@@ -96,7 +96,7 @@ export default function CommitteesClient({
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="חיפוש ועדה..."
-            className="w-full text-sm px-3 py-2 rounded-xl border border-black/10 bg-gray-50 focus:border-black/30"
+            className="w-full text-ui px-3 py-2 rounded-card border border-line bg-surface focus:border-mute"
             dir="rtl"
           />
 
@@ -112,8 +112,8 @@ export default function CommitteesClient({
                 <button
                   key={o.value}
                   onClick={() => setSort(o.value)}
-                  className={`text-xs font-medium px-3 py-2 rounded-full transition-colors ${
-                    sort === o.value ? 'bg-black text-white' : 'bg-gray-100 text-ink-2 hover:bg-gray-200'
+                  className={`text-meta font-medium px-3 py-2 rounded-full transition-colors ${
+                    sort === o.value ? 'bg-navy-deep text-white' : 'bg-surface text-ink-2 hover:bg-line'
                   }`}
                 >
                   {o.label}
@@ -122,11 +122,11 @@ export default function CommitteesClient({
             </div>
 
             {/* View toggle */}
-            <div className="flex items-center gap-1 border border-black/10 rounded-xl p-0.5 mr-auto">
+            <div className="flex items-center gap-1 border border-line rounded-card p-0.5 mr-auto">
               <button
                 onClick={() => setView('cards')}
                 title="תצוגת כרטיסים"
-                className={`p-2 rounded-lg transition-colors ${view === 'cards' ? 'bg-black text-white' : 'text-mute hover:text-black'}`}
+                className={`p-2 rounded-control transition-colors ${view === 'cards' ? 'bg-navy-deep text-white' : 'text-mute hover:text-ink'}`}
               >
                 <svg viewBox="0 0 16 16" className="w-4 h-4" fill="currentColor">
                   <rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/>
@@ -136,7 +136,7 @@ export default function CommitteesClient({
               <button
                 onClick={() => setView('list')}
                 title="תצוגת רשימה"
-                className={`p-2 rounded-lg transition-colors ${view === 'list' ? 'bg-black text-white' : 'text-mute hover:text-black'}`}
+                className={`p-2 rounded-control transition-colors ${view === 'list' ? 'bg-navy-deep text-white' : 'text-mute hover:text-ink'}`}
               >
                 <svg viewBox="0 0 16 16" className="w-4 h-4" fill="currentColor">
                   <rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="14" height="2" rx="1"/>
@@ -148,7 +148,7 @@ export default function CommitteesClient({
         </div>
 
         {search.trim() && (
-          <p className="text-xs text-mute font-medium mb-4">{sorted.length} תוצאות</p>
+          <p className="text-meta text-mute font-medium mb-4">{sorted.length} תוצאות</p>
         )}
 
         {/* Cards view */}
@@ -161,22 +161,22 @@ export default function CommitteesClient({
                 <Link
                   key={c.committeeId}
                   href={`/committee/${encodeURIComponent(c.name)}`}
-                  className="group rounded-2xl border border-black/8 p-5 hover:border-black/20 hover:shadow-sm transition-all"
+                  className="group rounded-card border border-line p-5 hover:border-line transition-all"
                 >
-                  <div className="font-medium text-sm leading-snug mb-3 group-hover:text-black text-ink">
+                  <div className="font-medium text-ui leading-snug mb-3 group-hover:text-ink text-ink">
                     {c.name}
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col">
                       <span className="text-meta font-medium text-mute mb-0.5">ישיבות</span>
-                      <span className="text-xl font-medium">{c.sessionCount.toLocaleString('he-IL')}</span>
+                      <span className="text-section font-medium">{c.sessionCount.toLocaleString('he-IL')}</span>
                     </div>
                     {lastDate && (
                       <div className="flex flex-col items-end">
                         <span className={`text-meta font-medium mb-0.5 ${hasProtocol ? 'text-accent' : 'text-mute'}`}>
                           {hasProtocol ? 'דיון אחרון' : 'אחרונה'}
                         </span>
-                        <span className={`text-xs font-bold ${hasProtocol ? 'text-accent' : 'text-mute'}`}>
+                        <span className={`text-meta font-bold ${hasProtocol ? 'text-accent' : 'text-mute'}`}>
                           {formatDate(lastDate)}
                         </span>
                       </div>
@@ -203,11 +203,11 @@ export default function CommitteesClient({
                 <Link
                   key={c.committeeId}
                   href={`/committee/${encodeURIComponent(c.name)}`}
-                  className="flex flex-col sm:grid sm:grid-cols-[1fr_5rem] sm:grid-cols-[1fr_6rem_10rem] gap-2 sm:gap-4 sm:items-center px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors group"
+                  className="flex flex-col sm:grid sm:grid-cols-[1fr_5rem] sm:grid-cols-[1fr_6rem_10rem] gap-2 sm:gap-4 sm:items-center px-4 py-3 rounded-card hover:bg-surface-2 transition-colors group"
                 >
-                  <span className="text-sm font-bold text-ink group-hover:text-black truncate">{c.name}</span>
-                  <span className="text-sm font-medium text-center tabular-nums">{c.sessionCount.toLocaleString('he-IL')}</span>
-                  <span className={`hidden sm:block text-xs font-bold ${hasProtocol ? 'text-accent' : 'text-mute'}`}>
+                  <span className="text-ui font-bold text-ink group-hover:text-ink truncate">{c.name}</span>
+                  <span className="text-ui font-medium text-center tabular-nums">{c.sessionCount.toLocaleString('he-IL')}</span>
+                  <span className={`hidden sm:block text-meta font-bold ${hasProtocol ? 'text-accent' : 'text-mute'}`}>
                     {lastDate ? formatDate(lastDate) : '—'}
                   </span>
                 </Link>

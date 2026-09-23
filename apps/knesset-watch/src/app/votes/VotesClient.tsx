@@ -127,34 +127,34 @@ export default function VotesClient() {
   const totalPages = Math.ceil(total / 50);
 
   return (
-    <div className="min-h-screen bg-white" dir="rtl">
+    <div className="min-h-screen bg-paper" dir="rtl">
       <div className="max-w-4xl mx-auto px-6 py-8">
-        <nav className="flex items-center gap-1 text-sm text-mute mb-6">
-          <Link href="/" className="font-medium hover:text-black transition-colors">ראשי</Link>
+        <nav className="flex items-center gap-1 text-ui text-mute mb-6">
+          <Link href="/" className="font-medium hover:text-ink transition-colors">ראשי</Link>
           <span className="mx-1">›</span>
-          <span className="text-black font-medium">הצבעות</span>
+          <span className="text-ink font-medium">הצבעות</span>
         </nav>
 
         <h1 className="text-4xl font-medium mb-1">הצבעות</h1>
-        <p className="text-sm text-mute mb-6">הצבעות מליאה בכנסת ה-25</p>
+        <p className="text-ui text-mute mb-6">הצבעות מליאה בכנסת ה-25</p>
 
         {/* Filters */}
         <div className="flex flex-wrap gap-3 mb-6 items-end">
           {/* Search */}
           <form onSubmit={handleSearch} className="flex gap-2 flex-1 min-w-48">
-            <div className="flex-1 flex items-center border border-black/20 rounded-xl px-3 py-2.5 bg-gray-50 focus-within:border-black/50 focus-within:bg-white transition-colors">
+            <div className="flex-1 flex items-center border border-line rounded-card px-3 py-2.5 bg-surface focus-within:border-line-soft0 focus-within:bg-surface transition-colors">
               <input
                 type="text"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="חיפוש הצבעה..."
-                className="flex-1 bg-transparent text-sm font-medium placeholder:text-mute placeholder:font-normal"
+                className="flex-1 bg-transparent text-ui font-medium placeholder:text-mute placeholder:font-normal"
                 dir="rtl"
               />
             </div>
             <button
               type="submit"
-              className="px-4 py-2.5 rounded-xl bg-black text-white text-sm font-medium hover:bg-gray-800 transition-colors shrink-0"
+              className="px-4 py-2.5 rounded-card bg-navy-deep text-white text-ui font-medium hover:bg-navy transition-colors shrink-0"
             >
               חיפוש
             </button>
@@ -164,13 +164,13 @@ export default function VotesClient() {
           <div className="flex gap-1">
             <button
               onClick={handlePassedToggle}
-              className={`text-xs font-medium px-3 py-2.5 rounded-xl transition-colors ${passedOnly ? 'bg-accent text-white' : 'bg-gray-100 text-ink-2 hover:bg-gray-200'}`}
+              className={`text-meta font-medium px-3 py-2.5 rounded-card transition-colors ${passedOnly ? 'bg-accent text-white' : 'bg-surface text-ink-2 hover:bg-line'}`}
             >
               עברו
             </button>
             <button
               onClick={handleFailedToggle}
-              className={`text-xs font-medium px-3 py-2.5 rounded-xl transition-colors ${failedOnly ? 'bg-red-500 text-white' : 'bg-gray-100 text-ink-2 hover:bg-gray-200'}`}
+              className={`text-meta font-medium px-3 py-2.5 rounded-card transition-colors ${failedOnly ? 'bg-fail text-white' : 'bg-surface text-ink-2 hover:bg-line'}`}
             >
               לא עברו
             </button>
@@ -182,7 +182,7 @@ export default function VotesClient() {
             <select
               value={maxMargin}
               onChange={e => handleMarginChange(e.target.value)}
-              className="text-xs font-medium px-2 py-2 rounded-xl bg-gray-100 border-0 cursor-pointer hover:bg-gray-200 transition-colors"
+              className="text-meta font-medium px-2 py-2 rounded-card bg-surface border-0 cursor-pointer hover:bg-line transition-colors"
             >
               <option value="">כל הפרש</option>
               <option value="1">1</option>
@@ -194,15 +194,15 @@ export default function VotesClient() {
           </div>
 
           {/* View toggle — hidden on mobile (cards always shown on small screens) */}
-          <div className="hidden sm:flex items-center gap-1 border border-black/10 rounded-xl p-0.5 mr-auto">
+          <div className="hidden sm:flex items-center gap-1 border border-line rounded-card p-0.5 mr-auto">
             <button onClick={() => setView('list')} title="רשימה"
-              className={`p-2 rounded-lg transition-colors ${view === 'list' ? 'bg-black text-white' : 'text-mute hover:text-black'}`}>
+              className={`p-2 rounded-control transition-colors ${view === 'list' ? 'bg-navy-deep text-white' : 'text-mute hover:text-ink'}`}>
               <svg viewBox="0 0 16 16" className="w-4 h-4" fill="currentColor">
                 <rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="14" height="2" rx="1"/><rect x="1" y="12" width="14" height="2" rx="1"/>
               </svg>
             </button>
             <button onClick={() => setView('cards')} title="כרטיסים"
-              className={`p-2 rounded-lg transition-colors ${view === 'cards' ? 'bg-black text-white' : 'text-mute hover:text-black'}`}>
+              className={`p-2 rounded-control transition-colors ${view === 'cards' ? 'bg-navy-deep text-white' : 'text-mute hover:text-ink'}`}>
               <svg viewBox="0 0 16 16" className="w-4 h-4" fill="currentColor">
                 <rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/>
                 <rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/>
@@ -275,7 +275,7 @@ export default function VotesClient() {
                   setFailedOnly(false);
                   handleMarginChange('');
                 }}
-                className="text-sm font-medium text-accent hover:text-accent underline"
+                className="text-ui font-medium text-accent hover:text-accent underline"
               >
                 הנקה את כל הפילטרים
               </button>
@@ -286,7 +286,7 @@ export default function VotesClient() {
         {/* List view — desktop only (hidden on mobile) */}
         {!loading && view === 'list' && (
           <div className="hidden sm:block">
-            <div className="grid grid-cols-[1fr_5rem_4rem_4rem_4rem_4.5rem] gap-4 py-3 px-4 text-meta font-medium text-ink-2 mb-2 bg-gray-100 rounded-lg border-b-2 border-gray-300">
+            <div className="grid grid-cols-[1fr_5rem_4rem_4rem_4rem_4.5rem] gap-4 py-3 px-4 text-meta font-medium text-ink-2 mb-2 bg-surface rounded-control border-b-2 border-line">
               <span>נושא</span>
               <span>תאריך</span>
               <span className="text-center">בעד</span>
@@ -328,7 +328,7 @@ export default function VotesClient() {
                         </Link>
                       )}
                       {v.macroAgenda && (
-                        <span className="text-meta text-mute bg-surface-2 px-1.5 py-0.5 rounded-control">{v.macroAgenda}</span>
+                        <span className="text-meta text-mute bg-surface px-1.5 py-0.5 rounded-control">{v.macroAgenda}</span>
                       )}
                       {v.microAgenda && (
                         <span className="text-meta font-medium text-accent-ink bg-accent-wash px-2 py-0.5 rounded-control">#{v.microAgenda}</span>
@@ -383,7 +383,7 @@ export default function VotesClient() {
                         להצעת החוק ←
                       </Link>
                     )}
-                    {v.macroAgenda && <span className="text-meta text-mute bg-surface-2 px-1.5 py-0.5 rounded-control">{v.macroAgenda}</span>}
+                    {v.macroAgenda && <span className="text-meta text-mute bg-surface px-1.5 py-0.5 rounded-control">{v.macroAgenda}</span>}
                   </div>
 
                   <div className="flex items-center gap-4 mt-auto pt-1 text-meta">
@@ -399,16 +399,16 @@ export default function VotesClient() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex justify-center gap-3 mt-10 items-center bg-accent-wash py-4 px-4 rounded-xl border border-line">
+          <div className="flex justify-center gap-3 mt-10 items-center bg-accent-wash py-4 px-4 rounded-card border border-line">
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="text-sm font-medium px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent disabled:opacity-30 disabled:bg-gray-300 transition-colors"
+              className="text-ui font-medium px-4 py-2 rounded-control bg-accent text-white hover:bg-accent disabled:opacity-30 disabled:bg-line transition-colors"
             >
               ← הקודם
             </button>
             <div className="flex flex-col items-center gap-1">
-              <span className="text-sm font-medium text-ink">
+              <span className="text-ui font-medium text-ink">
                 עמוד {page} מתוך {totalPages}
               </span>
               <span className="text-meta text-mute">
@@ -418,7 +418,7 @@ export default function VotesClient() {
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="text-sm font-medium px-4 py-2 rounded-lg bg-accent text-white hover:bg-accent disabled:opacity-30 disabled:bg-gray-300 transition-colors"
+              className="text-ui font-medium px-4 py-2 rounded-control bg-accent text-white hover:bg-accent disabled:opacity-30 disabled:bg-line transition-colors"
             >
               הבא →
             </button>

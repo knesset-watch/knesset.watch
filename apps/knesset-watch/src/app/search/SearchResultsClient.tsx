@@ -55,19 +55,19 @@ export default function SearchResultsClient({ initialQ }: { initialQ: string }) 
   const hasResults = results.length > 0;
 
   return (
-    <div className="min-h-screen bg-white" dir="rtl">
+    <div className="min-h-screen bg-paper" dir="rtl">
       <div className="max-w-4xl mx-auto px-6 py-8">
-        <nav className="flex items-center gap-1 text-sm text-mute mb-6">
-          <Link href="/" className="font-medium hover:text-black transition-colors">ראשי</Link>
+        <nav className="flex items-center gap-1 text-ui text-mute mb-6">
+          <Link href="/" className="font-medium hover:text-ink transition-colors">ראשי</Link>
           <span className="mx-1">›</span>
-          <span className="text-black font-medium">חיפוש</span>
+          <span className="text-ink font-medium">חיפוש</span>
         </nav>
 
         <h1 className="text-4xl font-medium mb-6">חיפוש</h1>
 
         {/* Search form */}
         <form onSubmit={handleSearch} className="flex items-center gap-2 mb-8">
-          <div className="flex-1 flex items-center border border-black/20 rounded-xl px-4 py-3 bg-gray-50 focus-within:border-black/50 focus-within:bg-white transition-colors">
+          <div className="flex-1 flex items-center border border-line rounded-card px-4 py-3 bg-surface focus-within:border-line-soft0 focus-within:bg-surface transition-colors">
             <svg className="w-4 h-4 text-mute shrink-0 ml-2" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="6.5" cy="6.5" r="4.5"/><path d="m10 10 4 4"/>
             </svg>
@@ -76,7 +76,7 @@ export default function SearchResultsClient({ initialQ }: { initialQ: string }) 
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="חפשו ח&quot;כ, ועדה, חוק..."
-              className="flex-1 bg-transparent text-sm font-medium placeholder:text-mute placeholder:font-normal"
+              className="flex-1 bg-transparent text-ui font-medium placeholder:text-mute placeholder:font-normal"
               dir="rtl"
               autoFocus
             />
@@ -84,7 +84,7 @@ export default function SearchResultsClient({ initialQ }: { initialQ: string }) 
           <button
             type="submit"
             disabled={query.trim().length < 2}
-            className="px-5 py-3 rounded-xl bg-black text-white text-sm font-medium disabled:opacity-30 hover:bg-gray-800 transition-colors shrink-0"
+            className="px-5 py-3 rounded-card bg-navy-deep text-white text-ui font-medium disabled:opacity-30 hover:bg-navy transition-colors shrink-0"
           >
             חיפוש
           </button>
@@ -92,7 +92,7 @@ export default function SearchResultsClient({ initialQ }: { initialQ: string }) 
 
         {/* Loading */}
         {loading && (
-          <div className="flex items-center justify-center py-16 text-mute text-sm">
+          <div className="flex items-center justify-center py-16 text-mute text-ui">
             טוען...
           </div>
         )}
@@ -101,7 +101,7 @@ export default function SearchResultsClient({ initialQ }: { initialQ: string }) 
         {!loading && submittedQ.length >= 2 && !hasResults && (
           <div className="text-center py-16">
             <div className="text-4xl mb-3">🔍</div>
-            <div className="text-mute text-sm">לא נמצאו תוצאות עבור &quot;{submittedQ}&quot;</div>
+            <div className="text-mute text-ui">לא נמצאו תוצאות עבור &quot;{submittedQ}&quot;</div>
           </div>
         )}
 
@@ -117,10 +117,10 @@ export default function SearchResultsClient({ initialQ }: { initialQ: string }) 
                   <Link
                     key={`${hit.type}-${hit.id}`}
                     href={hit.url}
-                    className="flex items-center gap-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors px-4 py-3"
+                    className="flex items-center gap-3 rounded-card bg-surface hover:bg-surface-2 transition-colors px-4 py-3"
                   >
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-ink truncate">{hit.title}</div>
+                      <div className="text-ui font-medium text-ink truncate">{hit.title}</div>
                       {hit.subtitle && (
                         <div className="text-meta text-mute mt-0.5 truncate">{hit.subtitle}</div>
                       )}

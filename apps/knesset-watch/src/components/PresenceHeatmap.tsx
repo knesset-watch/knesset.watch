@@ -25,20 +25,20 @@ export default function PresenceHeatmap({ mkId }: { mkId: string }) {
       .catch(() => setLoading(false));
   }, [mkId]);
 
-  if (loading) return <div className="h-24 bg-gray-50 rounded-xl animate-pulse" />;
+  if (loading) return <div className="h-24 bg-surface rounded-card animate-pulse" />;
   if (data.length === 0) return null;
 
   return (
-    <div className="bg-white border border-black/8 rounded-2xl p-6" dir="ltr">
+    <div className="bg-surface border border-line rounded-card p-6" dir="ltr">
       <div className="flex items-center justify-between mb-4" dir="rtl">
         <div className="text-meta font-medium text-mute">מפת נוכחות במליאה (שנה אחרונה)</div>
         <div className="flex items-center gap-2 text-meta font-medium text-mute">
           <span>נעדר</span>
           <div className="flex gap-1">
-            <span className="w-3 h-3 rounded-sm bg-rose-500"></span>
-            <span className="w-3 h-3 rounded-sm bg-rose-300"></span>
-            <span className="w-3 h-3 rounded-sm bg-teal-300"></span>
-            <span className="w-3 h-3 rounded-sm bg-accent"></span>
+            <span className="w-3 h-3 rounded-control bg-fail"></span>
+            <span className="w-3 h-3 rounded-control bg-fail/50"></span>
+            <span className="w-3 h-3 rounded-control bg-accent-lit"></span>
+            <span className="w-3 h-3 rounded-control bg-accent"></span>
           </div>
           <span>נוכח</span>
         </div>
@@ -46,11 +46,11 @@ export default function PresenceHeatmap({ mkId }: { mkId: string }) {
       
       <div className="flex gap-1 overflow-x-auto no-scrollbar pb-2">
         {data.map(day => {
-          let color = 'bg-gray-100'; // Default, no votes
+          let color = 'bg-surface'; // Default, no votes
           if (day.total > 0) {
-            if (day.rate === 0) color = 'bg-rose-500';
-            else if (day.rate < 0.5) color = 'bg-rose-300';
-            else if (day.rate < 0.9) color = 'bg-teal-300';
+            if (day.rate === 0) color = 'bg-fail';
+            else if (day.rate < 0.5) color = 'bg-fail/50';
+            else if (day.rate < 0.9) color = 'bg-accent-lit';
             else color = 'bg-accent';
           }
 
@@ -58,7 +58,7 @@ export default function PresenceHeatmap({ mkId }: { mkId: string }) {
             <div 
               key={day.date} 
               title={`${day.date}: ${day.attended} / ${day.total} הצבעות`}
-              className={`w-3 h-8 rounded-sm shrink-0 transition-opacity hover:opacity-70 ${color}`}
+              className={`w-3 h-8 rounded-control shrink-0 transition-opacity hover:opacity-70 ${color}`}
             />
           );
         })}

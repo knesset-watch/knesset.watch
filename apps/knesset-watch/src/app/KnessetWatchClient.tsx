@@ -10,6 +10,7 @@ import AllianceGraph from '@/components/AllianceGraph';
 import FilterChips from '@/components/FilterChips';
 import GlossaryTooltip from '@/components/GlossaryTooltip';
 import { CLUSTER_TOPICS } from '@/lib/axis-clusters';
+import { COLOR, AFFILIATION } from '@/lib/ui/colors';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
@@ -36,8 +37,8 @@ type CoalitionFilter = 'all' | 'coalition' | 'opposition';
 // ── Coalition gradient helpers ────────────────────────────────────────────────
 // Colors: amber-50 / slate-50 for active (coalition/opposition); zinc-100 for non-MK.
 
-const NON_MK_CARD   = '#f4f4f5';  // zinc-100
-const NON_MK_STRIPE = '#6B7280';  // zinc-400
+const NON_MK_CARD   = COLOR.surface2;
+const NON_MK_STRIPE = COLOR.mute;
 
 // Returns inline style for a card background gradient.
 // coalitionFrac: fraction of *active* MK time spent in coalition (null = uniform active period).
@@ -58,7 +59,7 @@ function buildCardStyle(
     }
     return { background: `linear-gradient(to bottom, #F0FDF4 0% ${c}%, #EFF6FF ${c}% ${a}%, ${NON_MK_CARD} ${a}% 100%)` };
   } else {
-    const activeColor = isCoalition === true ? '#F0FDF4' : isCoalition === false ? '#EFF6FF' : '#ffffff';
+    const activeColor = isCoalition === true ? AFFILIATION.coalitionWash : isCoalition === false ? AFFILIATION.oppositionWash : COLOR.surface;
     return { background: `linear-gradient(to bottom, ${activeColor} ${a}%, ${NON_MK_CARD} ${a}%)` };
   }
 }
@@ -79,15 +80,15 @@ function buildStripeStyle(
     }
     return { background: `linear-gradient(to bottom, #16A34A 0% ${c}%, #2563EB ${c}% ${a}%, ${NON_MK_STRIPE} ${a}% 100%)` };
   } else {
-    const activeColor = isCoalition === true ? '#16A34A' : isCoalition === false ? '#2563EB' : '#d4d4d8';
+    const activeColor = isCoalition === true ? AFFILIATION.coalition : isCoalition === false ? AFFILIATION.opposition : COLOR.line;
     return { background: `linear-gradient(to bottom, ${activeColor} ${a}%, ${NON_MK_STRIPE} ${a}%)` };
   }
 }
 
 // Color map for segment states.
 const SEGMENT_COLORS: Record<string, string> = {
-  coalition: '#F0FDF4',
-  opposition: '#EFF6FF',
+  coalition: AFFILIATION.coalitionWash,
+  opposition: AFFILIATION.oppositionWash,
   none: NON_MK_CARD,
 };
 
@@ -112,7 +113,7 @@ function buildGradientFromSegments(
   }
 
   if (merged.length === 1) {
-    return { background: SEGMENT_COLORS[merged[0].state] ?? '#ffffff' };
+    return { background: SEGMENT_COLORS[merged[0].state] ?? COLOR.surface };
   }
 
   const SEP = 0.08; // grey separator width as % of total row width
@@ -120,7 +121,7 @@ function buildGradientFromSegments(
 
   for (let i = 0; i < merged.length; i++) {
     const seg = merged[i];
-    const color = SEGMENT_COLORS[seg.state] ?? '#ffffff';
+    const color = SEGMENT_COLORS[seg.state] ?? COLOR.surface;
     const isFirst = i === 0;
     const isLast  = i === merged.length - 1;
     const sOrig = seg.startFrac * 100;
@@ -236,9 +237,9 @@ const PERIOD_LABEL: Record<string, string> = {
   none: 'לא בכנסת',
 };
 const PERIOD_COLOR: Record<string, string> = {
-  coalition: '#16A34A',
-  opposition: '#2563EB',
-  none: '#6B7280',
+  coalition: AFFILIATION.coalition,
+  opposition: AFFILIATION.opposition,
+  none: AFFILIATION.unaffiliated,
 };
 
 // Shared trigger: two small colored bars (amber=coalition, teal=opposition) with a tooltip popup.
@@ -278,14 +279,14 @@ function CoalitionTimeline({ segments }: {
         {merged.map((seg, i) => (
           <span
             key={i}
-            className="block h-3.5 rounded-sm"
-            style={{ background: PERIOD_COLOR[seg.state] ?? '#e5e7eb', width: `${Math.max(4, (seg.endDate && seg.startDate ? 6 : 4))}px` }}
+            className="block h-3.5 rounded-control"
+            style={{ background: PERIOD_COLOR[seg.state] ?? COLOR.line, width: `${Math.max(4, (seg.endDate && seg.startDate ? 6 : 4))}px` }}
           />
         ))}
       </button>
       {visible && (
         <div
-          className="absolute z-50 top-full mt-1.5 left-0 bg-white border border-black/10 rounded-xl shadow-xl p-3 min-w-[200px]"
+          className="absolute z-50 top-full mt-1.5 left-0 bg-surface border border-line rounded-card shadow-lg p-3 min-w-[200px]"
           dir="rtl"
         >
           <div className="flex flex-col gap-2">
@@ -294,7 +295,7 @@ function CoalitionTimeline({ segments }: {
               const endLabel = isLast && seg.state !== 'none' ? 'כעת' : fmtMonthYear(seg.endDate);
               return (
                 <div key={i} className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: PERIOD_COLOR[seg.state] ?? '#eee' }} />
+                  <span className="w-2.5 h-2.5 rounded-control shrink-0" style={{ background: PERIOD_COLOR[seg.state] ?? COLOR.line }} />
                   <div className="flex flex-col min-w-0">
                     <span className="text-meta font-medium text-ink-2 whitespace-nowrap">{PERIOD_LABEL[seg.state]}</span>
                     <span className="text-meta text-mute whitespace-nowrap">{fmtMonthYear(seg.startDate)} – {endLabel}</span>
@@ -327,24 +328,24 @@ function PartyCoalitionHint({ pct }: { pct: number | null }) {
         aria-label="פיצול קואליציה/אופוזיציה"
         tabIndex={-1}
       >
-        <span className="block h-3.5 rounded-r-sm" style={{ background: '#16A34A', width: `${Math.round(c / 10) + 4}px` }} />
-        <span className="block h-3.5 rounded-l-sm" style={{ background: '#2563EB', width: `${Math.round(o / 10) + 4}px` }} />
+        <span className="block h-3.5 rounded-r-sm" style={{ background: AFFILIATION.coalition, width: `${Math.round(c / 10) + 4}px` }} />
+        <span className="block h-3.5 rounded-l-sm" style={{ background: AFFILIATION.opposition, width: `${Math.round(o / 10) + 4}px` }} />
       </button>
       {visible && (
         <div
-          className="absolute z-50 top-full mt-1.5 left-0 bg-white border border-black/10 rounded-xl shadow-xl p-3 min-w-[190px]"
+          className="absolute z-50 top-full mt-1.5 left-0 bg-surface border border-line rounded-card shadow-lg p-3 min-w-[190px]"
           dir="rtl"
         >
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: '#16A34A' }} />
+              <span className="w-2.5 h-2.5 rounded-control shrink-0" style={{ background: AFFILIATION.coalition }} />
               <div className="flex flex-col">
                 <span className="text-meta font-medium text-ink-2 whitespace-nowrap">קואליציה</span>
                 <span className="text-meta text-mute whitespace-nowrap">כ-{c}% מזמן הכנסת</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: '#2563EB' }} />
+              <span className="w-2.5 h-2.5 rounded-control shrink-0" style={{ background: AFFILIATION.opposition }} />
               <div className="flex flex-col">
                 <span className="text-meta font-medium text-ink-2 whitespace-nowrap">אופוזיציה</span>
                 <span className="text-meta text-mute whitespace-nowrap">כ-{o}% מזמן הכנסת</span>
@@ -788,7 +789,7 @@ export default function KnessetWatchPage() {
   const totalCount    = baseCount;
 
   return (
-    <div className="min-h-screen bg-white text-black font-[family-name:var(--font-frank-ruhl)]" dir="rtl">
+    <div className="min-h-screen bg-paper text-ink" dir="rtl">
       {/* ── Mobile top bar (hidden on md+) ── */}
       {/* הכותרת הקבועה והמגירה שהיו כאן הוסרו.
            הן שכפלו את SiteHeader ואת AppSidebar: במובייל נערמו שתי כותרות
@@ -813,7 +814,8 @@ export default function KnessetWatchPage() {
           <p className="text-body text-mute font-content max-w-2xl">
             {groupBy === 'rebels' ? "חברי כנסת שהצביעו נגד עמדת הסיעה שלהם." :
              groupBy === 'alliances' ? "מי משתף פעולה עם מי? רשת הקשרים הסמויה של הכנסת." :
-             groupBy === 'timeline' ? "מתי החלה החקיקה המשמעותית של הכנסת ה-25?" :
+             /* 502 חוקים עברו, ל-94 מהם יש סיווג נושאי. אומרים את זה במפורש */
+             groupBy === 'timeline' ? "חוקים שהתקבלו בכנסת ה-25, לפי חודש ולפי נושא. רק חוקים שעברו נושאים תאריך פרסום, ולכן זה אינו מדד להגשת הצעות." :
              "שקיפות נתוני הכנסת בזמן אמת."}
           </p>
           {groupBy === 'mk' && (
@@ -849,11 +851,11 @@ export default function KnessetWatchPage() {
             {/* Timeframe dropdown */}
             <div className="flex flex-col gap-1">
               <span className="text-meta font-medium text-mute">טווח זמן</span>
-              <div className="flex items-baseline gap-3 border-b-2 border-black py-1">
+              <div className="flex items-baseline gap-3 border-b-2 border-ink py-1">
                 <select
                   value={timeframeVal}
                   onChange={e => setTimeframeVal(e.target.value)}
-                  className="bg-transparent font-medium text-sm cursor-pointer pr-1 pl-6 appearance-none"
+                  className="bg-transparent font-medium text-ui cursor-pointer pr-1 pl-6 appearance-none"
                 >
                   {TIMEFRAMES.map(t => (
                     <option key={t.value} value={t.value}>{t.label}</option>
@@ -869,14 +871,14 @@ export default function KnessetWatchPage() {
                     type="date"
                     value={customStart}
                     onChange={e => setCustomStart(e.target.value)}
-                    className="border-b-2 border-black bg-transparent text-sm font-medium py-0.5 px-1"
+                    className="border-b-2 border-ink bg-transparent text-ui font-medium py-0.5 px-1"
                   />
-                  <span className="text-xs opacity-40">—</span>
+                  <span className="text-meta opacity-40">—</span>
                   <input
                     type="date"
                     value={customEnd}
                     onChange={e => setCustomEnd(e.target.value)}
-                    className="border-b-2 border-black bg-transparent text-sm font-medium py-0.5 px-1"
+                    className="border-b-2 border-ink bg-transparent text-ui font-medium py-0.5 px-1"
                   />
                 </div>
               )}
@@ -888,7 +890,7 @@ export default function KnessetWatchPage() {
               <select
                 value={sortBy}
                 onChange={e => setSortBy(e.target.value as SortOption)}
-                className="border-b-2 border-black bg-transparent font-medium text-sm cursor-pointer py-1 pr-1 pl-6 appearance-none"
+                className="border-b-2 border-ink bg-transparent font-medium text-ui cursor-pointer py-1 pr-1 pl-6 appearance-none"
               >
                 {SORT_OPTIONS.map(s => (
                   <option key={s.value} value={s.value}>{s.label}</option>
@@ -900,16 +902,16 @@ export default function KnessetWatchPage() {
             {groupBy.startsWith('party') && (
               <div className="flex flex-col gap-1">
                 <span className="text-meta font-medium text-mute">חישוב</span>
-                <div className="flex gap-2 border-b-2 border-black py-1">
+                <div className="flex gap-2 border-b-2 border-ink py-1">
                   <button 
                     onClick={() => setGroupBy('party-total')}
-                    className={`text-sm font-medium transition-opacity ${groupBy === 'party-total' ? 'opacity-100' : 'opacity-40'}`}
+                    className={`text-ui font-medium transition-opacity ${groupBy === 'party-total' ? 'opacity-100' : 'opacity-40'}`}
                   >
                     סה״כ
                   </button>
                   <button 
                     onClick={() => setGroupBy('party-avg')}
-                    className={`text-sm font-medium transition-opacity ${groupBy === 'party-avg' ? 'opacity-100' : 'opacity-40'}`}
+                    className={`text-ui font-medium transition-opacity ${groupBy === 'party-avg' ? 'opacity-100' : 'opacity-40'}`}
                   >
                     ממוצע
                   </button>
@@ -925,7 +927,7 @@ export default function KnessetWatchPage() {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder={groupBy === 'mk' ? 'שם או מפלגה...' : groupBy === 'bill' ? 'חיפוש בחקיקה...' : 'שם...'}
-                className="border-b-2 border-black bg-transparent font-medium text-sm py-1 pr-1 w-44 placeholder:text-mute placeholder:font-normal"
+                className="border-b-2 border-ink bg-transparent font-medium text-ui py-1 pr-1 w-44 placeholder:text-mute placeholder:font-normal"
               />
             </div>
 
@@ -935,7 +937,7 @@ export default function KnessetWatchPage() {
               <select
                 value={coalitionFilter}
                 onChange={e => setCoalitionFilter(e.target.value as CoalitionFilter)}
-                className="border-b-2 border-black bg-transparent font-medium text-sm cursor-pointer py-1 pr-1 pl-6 appearance-none"
+                className="border-b-2 border-ink bg-transparent font-medium text-ui cursor-pointer py-1 pr-1 pl-6 appearance-none"
               >
                 {COALITION_OPTIONS.map(([v, label]) => (
                   <option key={v} value={v}>{label}</option>
@@ -950,7 +952,7 @@ export default function KnessetWatchPage() {
                 <select
                   value={billTypeFilter}
                   onChange={e => setBillTypeFilter(e.target.value as any)}
-                  className="border-b-2 border-black bg-transparent font-medium text-sm cursor-pointer py-1 pr-1 pl-6 appearance-none"
+                  className="border-b-2 border-ink bg-transparent font-medium text-ui cursor-pointer py-1 pr-1 pl-6 appearance-none"
                 >
                   <option value="all">הכל</option>
                   <option value="gov">ממשלתית (סיגנל)</option>
@@ -970,7 +972,7 @@ export default function KnessetWatchPage() {
                     onChange={e => setActiveOnly(e.target.checked)}
                     className="accent-black w-3.5 h-3.5"
                   />
-                  <span className="text-sm font-medium">פעילים בלבד</span>
+                  <span className="text-ui font-medium">פעילים בלבד</span>
                 </label>
                 {(timeframeVal === 'k25' || timeframeVal === 'all') && (
                   <label className="flex items-center gap-2 cursor-pointer select-none py-0.5">
@@ -980,7 +982,7 @@ export default function KnessetWatchPage() {
                       onChange={e => setShowDeparted(e.target.checked)}
                       className="accent-black w-3.5 h-3.5"
                     />
-                    <span className="text-sm font-medium">כולל שעזבו</span>
+                    <span className="text-ui font-medium">כולל שעזבו</span>
                   </label>
                 )}
               </div>
@@ -991,11 +993,11 @@ export default function KnessetWatchPage() {
             {!loading && !error && (
               <div className="flex flex-col gap-1">
                 <span className="text-meta font-medium text-mute">נמצאו</span>
-                <div className="flex items-baseline gap-1 font-mono border-b-2 border-black py-1">
-                  <span className="text-sm font-medium text-black">
+                <div className="flex items-baseline gap-1 font-mono border-b-2 border-ink py-1">
+                  <span className="text-ui font-medium text-ink">
                     {filtersActive ? visibleCount : totalCount}
                   </span>
-                  {filtersActive && <span className="text-xs text-black/40">/ {totalCount}</span>}
+                  {filtersActive && <span className="text-meta text-mute">/ {totalCount}</span>}
                 </div>
               </div>
             )}
@@ -1003,7 +1005,7 @@ export default function KnessetWatchPage() {
             {/* View toggle — leftmost */}
             <div className="flex flex-col gap-1">
               <span className="text-meta font-medium text-mute">תצוגה</span>
-              <div className="flex gap-2 border-b-2 border-black py-1">
+              <div className="flex gap-2 border-b-2 border-ink py-1">
                 <button
                   onClick={() => setViewMode('card')}
                   className={`p-0.5 rounded transition-opacity ${viewMode === 'card' ? 'opacity-100' : 'opacity-40 hover:opacity-70'}`}
@@ -1071,19 +1073,19 @@ export default function KnessetWatchPage() {
           <div className="flex items-center gap-5 flex-wrap mb-8">
             <GlossaryTooltip term="coalition">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-5 rounded-sm shrink-0" style={{ background: '#16A34A' }} />
+                <span className="w-2.5 h-5 rounded-control shrink-0" style={{ background: AFFILIATION.coalition }} />
                 <span className="text-meta font-medium text-mute">קואליציה</span>
               </div>
             </GlossaryTooltip>
             <GlossaryTooltip term="opposition">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-5 rounded-sm shrink-0" style={{ background: '#2563EB' }} />
+                <span className="w-2.5 h-5 rounded-control shrink-0" style={{ background: AFFILIATION.opposition }} />
                 <span className="text-meta font-medium text-mute">אופוזיציה</span>
               </div>
             </GlossaryTooltip>
             {showDeparted && (
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-5 rounded-sm shrink-0" style={{ background: '#6B7280' }} />
+                <span className="w-2.5 h-5 rounded-control shrink-0" style={{ background: AFFILIATION.unaffiliated }} />
                 <span className="text-meta font-medium text-mute">לשעבר</span>
               </div>
             )}
@@ -1091,16 +1093,16 @@ export default function KnessetWatchPage() {
         )}
 
         {isPending && (
-          <div className="fixed top-4 right-4 z-50 flex items-center gap-2 bg-black text-white px-4 py-2 rounded-full text-sm font-medium">
+          <div className="fixed top-4 right-4 z-50 flex items-center gap-2 bg-navy-deep text-white px-4 py-2 rounded-full text-ui font-medium">
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             טוען עמוד...
           </div>
         )}
 
         {loading ? (
-          <div className="py-32 flex justify-center text-xl font-medium animate-pulse opacity-20">טוען...</div>
+          <div className="py-32 flex justify-center text-section font-medium animate-pulse opacity-20">טוען...</div>
         ) : error ? (
-          <div className="p-12 text-center text-xl font-medium text-red-600">{error}</div>
+          <div className="p-12 text-center text-section font-medium text-fail">{error}</div>
         ) : groupBy === 'alliances' ? (
           /* ── Alliances view ── */
           <div className="w-full">
@@ -1110,15 +1112,15 @@ export default function KnessetWatchPage() {
           /* ── Rebels view ── */
           <div className="flex flex-col gap-4">
             {rebels.map((r, i) => (
-              <div key={r.id} className="flex items-center gap-6 p-6 rounded-2xl border border-black/[0.03] bg-white hover:bg-gray-50 transition-colors">
-                <span className="text-2xl font-medium text-gray-200 w-8">{i + 1}</span>
+              <div key={r.id} className="flex items-center gap-6 p-6 rounded-card border border-line bg-surface hover:bg-surface-2 transition-colors">
+                <span className="text-section font-medium text-navy-soft w-8">{i + 1}</span>
                 <div className="flex-1">
-                  <Link href={`/mk/${r.id}`} className="text-xl font-medium hover:underline">{r.name}</Link>
-                  <p className="text-sm text-mute">{r.faction}</p>
+                  <Link href={`/mk/${r.id}`} className="text-section font-medium hover:underline">{r.name}</Link>
+                  <p className="text-ui text-mute">{r.faction}</p>
                 </div>
-                <div className="text-center bg-orange-50 px-6 py-3 rounded-xl border border-orange-100">
-                  <span className="block text-2xl font-medium text-orange-600">{r.rebellionCount}</span>
-                  <span className="text-meta font-medium text-orange-400">הצבעות נגד הסיעה</span>
+                <div className="text-center bg-warn-wash px-6 py-3 rounded-card border border-warn/30">
+                  <span className="block text-section font-medium text-warn">{r.rebellionCount}</span>
+                  <span className="text-meta font-medium text-ink-2">הצבעות נגד הסיעה</span>
                 </div>
               </div>
             ))}
@@ -1127,14 +1129,14 @@ export default function KnessetWatchPage() {
           /* ── Attendance view ── */
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {attendance.map((a, i) => (
-              <div key={a.id} className="flex items-center gap-4 p-6 rounded-2xl border border-black/[0.03] bg-white hover:bg-gray-50 transition-colors">
-                <span className="text-lg font-medium text-gray-200">{i + 1}</span>
+              <div key={a.id} className="flex items-center gap-4 p-6 rounded-card border border-line bg-surface hover:bg-surface-2 transition-colors">
+                <span className="text-section font-medium text-navy-soft">{i + 1}</span>
                 <div className="flex-1">
                   <Link href={`/mk/${a.id}`} className="font-medium hover:underline">{a.name}</Link>
-                  <p className="text-xs text-mute">{a.faction}</p>
+                  <p className="text-meta text-mute">{a.faction}</p>
                 </div>
                 <div className="text-right">
-                  <span className="text-lg font-medium">{a.attendedCount}</span>
+                  <span className="text-section font-medium">{a.attendedCount}</span>
                   <span className="text-meta text-mute mr-1">ישיבות</span>
                 </div>
               </div>
@@ -1144,9 +1146,9 @@ export default function KnessetWatchPage() {
           /* ── Lobbyists view ── */
           <div className="flex flex-col gap-3">
             {lobbyists.map((l) => (
-              <div key={l.id} className="p-6 rounded-2xl border border-black/[0.03] bg-white hover:bg-gray-50 transition-colors">
-                <h3 className="text-lg font-medium mb-1">{l.name}</h3>
-                <p className="text-sm text-mute font-serif leading-relaxed">מייצג/ת: <span className="text-black font-medium">{l.clients || 'עצמאי'}</span></p>
+              <div key={l.id} className="p-6 rounded-card border border-line bg-surface hover:bg-surface-2 transition-colors">
+                <h3 className="text-section font-medium mb-1">{l.name}</h3>
+                <p className="text-ui text-mute font-serif leading-relaxed">מייצג/ת: <span className="text-ink font-medium">{l.clients || 'עצמאי'}</span></p>
               </div>
             ))}
           </div>
@@ -1213,13 +1215,13 @@ export default function KnessetWatchPage() {
               .map((b) => (
               <div
                 key={b.id}
-                className="flex items-start gap-4 p-6 rounded-2xl border border-black/[0.03] bg-white hover:bg-gray-50 transition-colors"
+                className="flex items-start gap-4 p-6 rounded-card border border-line bg-surface hover:bg-surface-2 transition-colors"
               >
-                <span className={`shrink-0 text-meta font-medium px-2 py-1 rounded-full ${b.is_passed ? 'bg-[#16A34A] text-white' : 'bg-gray-200 text-mute'}`}>
+                <span className={`shrink-0 text-meta font-medium px-2 py-1 rounded-full ${b.is_passed ? 'bg-pass text-white' : 'bg-warn-wash text-warn'}`}>
                   {b.status_desc || (b.is_passed ? 'עבר' : 'הוגש')}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-base font-medium leading-tight mb-1">{b.title}</h3>
+                  <h3 className="text-body font-medium leading-tight mb-1">{b.title}</h3>
                   {b.initiators && b.initiators.length > 0 && (
                     <div className="flex flex-wrap gap-x-2 gap-y-1 mb-2">
                       {b.initiators.map((init: any) => (
@@ -1234,17 +1236,17 @@ export default function KnessetWatchPage() {
                     </div>
                   )}
                   {b.summary && (
-                    <p className="text-sm text-mute mb-2 line-clamp-3 leading-relaxed font-serif">{b.summary}</p>
+                    <p className="text-ui text-mute mb-2 line-clamp-3 leading-relaxed font-serif">{b.summary}</p>
                   )}
                   <div className="flex gap-2 flex-wrap items-center">
                     {b.macro_agenda && (
-                      <span className="text-meta font-medium text-white bg-black px-2 py-0.5 rounded-full">{b.macro_agenda}</span>
+                      <span className="text-meta font-medium text-white bg-navy-deep px-2 py-0.5 rounded-full">{b.macro_agenda}</span>
                     )}
                     {b.micro_agenda && (
-                      <span className="text-meta font-bold text-ink-2 bg-gray-100 px-2 py-0.5 rounded-full">#{b.micro_agenda}</span>
+                      <span className="text-meta font-bold text-ink-2 bg-line px-2 py-0.5 rounded-full">#{b.micro_agenda}</span>
                     )}
                     {b.committee_name && (
-                      <span className="text-meta font-medium text-mute border border-gray-100 px-2 py-0.5 rounded-full">{b.committee_name}</span>
+                      <span className="text-meta font-medium text-mute border border-line-soft px-2 py-0.5 rounded-full">{b.committee_name}</span>
                     )}
                     {b.publication_date && (
                       <span className="text-meta text-mute tabular-nums">
@@ -1258,7 +1260,7 @@ export default function KnessetWatchPage() {
                     href={b.doc_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="shrink-0 text-meta font-medium text-mute hover:text-black transition-colors border border-gray-200 hover:border-gray-400 px-2 py-1 rounded"
+                    className="shrink-0 text-meta font-medium text-mute hover:text-ink transition-colors border border-line hover:border-mute px-2 py-1 rounded"
                   >
                     PDF
                   </a>
@@ -1274,17 +1276,17 @@ export default function KnessetWatchPage() {
               return (
                 <div
                   key={f.name}
-                  className={`relative group p-8 rounded-2xl border shadow-sm hover:shadow-2xl hover:-translate-y-2 hover:border-gray-400 cursor-pointer transition-all flex flex-col min-h-[280px] ${
-                    f.isCoalition ? 'bg-green-100 border-green-300/50' : 'bg-accent-wash border-accent/50'
+                  className={`relative group p-8 rounded-card border shadow-sm hover:border-mute cursor-pointer transition-all flex flex-col min-h-[280px] ${
+                    f.isCoalition ? 'bg-navy-soft/40 border-navy/20' : 'bg-accent-wash border-accent-lit/60'
                   }`}
                 >
-                  <h3 className="text-xl font-medium leading-tight mb-2">
+                  <h3 className="text-section font-medium leading-tight mb-2">
                     {f.name}
                   </h3>
                   <div className="flex items-center gap-2 mb-6 min-h-[1.5rem] flex-wrap">
-                    <span className="text-xs text-mute font-medium">{f.currentMemberCount} ח"כים פעילים</span>
+                    <span className="text-meta text-mute font-medium">{f.currentMemberCount} ח"כים פעילים</span>
                     <span className={`shrink-0 text-meta font-medium px-1.5 py-0.5 rounded-full ${
-                      f.isCoalition ? 'bg-[#16A34A] text-white' : 'bg-[#2563EB] text-white'
+                      f.isCoalition ? 'bg-navy text-white' : 'bg-accent text-white'
                     }`}>
                       {f.isCoalition ? 'קואליציה' : 'אופוזיציה'}
                     </span>
@@ -1295,13 +1297,13 @@ export default function KnessetWatchPage() {
                         <span className="text-meta font-medium text-mute mb-1 whitespace-nowrap">ה"ח&nbsp;יזומות</span>
                         <span className="text-3xl font-medium">{f.billCount}</span>
                       </div>
-                      <div className="flex flex-col border-r border-black/5 pr-3">
+                      <div className="flex flex-col border-r border-line-soft pr-3">
                         <span className="text-meta font-medium text-mute mb-1">עברו</span>
                         <span className="text-3xl font-medium text-accent">{f.passedCount}</span>
                       </div>
-                      <div className="flex flex-col border-r border-black/5 pr-3">
-                        <span className="text-meta font-medium text-rose-400 mb-1">מורדות</span>
-                        <span className="text-3xl font-medium text-rose-600">{f.totalRebels || 0}</span>
+                      <div className="flex flex-col border-r border-line-soft pr-3">
+                        <span className="text-meta font-medium text-ink-2 mb-1">מורדות</span>
+                        <span className="text-3xl font-medium text-fail">{f.totalRebels || 0}</span>
                       </div>
                     </div>
                   </div>
@@ -1323,19 +1325,19 @@ export default function KnessetWatchPage() {
               return (
                 <div
                   key={c.name}
-                  className="relative bg-white rounded-2xl border border-black/[0.03] shadow-sm hover:shadow-2xl hover:-translate-y-1 hover:border-gray-300 cursor-pointer transition-all flex flex-col"
+                  className="relative bg-surface rounded-card border border-line  hover:border-line cursor-pointer transition-all flex flex-col"
                 >
                   {/* Card header — always visible */}
                   <div className="p-8 flex flex-col min-h-[280px]">
-                    <h3 className="text-xl font-medium leading-tight mb-2 text-ink">
+                    <h3 className="text-section font-medium leading-tight mb-2 text-ink">
                       <Link href={`/committee/${encodeURIComponent(c.name)}`} className="hover:underline">
                         {c.name}
                       </Link>
                     </h3>
                     <div className="flex items-center gap-2 mb-6 min-h-[1.5rem] flex-wrap">
-                      <span className="text-xs text-mute font-medium">{c.memberCount} חברים</span>
+                      <span className="text-meta text-mute font-medium">{c.memberCount} חברים</span>
                       {c.primaryAgenda && (
-                        <span className="text-meta font-medium px-1.5 py-0.5 rounded-full bg-black text-white">
+                        <span className="text-meta font-medium px-1.5 py-0.5 rounded-full bg-navy-deep text-white">
                           {c.primaryAgenda}
                         </span>
                       )}
@@ -1346,18 +1348,18 @@ export default function KnessetWatchPage() {
                           <span className="text-meta font-medium text-mute mb-1">הצעות</span>
                           <span className="text-3xl font-medium">{c.billCount}</span>
                         </div>
-                        <div className="flex flex-col border-r border-black/5 pr-3">
+                        <div className="flex flex-col border-r border-line-soft pr-3">
                           <span className="text-meta font-medium text-mute mb-1">עברו</span>
                           <span className="text-3xl font-medium text-accent">{c.passedCount}</span>
                         </div>
-                        <div className="flex flex-col border-r border-black/5 pr-3">
+                        <div className="flex flex-col border-r border-line-soft pr-3">
                           <span className="text-meta font-medium text-mute mb-1">יחס</span>
                           <span className="text-3xl font-medium text-ink">{ratio}%</span>
                         </div>
                       </div>
                       <button
                         onClick={toggleExpand}
-                        className="mt-4 w-full text-meta font-medium text-mute hover:text-black transition-colors text-center py-1 border-t border-black/5"
+                        className="mt-4 w-full text-meta font-medium text-mute hover:text-ink transition-colors text-center py-1 border-t border-line-soft"
                       >
                         {isExpanded ? 'סגור ▲' : 'פרטים ▼'}
                       </button>
@@ -1366,7 +1368,7 @@ export default function KnessetWatchPage() {
 
                   {/* Expanded details */}
                   {isExpanded && (
-                    <div className="border-t border-black/8 px-6 py-5 flex flex-col gap-5">
+                    <div className="border-t border-line px-6 py-5 flex flex-col gap-5">
                       {/* Members */}
                       {c.members?.length > 0 && (
                         <div>
@@ -1377,9 +1379,9 @@ export default function KnessetWatchPage() {
                                 key={m.id}
                                 href={`${BASE_PATH}/mk/${m.slug ?? m.id}`}
                                 className={`text-meta font-bold px-2 py-0.5 rounded-full border transition-colors hover:opacity-80 ${
-                                  m.isCoalition === true ? 'bg-green-50 border-green-200 text-green-800' :
+                                  m.isCoalition === true ? 'bg-pass-wash border-pass/30 text-pass' :
                                   m.isCoalition === false ? 'bg-accent-wash border-line text-accent' :
-                                  'bg-gray-100 border-gray-200 text-ink-2'
+                                  'bg-surface border-line text-ink-2'
                                 }`}
                               >
                                 {m.name}
@@ -1397,7 +1399,7 @@ export default function KnessetWatchPage() {
                               <div key={b.id} className="flex items-start gap-1.5">
                                 <span className="shrink-0 mt-1.5 w-1 h-1 rounded-full bg-accent" />
                                 <div>
-                                  <span className="text-xs font-medium text-ink leading-snug">{b.title}</span>
+                                  <span className="text-meta font-medium text-ink leading-snug">{b.title}</span>
                                   {b.initDate && (
                                     <span className="block text-meta text-mute">{b.initDate}</span>
                                   )}
@@ -1422,26 +1424,26 @@ export default function KnessetWatchPage() {
                 const pulse = !party.statsReady;
                 const isMixed = party.coalitionPct !== null;
                 const cardBg = isMixed
-                  ? 'border border-black/[0.05]'
+                  ? 'border border-line'
                   : party.IsCoalition === true
-                    ? 'bg-green-100 border-green-300/50'
+                    ? 'bg-navy-soft/40 border-navy/20'
                     : party.IsCoalition === false
-                      ? 'bg-accent-wash border-accent/50'
-                      : 'bg-white border-black/[0.03]';
+                      ? 'bg-accent-wash border-accent-lit/60'
+                      : 'bg-surface border-line';
                 return (
                   <div
                     key={party.FactionName}
-                    className={`relative group ${cardBg} p-8 rounded-2xl border shadow-sm hover:shadow-2xl hover:-translate-y-2 hover:border-gray-400 cursor-pointer transition-all flex flex-col min-h-[280px]`}
+                    className={`relative group ${cardBg} p-8 rounded-card border shadow-sm hover:border-mute cursor-pointer transition-all flex flex-col min-h-[280px]`}
                     style={isMixed ? buildCardStyle(party.coalitionPct, party.IsCoalition, 1) : undefined}
                   >
-                    <h3 className="text-2xl font-medium leading-tight mb-2 group-hover:text-green-800 transition-colors">
+                    <h3 className="text-section font-medium leading-tight mb-2 group-hover:text-pass transition-colors">
                       {party.FactionName}
                     </h3>
                     <div className="flex items-center gap-2 mb-6 min-h-[1.5rem] flex-wrap">
-                      <span className="text-xs text-mute font-medium">{party.mkCount} חברי כנסת</span>
+                      <span className="text-meta text-mute font-medium">{party.mkCount} חברי כנסת</span>
                       {party.IsCoalition !== null && (
                         <span className={`shrink-0 text-meta font-medium px-1.5 py-0.5 rounded-full ${
-                          party.IsCoalition ? 'bg-[#16A34A] text-white' : 'bg-[#2563EB] text-white'
+                          party.IsCoalition ? 'bg-navy text-white' : 'bg-accent text-white'
                         }`}>
                           {party.IsCoalition ? 'קואליציה' : 'אופוזיציה'}
                         </span>
@@ -1459,7 +1461,7 @@ export default function KnessetWatchPage() {
                                           <span className="text-meta font-medium text-mute">מיקוד מרכזי</span>
                                           <div className="flex flex-wrap gap-1">
                                             {party.topAgendas.map(a => (
-                                              <span key={a.macro} className="text-meta font-medium px-2 py-0.5 rounded-full bg-black/5 text-black/60 border border-black/5">
+                                              <span key={a.macro} className="text-meta font-medium px-2 py-0.5 rounded-full bg-surface-2 text-ink-2 border border-line-soft">
                                                 {a.macro}
                                               </span>
                                             ))}
@@ -1476,7 +1478,7 @@ export default function KnessetWatchPage() {
                             {groupBy === 'party-avg' ? party.displayProposed.toFixed(1) : Math.round(party.displayProposed)}
                           </span>
                         </div>
-                        <div className="flex flex-col border-r border-black/5 pr-3">
+                        <div className="flex flex-col border-r border-line-soft pr-3">
                           <span className="text-meta font-medium text-mute mb-1">
                             עברו{groupBy === 'party-avg' ? ' (ממוצע)' : ''}
                           </span>
@@ -1484,7 +1486,7 @@ export default function KnessetWatchPage() {
                             {groupBy === 'party-avg' ? party.displayPassed.toFixed(1) : Math.round(party.displayPassed)}
                           </span>
                         </div>
-                        <div className="flex flex-col border-r border-black/5 pr-3">
+                        <div className="flex flex-col border-r border-line-soft pr-3">
                           <span className="text-meta font-medium text-mute mb-1">יחס</span>
                           <span className={`text-3xl font-medium text-ink transition-opacity ${pulse ? 'opacity-30 animate-pulse' : ''}`}>
                             {ratioDisplay !== null ? `${ratioDisplay}%` : '—'}
@@ -1514,9 +1516,9 @@ export default function KnessetWatchPage() {
                 const partyRowStyle: React.CSSProperties = isMixed
                   ? { background: `linear-gradient(to left, #F0FDF4 ${Math.round(party.coalitionPct! * 100)}%, #EFF6FF ${Math.round(party.coalitionPct! * 100)}%)` }
                   : party.IsCoalition === true
-                    ? { background: '#F0FDF4' }
+                    ? { background: AFFILIATION.coalitionWash }
                     : party.IsCoalition === false
-                      ? { background: '#EFF6FF' }
+                      ? { background: AFFILIATION.oppositionWash }
                       : {};
                 return (
                   <div
@@ -1525,18 +1527,18 @@ export default function KnessetWatchPage() {
                     style={partyRowStyle}
                   >
                     <div className="flex flex-col">
-                      <span className="font-medium text-base">{party.FactionName}</span>
+                      <span className="font-medium text-body">{party.FactionName}</span>
                       <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                         <span className="text-meta text-mute">{party.mkCount} חברי כנסת</span>
                         {party.IsCoalition !== null && (
                           <span className={`text-meta font-medium px-1 py-0.5 rounded ${
-                            party.IsCoalition ? 'bg-[#16A34A] text-white' : 'bg-[#2563EB] text-white'
+                            party.IsCoalition ? 'bg-navy text-white' : 'bg-accent text-white'
                           }`}>
                             {party.IsCoalition ? 'קואליציה' : 'אופוזיציה'}
                           </span>
                         )}
                         {party.topAgendas?.slice(0, 1).map(a => (
-                          <span key={a.macro} className="text-meta font-bold text-black/40 border border-black/5 px-1 py-0.5 rounded">
+                          <span key={a.macro} className="text-meta font-bold text-mute border border-line-soft px-1 py-0.5 rounded">
                             {a.macro}
                           </span>
                         ))}
@@ -1548,18 +1550,18 @@ export default function KnessetWatchPage() {
                       </div>
                     )}
                     <div className="relative overflow-hidden">
-                      <div className="absolute inset-y-0 right-0 bg-black/[0.04] rounded-sm transition-all duration-300" style={{ width: `${proposedPct}%` }} />
-                      <span className={`relative font-medium text-base tabular-nums transition-opacity ${pulse ? 'opacity-30 animate-pulse' : ''}`}>
+                      <div className="absolute inset-y-0 right-0 bg-black/[0.04] rounded-control transition-all duration-300" style={{ width: `${proposedPct}%` }} />
+                      <span className={`relative font-medium text-body tabular-nums transition-opacity ${pulse ? 'opacity-30 animate-pulse' : ''}`}>
                         {groupBy === 'party-avg' ? party.displayProposed.toFixed(1) : Math.round(party.displayProposed)}
                       </span>
                     </div>
                     <div className="relative overflow-hidden">
-                      <div className="absolute inset-y-0 right-0 bg-green-100 rounded-sm transition-all duration-300" style={{ width: `${passedPct}%` }} />
-                      <span className={`relative font-medium text-base tabular-nums text-accent transition-opacity ${pulse ? 'opacity-30 animate-pulse' : ''}`}>
+                      <div className="absolute inset-y-0 right-0 bg-pass-wash rounded-control transition-all duration-300" style={{ width: `${passedPct}%` }} />
+                      <span className={`relative font-medium text-body tabular-nums text-accent transition-opacity ${pulse ? 'opacity-30 animate-pulse' : ''}`}>
                         {groupBy === 'party-avg' ? party.displayPassed.toFixed(1) : Math.round(party.displayPassed)}
                       </span>
                     </div>
-                    <span className={`font-medium text-base tabular-nums text-ink transition-opacity ${pulse ? 'opacity-30 animate-pulse' : ''}`}>
+                    <span className={`font-medium text-body tabular-nums text-ink transition-opacity ${pulse ? 'opacity-30 animate-pulse' : ''}`}>
                       {ratioDisplay !== null ? `${ratioDisplay}%` : '—'}
                     </span>
                   </div>
@@ -1580,12 +1582,12 @@ export default function KnessetWatchPage() {
               const isMixed = item.coalitionPct !== null;
               const hasGradient = isMixed || isFormer;
               const cardBg = hasGradient
-                ? 'border border-black/[0.05]'
+                ? 'border border-line'
                 : item.IsCoalition === true
-                  ? 'bg-green-100 border-green-300/50'
+                  ? 'bg-navy-soft/40 border-navy/20'
                   : item.IsCoalition === false
-                    ? 'bg-accent-wash border-accent/50'
-                    : 'bg-white border-black/[0.03]';
+                    ? 'bg-accent-wash border-accent-lit/60'
+                    : 'bg-surface border-line';
               const displaySegments = useTimeframeSegments
                 ? filterSegmentsToTimeframe(item.segments, resolvedStart, segmentRangeEnd)
                 : item.segments;
@@ -1602,7 +1604,7 @@ export default function KnessetWatchPage() {
               return (
                 <div
                   key={item.Id}
-                  className={`relative group ${cardBg} p-8 rounded-2xl border shadow-sm hover:shadow-2xl hover:-translate-y-2 hover:border-gray-400 cursor-pointer transition-all flex flex-col min-h-[280px] ${isStale && !statsLoading ? 'opacity-75' : ''}`}
+                  className={`relative group ${cardBg} p-8 rounded-card border shadow-sm hover:border-mute cursor-pointer transition-all flex flex-col min-h-[280px] ${isStale && !statsLoading ? 'opacity-75' : ''}`}
                   style={displaySegments?.length ? buildCardStyleFromSegments(displaySegments) : buildCardStyle(item.coalitionPct, item.IsCoalition, activeFrac)}
                 >
                   <div className="flex items-start gap-3 mb-2">
@@ -1612,7 +1614,7 @@ export default function KnessetWatchPage() {
                       isCoalition={item.IsCoalition}
                       size="lg"
                     />
-                    <h3 className="text-2xl font-medium leading-tight transition-colors min-w-0">
+                    <h3 className="text-section font-medium leading-tight transition-colors min-w-0">
                       <Link href={`/mk/${item.slug ?? item.Id}`} className="hover:underline" prefetch={false}>
                         {item.FirstName} {item.LastName}
                       </Link>
@@ -1620,22 +1622,22 @@ export default function KnessetWatchPage() {
                   </div>
                   <div className="flex items-center gap-2 mb-2 min-h-[1.5rem] flex-wrap">
                     {item.FactionName && (
-                      <span className="text-xs text-ink-2 font-medium truncate">{item.FactionName}</span>
+                      <span className="text-meta text-ink-2 font-medium truncate">{item.FactionName}</span>
                     )}
                     {item.IsCoalition !== null && item.IsCoalition !== undefined && (
                       <span className={`shrink-0 text-meta font-medium px-1.5 py-0.5 rounded-full ${
-                        item.IsCoalition ? 'bg-[#16A34A] text-white' : 'bg-[#2563EB] text-white'
+                        item.IsCoalition ? 'bg-navy text-white' : 'bg-accent text-white'
                       }`}>
                         {item.IsCoalition ? 'קואליציה' : 'אופוזיציה'}
                       </span>
                     )}
                     {item.ministerRole && (
-                      <span className="shrink-0 text-meta font-medium px-1.5 py-0.5 rounded-full bg-amber-400 text-white" title={item.ministerRole}>
+                      <span className="shrink-0 text-meta font-medium px-1.5 py-0.5 rounded-full bg-accent-wash text-accent-ink" title={item.ministerRole}>
                         {item.ministerRole.startsWith('סגן') || item.ministerRole.startsWith('סגנית') ? 'סגן שר' : 'שר'}
                       </span>
                     )}
                     {isFormer && (
-                      <span className="shrink-0 text-meta font-medium px-1.5 py-0.5 rounded-full bg-zinc-100 text-zinc-400">
+                      <span className="shrink-0 text-meta font-medium px-1.5 py-0.5 rounded-full bg-surface-2 text-mute">
                         לשעבר
                       </span>
                     )}
@@ -1653,7 +1655,7 @@ export default function KnessetWatchPage() {
                   {topAgendas.length > 0 && (
                     <div className="flex flex-wrap gap-1 mb-6">
                       {topAgendas.map(a => (
-                        <span key={a.macro} className="text-meta font-medium px-2 py-0.5 rounded-full bg-black/5 text-black/50 border border-black/5">
+                        <span key={a.macro} className="text-meta font-medium px-2 py-0.5 rounded-full bg-surface-2 text-mute border border-line-soft">
                           {a.macro}
                         </span>
                       ))}
@@ -1669,25 +1671,25 @@ export default function KnessetWatchPage() {
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                       <div className="flex flex-col min-w-0">
                         <span className="text-meta font-medium text-mute mb-1 whitespace-nowrap">ה"ח&nbsp;יזומות</span>
-                        <span className={`text-lg font-medium tabular-nums transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
+                        <span className={`text-section font-medium tabular-nums transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
                           {item.stats?.proposed ?? 0}
                         </span>
                       </div>
-                      <div className="flex flex-col border-r border-black/5 pr-2 min-w-0">
+                      <div className="flex flex-col border-r border-line-soft pr-2 min-w-0">
                         <span className="text-meta font-medium text-mute mb-1">עברו</span>
-                        <span className={`text-lg font-medium tabular-nums text-accent transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
+                        <span className={`text-section font-medium tabular-nums text-accent transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
                           {item.stats?.passed ?? 0}
                         </span>
                       </div>
-                      <div className="flex flex-col border-r border-black/5 pr-2 min-w-0">
+                      <div className="flex flex-col border-r border-line-soft pr-2 min-w-0">
                         <span className="text-meta font-medium text-mute mb-1">יחס</span>
-                        <span className={`text-lg font-medium tabular-nums text-ink transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
+                        <span className={`text-section font-medium tabular-nums text-ink transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
                           {item.stats ? (ratio !== null ? `${ratio}%` : '—') : 0}
                         </span>
                       </div>
-                      <div className="flex flex-col border-r border-black/5 pr-2 min-w-0">
+                      <div className="flex flex-col border-r border-line-soft pr-2 min-w-0">
                         <span className="text-meta font-medium text-mute mb-1">ועדות</span>
-                        <span className={`text-lg font-medium tabular-nums text-accent transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
+                        <span className={`text-section font-medium tabular-nums text-accent transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
                           {item.stats?.committeeSessions ?? 0}
                         </span>
                       </div>
@@ -1735,7 +1737,7 @@ export default function KnessetWatchPage() {
                   style={buildRowStyleFromSegments(displaySegments)}
                 >
                   <div className="flex flex-col">
-                    <Link href={`/mk/${item.slug ?? item.Id}`} className="font-medium text-base hover:underline" prefetch={false}>
+                    <Link href={`/mk/${item.slug ?? item.Id}`} className="font-medium text-body hover:underline" prefetch={false}>
                       {item.FirstName} {item.LastName}
                     </Link>
                     <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
@@ -1744,23 +1746,23 @@ export default function KnessetWatchPage() {
                       )}
                       {item.IsCoalition !== null && item.IsCoalition !== undefined && (
                         <span className={`text-meta font-medium px-1 py-0.5 rounded ${
-                          item.IsCoalition ? 'bg-[#16A34A] text-white' : 'bg-[#2563EB] text-white'
+                          item.IsCoalition ? 'bg-navy text-white' : 'bg-accent text-white'
                         }`}>
                           {item.IsCoalition ? 'קואליציה' : 'אופוזיציה'}
                         </span>
                       )}
                       {item.ministerRole && (
-                        <span className="text-meta font-medium px-1 py-0.5 rounded bg-amber-400 text-white" title={item.ministerRole}>
+                        <span className="text-meta font-medium px-1 py-0.5 rounded bg-accent-wash text-accent-ink" title={item.ministerRole}>
                           {item.ministerRole.startsWith('סגן') || item.ministerRole.startsWith('סגנית') ? 'סגן שר' : 'שר'}
                         </span>
                       )}
                       {(item.stats?.rebellions ?? 0) > 0 && (
-                        <span className="text-meta font-medium px-1 py-0.5 rounded bg-orange-100 text-orange-700">
+                        <span className="text-meta font-medium px-1 py-0.5 rounded bg-warn-wash text-warn">
                           {item.stats.rebellions} מורדות
                         </span>
                       )}
                       {topAgendas.slice(0, 1).map(a => (
-                        <span key={a.macro} className="text-meta font-bold text-black/40 border border-black/5 px-1 py-0.5 rounded">
+                        <span key={a.macro} className="text-meta font-bold text-mute border border-line-soft px-1 py-0.5 rounded">
                           {a.macro}
                         </span>
                       ))}
@@ -1772,21 +1774,21 @@ export default function KnessetWatchPage() {
                     </div>
                   )}
                   <div className="relative overflow-hidden">
-                    <div className="absolute inset-y-0 right-0 bg-black/[0.04] rounded-sm transition-all duration-300" style={{ width: `${proposedPct}%` }} />
-                    <span className={`relative font-medium text-base tabular-nums transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
+                    <div className="absolute inset-y-0 right-0 bg-black/[0.04] rounded-control transition-all duration-300" style={{ width: `${proposedPct}%` }} />
+                    <span className={`relative font-medium text-body tabular-nums transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
                       {item.stats?.proposed ?? 0}
                     </span>
                   </div>
                   <div className="relative overflow-hidden">
-                    <div className="absolute inset-y-0 right-0 bg-green-100 rounded-sm transition-all duration-300" style={{ width: `${passedPct}%` }} />
-                    <span className={`relative font-medium text-base tabular-nums text-accent transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
+                    <div className="absolute inset-y-0 right-0 bg-pass-wash rounded-control transition-all duration-300" style={{ width: `${passedPct}%` }} />
+                    <span className={`relative font-medium text-body tabular-nums text-accent transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
                       {item.stats?.passed ?? 0}
                     </span>
                   </div>
-                  <span className={`font-medium text-base tabular-nums text-ink transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
+                  <span className={`font-medium text-body tabular-nums text-ink transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
                     {item.stats ? (ratio !== null ? `${ratio}%` : '—') : 0}
                   </span>
-                  <span className={`font-medium text-base tabular-nums text-accent transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
+                  <span className={`font-medium text-body tabular-nums text-accent transition-opacity ${statsLoading ? 'opacity-30 animate-pulse' : ''}`}>
                     {item.stats?.committeeSessions ?? 0}
                   </span>
                 </div>

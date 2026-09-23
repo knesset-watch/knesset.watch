@@ -11,8 +11,14 @@ export interface RateLimitConfig {
 }
 
 export function rateLimit(request: Request, config: RateLimitConfig = { limit: 10, windowMs: 60000 }) {
-  // Use Vercel's trusted 'x-real-ip' to prevent header-spoofing
-  const ip = request.headers.get('x-real-ip') || request.headers.get('x-forwarded-for') || '127.0.0.1';
+  /*
+    x-forwarded-for הוא רשימה מופרדת בפסיקים, לא כתובת אחת. הקוד
+    הקודם לקח את המחרוזת כולה כמפתח, ולכן כל ערך שונה בכותרת יצר
+    דלי חדש — מי שהוסיף בה תו אקראי קיבל מכסה נקייה בכל בקשה.
+    הערך הראשון הוא הכתובת המשמעותית ביותר שיש.
+  */
+  const forwarded = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
+  const ip = request.headers.get('x-real-ip')?.trim() || forwarded || '127.0.0.1';
   const now = Date.now();
   const userData = tracker.get(ip) || { count: 0, lastReset: now };
 

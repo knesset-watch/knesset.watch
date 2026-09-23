@@ -60,3 +60,33 @@ apps/
 # SQLite temp files for every local snapshot, not just knesset.db
 *.db-wal
 *.db-shm
+shortened-questions.json
+
+.embed-cache.json
+orphan-rescue.jsonl
+orphan-rescue-report.txt
+
+orphan-manual-review.csv
+orphan-clusters.csv
+lgbt-bills.csv
+axis-drafts.jsonl
+axis-drafts.csv
+axis-resolved.jsonl
+axis-merged.jsonl
+orphan-matches.jsonl
+orphan-matches.csv
+orphan-matches-applied.jsonl
+orphan-sides.jsonl
+הצעות-לסיווג.xlsx
+audit-classifications.jsonl
+audit-classifications.csv
+rehome-suggestions.jsonl
+rehome-suggestions.csv
+audit-stable.jsonl
+שינויים-מוצעים.xlsx
+
+# תוצרים שנוצרו אחרי שהרשימה למעלה נכתבה
+axis-verdicts.jsonl
+שינויים-מוצעים-חדש.xlsx
+# גיבויים שנלקחים לפני הרצה שדורסת קובץ קיים
+*.bak.jsonl

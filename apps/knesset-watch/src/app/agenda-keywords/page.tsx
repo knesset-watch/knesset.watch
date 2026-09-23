@@ -16,7 +16,7 @@ export default async function AgendaKeywordsPage() {
   }
 
   return (
-    <Suspense fallback={<div className="min-h-screen bg-white" dir="rtl" />}>
+    <Suspense fallback={<div className="min-h-screen bg-paper" dir="rtl" />}>
       <KeywordMatchClient />
     </Suspense>
   );

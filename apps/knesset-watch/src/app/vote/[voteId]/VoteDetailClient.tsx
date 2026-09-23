@@ -36,14 +36,14 @@ function CoalitionBar({ label, data, colorFor, colorAgainst, labelClass }: Coali
   return (
     <div className="flex items-center gap-3">
       <span className={`w-16 shrink-0 text-meta font-medium ${labelClass}`}>{label}</span>
-      <div className="flex-1 flex h-2 rounded-full overflow-hidden bg-black/8 min-w-0">
+      <div className="flex-1 flex h-2 rounded-full overflow-hidden bg-line-soft min-w-0">
         <div className={`${colorFor} h-full transition-all`} style={{ width: `${forPct}%` }} />
         <div className={`${colorAgainst} h-full transition-all`} style={{ width: `${againstPct}%` }} />
       </div>
       <span className="shrink-0 text-meta font-medium text-mute whitespace-nowrap">
         <span className="text-accent font-medium">{data.for}</span>
         {' בעד · '}
-        <span className="text-rose-600 font-medium">{data.against}</span>
+        <span className="text-fail font-medium">{data.against}</span>
         {' נגד'}
         {data.abstain > 0 && <span className="text-mute"> · {data.abstain} נמנע</span>}
         {total === 0 && <span className="text-mute">אין נתונים</span>}
@@ -146,33 +146,33 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-white" dir="rtl">
+    <div className="min-h-screen bg-paper" dir="rtl">
       <div className="max-w-4xl mx-auto px-4 py-8">
 
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-1 text-sm text-mute mb-4">
-          <Link href="/" className="font-medium hover:text-black transition-colors">ראשי</Link>
+        <nav className="flex items-center gap-1 text-ui text-mute mb-4">
+          <Link href="/" className="font-medium hover:text-ink transition-colors">ראשי</Link>
           <span className="mx-1">›</span>
-          <span className="text-black font-medium">{title || `הצבעה ${voteId}`}</span>
+          <span className="text-ink font-medium">{title || `הצבעה ${voteId}`}</span>
         </nav>
 
         {/* Header */}
         <div className="flex items-start gap-4 mb-8">
           <div className="flex-1 min-w-0">
             {loading ? (
-              <div className="h-6 bg-gray-100 rounded animate-pulse w-64" />
+              <div className="h-6 bg-line rounded animate-pulse w-64" />
             ) : (
               <>
-                <h1 className="text-xl font-medium leading-snug">{title || `הצבעה ${voteId}`}</h1>
+                <h1 className="text-section font-medium leading-snug">{title || `הצבעה ${voteId}`}</h1>
                 <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                   {date && (
                     <span className="text-meta text-mute font-medium ml-2">{formatDate(date)}</span>
                   )}
                   {macroAgenda && (
-                    <span className="text-meta font-medium text-white bg-black/60 px-2 py-0.5 rounded-full">{macroAgenda}</span>
+                    <span className="text-meta font-medium text-white bg-navy-deep/60 px-2 py-0.5 rounded-full">{macroAgenda}</span>
                   )}
                   {microAgenda && (
-                    <span className="text-meta font-bold text-mute bg-gray-100 px-2 py-0.5 rounded-full">#{microAgenda}</span>
+                    <span className="text-meta font-bold text-mute bg-line px-2 py-0.5 rounded-full">#{microAgenda}</span>
                   )}
                 </div>
               </>
@@ -181,7 +181,7 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
           <button
             onClick={handleCopyLink}
             title="העתק קישור"
-            className="shrink-0 flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors text-ink-2"
+            className="shrink-0 flex items-center gap-1.5 text-meta font-medium px-3 py-2 rounded-card bg-surface hover:bg-line transition-colors text-ink-2"
           >
             {copied ? (
               <>
@@ -200,11 +200,11 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
         </div>
 
         {loading && (
-          <div className="py-32 text-center text-xl font-medium animate-pulse opacity-20">טוען תוצאות...</div>
+          <div className="py-32 text-center text-section font-medium animate-pulse opacity-20">טוען תוצאות...</div>
         )}
 
         {error && (
-          <div className="p-8 text-center text-red-600 font-medium">{error}</div>
+          <div className="p-8 text-center text-fail font-medium">{error}</div>
         )}
 
         {!loading && !error && (
@@ -212,7 +212,7 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
             {/* Summary badges */}
             <div className="flex flex-wrap gap-2 mb-4">
               {(['בעד', 'נגד', 'נמנע', 'נוכח'] as const).map(r => (
-                <span key={r} className={`text-xs font-medium px-3 py-1.5 rounded-full ${RESULT_COLORS[r]}`}>
+                <span key={r} className={`text-meta font-medium px-3 py-1.5 rounded-full ${RESULT_COLORS[r]}`}>
                   {r} ({counts[r]})
                 </span>
               ))}
@@ -220,20 +220,20 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
 
             {/* Coalition / opposition breakdown */}
             {coalitionBreakdown && (
-              <div className="mb-6 rounded-xl border border-black/8 bg-gray-50 px-4 py-3 flex flex-col gap-2.5">
+              <div className="mb-6 rounded-card border border-line bg-surface px-4 py-3 flex flex-col gap-2.5">
                 <CoalitionBar
                   label="קואליציה"
                   data={coalitionBreakdown.coalition}
                   colorFor="bg-accent"
-                  colorAgainst="bg-rose-400"
+                  colorAgainst="bg-fail"
                   labelClass="text-accent"
                 />
                 <CoalitionBar
                   label="אופוזיציה"
                   data={coalitionBreakdown.opposition}
                   colorFor="bg-accent"
-                  colorAgainst="bg-rose-400"
-                  labelClass="text-slate-600"
+                  colorAgainst="bg-fail"
+                  labelClass="text-ink-2"
                 />
               </div>
             )}
@@ -246,12 +246,12 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
                   <button
                     key={f}
                     onClick={() => setCoalFilter(f)}
-                    className={`text-xs font-medium px-2.5 py-1 rounded-full transition-colors ${
+                    className={`text-meta font-medium px-2.5 py-1 rounded-full transition-colors ${
                       coalFilter === f
-                        ? f === 'coalition' ? 'bg-[#16A34A] text-white'
-                          : f === 'opposition' ? 'bg-[#2563EB] text-white'
-                          : 'bg-black text-white'
-                        : 'bg-gray-100 text-ink-2 hover:bg-gray-200'
+                        ? f === 'coalition' ? 'bg-navy text-white'
+                          : f === 'opposition' ? 'bg-accent text-white'
+                          : 'bg-navy-deep text-white'
+                        : 'bg-surface text-ink-2 hover:bg-line'
                     }`}
                   >
                     {label}
@@ -266,7 +266,7 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
                   <button
                     key={s}
                     onClick={() => setSortBy(s)}
-                    className={`text-xs font-medium px-2 py-1 rounded transition-colors ${sortBy === s ? 'bg-black text-white' : 'bg-gray-100 text-ink-2 hover:bg-gray-200'}`}
+                    className={`text-meta font-medium px-2 py-1 rounded transition-colors ${sortBy === s ? 'bg-navy-deep text-white' : 'bg-surface text-ink-2 hover:bg-line'}`}
                   >
                     {label}
                   </button>
@@ -280,7 +280,7 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="חיפוש לפי שם או סיעה..."
-              className="w-full mb-4 px-4 py-2 text-sm border border-black/10 rounded-lg bg-gray-50 focus:ring-1 focus:ring-black/20"
+              className="w-full mb-4 px-4 py-2 text-ui border border-line rounded-control bg-surface focus:ring-1 focus:ring-accent/40"
             />
 
             {/* Results list */}
@@ -290,9 +290,9 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
               ) : filtered.map(r => (
                 <div
                   key={r.mkId}
-                  className={`flex items-center gap-3 py-2.5 px-4 rounded-xl text-sm ${r.isCoalition === true ? 'bg-[#F0FDF4]/50' : r.isCoalition === false ? 'bg-[#EFF6FF]/50' : 'bg-gray-50'}`}
+                  className={`flex items-center gap-3 py-2.5 px-4 rounded-card text-ui ${r.isCoalition === true ? 'bg-navy-soft/30' : r.isCoalition === false ? 'bg-accent-wash/60' : 'bg-surface'}`}
                 >
-                  <span className={`shrink-0 text-meta font-medium px-2 py-0.5 rounded-full ${RESULT_COLORS[r.result] ?? 'bg-zinc-100 text-zinc-500'}`}>
+                  <span className={`shrink-0 text-meta font-medium px-2 py-0.5 rounded-full ${RESULT_COLORS[r.result] ?? 'bg-surface-2 text-mute'}`}>
                     {r.result}
                   </span>
                   {r.slug || r.mkId ? (
@@ -302,7 +302,7 @@ export default function VoteDetailClient({ voteId }: { voteId: string }) {
                   ) : (
                     <span className="font-bold">{r.firstName} {r.lastName}</span>
                   )}
-                  <span className="text-xs text-mute font-medium mr-auto">{r.party ?? '—'}</span>
+                  <span className="text-meta text-mute font-medium mr-auto">{r.party ?? '—'}</span>
                 </div>
               ))}
             </div>

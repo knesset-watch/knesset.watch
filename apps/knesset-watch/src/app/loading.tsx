@@ -11,10 +11,10 @@ export default function Loading() {
       <span className="sr-only" role="status">טוען…</span>
 
       <div className="animate-pulse space-y-8" aria-hidden="true">
-        <div className="h-9 w-64 rounded bg-surface-2" />
+        <div className="h-9 w-64 rounded bg-line" />
         <div className="space-y-2">
-          <div className="h-4 w-full max-w-xl rounded bg-surface-2" />
-          <div className="h-4 w-full max-w-md rounded bg-surface-2" />
+          <div className="h-4 w-full max-w-xl rounded bg-line" />
+          <div className="h-4 w-full max-w-md rounded bg-line" />
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (

@@ -91,7 +91,7 @@ const cache = new Map<string, PreviewData>();
 
 function Avatar({ label, colorClass }: { label: string; colorClass: string }) {
   return (
-    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-medium text-sm shrink-0 ${colorClass}`}>
+    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-medium text-ui shrink-0 ${colorClass}`}>
       {label}
     </div>
   );
@@ -101,7 +101,7 @@ function Stat({ label, value, color }: { label: string; value: string | number; 
   return (
     <div className="flex flex-col min-w-0">
       <span className="text-meta font-medium text-mute mb-0.5 truncate">{label}</span>
-      <span className={`text-lg font-medium leading-none ${color ?? ''}`}>{value}</span>
+      <span className={`text-section font-medium leading-none ${color ?? ''}`}>{value}</span>
     </div>
   );
 }
@@ -127,23 +127,23 @@ function initials(name: string) {
 // ── Card renderers ─────────────────────────────────────────────────────────────
 
 function MkCard({ data }: { data: MkPreview }) {
-  const avatarColor = data.isCoalition === true ? 'bg-green-600' : data.isCoalition === false ? 'bg-accent' : 'bg-gray-400';
+  const avatarColor = data.isCoalition === true ? 'bg-pass' : data.isCoalition === false ? 'bg-accent' : 'bg-mute';
   return (
     <>
       <div className="flex gap-3 items-start mb-3">
         <Avatar label={initials(data.name)} colorClass={avatarColor} />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium leading-tight">{data.name}</p>
+          <p className="text-ui font-medium leading-tight">{data.name}</p>
           {data.factionName && <p className="text-meta text-mute mt-0.5">{data.factionName}</p>}
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
           {data.isCoalition !== null && (
-            <Badge label={data.isCoalition ? 'קואליציה' : 'אופוזיציה'} color={data.isCoalition ? 'bg-green-600 text-white' : 'bg-accent text-white'} />
+            <Badge label={data.isCoalition ? 'קואליציה' : 'אופוזיציה'} color={data.isCoalition ? 'bg-pass text-white' : 'bg-accent text-white'} />
           )}
-          {data.ministerRole && <Badge label="שר/ה" color="bg-amber-400 text-white" />}
+          {data.ministerRole && <Badge label="שר/ה" color="bg-accent-wash text-accent-ink" />}
         </div>
       </div>
-      <div className="grid grid-cols-4 gap-2 border-t border-black/5 pt-3">
+      <div className="grid grid-cols-4 gap-2 border-t border-line-soft pt-3">
         <Stat label='הצ"ח' value={data.proposed} />
         <Stat label="עברו" value={data.passed} color="text-accent" />
         <Stat label="מליאה" value={data.attendanceRate != null ? `${data.attendanceRate}%` : '—'} />
@@ -159,10 +159,10 @@ function CommitteeCard({ data }: { data: CommitteePreview }) {
       <div className="flex gap-3 items-start mb-3">
         <Avatar label="ו" colorClass="bg-accent" />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium leading-snug line-clamp-2">{data.name}</p>
+          <p className="text-ui font-medium leading-snug line-clamp-2">{data.name}</p>
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-2 border-t border-black/5 pt-3">
+      <div className="grid grid-cols-3 gap-2 border-t border-line-soft pt-3">
         <Stat label="ישיבות" value={data.sessionCount.toLocaleString('he-IL')} />
         <Stat label="חברים" value={data.memberCount} color="text-accent" />
         <Stat label="דיון אחרון" value={data.lastDate ? fmtDate(data.lastDate) : '—'} />
@@ -173,21 +173,21 @@ function CommitteeCard({ data }: { data: CommitteePreview }) {
 
 function VoteCard({ data }: { data: VotePreview }) {
   const margin = Math.abs(data.totalFor - data.totalAgainst);
-  const avatarColor = data.isPassed ? 'bg-accent' : 'bg-red-500';
+  const avatarColor = data.isPassed ? 'bg-accent' : 'bg-fail';
   const avatarLabel = data.isPassed ? '✓' : '✗';
   return (
     <>
       <div className="flex gap-3 items-start mb-3">
         <Avatar label={avatarLabel} colorClass={avatarColor} />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium leading-snug line-clamp-2">{data.title}</p>
+          <p className="text-ui font-medium leading-snug line-clamp-2">{data.title}</p>
           <p className="text-meta text-mute mt-0.5">{fmtDate(data.date)}{data.macroAgenda ? ` · ${data.macroAgenda}` : ''}</p>
         </div>
       </div>
-      <div className="grid grid-cols-4 gap-2 border-t border-black/5 pt-3">
-        <Stat label="הפרש" value={margin} color={data.isPassed ? 'text-accent' : 'text-red-500'} />
+      <div className="grid grid-cols-4 gap-2 border-t border-line-soft pt-3">
+        <Stat label="הפרש" value={margin} color={data.isPassed ? 'text-accent' : 'text-fail'} />
         <Stat label="בעד" value={data.totalFor} color="text-accent" />
-        <Stat label="נגד" value={data.totalAgainst} color="text-red-500" />
+        <Stat label="נגד" value={data.totalAgainst} color="text-fail" />
         <Stat label="נמנעו" value={data.totalAbstain} />
       </div>
     </>
@@ -201,15 +201,15 @@ function BillCard({ data }: { data: BillPreview }) {
       <div className="flex gap-3 items-start mb-3">
         <Avatar label="ח" colorClass={avatarColor} />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium leading-snug line-clamp-2">{data.title}</p>
+          <p className="text-ui font-medium leading-snug line-clamp-2">{data.title}</p>
           {data.committeeName && <p className="text-meta text-mute mt-0.5">{data.committeeName}</p>}
         </div>
         <Badge
           label={data.isPassed ? 'עבר' : 'בהליך'}
-          color={data.isPassed ? 'bg-accent text-white' : 'bg-gray-200 text-ink-2'}
+          color={data.isPassed ? 'bg-accent text-white' : 'bg-line text-ink-2'}
         />
       </div>
-      <div className="grid grid-cols-3 gap-2 border-t border-black/5 pt-3">
+      <div className="grid grid-cols-3 gap-2 border-t border-line-soft pt-3">
         <Stat label="מציעים" value={data.initiatorCount} />
         <Stat label="נושא" value={data.macroAgenda ?? '—'} />
         <Stat label="הוגש" value={data.initDate ? fmtDate(data.initDate) : '—'} />
@@ -224,12 +224,12 @@ function SessionCard({ data }: { data: SessionPreview }) {
       <div className="flex gap-3 items-start mb-3">
         <Avatar label="ו" colorClass="bg-accent" />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium leading-tight">{data.committeeName}</p>
+          <p className="text-ui font-medium leading-tight">{data.committeeName}</p>
           {data.title && <p className="text-meta text-mute mt-0.5 line-clamp-1">{data.title}</p>}
           <p className="text-meta text-mute mt-0.5">{fmtDate(data.date)}</p>
         </div>
       </div>
-      <div className="grid grid-cols-4 gap-2 border-t border-black/5 pt-3">
+      <div className="grid grid-cols-4 gap-2 border-t border-line-soft pt-3">
         <Stat label="הצבעות" value={data.voteCount} color="text-accent" />
         <Stat label="נושאים" value={data.agendaCount} />
         <Stat label="משתתפים" value={data.attendeeCount} />
@@ -240,24 +240,24 @@ function SessionCard({ data }: { data: SessionPreview }) {
 }
 
 function FactionCard({ data }: { data: FactionPreview }) {
-  const avatarColor = data.isCoalition === true ? 'bg-green-600' : data.isCoalition === false ? 'bg-accent' : 'bg-gray-400';
+  const avatarColor = data.isCoalition === true ? 'bg-pass' : data.isCoalition === false ? 'bg-accent' : 'bg-mute';
   const factionInitials = initials(data.name);
   return (
     <>
       <div className="flex gap-3 items-start mb-3">
         <Avatar label={factionInitials} colorClass={avatarColor} />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium leading-tight line-clamp-2">{data.name}</p>
+          <p className="text-ui font-medium leading-tight line-clamp-2">{data.name}</p>
         </div>
         {data.isCoalition !== null && (
-          <Badge label={data.isCoalition ? 'קואליציה' : 'אופוזיציה'} color={data.isCoalition ? 'bg-green-600 text-white' : 'bg-accent text-white'} />
+          <Badge label={data.isCoalition ? 'קואליציה' : 'אופוזיציה'} color={data.isCoalition ? 'bg-pass text-white' : 'bg-accent text-white'} />
         )}
       </div>
-      <div className="grid grid-cols-4 gap-2 border-t border-black/5 pt-3">
+      <div className="grid grid-cols-4 gap-2 border-t border-line-soft pt-3">
         <Stat label="חברים" value={data.memberCount} />
         <Stat label='הצ"ח' value={data.proposed} />
         <Stat label="עברו" value={data.passed} color="text-accent" />
-        <Stat label="מרד" value={data.rebelRate != null ? `${data.rebelRate}%` : '—'} color="text-orange-500" />
+        <Stat label="מרד" value={data.rebelRate != null ? `${data.rebelRate}%` : '—'} color="text-warn" />
       </div>
     </>
   );
@@ -267,13 +267,13 @@ function MinistryCard({ data }: { data: MinistryPreview }) {
   return (
     <>
       <div className="flex gap-3 items-start mb-3">
-        <Avatar label="מ" colorClass="bg-slate-600" />
+        <Avatar label="מ" colorClass="bg-navy" />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium leading-tight line-clamp-2">{data.name}</p>
+          <p className="text-ui font-medium leading-tight line-clamp-2">{data.name}</p>
           {data.currentMinister && <p className="text-meta text-mute mt-0.5">{data.currentMinister}</p>}
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2 border-t border-black/5 pt-3">
+      <div className="grid grid-cols-2 gap-2 border-t border-line-soft pt-3">
         <Stat label="שרים" value={data.totalMinisters} />
         <Stat label="חוקים" value={data.billCount} color="text-accent" />
       </div>
@@ -352,7 +352,7 @@ export default function EntityTooltip({ href, type, id, children, className }: P
 
       {visible && preview && (
         <div
-          className="fixed z-50 bg-white border border-black/10 rounded-2xl shadow-xl p-4 w-72 pointer-events-none"
+          className="fixed z-50 bg-surface border border-line rounded-card shadow-lg p-4 w-72 pointer-events-none"
           style={{ top: pos.top, left: pos.left }}
           dir="rtl"
         >

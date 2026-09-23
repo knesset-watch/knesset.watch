@@ -81,8 +81,8 @@ export default function PulsePage() {
         <>
           <span className="sr-only" role="status">טוען נתונים</span>
           <div className="animate-pulse space-y-4" aria-hidden="true">
-            <div className="h-28 rounded-card bg-surface-2" />
-            <div className="h-56 rounded-card bg-surface-2" />
+            <div className="h-28 rounded-card bg-surface" />
+            <div className="h-56 rounded-card bg-surface" />
           </div>
         </>
       )}

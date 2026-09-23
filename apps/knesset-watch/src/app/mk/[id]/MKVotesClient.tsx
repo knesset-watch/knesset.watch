@@ -27,10 +27,10 @@ interface Vote {
 }
 
 const RESULT_COLORS: Record<string, string> = {
-  'בעד':  'bg-[#16A34A] text-white',
-  'נגד':  'bg-[#2563EB] text-white',
-  'נמנע': 'bg-amber-100 text-amber-800',
-  'נוכח': 'bg-zinc-100 text-zinc-500',
+  'בעד':  'bg-pass text-white',
+  'נגד':  'bg-fail text-white',
+  'נמנע': 'bg-warn-wash text-warn',
+  'נוכח': 'bg-surface-2 text-mute',
 };
 
 const PAGE_SIZE = 50;
@@ -107,23 +107,23 @@ export default function MKVotesClient({ mkId }: { mkId: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-white" dir="rtl">
+    <div className="min-h-screen bg-paper" dir="rtl">
       <div className="max-w-4xl mx-auto px-4 py-8">
 
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <button
             onClick={handleBack}
-            className="text-sm font-medium px-3 py-1.5 rounded border border-black/10 hover:bg-gray-50 transition-colors"
+            className="text-ui font-medium px-3 py-1.5 rounded border border-line hover:bg-surface-2 transition-colors"
           >
 → חזרה
           </button>
           <div>
-            <h1 className="text-2xl font-medium leading-tight">
+            <h1 className="text-section font-medium leading-tight">
               {loading ? 'טוען...' : mkName || `חבר כנסת ${mkId}`}
             </h1>
             {!loading && !error && (
-              <p className="text-xs text-mute mt-0.5 font-medium">
+              <p className="text-meta text-mute mt-0.5 font-medium">
                 {total > votes.length
                   ? `מוצגות ${votes.length} מתוך ${total} הצבעות בכנסת 25`
                   : `${votes.length} הצבעות בכנסת 25`}
@@ -138,7 +138,7 @@ export default function MKVotesClient({ mkId }: { mkId: string }) {
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`text-xs font-medium px-4 py-1.5 rounded-lg transition-colors ${tab === t ? 'bg-black text-white' : 'bg-gray-100 text-ink-2 hover:bg-gray-200'}`}
+              className={`text-meta font-medium px-4 py-1.5 rounded-control transition-colors ${tab === t ? 'bg-navy-deep text-white' : 'bg-surface text-ink-2 hover:bg-line'}`}
             >
               {label}
             </button>
@@ -150,11 +150,11 @@ export default function MKVotesClient({ mkId }: { mkId: string }) {
 
         {/* Votes tab */}
         {tab === 'votes' && loading && (
-          <div className="py-32 text-center text-xl font-medium animate-pulse opacity-20">טוען הצבעות...</div>
+          <div className="py-32 text-center text-section font-medium animate-pulse opacity-20">טוען הצבעות...</div>
         )}
 
         {tab === 'votes' && error && (
-          <div className="p-8 text-center text-red-600 font-medium">{error}</div>
+          <div className="p-8 text-center text-fail font-medium">{error}</div>
         )}
 
         {tab === 'votes' && !loading && !error && (
@@ -165,15 +165,15 @@ export default function MKVotesClient({ mkId }: { mkId: string }) {
                 const count = f === 'all' ? votes.length : counts[f];
                 const active = filter === f;
                 const color = f === 'all'
-                  ? active ? 'bg-black text-white' : 'bg-zinc-100 text-zinc-700'
+                  ? active ? 'bg-navy-deep text-white' : 'bg-surface-2 text-ink-2'
                   : active
                     ? RESULT_COLORS[f]
-                    : 'bg-zinc-100 text-zinc-600';
+                    : 'bg-surface-2 text-ink-2';
                 return (
                   <button
                     key={f}
                     onClick={() => setFilter(f)}
-                    className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${color}`}
+                    className={`text-meta font-medium px-3 py-1.5 rounded-full transition-colors ${color}`}
                   >
                     {f === 'all' ? 'הכל' : f} {count > 0 && <span className="opacity-70">({count})</span>}
                   </button>
@@ -187,7 +187,7 @@ export default function MKVotesClient({ mkId }: { mkId: string }) {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="חיפוש לפי נושא..."
-              className="w-full mb-4 px-4 py-2 text-sm border border-black/10 rounded-lg bg-gray-50 focus:ring-1 focus:ring-black/20"
+              className="w-full mb-4 px-4 py-2 text-ui border border-line rounded-control bg-surface focus:ring-1 focus:ring-accent/40"
             />
 
             {/* Vote list */}
@@ -197,13 +197,13 @@ export default function MKVotesClient({ mkId }: { mkId: string }) {
               ) : pageVotes.map(v => (
                 <div
                   key={v.Id}
-                  className="flex items-start gap-3 py-3 px-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
+                  className="flex items-start gap-3 py-3 px-4 rounded-card bg-surface hover:bg-surface-2 transition-colors"
                 >
-                  <span className={`shrink-0 mt-0.5 text-meta font-medium px-2 py-1 rounded-full ${RESULT_COLORS[v.ResultDesc] ?? 'bg-zinc-100 text-zinc-500'}`}>
+                  <span className={`shrink-0 mt-0.5 text-meta font-medium px-2 py-1 rounded-full ${RESULT_COLORS[v.ResultDesc] ?? 'bg-surface-2 text-mute'}`}>
                     {v.ResultDesc}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold leading-snug text-ink">
+                    <p className="text-ui font-bold leading-snug text-ink">
                       <Link
                         href={`/vote/${v.VoteID}`}
                         prefetch={false}
@@ -213,7 +213,7 @@ export default function MKVotesClient({ mkId }: { mkId: string }) {
                       </Link>
                     </p>
                     {v.Vote?.VoteSubject && v.Vote.VoteSubject !== v.Vote.VoteTitle && (
-                      <p className="text-xs text-mute mt-0.5 leading-snug">{v.Vote.VoteSubject}</p>
+                      <p className="text-meta text-mute mt-0.5 leading-snug">{v.Vote.VoteSubject}</p>
                     )}
                   </div>
                   <span className="shrink-0 text-meta text-mute font-medium tabular-nums">
@@ -229,17 +229,17 @@ export default function MKVotesClient({ mkId }: { mkId: string }) {
                 <button
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className="text-sm font-medium px-3 py-1.5 rounded border border-black/10 disabled:opacity-30 hover:bg-gray-50 transition-colors"
+                  className="text-ui font-medium px-3 py-1.5 rounded border border-line disabled:opacity-30 hover:bg-surface-2 transition-colors"
                 >
                   הקודם
                 </button>
-                <span className="text-sm font-medium text-mute">
+                <span className="text-ui font-medium text-mute">
                   {currentPage} / {totalPages}
                 </span>
                 <button
                   onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
-                  className="text-sm font-medium px-3 py-1.5 rounded border border-black/10 disabled:opacity-30 hover:bg-gray-50 transition-colors"
+                  className="text-ui font-medium px-3 py-1.5 rounded border border-line disabled:opacity-30 hover:bg-surface-2 transition-colors"
                 >
                   הבא
                 </button>

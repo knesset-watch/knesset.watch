@@ -28,8 +28,8 @@ export interface MkIdentityData {
 type Size = 'sm' | 'lg';
 
 const AVATAR: Record<Size, string> = {
-  sm: 'w-12 h-12 text-sm',
-  lg: 'w-16 h-16 text-lg',
+  sm: 'w-12 h-12 text-ui',
+  lg: 'w-16 h-16 text-section',
 };
 
 function initials(name: string): string {
@@ -56,15 +56,20 @@ export function MkAvatar({
 }) {
   const [failed, setFailed] = useState(false);
 
+  /*
+    קואליציה ואופוזיציה הן נייבי וזהב, לא ירוק וכחול. ירוק במערכת הזאת
+    אומר ״חוק שעבר״, ושיוך פוליטי אינו ציון — צבע שמרמז ״טוב״ לצד אחד
+    הוא עמדה, לא נתון. השיוך עצמו כתוב במילים ליד התמונה.
+  */
   const ring =
-    isCoalition === true ? 'ring-green-600/30'
-    : isCoalition === false ? 'ring-blue-600/30'
-    : 'ring-black/10';
+    isCoalition === true ? 'ring-navy/30'
+    : isCoalition === false ? 'ring-accent-lit/60'
+    : 'ring-line';
 
   const fill =
-    isCoalition === true ? 'bg-green-600'
+    isCoalition === true ? 'bg-navy'
     : isCoalition === false ? 'bg-accent'
-    : 'bg-gray-400';
+    : 'bg-mute';
 
   if (photo && !failed) {
     return (
@@ -74,7 +79,7 @@ export function MkAvatar({
         alt=""
         loading="lazy"
         onError={() => setFailed(true)}
-        className={`${AVATAR[size]} rounded-full object-cover object-top shrink-0 ring-2 ${ring} bg-gray-100`}
+        className={`${AVATAR[size]} rounded-full object-cover object-top shrink-0 ring-2 ${ring} bg-line`}
       />
     );
   }
@@ -109,12 +114,12 @@ export function MkBackground({
   return (
     <div className={`flex flex-col gap-0.5 ${className}`}>
       {occupation && (
-        <p className="text-xs text-ink-2 font-medium truncate" title={occupation}>
+        <p className="text-meta text-ink-2 font-medium truncate" title={occupation}>
           {occupation}
         </p>
       )}
       {education && (
-        <p className="text-xs text-mute font-medium truncate" title={education}>
+        <p className="text-meta text-mute font-medium truncate" title={education}>
           {education}
         </p>
       )}

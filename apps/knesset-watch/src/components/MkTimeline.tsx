@@ -17,8 +17,8 @@ const TYPE_LABELS: Record<TimelineEvent['type'], string> = {
 
 const TYPE_COLORS: Record<TimelineEvent['type'], string> = {
   bill: 'bg-accent-wash text-accent',
-  vote: 'bg-purple-100 text-purple-800',
-  query: 'bg-green-100 text-green-800',
+  vote: 'bg-accent-wash text-accent-ink',
+  query: 'bg-pass-wash text-pass',
 };
 
 const TYPE_LINKS: Record<TimelineEvent['type'], (id: number) => string> = {
@@ -46,19 +46,19 @@ export function MkTimeline({ query, topicKeywords }: { query: string; topicKeywo
       .finally(() => setLoading(false));
   }, [query, topicKeywords]);
 
-  if (loading) return <div className="text-sm text-mute mt-4">טוען ציר זמן...</div>;
+  if (loading) return <div className="text-ui text-mute mt-4">טוען ציר זמן...</div>;
   if (!mkName || events.length === 0) return null;
 
   return (
     <div className="mt-6 border-t pt-4">
-      <h3 className="text-sm font-semibold text-ink-2 mb-3">פעילות {mkName} בנושא</h3>
+      <h3 className="text-ui font-semibold text-ink-2 mb-3">פעילות {mkName} בנושא</h3>
       <div className="space-y-2">
         {events.map((event) => {
           const href = TYPE_LINKS[event.type](event.sourceId);
           const row = (
-            <div key={`${event.type}-${event.sourceId}`} className="flex items-start gap-3 text-sm">
+            <div key={`${event.type}-${event.sourceId}`} className="flex items-start gap-3 text-ui">
               <span className="text-mute w-20 shrink-0 tabular-nums">{event.date}</span>
-              <span className={`text-xs px-1.5 py-0.5 rounded font-medium shrink-0 ${TYPE_COLORS[event.type]}`}>
+              <span className={`text-meta px-1.5 py-0.5 rounded font-medium shrink-0 ${TYPE_COLORS[event.type]}`}>
                 {TYPE_LABELS[event.type]}
               </span>
               <span className="text-ink">
@@ -69,7 +69,7 @@ export function MkTimeline({ query, topicKeywords }: { query: string; topicKeywo
           );
           if (href) {
             return (
-              <a key={`${event.type}-${event.sourceId}`} href={href} className="block hover:bg-gray-50 rounded -mx-1 px-1 transition-colors">
+              <a key={`${event.type}-${event.sourceId}`} href={href} className="block hover:bg-surface-2 rounded -mx-1 px-1 transition-colors">
                 {row}
               </a>
             );

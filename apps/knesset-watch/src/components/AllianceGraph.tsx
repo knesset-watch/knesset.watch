@@ -342,18 +342,18 @@ export default function AllianceGraph({ data }: NetworkGraphProps) {
   return (
     <div className="flex flex-col gap-4">
       {/* Controls bar */}
-      <div className="flex items-center justify-between px-6 py-4 bg-white rounded-2xl border border-black/5 shadow-sm flex-wrap gap-4">
+      <div className="flex items-center justify-between px-6 py-4 bg-surface rounded-card border border-line-soft  flex-wrap gap-4">
         <div className="flex items-center gap-8 flex-wrap">
           {/* Legend */}
           <div className="flex flex-col gap-1">
             <span className="text-meta font-medium text-mute">מקרא</span>
             <div className="flex gap-4">
               <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#16a34a] shrink-0"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-navy shrink-0"></span>
                 <span className="text-meta font-bold text-ink-2">קואליציה</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#2563EB] shrink-0"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-accent shrink-0"></span>
                 <span className="text-meta font-bold text-ink-2">אופוזיציה</span>
               </div>
               <div className="flex items-center gap-1.5">
@@ -363,7 +363,7 @@ export default function AllianceGraph({ data }: NetworkGraphProps) {
             </div>
           </div>
 
-          <div className="h-8 w-px bg-black/5 hidden sm:block"></div>
+          <div className="h-8 w-px bg-surface-2 hidden sm:block"></div>
 
           {/* Search */}
           <form onSubmit={onSearch} className="flex flex-col gap-1">
@@ -373,7 +373,7 @@ export default function AllianceGraph({ data }: NetworkGraphProps) {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder={`שם חבר/ת כנסת...`}
-              className="bg-gray-50 border border-black/8 rounded-xl px-3 py-1.5 text-sm w-48 focus:ring-2 focus:ring-black/10 focus:bg-white transition-all"
+              className="bg-surface border border-line rounded-card px-3 py-1.5 text-ui w-48 focus:ring-2 focus:ring-accent/30 focus:bg-surface transition-all"
             />
           </form>
         </div>
@@ -381,20 +381,20 @@ export default function AllianceGraph({ data }: NetworkGraphProps) {
         <div className="flex items-center gap-6 flex-wrap">
           <button
             onClick={() => setClusterByParty(v => !v)}
-            className={`px-4 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 ${clusterByParty ? 'bg-black text-white' : 'bg-gray-100 text-ink-2 hover:bg-gray-200'}`}
+            className={`px-4 py-1.5 rounded-card text-meta font-medium transition-all active:scale-95 ${clusterByParty ? 'bg-navy-deep text-white' : 'bg-surface text-ink-2 hover:bg-line'}`}
           >
             {clusterByParty ? 'מיון חופשי' : 'קיבוץ לפי מפלגה'}
           </button>
-          <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
+          <div className="flex items-center gap-1 bg-surface rounded-card p-1">
             <button
               onClick={() => setSizeBy('proposed')}
-              className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${sizeBy === 'proposed' ? 'bg-white text-black shadow-sm' : 'text-mute hover:text-ink-2'}`}
+              className={`px-3 py-1 rounded-control text-meta font-medium transition-all ${sizeBy === 'proposed' ? 'bg-surface text-ink shadow-sm' : 'text-mute hover:text-ink-2'}`}
             >
               הצעות
             </button>
             <button
               onClick={() => setSizeBy('passed')}
-              className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${sizeBy === 'passed' ? 'bg-white text-black shadow-sm' : 'text-mute hover:text-ink-2'}`}
+              className={`px-3 py-1 rounded-control text-meta font-medium transition-all ${sizeBy === 'passed' ? 'bg-surface text-ink shadow-sm' : 'text-mute hover:text-ink-2'}`}
             >
               עברו
             </button>
@@ -402,7 +402,7 @@ export default function AllianceGraph({ data }: NetworkGraphProps) {
           {selectedNode && (
             <button
               onClick={clearSelection}
-              className="bg-black text-white px-4 py-1.5 rounded-xl text-xs font-medium hover:bg-orange-600 transition-all active:scale-95"
+              className="bg-navy-deep text-white px-4 py-1.5 rounded-card text-meta font-medium hover:bg-warn transition-all active:scale-95"
             >
               נקה בחירה ✕
             </button>
@@ -413,7 +413,7 @@ export default function AllianceGraph({ data }: NetworkGraphProps) {
       {/* Graph container */}
       <div
         ref={containerRef}
-        className="w-full h-[850px] bg-white border border-black/5 rounded-3xl overflow-hidden relative shadow-xl"
+        className="w-full h-[850px] bg-surface border border-line-soft rounded-card overflow-hidden relative"
         onMouseMove={(e) => {
           if (!clusterByParty || partyLabelBoxes.current.size === 0) { setHoverParty(null); return; }
           const rect = containerRef.current!.getBoundingClientRect();
@@ -608,33 +608,33 @@ export default function AllianceGraph({ data }: NetworkGraphProps) {
 
         {/* Selected node info panel */}
         {selectedNode && selectedStats ? (
-          <div className="absolute top-5 right-5 bg-white/95 backdrop-blur-xl p-5 rounded-2xl border border-black/8 shadow-xl max-w-[220px] space-y-3" dir="rtl">
+          <div className="absolute top-5 right-5 bg-white/95 backdrop-blur-xl p-5 rounded-card border border-line shadow-lg max-w-[220px] space-y-3" dir="rtl">
             <div>
-              <p className="font-medium text-sm text-black leading-tight">{selectedNode.name}</p>
+              <p className="font-medium text-ui text-ink leading-tight">{selectedNode.name}</p>
               <p className="text-meta text-mute mt-0.5">{selectedNode.faction}</p>
-              <span className={`inline-block mt-1.5 text-meta font-medium px-2 py-0.5 rounded-full ${selectedNode.isCoalition ? 'bg-[#16a34a] text-white' : 'bg-[#2563EB] text-white'}`}>
+              <span className={`inline-block mt-1.5 text-meta font-medium px-2 py-0.5 rounded-full ${selectedNode.isCoalition ? 'bg-navy text-white' : 'bg-accent text-white'}`}>
                 {selectedNode.isCoalition ? 'קואליציה' : 'אופוזיציה'}
               </span>
             </div>
-            <div className="border-t border-black/5 pt-3 space-y-2">
+            <div className="border-t border-line-soft pt-3 space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-meta text-mute">הצעות חוק</span>
-                <span className="text-meta font-medium text-black">{selectedNode.billCount}</span>
+                <span className="text-meta font-medium text-ink">{selectedNode.billCount}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-meta text-mute">שותפי חקיקה</span>
-                <span className="text-meta font-medium text-black">{selectedStats.collaborators}</span>
+                <span className="text-meta font-medium text-ink">{selectedStats.collaborators}</span>
               </div>
               {selectedStats.crossAisle > 0 && (
                 <div className="flex justify-between items-center">
                   <span className="text-meta text-mute">קשרים חוצי-מחנות</span>
-                  <span className="text-meta font-medium text-amber-600">{selectedStats.crossAisle}</span>
+                  <span className="text-meta font-medium text-warn">{selectedStats.crossAisle}</span>
                 </div>
               )}
               {selectedStats.strongestPartner && (
-                <div className="border-t border-black/5 pt-2">
+                <div className="border-t border-line-soft pt-2">
                   <p className="text-meta text-mute font-medium mb-1">שיתוף הפעולה החזק ביותר</p>
-                  <p className="text-meta font-bold text-black">{selectedStats.strongestPartner.name}</p>
+                  <p className="text-meta font-bold text-ink">{selectedStats.strongestPartner.name}</p>
                   <p className="text-meta text-mute">{selectedStats.strongestCount} הצ"ח משותפות</p>
                 </div>
               )}
@@ -642,48 +642,48 @@ export default function AllianceGraph({ data }: NetworkGraphProps) {
           </div>
         ) : hoverNode && hoverStats ? (
           /* Hover tooltip */
-          <div className="absolute top-5 right-5 bg-white/97 backdrop-blur-xl p-4 rounded-2xl border border-black/8 shadow-xl max-w-[230px] space-y-3 pointer-events-none" dir="rtl">
+          <div className="absolute top-5 right-5 bg-white/97 backdrop-blur-xl p-4 rounded-card border border-line shadow-lg max-w-[230px] space-y-3 pointer-events-none" dir="rtl">
             <div>
-              <p className="font-medium text-sm text-black leading-tight">{hoverNode.name}</p>
+              <p className="font-medium text-ui text-ink leading-tight">{hoverNode.name}</p>
               <p className="text-meta text-mute mt-0.5">{hoverNode.faction}</p>
-              <span className={`inline-block mt-1.5 text-meta font-medium px-2 py-0.5 rounded-full ${hoverNode.isCoalition ? 'bg-[#16a34a] text-white' : 'bg-[#2563EB] text-white'}`}>
+              <span className={`inline-block mt-1.5 text-meta font-medium px-2 py-0.5 rounded-full ${hoverNode.isCoalition ? 'bg-navy text-white' : 'bg-accent text-white'}`}>
                 {hoverNode.isCoalition ? 'קואליציה' : 'אופוזיציה'}
               </span>
             </div>
-            <div className="border-t border-black/5 pt-3 space-y-1.5">
+            <div className="border-t border-line-soft pt-3 space-y-1.5">
               <p className="text-meta font-medium text-mute mb-2">הצעות חוק</p>
               <div className="flex justify-between items-center">
                 <span className="text-meta text-ink-2">הוגשו</span>
-                <span className="text-meta font-medium text-black">{hoverNode.billCount}</span>
+                <span className="text-meta font-medium text-ink">{hoverNode.billCount}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-meta text-ink-2">עברו</span>
                 <span className="text-meta font-medium text-accent">{(hoverNode as any).passedCount ?? 0}</span>
               </div>
             </div>
-            <div className="border-t border-black/5 pt-3 space-y-1.5">
+            <div className="border-t border-line-soft pt-3 space-y-1.5">
               <p className="text-meta font-medium text-mute mb-2">שיתופי חקיקה</p>
               <div className="flex justify-between items-center">
                 <span className="flex items-center gap-1.5 text-meta text-ink-2">
-                  <span className="w-2 h-2 rounded-full bg-[#16a34a] shrink-0"></span>עם קואליציה
+                  <span className="w-2 h-2 rounded-full bg-navy shrink-0"></span>עם קואליציה
                 </span>
-                <span className="text-meta font-medium text-black">{hoverStats.coalitionCount}</span>
+                <span className="text-meta font-medium text-ink">{hoverStats.coalitionCount}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="flex items-center gap-1.5 text-meta text-ink-2">
-                  <span className="w-2 h-2 rounded-full bg-[#2563EB] shrink-0"></span>עם אופוזיציה
+                  <span className="w-2 h-2 rounded-full bg-accent shrink-0"></span>עם אופוזיציה
                 </span>
-                <span className="text-meta font-medium text-black">{hoverStats.oppositionCount}</span>
+                <span className="text-meta font-medium text-ink">{hoverStats.oppositionCount}</span>
               </div>
             </div>
             {hoverStats.top5.length > 0 && (
-              <div className="border-t border-black/5 pt-3">
+              <div className="border-t border-line-soft pt-3">
                 <p className="text-meta font-medium text-mute mb-2">שותפי חקיקה מובילים</p>
                 <div className="space-y-1">
                   {hoverStats.top5.map((c, i) => c.partner && (
                     <div key={c.partner.id} className="flex justify-between items-center">
                       <span className="flex items-center gap-1.5 text-meta text-ink-2 truncate">
-                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${c.partner.isCoalition ? 'bg-[#16a34a]' : 'bg-[#2563EB]'}`}></span>
+                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${c.partner.isCoalition ? 'bg-navy' : 'bg-accent'}`}></span>
                         {c.partner.name}
                       </span>
                       <span className="text-meta text-mute shrink-0 mr-1">{c.value}</span>
@@ -696,17 +696,17 @@ export default function AllianceGraph({ data }: NetworkGraphProps) {
         ) : (
           /* Guide panel when nothing is selected */
           <div
-            className="absolute bottom-8 right-6 bg-white/90 backdrop-blur-xl p-5 rounded-2xl border border-black/5 text-meta font-medium text-mute space-y-2.5 shadow-lg max-w-[200px] transition-opacity"
+            className="absolute bottom-8 right-6 bg-white/90 backdrop-blur-xl p-5 rounded-card border border-line-soft text-meta font-medium text-mute space-y-2.5 shadow-lg max-w-[200px] transition-opacity"
             style={{ opacity: hoverNode ? 0.2 : 1 }}
             dir="rtl"
           >
-            <p className="font-medium text-black text-xs flex items-center gap-2 border-b border-black/5 pb-2.5">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shrink-0"></span>
+            <p className="font-medium text-ink text-meta flex items-center gap-2 border-b border-line-soft pb-2.5">
+              <span className="w-2 h-2 rounded-full bg-pass animate-pulse shrink-0"></span>
               מדריך לחוקר
             </p>
-            <p className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0"></span>הניפו על ח"כ לראות את חברים שלו</p>
-            <p className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0"></span>לחץ על ח"כ לבידוד הרשת שלו</p>
-            <p className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-black/15 shrink-0"></span>גלגל עכבר לזום וניווט</p>
+            <p className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-warn shrink-0"></span>הניפו על ח"כ לראות את חברים שלו</p>
+            <p className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-warn shrink-0"></span>לחץ על ח"כ לבידוד הרשת שלו</p>
+            <p className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-line shrink-0"></span>גלגל עכבר לזום וניווט</p>
             <p className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: 'linear-gradient(to right, #16a34a, #2563EB)' }}></span>קו מדורג = קשר חוצי-מחנות</p>
           </div>
         )}

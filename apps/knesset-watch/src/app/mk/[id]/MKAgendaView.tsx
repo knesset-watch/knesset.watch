@@ -7,10 +7,10 @@ import type { MkAgendaData, MkAgendaTopic } from '@/lib/vote-cache';
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
 const RESULT_COLORS: Record<string, string> = {
-  'בעד':  'bg-[#16A34A] text-white',
-  'נגד':  'bg-[#2563EB] text-white',
-  'נמנע': 'bg-amber-100 text-amber-800',
-  'נוכח': 'bg-zinc-100 text-zinc-500',
+  'בעד':  'bg-pass text-white',
+  'נגד':  'bg-fail text-white',
+  'נמנע': 'bg-warn-wash text-warn',
+  'נוכח': 'bg-surface-2 text-mute',
 };
 
 function formatDate(iso: string) {
@@ -47,12 +47,12 @@ export default function MKAgendaView({ mkId, limit }: { mkId: string; limit?: nu
   }, [mkId]);
 
   if (error) {
-    return <div className="py-16 text-center text-red-600 font-medium">{error}</div>;
+    return <div className="py-16 text-center text-fail font-medium">{error}</div>;
   }
 
   if (!data) {
     return (
-      <div className="py-32 text-center text-xl font-medium animate-pulse opacity-20">
+      <div className="py-32 text-center text-section font-medium animate-pulse opacity-20">
         טוען אג&apos;נדה...
       </div>
     );
@@ -68,16 +68,16 @@ export default function MKAgendaView({ mkId, limit }: { mkId: string; limit?: nu
         const totalVotes = topic.votes.length;
 
         return (
-          <div key={topic.topicId} className="rounded-xl border border-black/8 overflow-hidden">
+          <div key={topic.topicId} className="rounded-card border border-line overflow-hidden">
             <button
               onClick={() => totalVotes > 0 && setExpanded(isExpanded ? null : topic.topicId)}
               className="w-full text-right"
             >
-              <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors">
+              <div className="flex items-center gap-3 px-4 py-3 bg-surface hover:bg-surface-2 transition-colors">
 
                 {/* Topic name */}
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-medium leading-snug">{topic.label}</h3>
+                  <h3 className="text-ui font-medium leading-snug">{topic.label}</h3>
                   <p className="text-meta text-mute font-medium mt-0.5">
                     {totalVotes === 0 ? 'לא נמצאו הצבעות' : `${totalVotes} הצבעות`}
                   </p>
@@ -87,24 +87,24 @@ export default function MKAgendaView({ mkId, limit }: { mkId: string; limit?: nu
                 {totalVotes > 0 && (
                   <div className="flex items-center gap-3 shrink-0">
                     <div className="flex gap-2 text-meta font-medium">
-                      <span className="text-[#16A34A]">{forCount} בעד</span>
-                      <span className="text-[#2563EB]">{againstCount} נגד</span>
+                      <span className="text-pass">{forCount} בעד</span>
+                      <span className="text-fail">{againstCount} נגד</span>
                       {abstainCount > 0 && (
-                        <span className="text-amber-700">{abstainCount} נמנע</span>
+                        <span className="text-warn">{abstainCount} נמנע</span>
                       )}
                     </div>
 
                     {/* Support bar */}
-                    <div className="w-20 h-2 rounded-full bg-gray-200 overflow-hidden flex shrink-0">
+                    <div className="w-20 h-2 rounded-full bg-line overflow-hidden flex shrink-0">
                       {voting > 0 && (
                         <>
-                          <div className="h-full bg-[#16A34A]" style={{ width: `${Math.round((forCount / voting) * 100)}%` }} />
-                          <div className="h-full bg-[#2563EB]" style={{ width: `${Math.round((againstCount / voting) * 100)}%` }} />
+                          <div className="h-full bg-pass" style={{ width: `${Math.round((forCount / voting) * 100)}%` }} />
+                          <div className="h-full bg-fail" style={{ width: `${Math.round((againstCount / voting) * 100)}%` }} />
                         </>
                       )}
                     </div>
 
-                    <span className="text-xs font-medium w-8 text-left tabular-nums">
+                    <span className="text-meta font-medium w-8 text-left tabular-nums">
                       {pct(forCount, voting)}
                     </span>
                   </div>
@@ -124,11 +124,11 @@ export default function MKAgendaView({ mkId, limit }: { mkId: string; limit?: nu
                 {topic.votes.map(v => (
                   <div key={v.voteId} className="flex items-center gap-3 px-4 py-2.5">
                     {v.result ? (
-                      <span className={`shrink-0 text-meta font-medium px-2 py-0.5 rounded-full ${RESULT_COLORS[v.result] ?? 'bg-zinc-100 text-zinc-500'}`}>
+                      <span className={`shrink-0 text-meta font-medium px-2 py-0.5 rounded-full ${RESULT_COLORS[v.result] ?? 'bg-surface-2 text-mute'}`}>
                         {v.result}
                       </span>
                     ) : (
-                      <span className="shrink-0 text-meta font-medium px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-400">
+                      <span className="shrink-0 text-meta font-medium px-2 py-0.5 rounded-full bg-surface-2 text-mute">
                         לא הצביע
                       </span>
                     )}
@@ -136,7 +136,7 @@ export default function MKAgendaView({ mkId, limit }: { mkId: string; limit?: nu
                       <Link
                         href={`/vote/${v.voteId}`}
                         prefetch={false}
-                        className="text-sm font-medium text-ink hover:underline leading-snug block"
+                        className="text-ui font-medium text-ink hover:underline leading-snug block"
                       >
                         {v.title || '—'}
                       </Link>

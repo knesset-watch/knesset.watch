@@ -41,23 +41,23 @@ export default async function BillPage({ params }: { params: Promise<{ id: strin
   const stopped = billStopped(bill.status_id);
 
   return (
-    <div className="min-h-screen bg-white" dir="rtl">
+    <div className="min-h-screen bg-paper" dir="rtl">
       <div className="max-w-4xl mx-auto px-6 py-8">
 
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-1 text-sm text-mute mb-6">
-          <Link href="/" className="font-medium hover:text-black transition-colors">ראשי</Link>
+        <nav className="flex items-center gap-1 text-ui text-mute mb-6">
+          <Link href="/" className="font-medium hover:text-ink transition-colors">ראשי</Link>
           <span className="mx-1">›</span>
-          <Link href="/bills" className="font-medium hover:text-black transition-colors">חוקים</Link>
+          <Link href="/bills" className="font-medium hover:text-ink transition-colors">חוקים</Link>
           <span className="mx-1">›</span>
-          <span className="text-black font-medium truncate max-w-xs">{bill.title}</span>
+          <span className="text-ink font-medium truncate max-w-xs">{bill.title}</span>
         </nav>
 
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
             <span className={`text-meta font-medium px-2 py-0.5 rounded-full ${
-              bill.is_passed ? 'bg-accent-wash text-accent border border-line' : 'bg-gray-100 text-ink-2'
+              bill.is_passed ? 'bg-accent-wash text-accent border border-line' : 'bg-surface text-ink-2'
             }`}>
               {bill.is_passed ? 'עבר' : bill.status_desc ?? 'בתהליך'}
             </span>
@@ -67,11 +67,11 @@ export default async function BillPage({ params }: { params: Promise<{ id: strin
               </span>
             )}
           </div>
-          <h1 className="text-2xl font-medium leading-snug">{bill.title}</h1>
+          <h1 className="text-section font-medium leading-snug">{bill.title}</h1>
         </div>
 
         {/* Status Timeline */}
-        <div className="mb-8 rounded-2xl border border-black/8 p-5">
+        <div className="mb-8 rounded-card border border-line p-5">
           <div className="flex items-baseline justify-between gap-3 mb-5">
             <h2 className="text-label font-medium text-mute">מסלול החוק</h2>
             {stopped ? (
@@ -137,26 +137,26 @@ export default async function BillPage({ params }: { params: Promise<{ id: strin
         {/* Details */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           {bill.committee_name && (
-            <div className="rounded-2xl border border-black/8 p-4">
+            <div className="rounded-card border border-line p-4">
               <div className="text-meta font-medium text-mute mb-1">ועדה</div>
               <Link
                 href={`/committee/${encodeURIComponent(bill.committee_name)}`}
-                className="text-sm font-medium text-accent hover:text-accent-ink transition-colors"
+                className="text-ui font-medium text-accent hover:text-accent-ink transition-colors"
               >
                 {bill.committee_name}
               </Link>
             </div>
           )}
           {bill.macro_agenda && (
-            <div className="rounded-2xl border border-black/8 p-4">
+            <div className="rounded-card border border-line p-4">
               <div className="text-meta font-medium text-mute mb-1">תחום</div>
-              <div className="text-sm font-medium">{bill.macro_agenda}</div>
+              <div className="text-ui font-medium">{bill.macro_agenda}</div>
             </div>
           )}
           {bill.micro_agenda && (
-            <div className="rounded-2xl border border-black/8 p-4 sm:col-span-2">
+            <div className="rounded-card border border-line p-4 sm:col-span-2">
               <div className="text-meta font-medium text-mute mb-1">נושא</div>
-              <div className="text-sm font-medium">{bill.micro_agenda}</div>
+              <div className="text-ui font-medium">{bill.micro_agenda}</div>
             </div>
           )}
         </div>
@@ -170,7 +170,7 @@ export default async function BillPage({ params }: { params: Promise<{ id: strin
                 <Link
                   key={ini.person_id}
                   href={`/mk/${ini.slug ?? ini.person_id}`}
-                  className="text-sm font-medium px-3 py-1.5 rounded-full border border-black/10 hover:bg-gray-50 transition-colors"
+                  className="text-ui font-medium px-3 py-1.5 rounded-full border border-line hover:bg-surface-2 transition-colors"
                 >
                   {ini.first_name} {ini.last_name}
                 </Link>

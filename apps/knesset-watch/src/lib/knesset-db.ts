@@ -568,8 +568,8 @@ export function getMkAgendaStats(mkId: number): AgendaStat[] {
    * החוק יורש את האג'נדה מההצבעה שנערכה עליו. מכסה רק חוקים שהגיעו
    * להצבעת מליאה, אבל זה נכון במקום אפס.
    *
-   * plenary_vote.bill_id חסר ב-knesset-deploy.db (הבנייה בפרודקשן),
-   * ולכן נבדק לפני השימוש.
+   * הבדיקה נשארת אף שהעמודה קיימת היום בשני המסדים — knesset-deploy.db
+   * נבנה בנפרד, ומסד ישן שיוגש בטעות יפיל את העמוד במקום להחזיר פחות.
    */
   const hasVoteBillId = (db
     .prepare(`SELECT COUNT(*) AS n FROM pragma_table_info('plenary_vote') WHERE name = 'bill_id'`)
@@ -1491,9 +1491,13 @@ export function getBills(opts: GetBillsOptions): { bills: BillRow[]; total: numb
 // ── Schema capability probes ────────────────────────────────────────────────
 
 /*
-  knesset-deploy.db, שעליו נבנה הפרודקשן, אינו זהה ל-knesset.db המקומי:
-  חסרות בו bill_policy_analysis, bill_policy_issue ו-bill.text_content.
-  בלי הבדיקות האלה השאילתות זורקות "no such table" ומפילות את העמוד.
+  knesset-deploy.db, שעליו נבנה הפרודקשן, אינו זהה ל-knesset.db המקומי.
+  build-deploy-db.ts מעתיק היום את bill_policy_analysis, bill_policy_issue
+  ואת bill_political_classification, אבל bill.text_content עדיין מושמט
+  במכוון (‎--with-text מוסיף אותו) כי הוא מכפיל את גודל הקובץ.
+
+  הבדיקות נשארות: הן ההגנה מפני מסד שנבנה בגרסה ישנה יותר של הסקריפט,
+  שבלעדיה השאילתות זורקות "no such table" ומפילות את העמוד.
 */
 const _capCache = new Map<string, boolean>();
 
