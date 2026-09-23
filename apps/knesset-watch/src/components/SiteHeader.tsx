@@ -320,7 +320,7 @@ export default function SiteHeader() {
         {/* Logo — mobile only (desktop shows in sidebar) */}
         <Link
           href="/"
-          className="md:hidden flex items-center justify-center shrink-0"
+          className="md:hidden flex items-center justify-center shrink-0 hover:opacity-70 transition-opacity"
           aria-label="אפרכסת לכנסת — דף הבית"
         >
           <img
