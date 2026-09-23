@@ -84,3 +84,9 @@ rehome-suggestions.jsonl
 rehome-suggestions.csv
 audit-stable.jsonl
 שינויים-מוצעים.xlsx
+
+# תוצרים שנוצרו אחרי שהרשימה למעלה נכתבה
+axis-verdicts.jsonl
+שינויים-מוצעים-חדש.xlsx
+# גיבויים שנלקחים לפני הרצה שדורסת קובץ קיים
+*.bak.jsonl

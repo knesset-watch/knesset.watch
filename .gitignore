@@ -38,3 +38,7 @@ apps/knesset-watch/*.db-wal
 
 # Runtime artifacts from the analysis scripts (PIDs of detached processes)
 apps/knesset-watch/*.pid
+
+# לוגים של הדפדפן האוטומטי. נדחפו פעם אחת ל-main עם שני מפתחות API
+# בתוכם (d3b53fe), ומאז הם מוסתרים כדי שזה לא יחזור.
+.playwright-mcp/
