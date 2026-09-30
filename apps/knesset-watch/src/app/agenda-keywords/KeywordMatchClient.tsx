@@ -14,7 +14,7 @@ const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 /** עד כמה נושאי-על */
 const MAX_TOPICS = 3;
 
-/** עד כמה אשכולות. שישה נותנים 12 עד 30 שאלות, לפי מה שנבחר. */
+/** עד כמה אשכולות. שישה נותנים 12 עד 30 היגדים, לפי מה שנבחר. */
 const MAX_CLUSTERS = 6;
 
 type Step = 'topics' | 'clusters' | 'stances' | 'results';
@@ -318,7 +318,7 @@ export default function KeywordMatchClient() {
           <div>
             <h2 className="text-section font-medium mb-1">אילו נושאים חשובים לך?</h2>
             <p className="text-ui text-ink-2 font-medium mb-4 leading-relaxed">
-              אפשר לבחור עד {MAX_CLUSTERS}. לכל נושא יש 2 עד 5 שאלות, ואפשר לענות רק על מה שנבחר.
+              אפשר לבחור עד {MAX_CLUSTERS}. לכל נושא יש 2 עד 5 היגדים, ואפשר לענות רק על מה שנבחר.
             </p>
 
             <WeightingNotice className="mb-6" />
@@ -358,7 +358,7 @@ export default function KeywordMatchClient() {
                         }`}
                       >
                         {/*
-                          "בתי ספר וגיל הרך 5 שאלות" באותו גודל ובאותה שורה
+                          "בתי ספר וגיל הרך 5 היגדים" באותו גודל ובאותה שורה
                           נקרא כמשפט אחד. הספירה יורדת שורה ומתעמעמת.
                         */}
                         <span className="flex items-center gap-1.5">
@@ -366,7 +366,7 @@ export default function KeywordMatchClient() {
                           <span className="text-ui text-ink leading-snug">{c.label}</span>
                         </span>
                         <span className="block text-meta text-mute mt-0.5">
-                          {countLabel(c.questions.length, 'שאלה אחת', 'שאלות')}
+                          {countLabel(c.questions.length, 'היגד אחד', 'היגדים')}
                         </span>
                       </button>
                     );
@@ -389,7 +389,7 @@ export default function KeywordMatchClient() {
               <span className="text-label text-ink-2">
                 {clusters.length === 0
                   ? 'צריך לבחור לפחות נושא אחד'
-                  : `${countLabel(clusters.length, 'נושא אחד', 'נושאים')} · ${countLabel(questionCount, 'שאלה אחת', 'שאלות')}`}
+                  : `${countLabel(clusters.length, 'נושא אחד', 'נושאים')} · ${countLabel(questionCount, 'היגד אחד', 'היגדים')}`}
               </span>
             </StickyBar>
           </div>
@@ -398,9 +398,9 @@ export default function KeywordMatchClient() {
         {/* ---------------------------- שלב 3 ---------------------------- */}
         {step === 'stances' && (
           <div>
-            <h2 className="text-section font-medium mb-1">מה העמדה שלך?</h2>
+            <h2 className="text-section font-medium mb-1">מה את חושבת?</h2>
             <p className="text-ui text-ink-2 font-medium mb-6 leading-relaxed">
-              אפשר לדלג על שאלה שאין לך עמדה לגביה — היא פשוט לא תיספר.
+              אפשר לדלג על היגד שאין לך דעה לגביו — הוא פשוט לא ייספר.
             </p>
 
             {chosenClusters.map(cluster => (
@@ -432,11 +432,23 @@ export default function KeywordMatchClient() {
                         </p>
 
                         {/*
-                          מספור הצדדים ולא רק צבע: שתי העמדות ארוכות ודומות
-                          באורכן, ובלי עוגן ויזואלי קשה לראות שאלו שתי
-                          אפשרויות ולא שתי פסקאות.
+                          בעד ונגד, ולא טקסט העמדה.
+
+                          קודם כל כפתור הציג את נוסח העמדה במלואו, ואז המסך
+                          היה שאלה ועוד שני משפטים — חציון 33 מילים לפריט.
+                          בודקות דיווחו שזה ארוך מדי, ושהעמדות לא תמיד
+                          מאפשרות מענה מלא, כי ב-126 צירים הן לא היו הפוכות
+                          זו לזו.
+
+                          מאז הפריט עצמו הוא היגד ולא שאלה, והעמדה היא
+                          הסכמה או אי-הסכמה איתו. נוסח העמדות נשאר בקטלוג
+                          ומשמש את המנוע; הוא פשוט אינו מוצג.
+
+                          הכפתורים אינם ירוק-אדום: pass ו-fail שמורים במערכת
+                          העיצוב למצב אמיתי של חוק או הצבעה, ודעה של משתמשת
+                          אינה מצב כזה. ההבחנה עוברת דרך אות עוגן ודרך accent.
                         */}
-                        <div className="flex flex-col gap-2" role="radiogroup" aria-label={q.question}>
+                        <div className="flex gap-2 flex-wrap" role="radiogroup" aria-label={q.question}>
                           {q.stances.map((s, si) => {
                             const on = stances[q.issueId] === s.id;
                             return (
@@ -445,20 +457,20 @@ export default function KeywordMatchClient() {
                                 onClick={() => pickStance(q.issueId, s.id)}
                                 role="radio"
                                 aria-checked={on}
-                                className={`flex items-start gap-2.5 text-right text-meta font-medium px-3 py-2.5 rounded-control border-2 transition-all leading-relaxed ${
+                                className={`flex items-center gap-2 text-ui font-medium px-4 py-2.5 rounded-control border-2 transition-all ${
                                   on
                                     ? 'border-accent bg-accent text-white shadow-sm'
                                     : 'border-line bg-surface hover:border-accent hover:bg-accent-wash/40'
                                 }`}
                               >
                                 <span
-                                  className={`shrink-0 mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center text-meta ${
+                                  className={`shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center text-meta leading-none ${
                                     on ? 'border-white bg-surface text-accent' : 'border-line text-mute'
                                   }`}
                                 >
-                                  {on ? '✓' : si === 0 ? 'א' : 'ב'}
+                                  {si === 0 ? '✓' : '✗'}
                                 </span>
-                                <span className="flex-1">{s.label}</span>
+                                {si === 0 ? 'מסכימה' : 'לא מסכימה'}
                               </button>
                             );
                           })}
@@ -483,7 +495,7 @@ export default function KeywordMatchClient() {
               </button>
               <span className="text-label text-ink-2">
                 {answered === 0
-                  ? 'עני על לפחות שאלה אחת'
+                  ? 'עני על לפחות היגד אחד'
                   : `${countLabel(answered, 'תשובה אחת', 'תשובות')} מתוך ${questionCount}`}
               </span>
             </StickyBar>
@@ -712,7 +724,7 @@ export default function KeywordMatchClient() {
 
         {step === 'topics' && (
           <p className="text-meta text-mute font-medium mt-10 text-center">
-            {CLUSTER_STATS.clusters} נושאים · {CLUSTER_STATS.questions} שאלות · נגזרו מ-7,067 הצעות חוק
+            {CLUSTER_STATS.clusters} נושאים · {CLUSTER_STATS.questions} היגדים · נגזרו מ-7,067 הצעות חוק
           </p>
         )}
       </div>
