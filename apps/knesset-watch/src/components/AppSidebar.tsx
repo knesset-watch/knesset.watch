@@ -36,7 +36,11 @@ export default function AppSidebar() {
 
   return (
     <aside
-      className="hidden md:flex flex-col gap-10 w-56 shrink-0 sticky top-0 h-screen overflow-y-auto px-10 py-10"
+      /*
+        w-64 ולא w-56: עם ריפוד של 40px מכל צד נשארו 144px לתוויות, ו"מי עובדים
+        בשבילך?" צריך 158px בשורה אחת. 256px משאירים 176px, עם מרווח לפונט חלופי.
+      */
+      className="hidden md:flex flex-col gap-10 w-64 shrink-0 sticky top-0 h-screen overflow-y-auto px-10 py-10"
       dir="rtl"
     >
       <nav className="flex-1 flex flex-col gap-10 text-body" aria-label="ניווט ראשי">

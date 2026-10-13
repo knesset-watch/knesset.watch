@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { periodToDateRange, type Period } from '@/lib/period-context';
+import { PageContainer } from '@/components/PageContainer';
 import { HomeQuestionnaire } from '@/components/home/HomeQuestionnaire';
 import { StatsBlock, type HomeStats } from '@/components/home/StatsBlock';
 import { RecentLaws, type RecentBill } from '@/components/home/RecentLaws';
@@ -54,7 +55,7 @@ export default function HomepageClient() {
   return (
     <div className="min-h-screen pb-20" dir="rtl">
       {/* ההירו מגיע מהסלוט app/@hero, מעל הסיידבר; כאן מתחיל התוכן */}
-      <div className="mx-auto max-w-[900px] px-6 pt-8 md:pt-10 flex flex-col gap-16 md:gap-20">
+      <PageContainer className="flex flex-col gap-16 md:gap-20">
         <HomeQuestionnaire />
         <StatsBlock
           stats={stats}
@@ -64,7 +65,7 @@ export default function HomepageClient() {
           onRetry={fetchData}
         />
         <RecentLaws bills={recentBills} />
-      </div>
+      </PageContainer>
     </div>
   );
 }
