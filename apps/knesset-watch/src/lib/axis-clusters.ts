@@ -131,4 +131,9 @@ export const CLUSTER_STATS = {
   topics: CLUSTER_TOPICS.length,
   clusters: CLUSTERS.length,
   questions: CLUSTERS.reduce((s, c) => s + c.questions.length, 0),
+  /** כמה היגדים יש באשכול, מהקטן לגדול. לטקסט ההסבר בשאלון, שלא יצטט מספרים ישנים */
+  questionsPerCluster: {
+    min: Math.min(...CLUSTERS.map(c => c.questions.length)),
+    max: Math.max(...CLUSTERS.map(c => c.questions.length)),
+  },
 };

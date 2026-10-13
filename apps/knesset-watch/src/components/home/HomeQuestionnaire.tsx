@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CLUSTER_TOPICS } from '@/lib/axis-clusters';
 import { TOPIC_COLOR, TOPIC_FALLBACK } from '@/lib/ui/colors';
-import { WeightingNotice } from '@/components/WeightingNotice';
 import { DomainIcon } from './domain-icons';
 
 /*
@@ -14,9 +13,6 @@ import { DomainIcon } from './domain-icons';
   הלוגיקה לא השתנתה: עד שלושה תחומים, והם עוברים ב-query string כדי
   שהשאלון ייפתח ישר בשלב הנושאים ולא ישאל שוב.
 */
-
-/** כמה תחומים נבחרים כאן. זהה ל-MAX_TOPICS ב-/agenda-keywords */
-const HOME_DOMAIN_PICKS = 3;
 
 /** שמונת נושאי-העל של הטקסונומיה, נגזרו מהצעות החוק עצמן */
 const PICKABLE_DOMAINS = CLUSTER_TOPICS;
@@ -28,7 +24,6 @@ export function HomeQuestionnaire() {
   function toggle(id: string) {
     setPicked(prev => {
       if (prev.includes(id)) return prev.filter(d => d !== id);
-      if (prev.length >= HOME_DOMAIN_PICKS) return prev;
       return [...prev, id];
     });
   }
@@ -40,8 +35,8 @@ export function HomeQuestionnaire() {
 
   const helper =
     picked.length === 0
-      ? `אפשר לבחור עד ${HOME_DOMAIN_PICKS} תחומים כדי להתחיל`
-      : `${picked.length === 1 ? 'נבחר תחום אחד' : `נבחרו ${picked.length} תחומים`} מתוך ${HOME_DOMAIN_PICKS}`;
+      ? 'בוחרים תחום אחד או יותר כדי להתחיל'
+      : picked.length === 1 ? 'נבחר תחום אחד' : `נבחרו ${picked.length} תחומים`;
 
   return (
     <section aria-labelledby="who-works-heading">
@@ -55,7 +50,7 @@ export function HomeQuestionnaire() {
         בכיוון הזה. בהצעות חוק שיזמו ובהצבעות שתמכו בהן.
       </p>
       <p className="mt-3 text-ui text-ink-2">
-        ניתן לבחור <strong className="font-semibold text-ink">עד {HOME_DOMAIN_PICKS} תחומים</strong>.
+        בוחרים <strong className="font-semibold text-ink">תחום אחד או יותר</strong>. אפשר להוסיף עוד בכל שלב.
       </p>
 
       {/*
@@ -66,14 +61,12 @@ export function HomeQuestionnaire() {
         <ul className="flex flex-col gap-2" role="group" aria-label="בחירת תחומים">
           {PICKABLE_DOMAINS.map(d => {
             const selected = picked.includes(d.id);
-            const full = picked.length >= HOME_DOMAIN_PICKS && !selected;
             const color = TOPIC_COLOR[d.label] ?? TOPIC_FALLBACK;
             return (
               <li key={d.id}>
                 <button
                   type="button"
                   onClick={() => toggle(d.id)}
-                  disabled={full}
                   aria-pressed={selected}
                   /*
                     צבע התחום הוא מזהה: אותו גוון בשאלון, בתרשים ובכרטיסים.
@@ -85,11 +78,7 @@ export function HomeQuestionnaire() {
                     backgroundColor: `color-mix(in srgb, ${color} 8%, var(--color-surface))`,
                   } : undefined}
                   className={`w-full flex items-center gap-3 rounded-card border-2 bg-surface px-2.5 py-2.5 text-right transition-colors ${
-                    selected
-                      ? 'text-ink'
-                      : full
-                        ? 'border-transparent opacity-40 cursor-not-allowed'
-                        : 'border-transparent hover:border-line'
+                    selected ? 'text-ink' : 'border-transparent hover:border-line'
                   }`}
                 >
                   <span
@@ -124,8 +113,6 @@ export function HomeQuestionnaire() {
             </button>
             <p className="text-label text-mute" aria-live="polite">{helper}</p>
           </div>
-
-          <WeightingNotice variant="plain" className="max-w-[265px]" />
         </div>
       </div>
     </section>
