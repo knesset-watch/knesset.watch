@@ -71,8 +71,18 @@ const RESULT_AGAINST = 8;
 /** התקבלה בקריאה שלישית. תואם ל-STATUS_BECAME_LAW ב-knesset-db.ts */
 const STATUS_BECAME_LAW = 118;
 
-/** כמה הצעות חוק מוחזרות לקישור בכל אג'נדה. מספיק לאימות, לא מנפח את התשובה */
-const MAX_BILL_REFS = 8;
+/**
+ * כמה הצעות חוק מוחזרות לקישור בכל אג'נדה. היה 8 ("מספיק לאימות"), והתצוגה
+ * הציגה "ועוד 7". עכשיו התצוגה מפרטת את כולן, בלי קיצורים, ולכן התקרה
+ * גבוהה מכל מה שנראה במאגר (המקסימום לח"כ בציר אחד הוא כמה עשרות).
+ */
+const MAX_BILL_REFS = 100;
+
+/**
+ * רצפת ימי כהונה לחישוב קצב. מי שכיהן שבועיים ויזם הצעה אחת היה מקבל
+ * קצב אסטרונומי ומדלג לראש הדירוג.
+ */
+const MIN_TENURE_DAYS = 90;
 
 /** מה המשתמש בחר: אג'נדה, ואם ידועה — גם העמדה שהוא מזדהה איתה */
 export interface AgendaSelection {
@@ -95,10 +105,35 @@ export interface AgendaFlags {
 export interface AgendaBillRef {
   billId: number;
   title: string;
+  /** לתווית השלב בתצוגה (bill-stage.ts), בלי להביא את כל החוק */
+  statusId: number;
   /** עברה את הקריאה הטרומית */
   advanced: boolean;
   /** התקבלה בקריאה שלישית */
   passed: boolean;
+  /** סוג ההצעה כשאינה פרטית: ממשלתית (מגיעה לרשימה רק דרך מיזוג עם הצעה פרטית) או של ועדה */
+  kind?: 'government' | 'committee';
+  /** הקרדיט ניתן כיו"ר הוועדה שהגישה את ההצעה, לא כיוזם חתום */
+  viaChair?: boolean;
+}
+
+/** הצבעה אחת של הח"כ באג'נדה, לפירוט בתצוגה ולקישור אל /vote/[id] */
+export interface AgendaVoteRef {
+  voteId: number;
+  billId: number | null;
+  title: string;
+  /** YYYY-MM-DD */
+  date: string;
+  /** איך הצביע: בעד או נגד ההצעה */
+  votedFor: boolean;
+  /** האם ההצבעה הזאת היא בכיוון האג'נדה (true) או נגדו (false) */
+  supportive: boolean;
+  /** האם הצביע כמו רוב סיעתו. null כשאין נתון על הסיעה */
+  withFaction: boolean | null;
+  /** ההצבעה היא על הצעת חוק ממשלתית */
+  government?: boolean;
+  /** שלב ההצעה שהצביעו עליה (status_id), לתווית בתצוגה. null כשההצבעה לא מקושרת להצעה מסווגת */
+  statusId?: number | null;
 }
 
 export interface AgendaScore {
@@ -215,6 +250,21 @@ interface AgendaBill {
   title: string;
   /** האם החוק דוחף לכיוון העמדה שנבחרה. null כשאין נתוני עמדה */
   matchesStance: boolean | null;
+  /** "פרטית" / "ממשלתית" / "ועדה" כפי שבמאגר, או null */
+  subtype: string | null;
+  /** הוועדה שההצעה משויכת לה; להצעת ועדה זו הוועדה שהגישה */
+  committeeName: string | null;
+  /** תאריך הפרסום, לפתרון מי היה יו"ר הוועדה אז */
+  publicationDate: string | null;
+}
+
+const SUBTYPE_GOVERNMENT = 'ממשלתית';
+const SUBTYPE_COMMITTEE = 'ועדה';
+
+function billKind(subtype: string | null): AgendaBillRef['kind'] {
+  if (subtype === SUBTYPE_GOVERNMENT) return 'government';
+  if (subtype === SUBTYPE_COMMITTEE) return 'committee';
+  return undefined;
 }
 
 /**
@@ -233,13 +283,15 @@ function loadAgendaBills(
     const rows = db
       .prepare(
         `SELECT c.bill_id AS billId, b.status_id AS statusId, b.title AS title,
-                c.stance_id AS stanceId
+                c.stance_id AS stanceId, b.subtype AS subtype,
+                b.committee_name AS committeeName, b.publication_date AS publicationDate
          FROM bill_political_classification c
          JOIN bill b ON b.id = c.bill_id
          WHERE c.issue_id = ?`,
       )
       .all(selection.issueId) as Array<{
         billId: number; statusId: number; title: string; stanceId: string | null;
+        subtype: string | null; committeeName: string | null; publicationDate: string | null;
       }>;
 
     return rows.map(r => ({
@@ -247,6 +299,9 @@ function loadAgendaBills(
       statusId: r.statusId,
       title: r.title,
       matchesStance: selection.stanceId && r.stanceId ? r.stanceId === selection.stanceId : null,
+      subtype: r.subtype,
+      committeeName: r.committeeName,
+      publicationDate: r.publicationDate,
     }));
   }
 
@@ -257,8 +312,15 @@ function loadAgendaBills(
   const params = issue.keywords.map(k => `%${k}%`);
 
   const rows = db
-    .prepare(`SELECT id AS billId, status_id AS statusId, title FROM bill WHERE ${where}`)
-    .all(...params) as Array<{ billId: number; statusId: number; title: string }>;
+    .prepare(
+      `SELECT id AS billId, status_id AS statusId, title, subtype,
+              committee_name AS committeeName, publication_date AS publicationDate
+       FROM bill WHERE ${where}`,
+    )
+    .all(...params) as Array<{
+      billId: number; statusId: number; title: string;
+      subtype: string | null; committeeName: string | null; publicationDate: string | null;
+    }>;
 
   return rows.map(r => ({ ...r, matchesStance: null }));
 }
@@ -266,6 +328,7 @@ function loadAgendaBills(
 interface AgendaVote {
   voteId: number;
   billId: number | null;
+  title: string;
   date: string;
   matchesStance: boolean | null;
 }
@@ -292,11 +355,11 @@ function loadAgendaVotes(
       const slice = ids.slice(i, i + chunk);
       const rows = db
         .prepare(
-          `SELECT id AS voteId, bill_id AS billId, date
+          `SELECT id AS voteId, bill_id AS billId, title, date
            FROM plenary_vote
            WHERE bill_id IN (${slice.map(() => '?').join(',')})`,
         )
-        .all(...slice) as Array<{ voteId: number; billId: number; date: string }>;
+        .all(...slice) as Array<{ voteId: number; billId: number; title: string; date: string }>;
 
       for (const r of rows) {
         found.set(r.voteId, { ...r, matchesStance: stanceByBill.get(r.billId) ?? null });
@@ -308,8 +371,8 @@ function loadAgendaVotes(
   if (issue && issue.keywords.length > 0) {
     const where = issue.keywords.map(() => 'title LIKE ?').join(' OR ');
     const rows = db
-      .prepare(`SELECT id AS voteId, bill_id AS billId, date FROM plenary_vote WHERE ${where}`)
-      .all(...issue.keywords.map(k => `%${k}%`)) as Array<{ voteId: number; billId: number | null; date: string }>;
+      .prepare(`SELECT id AS voteId, bill_id AS billId, title, date FROM plenary_vote WHERE ${where}`)
+      .all(...issue.keywords.map(k => `%${k}%`)) as Array<{ voteId: number; billId: number | null; title: string; date: string }>;
 
     for (const r of rows) {
       if (!found.has(r.voteId)) {
@@ -331,6 +394,12 @@ interface MkTally {
   contradictedOwnBill: number;
   /** ההצעות עצמן, לקישור מהתצוגה */
   bills: AgendaBillRef[];
+  /** פעילות נגד הכיוון שנבחר, למודל של היגד-היגד (computeStatementLeaders) */
+  billsAgainst: number;
+  billsAgainstRefs: AgendaBillRef[];
+  opposingVotes: number;
+  /** ההצבעות שנספרו, לפירוט */
+  votes: AgendaVoteRef[];
 }
 
 function emptyTally(): MkTally {
@@ -341,6 +410,10 @@ function emptyTally(): MkTally {
     rebelVotes: 0,
     contradictedOwnBill: 0,
     bills: [],
+    billsAgainst: 0,
+    billsAgainstRefs: [],
+    opposingVotes: 0,
+    votes: [],
   };
 }
 
@@ -358,6 +431,13 @@ function isSupportive(resultCode: number, matchesStance: boolean | null): boolea
   if (matchesStance === null) return false;
   if (matchesStance) return resultCode === RESULT_FOR;
   return resultCode === RESULT_AGAINST;
+}
+
+/** המראה של isSupportive: בעד חוק מנוגד, או נגד חוק תואם */
+function isOpposing(resultCode: number, matchesStance: boolean | null): boolean {
+  if (matchesStance === null) return false;
+  if (matchesStance) return resultCode === RESULT_AGAINST;
+  return resultCode === RESULT_FOR;
 }
 
 /**
@@ -378,10 +458,24 @@ function tallyVotes(
   const stanceByVote = new Map(votes.map(v => [v.voteId, v.matchesStance]));
   const billByVote = new Map(votes.map(v => [v.voteId, v.billId]));
   const dateByVote = new Map(votes.map(v => [v.voteId, v.date]));
+  const titleByVote = new Map(votes.map(v => [v.voteId, v.title]));
+
+  /** רושם הצבעה שנספרה (תומכת או מתנגדת) ברשימת הפירוט של הח"כ */
+  const record = (t: MkTally, voteId: number, resultCode: number, supportive: boolean, majorityCode: number | null) => {
+    t.votes.push({
+      voteId,
+      billId: billByVote.get(voteId) ?? null,
+      title: titleByVote.get(voteId) ?? '',
+      date: (dateByVote.get(voteId) ?? '').slice(0, 10),
+      votedFor: resultCode === RESULT_FOR,
+      supportive,
+      withFaction: majorityCode === null ? null : resultCode === majorityCode,
+    });
+  };
 
   /** ההצבעה האחרונה שנשמרה לכל צמד חוק+ח"כ, כדי לנטרל הסתייגויות */
-  const latestPerBillMk = new Map<string, { voteId: number; date: string; resultCode: number }>();
-  const standalone: Array<{ mkId: number; voteId: number; resultCode: number }> = [];
+  const latestPerBillMk = new Map<string, { voteId: number; date: string; resultCode: number; majorityCode: number | null }>();
+  const standalone: Array<{ mkId: number; voteId: number; resultCode: number; majorityCode: number | null }> = [];
 
   const ids = votes.map(v => v.voteId);
   const chunk = 400;
@@ -410,7 +504,7 @@ function tallyVotes(
 
       const billId = billByVote.get(r.voteId) ?? null;
       if (billId === null) {
-        standalone.push({ mkId: r.mkId, voteId: r.voteId, resultCode: r.resultCode });
+        standalone.push({ mkId: r.mkId, voteId: r.voteId, resultCode: r.resultCode, majorityCode: r.majorityCode });
         continue;
       }
 
@@ -418,7 +512,7 @@ function tallyVotes(
       const date = dateByVote.get(r.voteId) ?? '';
       const prev = latestPerBillMk.get(key);
       if (!prev || date > prev.date || (date === prev.date && r.voteId > prev.voteId)) {
-        latestPerBillMk.set(key, { voteId: r.voteId, date, resultCode: r.resultCode });
+        latestPerBillMk.set(key, { voteId: r.voteId, date, resultCode: r.resultCode, majorityCode: r.majorityCode });
       }
     }
   }
@@ -432,6 +526,10 @@ function tallyVotes(
 
     if (isSupportive(v.resultCode, stanceByVote.get(v.voteId) ?? null)) {
       t.supportingVotes += 1;
+      record(t, v.voteId, v.resultCode, true, v.majorityCode);
+    } else if (isOpposing(v.resultCode, stanceByVote.get(v.voteId) ?? null)) {
+      t.opposingVotes += 1;
+      record(t, v.voteId, v.resultCode, false, v.majorityCode);
     }
     if (v.resultCode === RESULT_AGAINST && initiatorsByBill.get(billId)?.has(mkId)) {
       t.contradictedOwnBill += 1;
@@ -443,6 +541,10 @@ function tallyVotes(
     if (!t) continue;
     if (isSupportive(s.resultCode, stanceByVote.get(s.voteId) ?? null)) {
       t.supportingVotes += 1;
+      record(t, s.voteId, s.resultCode, true, s.majorityCode);
+    } else if (isOpposing(s.resultCode, stanceByVote.get(s.voteId) ?? null)) {
+      t.opposingVotes += 1;
+      record(t, s.voteId, s.resultCode, false, s.majorityCode);
     }
   }
 }
@@ -664,7 +766,6 @@ export function computeAgendaActivity(
        * הרצפה של 90 יום מונעת התפוצצות: מי שכיהן שבועיים ויזם הצעה אחת
        * היה מקבל קצב אסטרונומי ומדלג לראש הדירוג.
        */
-      const MIN_TENURE_DAYS = 90;
       const initiativeRate = (mkId: number, bills: number) =>
         bills / Math.max(mks.get(mkId)!.tenureDays, MIN_TENURE_DAYS);
 
@@ -780,7 +881,29 @@ export function computeAgendaActivity(
   }
 }
 
-/** ספירת הצעות החוק לכל ח"כ, ומיפוי היוזמים לכל חוק לצורך דגל הסתירה */
+/**
+ * מי היה יו"ר הוועדה בתאריך נתון. בלי תאריך: היו"ר האחרון של הוועדה
+ * (9 מ-18 הצעות הוועדה בכנסת הזאת הן בלי תאריך פרסום במאגר).
+ */
+function committeeChairAt(db: Database.Database, committeeName: string, date: string | null): number | null {
+  const base = `SELECT mk_id AS mkId FROM mk_position WHERE committee = ? AND duty_desc LIKE 'יו"ר%'`;
+  if (date) {
+    const row = db
+      .prepare(`${base} AND start_date <= ? AND (finish_date IS NULL OR finish_date >= ?) ORDER BY start_date DESC LIMIT 1`)
+      .get(committeeName, date, date) as { mkId: number } | undefined;
+    if (row) return row.mkId;
+  }
+  const last = db.prepare(`${base} ORDER BY start_date DESC LIMIT 1`).get(committeeName) as { mkId: number } | undefined;
+  return last?.mkId ?? null;
+}
+
+/**
+ * ספירת הצעות החוק לכל ח"כ, ומיפוי היוזמים לכל חוק לצורך דגל הסתירה.
+ *
+ * מי מקבל קרדיט: היוזמים החתומים (bill_initiator), ולהצעת ועדה גם יו"ר
+ * הוועדה שהגישה אותה, כי אין לה יוזם חתום. להצעה ממשלתית אין קרדיט יוזמה
+ * לאף אחד: במאגר אין מי במשרד יזם אותה (היא נספרת בהצבעות ובסך ההיגד).
+ */
 function tallyBills(
   db: Database.Database,
   bills: AgendaBill[],
@@ -808,6 +931,7 @@ function tallyBills(
     for (const r of rows) reachedPlenary.add(r.billId);
   }
 
+  const credits: Array<{ billId: number; mkId: number; viaChair: boolean }> = [];
   for (let i = 0; i < ids.length; i += chunk) {
     const slice = ids.slice(i, i + chunk);
     const rows = db
@@ -816,37 +940,61 @@ function tallyBills(
          WHERE bill_id IN (${slice.map(() => '?').join(',')})`,
       )
       .all(...slice) as Array<{ billId: number; mkId: number }>;
+    for (const r of rows) credits.push({ ...r, viaChair: false });
+  }
+  const chairCache = new Map<string, number | null>();
+  for (const bill of bills) {
+    if (bill.subtype !== SUBTYPE_COMMITTEE || !bill.committeeName) continue;
+    const key = `${bill.committeeName}|${bill.publicationDate ?? ''}`;
+    if (!chairCache.has(key)) chairCache.set(key, committeeChairAt(db, bill.committeeName, bill.publicationDate));
+    const chair = chairCache.get(key);
+    if (chair !== null && chair !== undefined) credits.push({ billId: bill.billId, mkId: chair, viaChair: true });
+  }
 
-    for (const r of rows) {
-      let set = initiatorsByBill.get(r.billId);
-      if (!set) initiatorsByBill.set(r.billId, (set = new Set()));
-      set.add(r.mkId);
+  for (const r of credits) {
+    let set = initiatorsByBill.get(r.billId);
+    if (!set) initiatorsByBill.set(r.billId, (set = new Set()));
+    set.add(r.mkId);
 
-      const tally = tallies.get(r.mkId);
-      const bill = byId.get(r.billId);
-      if (!tally || !bill) continue;
+    const tally = tallies.get(r.mkId);
+    const bill = byId.get(r.billId);
+    if (!tally || !bill) continue;
 
+    const ref = (advanced: boolean): AgendaBillRef => ({
+      billId: bill.billId,
+      title: bill.title,
+      statusId: bill.statusId,
+      advanced,
+      passed: bill.statusId === STATUS_BECAME_LAW,
+      ...(billKind(bill.subtype) ? { kind: billKind(bill.subtype) } : {}),
+      ...(r.viaChair ? { viaChair: true } : {}),
+    });
+
+    /**
+     * כשיש נתוני עמדה, נספרות רק הצעות שדוחפות לכיוון שהמשתמש בחר.
+     * ח"כ שיזם עשרה חוקים להרחבת הפטור מגיוס אינו "עובד למען" משתמש
+     * שתומך בגיוס, גם אם שני הדברים יושבים באותה אג'נדה.
+     *
+     * היוזם נרשם ב-initiatorsByBill עוד לפני הסינון, כי דגל הסתירה
+     * צריך לזהות הצבעה נגד חוק שהח"כ יזם, בלי קשר לכיוונו.
+     */
+    if (stanceAware && bill.matchesStance !== true) {
       /**
-       * כשיש נתוני עמדה, נספרות רק הצעות שדוחפות לכיוון שהמשתמש בחר.
-       * ח"כ שיזם עשרה חוקים להרחבת הפטור מגיוס אינו "עובד למען" משתמש
-       * שתומך בגיוס — גם אם שני הדברים יושבים באותה אג'נדה.
-       *
-       * היוזם נרשם ב-initiatorsByBill עוד לפני הסינון, כי דגל הסתירה
-       * צריך לזהות הצבעה נגד חוק שהח"כ יזם, בלי קשר לכיוונו.
+       * הצעה לצד השני נספרת בנפרד ולא נזרקת. הצעה שכיוונה לא ידוע
+       * (null) לא נספרת לאף צד.
        */
-      if (stanceAware && bill.matchesStance !== true) continue;
-
-      const advanced = billAdvanced(bill.statusId, reachedPlenary.has(r.billId));
-      if (advanced) tally.billsAdvanced += 1;
-      if (!onlyAdvanced || advanced) {
-        tally.billsInitiated += 1;
-        tally.bills.push({
-          billId: bill.billId,
-          title: bill.title,
-          advanced,
-          passed: bill.statusId === STATUS_BECAME_LAW,
-        });
+      if (bill.matchesStance === false) {
+        tally.billsAgainst += 1;
+        tally.billsAgainstRefs.push(ref(billAdvanced(bill.statusId, reachedPlenary.has(r.billId))));
       }
+      continue;
+    }
+
+    const advanced = billAdvanced(bill.statusId, reachedPlenary.has(r.billId));
+    if (advanced) tally.billsAdvanced += 1;
+    if (!onlyAdvanced || advanced) {
+      tally.billsInitiated += 1;
+      tally.bills.push(ref(advanced));
     }
   }
 
@@ -885,4 +1033,300 @@ function round1(n: number): number {
 function confidenceFromEvidence(evidenceCount: number): number {
   if (evidenceCount <= 0) return 0;
   return Math.round((1 - Math.exp(-evidenceCount / 15)) * 100);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ *  מודל "לכל היגד": מי דחף הכי הרבה בכיוון שבחרת, בלי ממוצע בין היגדים
+ *
+ *  ראו PROPOSAL-STATEMENT-SCORE.md. לכל ח"כ בהיגד סופרים דחיפה בעד ודחיפה
+ *  נגד, בנקודות:
+ *    הצעת חוק שיזם: הוגשה 1, עברה טרומית 2, הפכה לחוק 4
+ *    הצבעה: עם רוב הסיעה 0.25, נגד רוב הסיעה 1
+ *  כל פריט נספר לצד שאליו הוא דוחף בפועל (הצבעה נגד הצעה לכיוון השני
+ *  היא דחיפה בעד). ציון = 100 · נטו ÷ נטו של המוביל בהיגד. עקביות =
+ *  בעד ÷ (בעד + נגד). אין ממוצע, אין אחוזון, אין "ביטחון".
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+export const PUSH_WEIGHTS = {
+  billFiled: 1,
+  billAdvanced: 2,
+  billLaw: 4,
+  voteWithFaction: 0.25,
+  voteAgainstFaction: 1,
+} as const;
+
+export interface StatementLeader {
+  mkId: number;
+  name: string;
+  faction: string | null;
+  slug: string | null;
+  isCoalition: boolean;
+  isMinister: boolean;
+  isFormer: boolean;
+  tenureEnd: string | null;
+  /** מקום בהיגד, 1 = המוביל */
+  rank: number;
+  /** 0 עד 100, ביחס למוביל בהיגד */
+  score: number;
+  /** 0 עד 100, בעד ÷ (בעד + נגד) */
+  consistency: number;
+  pushFor: number;
+  pushAgainst: number;
+  /** ספירות, להסבר במילים */
+  billsFor: { filed: number; advanced: number; law: number };
+  billsAgainst: { filed: number; advanced: number; law: number };
+  votesFor: { withFaction: number; againstFaction: number };
+  votesAgainst: { withFaction: number; againstFaction: number };
+  bills: AgendaBillRef[];
+  billsAgainstRefs: AgendaBillRef[];
+  votes: AgendaVoteRef[];
+}
+
+export interface StatementResult {
+  issueId: string;
+  label: string;
+  /** נוסח שני הצדדים, מהקטלוג: הצד שנבחר והצד השני */
+  yourSide: string | null;
+  otherSide: string | null;
+  billCount: number;
+  /** מתוך billCount: כמה הצעות בכיוון שנבחר וכמה לכיוון השני (השאר בלי כיוון ידוע) */
+  billsYourSide: number;
+  billsOtherSide: number;
+  /** מתוך הנ"ל: כמה הצעות ממשלתיות, וכמה מהן הפכו לחוק. נספרות בסך ובהצבעות, לא ביוזמה */
+  govYourSide: { bills: number; laws: number };
+  govOtherSide: { bills: number; laws: number };
+  voteCount: number;
+  /** כמה ח"כים דחפו נטו בכיוון שנבחר */
+  activeMks: number;
+  /** הנטו של המוביל, הבסיס ל-100 */
+  leaderNet: number;
+  /** עשרת הראשונים, ועוד חמישה ראשונים מכל מחנה אם אינם שם כבר */
+  leaders: StatementLeader[];
+}
+
+function round2(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
+function billStageWeight(b: AgendaBillRef): number {
+  if (b.passed) return PUSH_WEIGHTS.billLaw;
+  if (b.advanced) return PUSH_WEIGHTS.billAdvanced;
+  return PUSH_WEIGHTS.billFiled;
+}
+
+function voteWeight(v: AgendaVoteRef): number {
+  return v.withFaction === false ? PUSH_WEIGHTS.voteAgainstFaction : PUSH_WEIGHTS.voteWithFaction;
+}
+
+function stageCounts(bills: AgendaBillRef[]) {
+  return {
+    filed: bills.filter(b => !b.advanced && !b.passed).length,
+    advanced: bills.filter(b => b.advanced && !b.passed).length,
+    law: bills.filter(b => b.passed).length,
+  };
+}
+
+function factionCounts(votes: AgendaVoteRef[]) {
+  return {
+    withFaction: votes.filter(v => v.withFaction !== false).length,
+    againstFaction: votes.filter(v => v.withFaction === false).length,
+  };
+}
+
+/** כמה מהמדורגים נשלחים לכרטיס ההיגד. המסך מציג שלושה; השאר רזרבה לשינויי תצוגה */
+const DISPLAY_LEADERS = 10;
+
+/**
+ * מי מוצג בכרטיס ההיגד: הראשונים לפי מקום. הקלט ממוין לפי מקום. משמש גם
+ * את ה-API כשהוא מחשב עם הרשימה המלאה ואז מצמצם לתצוגה.
+ */
+export function pickDisplayLeaders<T extends { rank: number }>(ranked: T[]): T[] {
+  return ranked.slice(0, DISPLAY_LEADERS);
+}
+
+/** שורה בסיכום לאורך ההיגדים: ח"כ, הציון בכל היגד, והמספרים שקובעים את הסדר */
+export interface CrossStatementRow {
+  mkId: number;
+  name: string;
+  faction: string | null;
+  slug: string | null;
+  isCoalition: boolean;
+  isMinister: boolean;
+  isFormer: boolean;
+  tenureEnd: string | null;
+  /** הציון (0 עד 100, כמו בכרטיס) לכל היגד לפי issueId; היגד שלא מופיע = 0 */
+  cells: Record<string, number>;
+  /** בכמה מההיגדים הנספרים יש פעילות בכיוון שנבחר */
+  active: number;
+  /** חציון הציונים על כל ההיגדים הנספרים */
+  median: number;
+  /** סך נקודות הנטו על כל ההיגדים, לשבירת שוויון */
+  total: number;
+  /** מקום בסיכום, 1 = הראשון */
+  rank: number;
+}
+
+export interface CrossStatementSummary {
+  /** כמה היגדים נספרים: אלה שיש בהם לפחות פעילות אחת בכיוון שנבחר */
+  statementCount: number;
+  /** כמה היגדים עם פעילות צריך כדי להיכנס: חצי, מעוגל למעלה */
+  minActive: number;
+  /** העשירייה הראשונה בסיכום (1 עד 3 הם הפודיום) */
+  rows: CrossStatementRow[];
+}
+
+function medianOf(values: number[]): number {
+  const v = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(v.length / 2);
+  return v.length % 2 ? v[mid] : (v[mid - 1] + v[mid]) / 2;
+}
+
+/**
+ * סיכום לאורך ההיגדים: מי פעל בכיוון שנבחר כמעט בכל מקום.
+ *
+ * למה לא ממוצע ולא סכום: 100 בהיגד קטן שווה הצעה אחת, ו-100 בהיגד גדול
+ * שווה עשרות נקודות. ממוצע של ציונים יחסיים נותן להיגדים הקטנים לשלוט,
+ * וסכום נקודות גולמי נותן להיגד הגדול לשלוט (סיעה שלמה שחותמת זו לזו).
+ * לכן: סף נוכחות (פעילות בלפחות חצי מההיגדים), ואז חציון, שהיגד חריג
+ * אחד לא מרים ולא מפיל. שובר שוויון: סך הנקודות.
+ *
+ * דורש תוצאות עם הרשימה המלאה (computeStatementLeaders עם limit: Infinity),
+ * אחרת מי שמחוץ לעשירייה בהיגד ייחשב כמי שלא פעל בו.
+ */
+export function summarizeAcrossStatements(results: StatementResult[], limit = 10): CrossStatementSummary {
+  const counted = results.filter(st => st.leaderNet > 0);
+  const S = counted.length;
+  const minActive = Math.ceil(S / 2);
+  const rows = new Map<number, CrossStatementRow>();
+  for (const st of counted) {
+    for (const l of st.leaders) {
+      let r = rows.get(l.mkId);
+      if (!r) {
+        r = { mkId: l.mkId, name: l.name, faction: l.faction, slug: l.slug, isCoalition: l.isCoalition, isMinister: l.isMinister, isFormer: l.isFormer, tenureEnd: l.tenureEnd, cells: {}, active: 0, median: 0, total: 0, rank: 0 };
+        rows.set(l.mkId, r);
+      }
+      // ברשימה נמצאים רק מי שדחפו נטו בכיוון שנבחר, ולכן נוכחות = פעילות
+      r.cells[st.issueId] = l.score;
+      r.active += 1;
+      r.total += Math.max(0, l.pushFor - l.pushAgainst);
+    }
+  }
+  const ranked = [...rows.values()]
+    .filter(r => S >= 2 && r.active >= minActive)
+    .map(r => ({ ...r, median: round2(medianOf(counted.map(st => r.cells[st.issueId] ?? 0))), total: round2(r.total) }))
+    .sort((a, b) => b.median - a.median || b.total - a.total || a.name.localeCompare(b.name, 'he'))
+    .map((r, i) => ({ ...r, rank: i + 1 }));
+  return { statementCount: S, minActive, rows: ranked.slice(0, limit) };
+}
+
+/**
+ * opts.limit: כמה מהמדורגים להחזיר לכל היגד. בלי זה: 10 הראשונים ועוד 5
+ * הראשונים בכל מחנה (מה שהמסך מציג). Infinity מחזיר את כולם, לניסויים
+ * של צבירה בין היגדים (scripts, לא ה-API).
+ */
+export function computeStatementLeaders(selections: AgendaSelection[], opts: { limit?: number } = {}): StatementResult[] {
+  if (selections.length === 0 || !fs.existsSync(DB_PATH)) return [];
+  const db = new Database(DB_PATH, { readonly: true });
+  try {
+    const useClassification = hasClassification(db);
+    const mks = loadCurrentMks(db);
+    const out: StatementResult[] = [];
+
+    for (const selection of selections) {
+      const issue = POLITICAL_ISSUES.find(i => i.id === selection.issueId);
+      if (!issue) continue;
+      const bills = loadAgendaBills(db, selection, useClassification);
+      const votes = loadAgendaVotes(db, selection, bills);
+      const tallies = new Map<number, MkTally>();
+      for (const mkId of mks.keys()) tallies.set(mkId, emptyTally());
+      const stanceAware = bills.some(b => b.matchesStance !== null);
+      const initiatorsByBill = tallyBills(db, bills, tallies, false, stanceAware);
+      tallyVotes(db, votes, tallies, initiatorsByBill);
+
+      const statusByBill = new Map(bills.map(b => [b.billId, b.statusId]));
+      const govBills = new Set(bills.filter(b => b.subtype === SUBTYPE_GOVERNMENT).map(b => b.billId));
+      const govCount = (side: boolean) => {
+        const g = bills.filter(b => b.matchesStance === side && govBills.has(b.billId));
+        return { bills: g.length, laws: g.filter(b => b.statusId === STATUS_BECAME_LAW).length };
+      };
+      const scored = [...tallies.entries()]
+        .map(([mkId, t]) => {
+          const votesFor = t.votes.filter(v => v.supportive);
+          const votesAgainst = t.votes.filter(v => !v.supportive);
+          const pushFor = t.bills.reduce((s, b) => s + billStageWeight(b), 0) + votesFor.reduce((s, v) => s + voteWeight(v), 0);
+          const pushAgainst = t.billsAgainstRefs.reduce((s, b) => s + billStageWeight(b), 0) + votesAgainst.reduce((s, v) => s + voteWeight(v), 0);
+          return { mkId, t, pushFor, pushAgainst, net: Math.max(0, pushFor - pushAgainst), votesFor, votesAgainst };
+        })
+        /**
+         * לרשימה נכנס רק מי שדחף נטו בכיוון שנבחר. מי שפעל רק לכיוון השני
+         * אינו "אחרי המוביל", והוא היה ממלא את "עוד X" באנשים עם ציון 0.
+         */
+        .filter(x => x.net > 0)
+        .sort((a, b) => b.net - a.net || b.pushFor - a.pushFor);
+
+      const leaderNet = scored[0]?.net ?? 0;
+      const ranked = scored.map((x, i) => ({ ...x, rank: i + 1 }));
+      const shown = opts.limit !== undefined ? ranked.slice(0, opts.limit) : pickDisplayLeaders(ranked);
+
+      const sortRefs = (refs: AgendaBillRef[]) =>
+        [...refs].sort((x, y) => Number(y.passed) - Number(x.passed) || Number(y.advanced) - Number(x.advanced)).slice(0, MAX_BILL_REFS);
+
+      const leaders: StatementLeader[] = [...shown]
+        .sort((a, b) => a.rank - b.rank)
+        .map(x => {
+          const m = mks.get(x.mkId)!;
+          return {
+            mkId: x.mkId,
+            name: m.name,
+            faction: m.faction,
+            slug: m.slug,
+            isCoalition: m.isCoalition,
+            isMinister: m.isMinister,
+            isFormer: m.isFormer,
+            tenureEnd: m.tenureEnd,
+            rank: x.rank,
+            score: leaderNet > 0 ? Math.round((100 * x.net) / leaderNet) : 0,
+            consistency: Math.round((100 * x.pushFor) / (x.pushFor + x.pushAgainst)),
+            // שתי ספרות ולא אחת: התצוגה מראה את החיבור (1 + 1.75), והוא חייב לצאת מדויק
+            pushFor: round2(x.pushFor),
+            pushAgainst: round2(x.pushAgainst),
+            billsFor: stageCounts(x.t.bills),
+            billsAgainst: stageCounts(x.t.billsAgainstRefs),
+            votesFor: factionCounts(x.votesFor),
+            votesAgainst: factionCounts(x.votesAgainst),
+            bills: sortRefs(x.t.bills),
+            billsAgainstRefs: sortRefs(x.t.billsAgainstRefs),
+            votes: [...x.t.votes]
+              .map(v => ({
+                ...v,
+                statusId: v.billId !== null ? statusByBill.get(v.billId) ?? null : null,
+                ...(v.billId !== null && govBills.has(v.billId) ? { government: true } : {}),
+              }))
+              .sort((a, b) => b.date.localeCompare(a.date))
+              .slice(0, MAX_BILL_REFS),
+          };
+        });
+
+      const chosen = issue.stances.find(st => st.id === selection.stanceId) ?? null;
+      const other = issue.stances.find(st => st.id !== selection.stanceId) ?? null;
+      out.push({
+        issueId: issue.id,
+        label: issue.label,
+        yourSide: chosen?.label ?? null,
+        otherSide: other?.label ?? null,
+        billCount: bills.length,
+        billsYourSide: bills.filter(b => b.matchesStance === true).length,
+        billsOtherSide: bills.filter(b => b.matchesStance === false).length,
+        govYourSide: govCount(true),
+        govOtherSide: govCount(false),
+        voteCount: votes.length,
+        activeMks: scored.filter(x => x.net > 0).length,
+        leaderNet: round2(leaderNet),
+        leaders,
+      });
+    }
+    return out;
+  } finally {
+    db.close();
+  }
 }
