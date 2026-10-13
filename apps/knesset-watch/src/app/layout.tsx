@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Heebo } from "next/font/google";
+import { Fredoka, Heebo } from "next/font/google";
 import "./globals.css";
 import SiteHeader from "@/components/SiteHeader";
 import AppSidebar from "@/components/AppSidebar";
@@ -21,6 +21,18 @@ const heebo = Heebo({
   variable: "--font-heebo",
   subsets: ["hebrew", "latin"],
   weight: ["400", "500", "600", "700"],
+});
+
+/**
+ * פונט תצוגה שני, לתג המוביל בלבד (הציון על הגביע). Fredoka מעוגל
+ * ושמן, ותומך גם בעברית, אז גם הכיתוב מתחת לגביע יכול להשתמש בו.
+ * משקל אחד, כדי לא למשוך את כל הטווח.
+ */
+const fredoka = Fredoka({
+  variable: "--font-fredoka",
+  subsets: ["latin", "hebrew"],
+  weight: ["600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -49,7 +61,7 @@ export default function RootLayout({
     <html
       lang="he"
       dir="rtl"
-      className={heebo.variable}
+      className={`${heebo.variable} ${fredoka.variable}`}
     >
       <body className="antialiased">
         <a

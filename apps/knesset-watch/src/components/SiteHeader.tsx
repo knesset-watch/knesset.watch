@@ -21,6 +21,9 @@ function toDateStr(year: number, month: number, day: number) {
 const HE_MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 const HE_DOW = ['א','ב','ג','ד','ה','ו','ש'];
 
+/** עמודים שבורר התקופה לא משפיע עליהם, ולכן לא מוצג בהם */
+const PERIOD_FREE_PREFIXES = ['/agenda-keywords', '/agenda-match', '/agenda-heigdim', '/agendas', '/agenda/'];
+
 function PeriodSelector() {
   const { period, setPeriod } = usePeriod();
   const [open, setOpen] = useState(false);
@@ -213,7 +216,14 @@ export default function SiteHeader({ mode = 'default' }: { mode?: 'top' | 'defau
 
   if (pathname === '/login') return null;
   const isHome = pathname === '/';
-  if (mode === 'default' && isHome) return null;
+  /*
+    בורר התקופה משפיע רק על עמודים שקוראים אותו (חוקים, הצבעות, ועדות,
+    פרוטוקולים, עמוד ח"כ). בשאלון הוא לא עושה כלום, ובורר שלא עושה כלום
+    מטעה. לכן הוא מוסתר שם, ובדסקטופ, שבו הבורר הוא כל תוכן הפס, הפס
+    כולו יורד: אחרת נשאר פס ריק עם קו תחתון בודד מתחת להירו.
+  */
+  const periodFree = PERIOD_FREE_PREFIXES.some(p => pathname.startsWith(p));
+  if (mode === 'default' && (isHome || periodFree)) return null;
   const top = mode === 'top';
 
   return (
@@ -223,7 +233,7 @@ export default function SiteHeader({ mode = 'default' }: { mode?: 'top' | 'defau
     >
       <div className="px-4 h-11 flex items-center gap-4">
         <div className="flex-1" />
-        {!isHome && <PeriodSelector />}
+        {!isHome && !periodFree && <PeriodSelector />}
         {top && (
           <button
             onClick={() => setMenuOpen(o => !o)}
